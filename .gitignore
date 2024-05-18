@@ -24,3 +24,7 @@ Brewfile.lock.json
 wiki
 # Bootstrap
 /config.yaml
+# Kubeconform
+scripts/
+# Miscellaneous
+requirements.txt
