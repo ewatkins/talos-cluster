@@ -1,0 +1,3 @@
+---
+providerRegex: ^(superior|huron|michigan|erie|ontario)$
+bypassDnsResolution: true
