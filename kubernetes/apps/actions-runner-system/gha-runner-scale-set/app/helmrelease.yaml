@@ -1,11 +1,11 @@
 ---
-# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrelease-helm-v2beta2.json
-apiVersion: helm.toolkit.fluxcd.io/v2beta2
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: action-runner
+  name: gha-runner-scale-set
 spec:
-  interval: 15m
+  interval: 30m
   chart:
     spec:
       chart: gha-runner-scale-set
@@ -14,23 +14,36 @@ spec:
         kind: HelmRepository
         name: actions-runner-controller
         namespace: flux-system
-      interval: 15m
   install:
-    createNamespace: true
     remediation:
-      retries: 5
+      retries: 3
   upgrade:
+    cleanupOnFail: true
     remediation:
-      retries: 5
+      strategy: rollback
+      retries: 3
   dependsOn:
-    - name: actions-runner-controller
+    - name: gha-runner-scale-set-controller
       namespace: actions-runner-system
+  valuesFrom:
+    - targetPath: githubConfigSecret.github_app_id
+      kind: Secret
+      name: actions-runner-controller-secret
+      valuesKey: github_app_id
+    - targetPath: githubConfigSecret.github_app_installation_id
+      kind: Secret
+      name: actions-runner-controller-secret
+      valuesKey: github_app_installation_id
+    - targetPath: githubConfigSecret.github_app_private_key
+      kind: Secret
+      name: actions-runner-controller-secret
+      valuesKey: github_app_private_key
   values:
     nameOverride: gha-runner-scale-set
     runnerScaleSetName: gha-runner-scale-set
     githubConfigUrl: https://github.com/ewatkins/talos-cluster
     minRunners: 1
-    maxRunners: 3
+    maxRunners: 6
     containerMode:
       type: dind
     template:
@@ -42,4 +55,3 @@ spec:
     controllerServiceAccount:
       name: gha-runner-scale-set-controller
       namespace: actions-runner-system
-    githubConfigSecret: actions-runner-controller-secret
