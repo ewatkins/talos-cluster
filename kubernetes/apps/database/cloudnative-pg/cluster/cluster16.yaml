@@ -12,12 +12,13 @@ spec:
     size: 20Gi
     storageClass: openebs-hostpath
   superuserSecret:
-    name: cloudnative-pg-secret
+    name: postgres-secret
   enableSuperuserAccess: true
   postgresql:
     parameters:
       max_connections: "400"
       shared_buffers: 256MB
+      timezone: "America/Chicago"
   nodeMaintenanceWindow:
     inProgress: false
     reusePVC: true
@@ -32,6 +33,15 @@ spec:
     podMonitorMetricRelabelings:
       - { sourceLabels: ["cluster"], targetLabel: cnpg_cluster, action: replace }
       - { regex: cluster, action: labeldrop }
+  managed:
+    roles:
+    - name: forgejo_admin
+      ensure: present
+      comment: Forgejo Admin
+      login: true
+      superuser: false
+      passwordSecret:
+        name: db-forgejo-admin-secret
   # backup:
   #   retentionPolicy: 30d
   #   barmanObjectStore: &barmanObjectStore
