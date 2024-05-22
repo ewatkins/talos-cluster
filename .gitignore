@@ -28,3 +28,4 @@ wiki
 scripts/
 # Miscellaneous
 requirements.txt
+.envrc
