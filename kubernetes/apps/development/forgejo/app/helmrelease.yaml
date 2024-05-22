@@ -1,128 +1,128 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
-  name: forgejo
+  name: &app forgejo
   namespace: development
 spec:
   interval: 15m
   chart:
     spec:
-      chart: forgejo
-      version: 6.0.6
+      chart: app-template
+      version: 3.1.0
       sourceRef:
         kind: HelmRepository
-        name: forgejo
+        name: bjw-s
         namespace: flux-system
-  maxHistory: 3
   install:
-    createNamespace: true
     remediation:
       retries: 3
   upgrade:
     cleanupOnFail: true
     remediation:
+      strategy: rollback
       retries: 3
   uninstall:
     keepHistory: false
   dependsOn:
     - name: openebs
       namespace: openebs-system
-  valuesFrom:
-    - targetPath: gitea.config.database.USER
-      kind: Secret
-      name: forgejo-admin
-      valuesKey: db_username
-    - targetPath: gitea.config.database.PASSWD
-      kind: Secret
-      name: forgejo-admin
-      valuesKey: db_password
   values:
-    replicaCount: 1
-    strategy:
-      type: 'RollingUpdate'
-      rollingUpdate:
-        maxSurge: '100%'
-        maxUnavailable: 0
+    controllers:
+      forgejo:
+        type: statefulset
+        replicas: 3
+        annotations:
+          reloader.stakater.com/auto: "true"
 
-    image:
-      rootless: true
+        initContainers:
+          init-db:
+            image:
+              repository: ghcr.io/onedr0p/postgres-init
+              tag: 16
+            envFrom:
+              - secretRef:
+                  name: forgejo-db-init
 
-    containerSecurityContext:
-      allowPrivilegeEscalation: false
-      capabilities:
-        drop:
-          - ALL
-        add:
-          - SYS_CHROOT
-      privileged: false
-      readOnlyRootFilesystem: true
-      runAsNonRoot: true
+        containers:
+          app:
+            image:
+              repository: codeberg.org/forgejo/forgejo
+              pullPolicy: IfNotPresent
+              tag: 7.0.2-rootless@sha256:67d779ec06160367f466865dc6dd7237566aca37b239363173af851a58249434
+            env:
+              TZ: ${TIMEZONE}
+              USER_UID: 1000
+              USER_GID: 1000
+            envFrom:
+              - secretRef:
+                  name: *app
+            resources:
+              requests:
+                cpu: 100m
+                memory: 512Mi
+              limits:
+                memory: 2048Mi
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/healthz
+                    port: &port 3000
+                  initialDelaySeconds: 200
+                  timeoutSeconds: 5
+                  periodSeconds: 10
+                  successThreshold: 1
+                  failureThreshold: 10
 
-    podSecurityContext:
-      runAsUser: 1000
-      runAsGroup: 1000
-      fsGroup: 1000
-
-    postgresql:
-      enabled: false
-    redis-cluster:
-      enabled: false
-    postgresql-ha:
-      enabled: false
-
-    gitea:
-      admin:
-        existingSecret: forgejo-admin
-
-      config:
-        APP_NAME: 'Forgejo'
-
-        time:
-          DEFAULT_UI_LOCATION: ${TIMEZONE}
-
-        repository:
-          DEFAULT_BRANCH: main
-          DEFAULT_PRIVATE: true
-
-        admin:
-          DISABLE_REGULAR_ORG_CREATION: true
-
-        server:
-          SSH_PORT: 222
-
-        database:
-          DB_TYPE: postgres
-          HOST: postgres16-rw.database.svc.cluster.local:5432
-          NAME: forgejo
-          SCHEMA: public
-          SSL_MODE: disable
-
-        cache:
-          ADAPTER: redis
-          HOST: redis://dragonfly.database.svc.cluster.local:6379/11
-        queue:
-          TYPE: redis
-          CONN_STR: redis://dragonfly.database.svc.cluster.local:6379/10
-        session:
-          PROVIDER: redis
-          PROVIDER_CONFIG: redis://dragonfly.database.svc.cluster.local:6379/12
-
-      metrics:
-        enabled: true
-        serviceMonitor:
-          enabled: true
+    defaultPodOptions:
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: "Always"
 
     persistence:
-      enabled: true
-      storageClass: openebs-hostpath
+      config:
+        enabled: true
+        existingClaim: forgejo-config-pvc
+        globalMounts:
+          - path: /etc/gitea
+      data:
+        enabled: true
+        existingClaim: forgejo-data-pvc
+        globalMounts:
+          - path: /data
+
+    service:
+      forgejo-http:
+        type: LoadBalancer
+        annotations:
+          io.cilium/lb-ipam-ips: ${LB_FORGEJO}
+          io.cilium/lb-ipam-sharing-key: "forgejo"
+        controller: *app
+        ports:
+          http:
+            port: *port
+      forgejo-ssh:
+        type: LoadBalancer
+        annotations:
+          io.cilium/lb-ipam-ips: ${LB_FORGEJO}
+          io.cilium/lb-ipam-sharing-key: "forgejo"
+        controller: *app
+        ports:
+          ssh:
+            enabled: true
+            port: 2222
+            protocol: TCP
+            targetPort: 2222
 
     ingress:
-      app:
+      forgejo:
         className: internal
         hosts:
           - host: git.${SECRET_DOMAIN}
             paths:
               - path: /
                 service:
-                  identifier: app
-                  port: http
+                  identifier: forgejo-http
+                  port: *port
