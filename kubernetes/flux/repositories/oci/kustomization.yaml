@@ -4,5 +4,4 @@ kind: Kustomization
 resources:
   - ./actions-runner-controller.yaml
   - ./bjw-s.yaml
-  - ./forgejo.yaml
   - ./spegel.yaml
