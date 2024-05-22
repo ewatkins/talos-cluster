@@ -30,12 +30,12 @@ spec:
   valuesFrom:
     - targetPath: gitea.config.database.USER
       kind: Secret
-      name: db-forgejo-admin-secret
-      valuesKey: username
+      name: forgejo-admin
+      valuesKey: db_username
     - targetPath: gitea.config.database.PASSWD
       kind: Secret
-      name: db-forgejo-admin-secret
-      valuesKey: password
+      name: forgejo-admin
+      valuesKey: db_password
   values:
     replicaCount: 1
     strategy:
