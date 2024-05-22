@@ -6,5 +6,5 @@ metadata:
   namespace: flux-system
 spec:
   type: oci
-  interval: 5m
-  url: oci://codeberg.org/forgejo-contrib/forgejo
+  interval: 1h
+  url: oci://codeberg.org/forgejo-contrib
