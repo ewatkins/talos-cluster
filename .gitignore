@@ -29,3 +29,5 @@ scripts/
 # Miscellaneous
 requirements.txt
 .envrc
+bootstrap/
+makejinja.toml
