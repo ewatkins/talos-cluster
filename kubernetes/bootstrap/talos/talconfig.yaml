@@ -29,7 +29,7 @@ nodes:
           hardwareAddr: "bc:24:11:be:76:01"
         dhcp: false
         addresses:
-          - "10.30.4.1/8"
+          - "10.30.4.1/16"
         mtu: 1500
         routes:
           - network: 0.0.0.0/0
@@ -46,7 +46,7 @@ nodes:
           hardwareAddr: "bc:24:11:be:76:02"
         dhcp: false
         addresses:
-          - "10.30.4.2/8"
+          - "10.30.4.2/16"
         mtu: 1500
         routes:
           - network: 0.0.0.0/0
@@ -63,7 +63,7 @@ nodes:
           hardwareAddr: "bc:24:11:be:76:03"
         dhcp: false
         addresses:
-          - "10.30.4.3/8"
+          - "10.30.4.3/16"
         mtu: 1500
         routes:
           - network: 0.0.0.0/0
@@ -80,7 +80,7 @@ nodes:
           hardwareAddr: "bc:24:11:be:76:04"
         dhcp: false
         addresses:
-          - "10.30.4.4/8"
+          - "10.30.4.4/16"
         mtu: 1500
         routes:
           - network: 0.0.0.0/0
@@ -95,7 +95,7 @@ nodes:
           hardwareAddr: "bc:24:11:be:76:05"
         dhcp: false
         addresses:
-          - "10.30.4.5/8"
+          - "10.30.4.5/16"
         mtu: 1500
         routes:
           - network: 0.0.0.0/0
@@ -140,7 +140,7 @@ patches:
         extraArgs:
           rotate-server-certificates: true
         nodeIP:
-          validSubnets: ["10.0.0.0/8"]
+          validSubnets: ["10.30.4.0/16"]
 
   # Force nameserver
   - |-
@@ -201,7 +201,7 @@ controlPlane:
           extraArgs:
             listen-metrics-urls: http://0.0.0.0:2381
           advertisedSubnets:
-            - "10.0.0.0/8"
+            - "10.30.4.0/16"
 
     # Disable default API server admission plugins.
     - |-
