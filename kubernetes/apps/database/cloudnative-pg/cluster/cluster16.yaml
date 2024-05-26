@@ -3,36 +3,60 @@
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: postgres16
+  name: &app postgres16
 spec:
-  instances: 3
   imageName: ghcr.io/cloudnative-pg/postgresql:16.3-1
+  instances: 3
   primaryUpdateStrategy: unsupervised
-  storage:
-    size: 20Gi
-    storageClass: openebs-hostpath
-  superuserSecret:
-    name: db-postgres-secret
-  enableSuperuserAccess: true
+
   postgresql:
     parameters:
       max_connections: "400"
       shared_buffers: 256MB
       timezone: "America/Chicago"
-  nodeMaintenanceWindow:
-    inProgress: false
-    reusePVC: true
+
+  enableSuperuserAccess: true
+  superuserSecret:
+    name: postgres-superuser
+
+  storage:
+    size: 20Gi
+    storageClass: openebs-hostpath
+
   resources:
     requests:
       cpu: 500m
     limits:
       memory: 4Gi
+
+  affinity:
+    enablePodAntiAffinity: true
+    podAntiAffinityType: preferred
+    topologyKey: kubernetes.io/hostname
+    additionalPodAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+              - key: postgresql
+                operator: Exists
+                values: []
+          topologyKey: "kubernetes.io/hostname"
+
   monitoring:
     enablePodMonitor: true
     # Ref: https://github.com/cloudnative-pg/cloudnative-pg/issues/2501
     podMonitorMetricRelabelings:
-      - { sourceLabels: ["cluster"], targetLabel: cnpg_cluster, action: replace }
+      - {
+          sourceLabels: ["cluster"],
+          targetLabel: cnpg_cluster,
+          action: replace,
+        }
       - { regex: cluster, action: labeldrop }
+
+  nodeMaintenanceWindow:
+    inProgress: false
+    reusePVC: false
+
   # backup:
   #   retentionPolicy: 30d
   #   barmanObjectStore: &barmanObjectStore

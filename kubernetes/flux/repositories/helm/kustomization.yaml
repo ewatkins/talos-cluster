@@ -12,4 +12,5 @@ resources:
   - ./metrics-server.yaml
   - ./openebs.yaml
   - ./postfinance.yaml
+  - ./runix.yaml
   - ./stakater.yaml
