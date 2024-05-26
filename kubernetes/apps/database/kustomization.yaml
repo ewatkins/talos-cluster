@@ -9,6 +9,7 @@ resources:
   # Flux-Kustomizations
   # Postgres
   - ./cloudnative-pg/ks.yaml
+  - ./pgadmin/ks.yaml
 
   # Redis
   - ./dragonfly/ks.yaml
