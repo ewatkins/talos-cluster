@@ -22,6 +22,7 @@ tasks:
         certificates
         certificaterequests
         ingresses
+        services
         pods
 
   kubeconform:
