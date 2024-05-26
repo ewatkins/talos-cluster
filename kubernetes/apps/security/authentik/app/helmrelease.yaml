@@ -1,0 +1,96 @@
+---
+# yaml-language-server: $schema=https://lds-schemas.pages.dev/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: authentik
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: authentik
+      version: 2024.4.2
+      sourceRef:
+        kind: HelmRepository
+        name: authentik
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    global:
+      podAnnotations:
+        secret.reloader.stakater.com/reload: "authentik-secret"
+        configmap.reloader.stakater.com/reload: "authentik-branding"
+      deploymentStrategy:
+        type: RollingUpdate
+      envFrom:
+        - secretRef:
+            name: authentik-secret
+
+    authentik:
+      log_level: info
+      avatars: "gravatar, initials"
+      # redis:
+      #  host: redis://dragonfly.database.svc.cluster.local:6379/?db=1
+      error_reporting:
+        enable: false
+        send_pii: false
+      outposts:
+        container_image_base: ghcr.io/goauthentik/%(type)s:%(version)s
+
+    server:
+      initContainers:
+        - name: init-db
+          image: ghcr.io/onedr0p/postgres-init:16.3
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - secretRef:
+                name: authentik-secret
+      autoscaling:
+        enabled: true
+        minReplicas: 2
+      metrics:
+        prometheus:
+          serviceMonitor:
+            enabled: true
+      ingress:
+        enabled: true
+        # ingressClassName: external
+        ingressClassName: internal
+        annotations:
+          # gethomepage.dev/enabled: "true"
+          # gethomepage.dev/icon: authentik.png
+          # gethomepage.dev/name: Authentik
+          # gethomepage.dev/group: Infrastructure
+          # gethomepage.dev/description: OIDC User Management
+          # gethomepage.dev/widget.type: authentik
+          # gethomepage.dev/widget.url: https://auth.${SECRET_DOMAIN}
+          # gethomepage.dev/widget.key: "{{HOMEPAGE_VAR_AUTHENTIK_TOKEN}}"
+          # external-dns.alpha.kubernetes.io/target: external.${SECRET_DOMAIN}
+        hosts:
+          - auth.${SECRET_DOMAIN}
+        https: false
+
+    geoip:
+      enabled: false
+      existingSecret:
+        secretName: "authentik-secret"
+        accountId: "MAXMIND_ACCOUNT_ID"
+        licenseKey: "MAXMIND_LICENSE_KEY"
+
+    postgresql:
+      enabled: false
+
+    redis:
+      enabled: true
+
+    worker:
+      autoscaling:
+        enabled: true
+        minReplicas: 2
