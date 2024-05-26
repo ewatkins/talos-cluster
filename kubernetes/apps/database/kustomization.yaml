@@ -5,7 +5,13 @@ kind: Kustomization
 resources:
   # Pre Flux-Kustomizations
   - ./namespace.yaml
+
   # Flux-Kustomizations
+  # Postgres
   - ./cloudnative-pg/ks.yaml
+
+  # Redis
   - ./dragonfly/ks.yaml
+  - ./redisinsight/ks.yaml
+
   #- ./emqx/ks.yaml

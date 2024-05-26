@@ -22,6 +22,13 @@ spec:
     remediation:
       strategy: rollback
       retries: 3
+  driftDetection:
+    mode: enabled
+    ignore:
+      - paths:
+          - /spec/containers/resources/limits
+        target:
+          kind: Pod
   values:
     controllers:
       dragonfly-operator:
@@ -67,6 +74,7 @@ spec:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
               capabilities: { drop: ["ALL"] }
+
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
@@ -80,6 +88,7 @@ spec:
           labelSelector:
             matchLabels:
               app.kubernetes.io/name: *app
+
     service:
       app:
         controller: *app
