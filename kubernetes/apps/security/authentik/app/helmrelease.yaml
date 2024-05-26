@@ -36,8 +36,8 @@ spec:
     authentik:
       log_level: info
       avatars: "gravatar, initials"
-      # redis:
-      #  host: redis://dragonfly.database.svc.cluster.local:6379/?db=1
+      redis:
+        host: redis://dragonfly.database.svc.cluster.local:6379
       error_reporting:
         enable: false
         send_pii: false
@@ -88,7 +88,7 @@ spec:
       enabled: false
 
     redis:
-      enabled: true
+      enabled: false
 
     worker:
       autoscaling:
