@@ -36,8 +36,6 @@ spec:
     authentik:
       log_level: info
       avatars: "gravatar, initials"
-      redis:
-        host: dragonfly.database.svc.cluster.local
       error_reporting:
         enable: false
         send_pii: false
@@ -54,7 +52,7 @@ spec:
                 name: authentik-secret
       autoscaling:
         enabled: true
-        minReplicas: 1
+        minReplicas: 2
       metrics:
         prometheus:
           serviceMonitor:
@@ -88,9 +86,9 @@ spec:
       enabled: false
 
     redis:
-      enabled: false
+      enabled: true
 
     worker:
       autoscaling:
         enabled: true
-        minReplicas: 1
+        minReplicas: 2
