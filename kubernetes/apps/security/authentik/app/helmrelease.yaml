@@ -37,7 +37,7 @@ spec:
       log_level: info
       avatars: "gravatar, initials"
       redis:
-        host: redis://dragonfly.database.svc.cluster.local:6379
+        host: dragonfly.database.svc.cluster.local
       error_reporting:
         enable: false
         send_pii: false
@@ -54,7 +54,7 @@ spec:
                 name: authentik-secret
       autoscaling:
         enabled: true
-        minReplicas: 2
+        minReplicas: 1
       metrics:
         prometheus:
           serviceMonitor:
@@ -86,7 +86,7 @@ spec:
         accountId: "MAXMIND_ACCOUNT_ID"
         licenseKey: "MAXMIND_LICENSE_KEY"
 
-    postgresql:
+    postgres:
       enabled: false
 
     redis:
@@ -95,4 +95,4 @@ spec:
     worker:
       autoscaling:
         enabled: true
-        minReplicas: 2
+        minReplicas: 1
