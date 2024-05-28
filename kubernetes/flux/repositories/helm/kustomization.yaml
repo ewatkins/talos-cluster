@@ -6,6 +6,8 @@ resources:
   - ./cilium.yaml
   - ./cloudnative-pg.yaml
   - ./external-dns.yaml
+  - ./fairwinds.yaml
+  - ./grafana.yaml
   - ./ingress-nginx.yaml
   - ./k8s-gateway.yaml
   - ./jetstack.yaml
