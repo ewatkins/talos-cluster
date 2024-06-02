@@ -6,12 +6,11 @@ vars:
   KUBECONFORM_SCRIPT: "{{.SCRIPTS_DIR}}/kubeconform.sh"
 
 tasks:
-
   resources:
     desc: Gather common resources in your cluster, useful when asking for support
     cmds:
       - for: { var: resource }
-        cmd: kubectl get {{.ITEM}} {{.CLI_ARGS | default "-A"}}
+        cmd: kubectl get {{.ITEM}} {{.CLI_ARGS | default "-A"}} -o wide
     vars:
       resource: >-
         nodes
@@ -29,7 +28,10 @@ tasks:
     desc: Validate Kubernetes manifests with kubeconform
     cmd: bash {{.KUBECONFORM_SCRIPT}} {{.KUBERNETES_DIR}}
     preconditions:
-      - { msg: "Missing kubeconform script", sh: "test -f {{.KUBECONFORM_SCRIPT}}" }
+      - {
+          msg: "Missing kubeconform script",
+          sh: "test -f {{.KUBECONFORM_SCRIPT}}",
+        }
 
   browse-pvc:
     desc: Browse PersistentVolumeClaims
