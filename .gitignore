@@ -31,3 +31,5 @@ requirements.txt
 .envrc
 bootstrap/
 makejinja.toml
+.archive/
+!kubernetes/bootstrap
