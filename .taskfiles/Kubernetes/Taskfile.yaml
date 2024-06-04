@@ -41,11 +41,11 @@ tasks:
         ns: Namespace to browse PersistentVolumeClaims in (default: default)
         claim: PersistentVolumeClaim to browse (required)
     interactive: true
-    cmd: kubectl browse-pvc --context {{.cluster}} --namespace {{.ns}} {{.claim}}
+    cmd: kubectl browse-pvc --namespace {{.ns}} {{.claim}}
     vars:
       ns: '{{.ns | default "default"}}'
     requires:
-      vars: ["cluster", "claim"]
+      vars: ["claim"]
 
   drain:
     desc: Drain a node
