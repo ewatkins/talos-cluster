@@ -10,7 +10,6 @@ resources:
   - ./k8s-gateway.yaml
   - ./jetstack.yaml
   - ./metrics-server.yaml
-  - ./nfs-subdir-external-provisioner.yaml
   - ./node-feature-discovery.yaml
   - ./openebs.yaml
   - ./postfinance.yaml
