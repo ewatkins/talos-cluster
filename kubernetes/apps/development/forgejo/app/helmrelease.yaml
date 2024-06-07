@@ -1,17 +1,17 @@
+---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app forgejo
-  namespace: development
+  name: forgejo
 spec:
-  interval: 15m
+  interval: 2h
   chart:
     spec:
-      chart: app-template
-      version: 3.2.1
+      chart: forgejo
+      version: 7.0.0
       sourceRef:
         kind: HelmRepository
-        name: bjw-s
+        name: forgejo
         namespace: flux-system
   install:
     remediation:
@@ -19,113 +19,131 @@ spec:
   upgrade:
     cleanupOnFail: true
     remediation:
-      strategy: rollback
       retries: 3
   uninstall:
     keepHistory: false
-  dependsOn:
-    - name: openebs
-      namespace: storage
   values:
-    controllers:
-      forgejo:
-        type: statefulset
-        replicas: 1
-        annotations:
-          reloader.stakater.com/auto: "true"
-
-        initContainers:
-          init-db:
-            image:
-              repository: ghcr.io/onedr0p/postgres-init
-              tag: 16
-            envFrom:
-              - secretRef:
-                  name: forgejo-db-init
-
-        containers:
-          app:
-            image:
-              repository: codeberg.org/forgejo/forgejo
-              pullPolicy: IfNotPresent
-              tag: 7.0.3-rootless@sha256:841b2694942ae0014e17648571a8906c7424021a5fa515b2a90b59aa23056d6f
-            env:
-              TZ: ${TIMEZONE}
-              USER_UID: 1000
-              USER_GID: 1000
-            envFrom:
-              - secretRef:
-                  name: *app
-            resources:
-              requests:
-                cpu: 100m
-                memory: 512Mi
-              limits:
-                memory: 2048Mi
-            probes:
-              liveness:
-                enabled: true
-                custom: true
-                spec:
-                  httpGet:
-                    path: /api/healthz
-                    port: &port 3000
-                  initialDelaySeconds: 200
-                  timeoutSeconds: 5
-                  periodSeconds: 10
-                  successThreshold: 1
-                  failureThreshold: 10
-
-    defaultPodOptions:
-      securityContext:
-        fsGroup: 1000
-        fsGroupChangePolicy: "Always"
-
-    persistence:
-      config:
-        enabled: true
-        existingClaim: forgejo-config-pvc
-        globalMounts:
-          - path: /etc/gitea
-      data:
-        enabled: true
-        existingClaim: forgejo-data-pvc
-        globalMounts:
-          - path: /data
-
+    deployment:
+      annotations:
+        secret.reloader.stakater.com/reload: forgejo-admin-secret,forgejo-mailer,forgejo-security,forgejo-db-init
+    strategy:
+      type: Recreate
     service:
-      forgejo-http:
-        type: LoadBalancer
-        annotations:
-          io.cilium/lb-ipam-ips: ${LB_FORGEJO}
-          io.cilium/lb-ipam-sharing-key: "forgejo"
-        controller: *app
-        ports:
-          http:
-            port: *port
-      forgejo-ssh:
-        type: LoadBalancer
-        annotations:
-          io.cilium/lb-ipam-ips: ${LB_FORGEJO}
-          io.cilium/lb-ipam-sharing-key: "forgejo"
-        controller: *app
-        ports:
-          ssh:
-            enabled: true
-            port: 2222
-            protocol: TCP
-            targetPort: 2222
-
+      http:
+        port: 3000
+      ssh:
+        port: 22
     ingress:
-      forgejo:
-        className: internal
-        annotations:
-          nginx.ingress.kubernetes.io/whitelist-source-range: |
-            10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
-        hosts:
-          - host: git.${SECRET_DOMAIN}
-            paths:
-              - path: /
-                service:
-                  identifier: forgejo-http
-                  port: *port
+      enabled: true
+      className: internal
+      annotations:
+        nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+        nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+      hosts:
+        - host: &host git.${SECRET_DOMAIN}
+          paths:
+            - path: /
+              pathType: Prefix
+    persistence:
+      enabled: true
+      create: false
+      claimName: forgejo-config-pvc
+    redis-cluster:
+      enabled: false
+    postgresql-ha:
+      enabled: false
+    postgresql:
+      enabled: false
+
+    gitea:
+      admin:
+        existingSecret: forgejo-admin-secret
+      # See https://docs.gitea.io/en-us/config-cheat-sheet/
+      config:
+        APP_NAME: Forgejo
+        server:
+          ROOT_URL: https://git.${SECRET_DOMAIN}
+          SSH_PORT: 22
+          SSH_LISTEN_PORT: 22
+          OFFLINE_MODE: true
+        security:
+          existingSecret: forgejo-security
+        service:
+          ALLOW_ONLY_EXTERNAL_REGISTRATION: true
+          DISABLE_REGISTRATION: false
+        database:
+          DB_TYPE: postgres
+        repository:
+          DEFAULT_PRIVATE: private
+        ui:
+          DEFAULT_THEME: gitea-dark
+        cache:
+          ENABLED: true
+          ADAPTER: redis
+          HOST: redis://dragonfly.database.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s
+        openid:
+          ENABLE_OPENID_SIGNIN: false
+          ENABLE_OPENID_SIGNUP: false
+        mailer:
+          ENABLED: true
+        migrations:
+          ALLOWED_DOMAINS: "*.${SECRET_DOMAIN}"
+        queue:
+          TYPE: redis
+          CONN_STR: redis://dragonfly.database.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s
+        session:
+          PROVIDER: redis
+          PROVIDER_CONFIG: redis://dragonfly.database.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s
+        storage:
+          STORAGE_TYPE: minio
+          MINIO_USE_SSL: true
+          MINIO_ENDPOINT: s3.${SECRET_DOMAIN}:443
+          MINIO_BUCKET: forgejo
+          MINIO_LOCATION: us-east-1
+          MINIO_INSECURE_SKIP_VERIFY: false
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+  valuesFrom:
+    # Database Secret
+    - kind: Secret
+      name: &dbSecret forgejo-db-init
+      valuesKey: INIT_POSTGRES_HOST
+      targetPath: gitea.config.database.HOST
+    - kind: Secret
+      name: *dbSecret
+      valuesKey: INIT_POSTGRES_DBNAME
+      targetPath: gitea.config.database.NAME
+    - kind: Secret
+      name: *dbSecret
+      valuesKey: INIT_POSTGRES_USER
+      targetPath: gitea.config.database.USER
+    - kind: Secret
+      name: *dbSecret
+      valuesKey: INIT_POSTGRES_PASS
+      targetPath: gitea.config.database.PASSWD
+
+      # Storage
+    - kind: Secret
+      name: &forgejoBucket forgejo-bucket
+      valuesKey: MINIO_ACCESS_KEY_ID
+      targetPath: gitea.config.storage.MINIO_ACCESS_KEY_ID
+    - kind: Secret
+      name: *forgejoBucket
+      valuesKey: MINIO_SECRET_ACCESS_KEY
+      targetPath: gitea.config.storage.MINIO_SECRET_ACCESS_KEY
+
+    #   # Mailer
+    # - kind: Secret
+    #   name: &mailer forgejo-mailer
+    #   valuesKey: SMTP_ADDR
+    #   targetPath: gitea.config.mailer.SMTP_ADDR
+    # - kind: Secret
+    #   name: *mailer
+    #   valuesKey: SMTP_PORT
+    #   targetPath: gitea.config.mailer.SMTP_PORT
+    # - kind: Secret
+    #   name: *mailer
+    #   valuesKey: FROM
+    #   targetPath: gitea.config.mailer.FROM
