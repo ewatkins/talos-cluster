@@ -1,4 +1,5 @@
 ---
+# yaml-language-server: $schema=https://json.schemastore.org/helmfile
 helmDefaults:
   wait: true
   waitForJobs: true
@@ -17,7 +18,7 @@ repositories:
 releases:
   - name: prometheus-operator-crds
     namespace: observability
-    chart: oci://ghcr.io/prometheus-community/helm-charts/prometheus-operator-crds
+    chart: oci://ghcr.io/prometheus-community/charts/prometheus-operator-crds
     version: 12.0.0
   - name: cilium
     namespace: kube-system
