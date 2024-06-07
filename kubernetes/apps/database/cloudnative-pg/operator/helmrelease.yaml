@@ -16,7 +16,7 @@ spec:
         namespace: flux-system
   dependsOn:
     - name: openebs
-      namespace: openebs-system
+      namespace: storage
   install:
     remediation:
       retries: 3
