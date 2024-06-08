@@ -38,6 +38,9 @@ spec:
     - kind: ConfigMap
       name: kube-state-metrics-config
       valuesKey: kube-state-metrics.yaml
+    - kind: ConfigMap
+      name: alertmanager-config
+      valuesKey: alertmanager.yaml
   values:
     ## ref: https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
     fullnameOverride: kps
@@ -52,6 +55,7 @@ spec:
       alertmanagerSpec:
         replicas: 2
         retention: 72h
+        config: alertmanager-config
         storage:
           volumeClaimTemplate:
             spec:
