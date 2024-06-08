@@ -27,6 +27,9 @@ spec:
       - kind: Secret
         name: cluster-secrets-user
         optional: true
+      - kind: Secret
+        name: custom-secrets-user
+        optional: true
   patches:
     - patch: |-
         apiVersion: kustomize.toolkit.fluxcd.io/v1
