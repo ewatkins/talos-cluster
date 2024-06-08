@@ -2,9 +2,11 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: flux-system
+  name: observability
+  labels:
+    goldilocks.fairwinds.com/enabled: "true"
+    kustomize.toolkit.fluxcd.io/prune: disabled # don't prune namespace
   annotations:
-    kustomize.toolkit.fluxcd.io/prune: disabled
     volsync.backube/privileged-movers: "true"
 ---
 # yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/notification.toolkit.fluxcd.io/provider_v1beta3.json
@@ -12,7 +14,7 @@ apiVersion: notification.toolkit.fluxcd.io/v1beta3
 kind: Provider
 metadata:
   name: alert-manager
-  namespace: flux-system
+  namespace: observability
 spec:
   type: alertmanager
   address: http://alertmanager-operated.observability.svc.cluster.local:9093/api/v2/alerts/
@@ -22,21 +24,13 @@ apiVersion: notification.toolkit.fluxcd.io/v1beta3
 kind: Alert
 metadata:
   name: alert-manager
-  namespace: flux-system
+  namespace: observability
 spec:
   providerRef:
     name: alert-manager
   eventSeverity: error
   eventSources:
-    - kind: GitRepository
-      name: "*"
     - kind: HelmRelease
-      name: "*"
-    - kind: HelmRepository
-      name: "*"
-    - kind: Kustomization
-      name: "*"
-    - kind: OCIRepository
       name: "*"
   exclusionList:
     - "error.*lookup github\\.com"

@@ -1,0 +1,18 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# yamllint disable rule:comments
+# prettier-ignore
+resources:
+  # Pre Flux-Kustomizations
+  - ./namespace.yaml
+  # Flux-Kustomizations
+  - ./goldilocks/ks.yaml
+  - ./grafana/ks.yaml
+  - ./karma/ks.yaml
+  - ./kromgo/ks.yaml
+  - ./kube-prometheus-stack/ks.yaml
+  - ./loki/ks.yaml
+  - ./thanos/ks.yaml
+  - ./vector/ks.yaml
