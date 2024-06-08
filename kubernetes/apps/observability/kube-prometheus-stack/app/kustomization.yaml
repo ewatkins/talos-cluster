@@ -17,7 +17,7 @@ configMapGenerator:
     options:
       labels:
         app.kubernetes.io/part-of: flux
-        app.kubernetes.io/component: observability
+        app.kubernetes.io/component: monitoring
 generatorOptions:
   disableNameSuffixHash: true
   annotations:
