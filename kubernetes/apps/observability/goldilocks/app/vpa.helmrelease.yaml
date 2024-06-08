@@ -1,0 +1,72 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app vpa
+  namespace: &namespace observability
+spec:
+  chart:
+    spec:
+      chart: *app
+      version: 4.4.6
+      sourceRef:
+        kind: HelmRepository
+        name: fairwinds
+        namespace: flux-system
+      interval: 15m
+  interval: 15m
+  install:
+    createNamespace: true
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  driftDetection:
+    mode: enabled
+    ignore:
+      - paths:
+          - /spec/containers/resources/limits
+        target:
+          kind: Pod
+  values:
+    # monitors the current and past resource consumption and
+    # provides recommended values containers' cpu and memory requests
+    # ** Goldilocks only requires the recommender component
+    recommender:
+      enabled: true
+
+      image:
+        repository: registry.k8s.io/autoscaling/vpa-recommender
+        # tag: "1.0.0"
+
+      extraArgs:
+        storage: prometheus
+        prometheus-address: |-
+          http://kps-prometheus.observability.svc.cluster.local:9090
+
+      resources:
+        requests:
+          cpu: 23m
+          memory: 105Mi
+        limits:
+          memory: 105Mi
+
+    # checks which of the managed pods have correct resources set and, if required,
+    # kills them so that they can be recreated by their controllers with the updated requests
+    updater:
+      enabled: false
+
+    # sets the correct resource requests on new pods
+    # (newly created or recreated by their controller due to Updater's activity)
+    admissionController:
+      enabled: false
+      cleanupOnDelete:
+        enabled: true
+
+    annotations:
+      reloader.stakater.com/search: "true"

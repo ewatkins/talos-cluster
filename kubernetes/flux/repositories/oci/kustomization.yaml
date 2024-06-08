@@ -5,4 +5,6 @@ resources:
   - ./actions-runner-controller.yaml
   - ./bjw-s.yaml
   - ./forgejo.yaml
+  - ./prometheus-community.yaml
   - ./spegel.yaml
+  - ./stevehipwell.yaml
