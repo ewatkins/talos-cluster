@@ -38,26 +38,6 @@ spec:
     - kind: ConfigMap
       name: kube-state-metrics-config
       valuesKey: kube-state-metrics.yaml
-    # - targetPath: prometheus.thanos.objectStorageConfig.secret.config.bucket
-    #   kind: ConfigMap
-    #   name: thanos-bucket
-    #   valuesKey: BUCKET_NAME
-    # - targetPath: prometheus.thanos.objectStorageConfig.secret.config.endpoint
-    #   kind: ConfigMap
-    #   name: thanos-bucket
-    #   valuesKey: BUCKET_HOST
-    # - targetPath: prometheus.thanos.objectStorageConfig.secret.config.region
-    #   kind: ConfigMap
-    #   name: thanos-bucket
-    #   valuesKey: BUCKET_REGION
-    # - targetPath: prometheus.thanos.objectStorageConfig.secret.config.access_key
-    #   kind: Secret
-    #   name: thanos-bucket
-    #   valuesKey: AWS_ACCESS_KEY_ID
-    # - targetPath: prometheus.thanos.objectStorageConfig.secret.config.secret_key
-    #   kind: Secret
-    #   name: thanos-bucket
-    #   valuesKey: AWS_SECRET_ACCESS_KEY
   values:
     ## ref: https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
     fullnameOverride: kps
