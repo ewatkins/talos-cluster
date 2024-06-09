@@ -59,6 +59,12 @@ spec:
               resources:
                 requests:
                   storage: 1Gi
+        resources:
+          requests:
+            cpu: 11m
+            memory: 53M
+          limits:
+            memory: 53M
       ingress:
         enabled: true
         ingressClassName: internal
@@ -185,18 +191,18 @@ spec:
     prometheusOperator:
       resources:
         requests:
-          cpu: 35m
-          memory: 273M
+          cpu: 15m
+          memory: 105M
         limits:
-          memory: 326M
+          memory: 105M
       prometheusConfigReloader:
         # resource config for prometheusConfigReloader
         resources:
           requests:
-            cpu: 5m
-            memory: 32M
+            cpu: 11m
+            memory: 53M
           limits:
-            memory: 32M
+            memory: 53M
 
     prometheus:
       enabled: true
