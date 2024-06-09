@@ -46,10 +46,10 @@ spec:
                     key: PGADMIN_DEFAULT_PASSWORD
             resources:
               requests:
-                cpu: 50m
-                memory: 100Mi
+                cpu: 15m
+                memory: 249M
               limits:
-                memory: 500Mi
+                memory: 249M
     defaultPodOptions:
       securityContext:
         runAsUser: 5050
