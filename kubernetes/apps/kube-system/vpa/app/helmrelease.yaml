@@ -34,6 +34,12 @@ spec:
         storage: prometheus
         prometheus-address: |-
           http://thanos-query-frontend.observability.svc.cluster.local:10902
+        prometheus-cadvisor-job-name: kubelet
+        pod-label-prefix: ""
+        pod-namespace-label: namespace
+        pod-name-label: pod
+        container-pod-name-label: pod
+        container-name-label: name
 
       resources:
         requests:
