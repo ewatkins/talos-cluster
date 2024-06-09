@@ -4,8 +4,8 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: &app vpa
-  namespace: &namespace observability
 spec:
+  interval: 15m
   chart:
     spec:
       chart: *app
@@ -15,39 +15,25 @@ spec:
         name: fairwinds
         namespace: flux-system
       interval: 15m
-  interval: 15m
   install:
     createNamespace: true
-    crds: CreateReplace
     remediation:
       retries: 3
   upgrade:
-    cleanupOnFail: true
-    crds: CreateReplace
     remediation:
       retries: 3
-  driftDetection:
-    mode: enabled
-    ignore:
-      - paths:
-          - /spec/containers/resources/limits
-        target:
-          kind: Pod
   values:
-    # monitors the current and past resource consumption and
-    # provides recommended values containers' cpu and memory requests
-    # ** Goldilocks only requires the recommender component
     recommender:
       enabled: true
 
       image:
         repository: registry.k8s.io/autoscaling/vpa-recommender
-        # tag: "1.0.0"
+        tag: "1.1.2"
 
       extraArgs:
         storage: prometheus
         prometheus-address: |-
-          http://kps-prometheus.observability.svc.cluster.local:9090
+          http://thanos-query-frontend.observability.svc.cluster.local:10902
 
       resources:
         requests:
@@ -65,8 +51,6 @@ spec:
     # (newly created or recreated by their controller due to Updater's activity)
     admissionController:
       enabled: false
-      cleanupOnDelete:
-        enabled: true
 
     annotations:
       reloader.stakater.com/search: "true"
