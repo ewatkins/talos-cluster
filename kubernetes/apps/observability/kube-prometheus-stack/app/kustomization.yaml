@@ -5,6 +5,7 @@ kind: Kustomization
 namespace: observability
 resources:
   - ./helmrelease.yaml
+  - ./alertmanager.secret.sops.yaml
   - ./secret-additionalScrapeConfigs.sops.yaml
 
 configMapGenerator:
