@@ -26,6 +26,8 @@ spec:
     controllers:
       forgejo-runner:
         replicas: 2
+        annotations:
+          reloader.stakater.com/auto: "true"
         initContainers:
           runner-register:
             image:
@@ -65,6 +67,13 @@ spec:
             env:
               - name: DOCKER_TLS_CERTDIR
                 value: /certs
+            resources:
+              requests:
+                cpu: 11m
+                memory: 164M
+              limits:
+                memory: 164M
+
           app:
             image:
               repository: code.forgejo.org/forgejo/runner
@@ -84,8 +93,12 @@ spec:
                 value: "0"
             securityContext:
               privileged: true
-        annotations:
-          reloader.stakater.com/auto: "true"
+            resources:
+              requests:
+                cpu: 11m
+                memory: 53M
+              limits:
+                memory: 53M
     service:
       app:
         controller: forgejo-runner
