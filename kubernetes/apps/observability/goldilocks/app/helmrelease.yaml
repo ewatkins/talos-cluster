@@ -44,10 +44,9 @@ spec:
       resources:
         requests:
           cpu: 15m
-          memory: 105M
+          memory: 105Mi
         limits:
-          cpu: 15m
-          memory: 105M
+          memory: 132Mi
 
     dashboard:
       enabled: true
