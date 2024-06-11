@@ -1,0 +1,16 @@
+---
+alertmanager:
+  interval: 10s
+  servers:
+    - name: home
+      uri: http://kps-alertmanager.observability.svc.cluster.local:9093
+      timeout: 10s
+      healthcheck:
+        visible: false
+        filters:
+          alertmanager:
+            - alertname=Watchdog
+            - prometheus=observability/kps
+filters:
+  default:
+    - "@state!=suppressed"
