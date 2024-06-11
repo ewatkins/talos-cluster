@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: kube-prometheus-stack
-      version: 60.0.2
+      version: 60.0.1
       sourceRef:
         kind: HelmRepository
         name: prometheus-community
@@ -38,10 +38,9 @@ spec:
     - kind: ConfigMap
       name: kube-state-metrics-config
       valuesKey: kube-state-metrics.yaml
-    - targetPath: alertmanager.config
-      kind: Secret
-      name: alertmanager-config
-      valuesKey: config
+    - kind: Secret
+      name: alertmanager-secret
+      valuesKey: alertmanager.yaml
   values:
     ## ref: https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
     fullnameOverride: kps
@@ -49,34 +48,6 @@ spec:
 
     crds:
       enabled: true
-
-    alertmanager:
-      enabled: true
-      fullnameOverride: alertmanager
-      alertmanagerSpec:
-        replicas: 2
-        retention: 72h
-        storage:
-          volumeClaimTemplate:
-            spec:
-              storageClassName: openebs-hostpath
-              resources:
-                requests:
-                  storage: 1Gi
-        resources:
-          requests:
-            cpu: 11m
-            memory: 53M
-          limits:
-            memory: 53M
-      ingress:
-        enabled: true
-        ingressClassName: internal
-        annotations:
-          nginx.ingress.kubernetes.io/whitelist-source-range: |
-            10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
-        hosts:
-          - alertmanager.${SECRET_DOMAIN}
 
     grafana:
       enabled: false # manage by itself
@@ -189,7 +160,7 @@ spec:
 
         enableAdminAPI: true
         externalLabels:
-          cluster: home-kubernetes
+          cluster: talos-cluster
         additionalScrapeConfigsSecret:
           enabled: true
           name: prometheus-additional-scrape-configs
