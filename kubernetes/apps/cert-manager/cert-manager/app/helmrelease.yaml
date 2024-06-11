@@ -33,26 +33,3 @@ spec:
       enabled: true
       servicemonitor:
         enabled: true
-
-    resources:
-      requests:
-        cpu: 15m
-        memory: 105M
-      limits:
-        memory: 105M
-
-    cainjector:
-      resources:
-        requests:
-          cpu: 15m
-          memory: 127M
-        limits:
-          memory: 127M
-
-    webhook:
-      resources:
-        requests:
-          cpu: 15m
-          memory: 105M
-        limits:
-          memory: 105M

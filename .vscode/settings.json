@@ -56,15 +56,5 @@
   "yaml.schemas": {
     "ansible": "./ansible/**/*.yaml",
     "kubernetes": "./kubernetes/**/*.yaml"
-  },
-  "[yaml]": {
-    "editor.defaultFormatter": "redhat.vscode-yaml",
-    "editor.autoIndent": "advanced"
-  },
-  "[dockercompose]": {
-    "editor.autoIndent": "advanced"
-  },
-  "[github-actions-workflow]": {
-    "editor.autoIndent": "advanced"
   }
 }

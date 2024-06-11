@@ -26,7 +26,6 @@ spec:
     deployment:
       annotations:
         secret.reloader.stakater.com/reload: forgejo-admin-secret,forgejo-mailer,forgejo-security,forgejo-db-init
-
     strategy:
       type: Recreate
     service:
@@ -111,14 +110,6 @@ spec:
         enabled: true
         serviceMonitor:
           enabled: true
-
-    resources:
-      requests:
-        cpu: 35m
-        memory: 145M
-      limits:
-        memory: 145M
-
   valuesFrom:
     # Database Secret
     - kind: Secret
