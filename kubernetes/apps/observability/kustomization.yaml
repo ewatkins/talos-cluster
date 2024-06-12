@@ -8,6 +8,7 @@ resources:
   # Pre Flux-Kustomizations
   - ./namespace.yaml
   # Flux-Kustomizations
+  - ./gatus/ks.yaml
   - ./goldilocks/ks.yaml
   - ./grafana/ks.yaml
   - ./karma/ks.yaml
