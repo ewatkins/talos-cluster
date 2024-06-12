@@ -113,7 +113,7 @@ spec:
       image:
         registry: ghcr.io
       ingress:
-        enabled: true
+        enabled: false
         annotations:
           external-dns.alpha.kubernetes.io/target: "internal.${SECRET_DOMAIN}"
         ingressClassName: internal
