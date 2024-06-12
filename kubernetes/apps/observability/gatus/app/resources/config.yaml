@@ -9,8 +9,10 @@ storage:
 metrics: true
 debug: false
 ui:
-  title: Status | Gatus
+  title: Status | Talos Cluster
   header: Status
+  logo: https://raw.githubusercontent.com/onedr0p/home-ops/main/docs/src/assets/logo.png
+  link: https://github.com/ewatkins/talos-cluster
 alerting:
   pushover:
     title: Gatus (Kubernetes)
@@ -20,8 +22,8 @@ alerting:
     default-alert:
       description: health-check failed
       send-on-resolved: true
-      failure-threshold: 3
-      success-threshold: 3
+      failure-threshold: 5
+      success-threshold: 2
 connectivity:
   checker:
     target: 1.1.1.1:53
@@ -38,11 +40,14 @@ endpoints:
     alerts:
       - type: pushover
   - name: flux-webhook
-    group: external
+    group: infrastructure
     url: https://flux-webhook.${SECRET_DOMAIN}
     interval: 1m
     client:
       dns-resolver: tcp://1.1.1.1:53
+    ui:
+      hide-hostname: true
+      hide-url: true
     conditions:
       - "[STATUS] == 404"
     alerts:
