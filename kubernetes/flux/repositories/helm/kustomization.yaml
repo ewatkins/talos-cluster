@@ -5,6 +5,7 @@ resources:
   - ./authentik.yaml
   - ./cilium.yaml
   - ./cloudnative-pg.yaml
+  - ./coredns.yaml
   - ./external-dns.yaml
   - ./fairwinds.yaml
   - ./grafana.yaml
