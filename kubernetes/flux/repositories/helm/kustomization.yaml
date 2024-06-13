@@ -6,6 +6,7 @@ resources:
   - ./cilium.yaml
   - ./cloudnative-pg.yaml
   - ./coredns.yaml
+  - ./descheduler.yaml
   - ./external-dns.yaml
   - ./fairwinds.yaml
   - ./grafana.yaml
