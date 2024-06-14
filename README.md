@@ -19,7 +19,7 @@ _Managed with Flux, Renovate, and GitHub Actions_ 🤖
 
 [![Home-Internet](https://img.shields.io/uptimerobot/status/m797091225-baba12b223916efaf9441add?color=brightgreeen&label=Home%20Internet&style=for-the-badge&logo=v&logoColor=white)](https://status.ewatkins.dev)&nbsp;&nbsp;
 [![Status-Page](https://img.shields.io/uptimerobot/status/m797091225-baba12b223916efaf9441add?color=brightgreeen&label=Status%20Page&style=for-the-badge&logo=statuspage&logoColor=white)](https://status.ewatkins.dev)&nbsp;&nbsp;
-[![Alert Manager](https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F2%2Fac7b0558-1361-42ec-9f31-06d18a40aca8.shields?color=brightgreeen&label=Alertmanager&style=for-the-badge&logo=prometheus&logoColor=white)](https://status.ewatkins.dev)
+[![Alert Manager](https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F2%2Fac7b0558-1361-42ec-9f31-06d18a40aca8.shields&style=for-the-badge&logo=prometheus&logoColor=white)](https://status.ewatkins.dev)
 
 </div>
 
