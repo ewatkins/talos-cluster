@@ -11,7 +11,7 @@ debug: false
 ui:
   title: Status | Talos Cluster
   header: Status
-  logo: https://raw.githubusercontent.com/onedr0p/home-ops/main/docs/src/assets/logo.png
+  logo: https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo_with_border.svg
   link: https://github.com/ewatkins/talos-cluster
 alerting:
   pushover:
