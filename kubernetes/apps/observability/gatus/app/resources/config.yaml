@@ -41,7 +41,7 @@ endpoints:
       - type: pushover
   - name: flux-webhook
     group: infrastructure
-    url: https://flux-webhook.ewatkins.dev
+    url: https://$${FLUX_WEBHOOK_URL}
     interval: 1m
     client:
       dns-resolver: tcp://1.1.1.1:53
