@@ -63,4 +63,4 @@ endpoints:
       hide-url: true
     conditions:
       - "[STATUS] == 200"
-      - "[CONNECTED] == true"
+      - "[BODY] == pat(*OK*)"
