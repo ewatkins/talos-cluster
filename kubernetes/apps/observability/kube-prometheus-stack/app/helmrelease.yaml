@@ -162,9 +162,9 @@ spec:
         externalLabels:
           cluster: talos-cluster
         additionalScrapeConfigsSecret:
-          enabled: true
-          name: prometheus-additional-scrape-configs
-          key: additionalScrapeConfigs
+          enabled: false
+          # name: prometheus-additional-scrape-configs
+          # key: additionalScrapeConfigs
 
         podMonitorSelectorNilUsesHelmValues: false
         probeSelectorNilUsesHelmValues: false
