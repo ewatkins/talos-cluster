@@ -10,5 +10,4 @@ data:
   NODE_CIDR: "10.30.4.0/16"
 
   POSTGRES: "10.30.4.11"
-  FORGEJO: "10.30.4.12"
   VECTOR: "10.30.4.13"

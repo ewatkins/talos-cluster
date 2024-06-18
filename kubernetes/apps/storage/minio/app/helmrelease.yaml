@@ -33,12 +33,12 @@ spec:
               repository: quay.io/minio/minio
               tag: RELEASE.2024-06-13T22-53-53Z@sha256:c7175077d39a8cc10c9fd611cdcc68b6a5b365793e9ac6f4198ffff1ef0fe555
             env:
-              MINIO_API_CORS_ALLOW_ORIGIN: https://minio.${SECRET_DOMAIN},https://s3.${SECRET_DOMAIN}
-              MINIO_BROWSER_REDIRECT_URL: https://minio.${SECRET_DOMAIN}
+              MINIO_API_CORS_ALLOW_ORIGIN: https://minio.ewatkins.dev,https://s3.ewatkins.dev
+              MINIO_BROWSER_REDIRECT_URL: https://minio.ewatkins.dev
               MINIO_PROMETHEUS_JOB_ID: minio
-              MINIO_PROMETHEUS_URL: https://prometheus.${SECRET_DOMAIN}
+              MINIO_PROMETHEUS_URL: https://prometheus.ewatkins.dev
               MINIO_PROMETHEUS_AUTH_TYPE: public
-              MINIO_SERVER_URL: https://s3.${SECRET_DOMAIN}
+              MINIO_SERVER_URL: https://s3.ewatkins.dev
               MINIO_UPDATE: "off"
             envFrom:
               - secretRef:
@@ -95,16 +95,16 @@ spec:
     ingress:
       app:
         annotations:
-          external-dns.alpha.kubernetes.io/target: "internal.${SECRET_DOMAIN}"
+          external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
         className: internal
         hosts:
-          - host: "{{ .Release.Name }}.${SECRET_DOMAIN}"
+          - host: "{{ .Release.Name }}.ewatkins.dev"
             paths:
               - path: /
                 service:
                   identifier: app
                   port: http
-          - host: s3.${SECRET_DOMAIN}
+          - host: s3.ewatkins.dev
             paths:
               - path: /
                 service:

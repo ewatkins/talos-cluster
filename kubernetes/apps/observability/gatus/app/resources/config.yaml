@@ -31,7 +31,7 @@ connectivity:
 endpoints:
   - name: status
     group: external
-    url: https://status.${SECRET_DOMAIN}
+    url: https://status.ewatkins.dev
     interval: 1m
     client:
       dns-resolver: tcp://1.1.1.1:53
@@ -41,7 +41,7 @@ endpoints:
       - type: pushover
   - name: flux-webhook
     group: infrastructure
-    url: https://flux-webhook.${SECRET_DOMAIN}
+    url: https://flux-webhook.ewatkins.dev
     interval: 1m
     client:
       dns-resolver: tcp://1.1.1.1:53
