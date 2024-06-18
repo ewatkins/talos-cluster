@@ -8,11 +8,6 @@ Prometheus is an open-source systems monitoring and alerting toolkit originally 
 Prometheus collects and stores _metrics_ as time series data, i.e. metrics information
 is stored with the timestamp at which it was recorded, alongside optional key-value pairs called labels.
 
-## Installation notes
-
-`./prometheus-rules` will need to be disable on first install due to race condition.
-Once `prometheus-operator` is up and running, `./prometheus-rules` can be added back
-
 ### Naming
 
 > As of Helm Chart `v51.*`
@@ -30,56 +25,13 @@ Once `prometheus-operator` is up and running, `./prometheus-rules` can be added 
 | :-: | :----------------: | :----------------------------------: | :------------------------------------------- | :------------------- | :----------------- | :----------------- | :----------------------- |
 | ⭐️ |       'kps'        |                `true`                | `kube-state-metrics`                         | `alertmanager-kps-0` | `prometheus-kps-0` | `kps-operator-...` | `kube-state-metrics-...` |
 
-## Monitoring external services
-
-### OPNSense
-
-Add the following to the prometheus.yaml under `additionalScrapeConfigs`:
-
-```yaml
-additionalScrapeConfigs:
-  - job_name: opnsense
-    honor_timestamps: true
-    static_configs:
-      - targets:
-          - "opnsense.${SECRET_DOMAIN}:9100"
-```
-
-### Minio on Truenas
-
-> Prerequisite `mc` can be installed with `brew install minio/stable/mc`
-> Then configure with:
-> `mc alias set truenas "https://truenas.${SECRET_DOMAIN}:9000" "${SECRET_S3_ACCESS_KEY}" "${SECRET_S3_SECRET_KEY}"`
-> or admin equivalents to keys
-
-Prometheus supports a bearer token approach to authenticate prometheus scrape requests, override the default Prometheus config with the one generated using `mc`.
-To generate a Prometheus config for an alias, use `mc` (via truenas shell) as follows `mc admin prometheus generate truenas`.
-
-Add the following to the prometheus.yaml under `additionalScrapeConfigs`:
-
-```yaml
-additionalScrapeConfigs:
-  - job_name: truenas-minio
-    bearer_token: <secret>
-    metrics_path: /minio/v2/metrics/node # alternatively: metrics_path: /minio/v2/metrics/cluster
-    scheme: http
-    static_configs:
-      - targets:
-          - "${SECRET_S3_ENDPOINT}"
-```
-
 ## Debugging
 
-### high memory use / OOMkilled containers
+### High Memory Usage / OOMKilled containers
 
 - [Rancher docs on monitoring](https://rancher.com/docs/rancher/v2.6/en/monitoring-alerting/)
 - [Rancher docs on debugging high memory use](https://rancher.com/docs/rancher/v2.6/en/monitoring-alerting/guides/memory-usage/)
 - [identifying metrics contributing to high use](https://www.robustperception.io/which-are-my-biggest-metrics)
-
-### etcd alerts
-
-Due to a change in alerting rules that have not yet propagated to kube-prometheus-stack,
-repeated etcd alerts may be raised. To fix, use a custom [PrometheusRule](./addons/rules/etcd.yaml)
 
 ### Remove metric
 
