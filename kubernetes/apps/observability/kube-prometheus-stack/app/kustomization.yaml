@@ -6,7 +6,6 @@ namespace: observability
 resources:
   - ./helmrelease.yaml
   - ./alertmanager.secret.sops.yaml
-  - ./secret-additionalScrapeConfigs.sops.yaml
 
 configMapGenerator:
   - name: kube-state-metrics-config
