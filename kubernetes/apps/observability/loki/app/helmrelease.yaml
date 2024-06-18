@@ -115,10 +115,10 @@ spec:
       ingress:
         enabled: false
         annotations:
-          external-dns.alpha.kubernetes.io/target: "internal.${SECRET_DOMAIN}"
+          external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
         ingressClassName: internal
         hosts:
-          - host: loki.${SECRET_DOMAIN}
+          - host: loki.ewatkins.dev
             paths:
               - path: /
                 pathType: Prefix

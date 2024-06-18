@@ -40,12 +40,12 @@ run:
 
 ```sh
 # this will delete ALL metrics associated with <METRIC_NAME>
-curl -X POST -g "https://prometheus.${SECRET_DOMAIN}/api/v1/admin/tsdb/delete_series?match[]=<METRIC_NAME>"
+curl -X POST -g "https://prometheus.ewatkins.dev/api/v1/admin/tsdb/delete_series?match[]=<METRIC_NAME>"
 ```
 
 To target a metric associated with a particular scrape job:
 
 ```sh
 # this will delete metrics associated with <METRIC_NAME> coming from <SCRAPE_JOB>
-curl -X POST -g "https://prometheus.${SECRET_DOMAIN}/api/v1/admin/tsdb/delete_series?match[]=<METRIC_NAME>{job='<SCRAPE_JOB>'}"
+curl -X POST -g "https://prometheus.ewatkins.dev/api/v1/admin/tsdb/delete_series?match[]=<METRIC_NAME>{job='<SCRAPE_JOB>'}"
 ```

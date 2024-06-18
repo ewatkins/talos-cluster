@@ -65,7 +65,7 @@ spec:
         size: 10Gi
     query:
       replicas: 2
-      extraArgs: ["--alert.query-url=https://thanos.${SECRET_DOMAIN}"]
+      extraArgs: ["--alert.query-url=https://thanos.ewatkins.dev"]
     queryFrontend:
       enabled: true
       replicas: 2
@@ -79,10 +79,10 @@ spec:
       ingress:
         enabled: true
         annotations:
-          external-dns.alpha.kubernetes.io/target: "internal.${SECRET_DOMAIN}"
+          external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
         ingressClassName: internal
         hosts:
-          - thanos.${SECRET_DOMAIN}
+          - thanos.ewatkins.dev
       podAnnotations: &podAnnotations
         configmap.reloader.stakater.com/reload: *configMap
     rule:

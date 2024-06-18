@@ -395,9 +395,9 @@ spec:
     ingress:
       enabled: true
       annotations:
-        external-dns.alpha.kubernetes.io/target: "internal.${SECRET_DOMAIN}"
+        external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
       ingressClassName: internal
-      hosts: ["grafana.${SECRET_DOMAIN}"]
+      hosts: ["grafana.ewatkins.dev"]
     persistence:
       enabled: false
     testFramework:

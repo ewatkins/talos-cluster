@@ -37,10 +37,11 @@ spec:
       enabled: true
       className: internal
       annotations:
+        external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
         nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
         nginx.ingress.kubernetes.io/ssl-passthrough: "true"
       hosts:
-        - host: &host git.${SECRET_DOMAIN}
+        - host: &host git.ewatkins.dev
           paths:
             - path: /
               pathType: Prefix
@@ -62,7 +63,7 @@ spec:
       config:
         APP_NAME: Forgejo
         server:
-          ROOT_URL: https://git.${SECRET_DOMAIN}
+          ROOT_URL: https://git.ewatkins.dev
           SSH_PORT: 22
           SSH_LISTEN_PORT: 22
           OFFLINE_MODE: true
@@ -86,13 +87,13 @@ spec:
           ENABLE_OPENID_SIGNUP: false
         mailer:
           ENABLED: true
-          SMTP_ADDR: "${SECRET_SMTP_SRV}"
+          SMTP_ADDR: "${SECRET_SMTP_HOST}"
           SMTP_PORT: "${SECRET_SMTP_PORT}"
           USER: "${SECRET_SMTP_USER}"
           PASSWD: "${SECRET_SMTP_PWD}"
-          FROM: "Forgejo <forgejo@${SECRET_DOMAIN}>"
+          FROM: "Forgejo <forgejo@ewatkins.dev>"
         migrations:
-          ALLOWED_DOMAINS: "*.${SECRET_DOMAIN}"
+          ALLOWED_DOMAINS: "*.ewatkins.dev"
         queue:
           TYPE: redis
           CONN_STR: redis://dragonfly.database.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s
@@ -102,7 +103,7 @@ spec:
         storage:
           STORAGE_TYPE: minio
           MINIO_USE_SSL: true
-          MINIO_ENDPOINT: s3.${SECRET_DOMAIN}:443
+          MINIO_ENDPOINT: s3.ewatkins.dev:443
           MINIO_BUCKET: forgejo
           MINIO_LOCATION: us-east-1
           MINIO_INSECURE_SKIP_VERIFY: false
@@ -138,17 +139,3 @@ spec:
       name: *forgejoBucket
       valuesKey: MINIO_SECRET_ACCESS_KEY
       targetPath: gitea.config.storage.MINIO_SECRET_ACCESS_KEY
-
-    #   # Mailer
-    # - kind: Secret
-    #   name: &mailer forgejo-mailer
-    #   valuesKey: SMTP_ADDR
-    #   targetPath: gitea.config.mailer.SMTP_ADDR
-    # - kind: Secret
-    #   name: *mailer
-    #   valuesKey: SMTP_PORT
-    #   targetPath: gitea.config.mailer.SMTP_PORT
-    # - kind: Secret
-    #   name: *mailer
-    #   valuesKey: FROM
-    #   targetPath: gitea.config.mailer.FROM

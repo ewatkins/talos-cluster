@@ -13,7 +13,7 @@ data:
         url: 1.1.1.1
         interval: 5m
         dns:
-          query-name: "${GATUS_SUBDOMAIN:-${APP}}.${GATUS_DOMAIN:-${SECRET_DOMAIN}}"
+          query-name: "${GATUS_SUBDOMAIN:-${APP}}.${GATUS_DOMAIN:-ewatkins.dev}"
           query-type: A
         ui:
           hide-hostname: true
