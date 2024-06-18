@@ -8,7 +8,7 @@ metadata:
 spec:
   ingressClassName: external
   rules:
-    - host: "flux-webhook.ewatkins.dev"
+    - host: "${FLUX_WEBHOOK_URL}"
       http:
         paths:
           - path: /hook/
