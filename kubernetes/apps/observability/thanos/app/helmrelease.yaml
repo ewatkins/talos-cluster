@@ -64,11 +64,11 @@ spec:
         storageClass: openebs-hostpath
         size: 10Gi
     query:
-      replicas: 2
+      replicas: 1 # TODO: increase to 2
       extraArgs: ["--alert.query-url=https://thanos.ewatkins.dev"]
     queryFrontend:
       enabled: true
-      replicas: 2
+      replicas: 1 # TODO: increase to 2
       extraEnv: &extraEnv
         - name: THANOS_CACHE_CONFIG
           valueFrom:
@@ -87,7 +87,7 @@ spec:
         configmap.reloader.stakater.com/reload: *configMap
     rule:
       enabled: true
-      replicas: 2
+      replicas: 1 # TODO: increase to 2
       extraArgs: ["--web.prefix-header=X-Forwarded-Prefix"]
       alertmanagersConfig:
         value: |-
@@ -109,7 +109,7 @@ spec:
                     severity: critical
       persistence: *persistence
     storeGateway:
-      replicas: 2
+      replicas: 1 # TODO: increase to 2
       extraEnv: *extraEnv
       extraArgs: ["--index-cache.config=$(THANOS_CACHE_CONFIG)"]
       persistence: *persistence
