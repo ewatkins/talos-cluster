@@ -23,7 +23,7 @@ spec:
   values:
     controllers:
       cloudflared:
-        replicas: 2
+        replicas: 1 # TODO: increase to 2
         strategy: RollingUpdate
         annotations:
           reloader.stakater.com/auto: "true"
