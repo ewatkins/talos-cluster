@@ -56,5 +56,6 @@
   "yaml.schemas": {
     "ansible": "./ansible/**/*.yaml",
     "kubernetes": "./kubernetes/**/*.yaml"
-  }
+  },
+  "prettier.quoteProps": "preserve"
 }
