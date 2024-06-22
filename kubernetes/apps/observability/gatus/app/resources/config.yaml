@@ -15,7 +15,7 @@ ui:
   link: https://github.com/ewatkins/talos-cluster
 alerting:
   pushover:
-    title: Gatus (Kubernetes)
+    title: Gatus
     application-token: $${PUSHOVER_TOKEN}
     user-key: $${PUSHOVER_USER_KEY}
     priority: 1
