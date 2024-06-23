@@ -6,6 +6,3 @@ resources:
   # Pre Flux-Kustomizations
   - ./namespace.yaml
   # Flux-Kustomizations
-  - ./authentik/ks.yaml
-  # - dmarc-report/ks.yaml
-  # - external-secrets/ks.yaml
