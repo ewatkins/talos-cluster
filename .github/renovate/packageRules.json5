@@ -26,9 +26,9 @@
       "matchPackagePatterns": ["minio"],
     },
     {
-      "description": ["Custom schedule for reloader"],
+      "description": ["Custom schedule for frequently updated packages"],
       "matchDataSources": ["docker", "helm"],
-      "matchPackagePatterns": ["reloader"],
+      "matchPackagePatterns": ["reloader", "minio"],
       "schedule": ["on saturday"],
     },
   ],
