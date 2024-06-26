@@ -41,7 +41,6 @@ includes:
     optional: true
 
 tasks:
-
   default: task -l
 
   init:
@@ -64,14 +63,31 @@ tasks:
       - task: sops:encrypt
       - task: .validate
 
+  resources:
+    cmds:
+      - task: kubernetes:resources
+
+  drain:
+    cmds:
+      - task: k8s:drain
+
   .template:
     internal: true
     cmd: "{{.VIRTUAL_ENV}}/bin/makejinja"
     preconditions:
       - { msg: "Missing virtual environment", sh: "test -d {{.VIRTUAL_ENV}}" }
-      - { msg: "Missing Makejinja config file", sh: "test -f {{.MAKEJINJA_CONFIG_FILE}}" }
-      - { msg: "Missing Makejinja plugin file", sh: "test -f {{.BOOTSTRAP_DIR}}/scripts/plugin.py" }
-      - { msg: "Missing bootstrap config file", sh: "test -f {{.BOOTSTRAP_CONFIG_FILE}}" }
+      - {
+          msg: "Missing Makejinja config file",
+          sh: "test -f {{.MAKEJINJA_CONFIG_FILE}}",
+        }
+      - {
+          msg: "Missing Makejinja plugin file",
+          sh: "test -f {{.BOOTSTRAP_DIR}}/scripts/plugin.py",
+        }
+      - {
+          msg: "Missing bootstrap config file",
+          sh: "test -f {{.BOOTSTRAP_CONFIG_FILE}}",
+        }
 
   .validate:
     internal: true

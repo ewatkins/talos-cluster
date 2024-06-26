@@ -10,21 +10,23 @@ tasks:
     desc: Gather common resources in your cluster, useful when asking for support
     cmds:
       - for: { var: resource }
-        cmd: kubectl get {{.ITEM}} {{.CLI_ARGS | default "-A"}} -o wide
+        cmd: kubecolor get {{.ITEM}} {{.CLI_ARGS | default "-A"}}
     vars:
-      resource: >-
-        nodes
-        gitrepositories
-        kustomizations
-        helmrepositories
-        helmreleases
-        certificates
-        certificaterequests
-        ingresses
-        services
-        pods
+      resource:
+        [
+          "nodes -o wide",
+          "gitrepositories",
+          "kustomizations",
+          "helmrepositories",
+          "helmreleases",
+          "certificates -o wide",
+          "certificaterequests -o wide",
+          "ingresses",
+          "services",
+          "pods -o wide",
+        ]
 
-  kubeconform:
+  validate:
     desc: Validate Kubernetes manifests with kubeconform
     cmd: bash {{.KUBECONFORM_SCRIPT}} {{.KUBERNETES_DIR}}
     preconditions:
@@ -37,7 +39,6 @@ tasks:
     desc: Browse PersistentVolumeClaims
     summary: |
       Args:
-        cluster: Cluster to run command against (required)
         ns: Namespace to browse PersistentVolumeClaims in (default: default)
         claim: PersistentVolumeClaim to browse (required)
     interactive: true
@@ -51,23 +52,14 @@ tasks:
     desc: Drain a node
     summary: |
       Args:
-        cluster: Cluster to run command against (required)
         node: Node to drain (required)
-    cmd: kubectl --context {{.cluster}} drain {{.node}} --ignore-daemonsets --delete-local-data --force
-    requires:
-      vars: ["cluster", "node"]
+    vars:
+      NODE: "{{.CLI_ARGS | default .node}}"
+    cmds:
+      - kubecolor drain {{.NODE}} --ignore-daemonsets --delete-emptydir-data
 
-  delete-failed-pods:
-    desc: Deletes pods with a fucked status
-    summary: |
-      Args:
-        cluster: Cluster to run command against (required)
+  clear-failed:
+    desc: Deletes pods with a failed status
     cmds:
       - for: ["Evicted", "Failed", "Succeeded"]
-        cmd: kubectl --context {{.cluster}} delete pods --field-selector status.phase={{.ITEM}} -A --ignore-not-found=true
-    requires:
-      vars: ["cluster"]
-
-  .reset:
-    internal: true
-    cmd: rm -rf {{.KUBERNETES_DIR}}
+        cmd: kubecolor delete pods --field-selector status.phase={{.ITEM}} -A --ignore-not-found=true
