@@ -20,8 +20,9 @@ spec:
     name: postgres-superuser
 
   storage:
-    size: 20Gi
+    size: 25Gi
     storageClass: openebs-hostpath
+    resizeInUseVolumes: False
 
   resources:
     requests:
