@@ -31,7 +31,7 @@ spec:
           app:
             image:
               repository: quay.io/minio/minio
-              tag: RELEASE.2024-09-13T20-26-02Z@sha256:cd04ea408e185cb50076ea1c3988d444119b19aaae15aab45387ccf14b2a2f86
+              tag: RELEASE.2024-10-02T17-50-41Z@sha256:ea15e53e66f96f63e12f45509d2d2d8fad774808debb490f48508b3130bd22d3
             env:
               MINIO_API_CORS_ALLOW_ORIGIN: https://minio.ewatkins.dev,https://s3.ewatkins.dev
               MINIO_BROWSER_REDIRECT_URL: https://minio.ewatkins.dev
