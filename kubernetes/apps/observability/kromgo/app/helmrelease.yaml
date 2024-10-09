@@ -25,7 +25,6 @@ spec:
   values:
     controllers:
       kromgo:
-        replicas: 1 # TODO: increase to 2
         strategy: RollingUpdate
         annotations:
           reloader.stakater.com/auto: "true"
@@ -36,15 +35,16 @@ spec:
               tag: v0.4.2@sha256:89eab1c6604d8ef79fb0e7340620d6559ef296cc469c4eabf22598bbaf93ff42
             env:
               PROMETHEUS_URL: http://thanos-query-frontend.observability.svc.cluster.local:10902
-              PORT: &port 80
+              SERVER_PORT: &serverPort 80
+              HEALTH_PORT: &healthPort 8080
             probes:
               liveness: &probes
                 enabled: true
                 custom: true
                 spec:
                   httpGet:
-                    path: /-/ready
-                    port: *port
+                    path: /readyz
+                    port: *healthPort
                   initialDelaySeconds: 0
                   periodSeconds: 10
                   timeoutSeconds: 1
@@ -65,19 +65,15 @@ spec:
         runAsUser: 65534
         runAsGroup: 65534
         seccompProfile: { type: RuntimeDefault }
-      topologySpreadConstraints:
-        - maxSkew: 1
-          topologyKey: kubernetes.io/hostname
-          whenUnsatisfiable: DoNotSchedule
-          labelSelector:
-            matchLabels:
-              app.kubernetes.io/name: *app
     service:
       app:
         controller: kromgo
         ports:
           http:
-            port: *port
+            primary: true
+            port: *serverPort
+          health:
+            port: *healthPort
     ingress:
       app:
         annotations:
