@@ -26,18 +26,43 @@ spec:
     controllers:
       system-upgrade-controller:
         strategy: RollingUpdate
+
+        pod:
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile: 
+              type: RuntimeDefault
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                  - matchExpressions:
+                      - key: node-role.kubernetes.io/control-plane
+                        operator: Exists
+          tolerations:
+            - key: CriticalAddonsOnly
+              operator: Exists
+            - key: node-role.kubernetes.io/control-plane
+              operator: Exists
+              effect: NoSchedule
+            - key: node-role.kubernetes.io/master
+              operator: Exists
+              effect: NoSchedule
+        
         containers:
           app:
             image:
-              repository: ghcr.io/buroa/system-upgrade-controller
-              tag: v0.15.0@sha256:e97af620194c4b48e26b2ecf71d24a0cadcb6b67a35c33b411549bd53ac0194d
+              repository: docker.io/rancher/system-upgrade-controller
+              tag: v0.14.1@sha256:7e13a9b2b984f0c0fd6328439b575348723cc6954b91db3453057fcb784e2d29
             env:
               SYSTEM_UPGRADE_CONTROLLER_DEBUG: false
               SYSTEM_UPGRADE_CONTROLLER_THREADS: 2
               SYSTEM_UPGRADE_JOB_ACTIVE_DEADLINE_SECONDS: 900
               SYSTEM_UPGRADE_JOB_BACKOFF_LIMIT: 99
               SYSTEM_UPGRADE_JOB_IMAGE_PULL_POLICY: IfNotPresent
-              SYSTEM_UPGRADE_JOB_KUBECTL_IMAGE: registry.k8s.io/kubectl:v1.31.1
+              SYSTEM_UPGRADE_JOB_KUBECTL_IMAGE: registry.k8s.io/kubectl:v1.31.1@sha256:1c6bb85c22365650ac13156510e03ae033298a0035684718774d655ce46102fe
               SYSTEM_UPGRADE_JOB_PRIVILEGED: true
               SYSTEM_UPGRADE_JOB_TTL_SECONDS_AFTER_FINISH: 900
               SYSTEM_UPGRADE_PLAN_POLLING_INTERVAL: 15m
@@ -49,34 +74,17 @@ spec:
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
-              capabilities: { drop: ["ALL"] }
+              capabilities:
+                drop:
+                  - ALL
               seccompProfile:
                 type: RuntimeDefault
-    defaultPodOptions:
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 65534
-        runAsGroup: 65534
-        seccompProfile: { type: RuntimeDefault }
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: node-role.kubernetes.io/control-plane
-                    operator: Exists
-      tolerations:
-        - key: CriticalAddonsOnly
-          operator: Exists
-        - key: node-role.kubernetes.io/control-plane
-          operator: Exists
-          effect: NoSchedule
-        - key: node-role.kubernetes.io/master
-          operator: Exists
-          effect: NoSchedule
+    
+          
     serviceAccount:
       create: true
       name: system-upgrade
+      
     persistence:
       tmp:
         type: emptyDir
