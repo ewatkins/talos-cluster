@@ -1,0 +1,63 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app external-secrets-certificates
+  namespace: flux-system
+spec:
+  targetNamespace: external-secrets
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  path: ./kubernetes/apps/external-secrets/external-secrets/certificates
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: talos-cluster
+  wait: true
+  dependsOn:
+    - name: cert-manager-issuers
+  interval: 120m
+  timeout: 5m
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app external-secrets
+  namespace: flux-system
+spec:
+  targetNamespace: external-secrets
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  path: ./kubernetes/apps/external-secrets/external-secrets/app
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: talos-cluster
+  wait: true
+  dependsOn:
+    - name: external-secrets-certificates
+  interval: 120m
+  timeout: 5m
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app external-secrets-stores
+  namespace: flux-system
+spec:
+  targetNamespace: external-secrets
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: external-secrets
+  path: ./kubernetes/apps/external-secrets/external-secrets/stores/bitwarden-secrets
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: talos-cluster
+  wait: true
+  interval: 120m
+  timeout: 5m
