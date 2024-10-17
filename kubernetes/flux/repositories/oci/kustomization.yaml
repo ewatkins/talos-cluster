@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - ./actions-runner-controller.yaml
   - ./bjw-s.yaml
+  - ./external-secrets.yaml
   - ./forgejo.yaml
   - ./prometheus-community.yaml
   - ./spegel.yaml
