@@ -63,6 +63,7 @@ My Kubernetes Cluster is deployed using [Talos](https://www.talos.dev/) Linux. I
 - [cloudflared](https://github.com/cloudflare/cloudflared): Enables Cloudflare secure access to certain ingresses.
 - [grafana](https://grafana.com/): Visualization into my cluster.
 - [external-dns](https://github.com/kubernetes-sigs/external-dns): Automatically syncs ingress DNS records to a DNS provider.
+- [external-secrets](https://github.com/external-secrets/external-secrets): Managed Kubernetes secrets using an external provider (Bitwarden).
 - [ingress-nginx](https://github.com/kubernetes/ingress-nginx): Kubernetes ingress controller using NGINX as a reverse proxy and load balancer.
 - [prometheus](https://prometheus.io/): Cluster monitoring and metrics.
 - [sops](https://github.com/getsops/sops): Managed secrets for Kubernetes and Terraform which are commited to Git.
@@ -70,7 +71,6 @@ My Kubernetes Cluster is deployed using [Talos](https://www.talos.dev/) Linux. I
 
 #### _TODO_: Currently on hold
 
-- [external-secrets](https://github.com/external-secrets/external-secrets): Managed Kubernetes secrets using an external provider (Bitwarden).
 - [rook](https://github.com/rook/rook): Distributed block storage for peristent storage.
 - [volsync](https://github.com/backube/volsync): Backup and recovery of persistent volume claims.
 
@@ -102,7 +102,7 @@ While I try to self-host almost everything myself, there are a couple of things 
 
 | Service                                     | Use                                                                                                         |   Cost |
 | :------------------------------------------ | :---------------------------------------------------------------------------------------------------------- | -----: |
-| [Bitwarden](https://bitwarden.com/)         | External Password Manager, and Secrets Manager with [External Secrets](https://external-secrets.io/) (TODO) | $10/yr |
+| [Bitwarden](https://bitwarden.com/)         | External Password Manager, and Secrets Manager with [External Secrets](https://external-secrets.io/)        | $10/yr |
 | [Cloudflare](https://cloudflare.com/)       | Domain Registration and Cloudflare Tunnels                                                                  | $10/yr |
 | [GitHub](https://github.com/)               | Hosting this repository and continuous integration/deployments                                              |   Free |
 | [Pushover](https://pushover.net/)           | Kubernetes Alerts and application notifications                                                             |     $5 |
