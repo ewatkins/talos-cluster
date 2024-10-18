@@ -41,7 +41,7 @@ endpoints:
       - type: pushover
   - name: flux-webhook
     group: infrastructure
-    url: https://$${FLUX_WEBHOOK_URL}
+    url: https://$${SECRET_FLUX_WEBHOOK_URL}
     interval: 1m
     client:
       dns-resolver: tcp://1.1.1.1:53
@@ -54,7 +54,7 @@ endpoints:
       - type: pushover
   - name: internet
     group: infrastructure
-    url: ${INTERNET_PING_URL}
+    url: ${SECRET_INTERNET_PING_URL}
     interval: 1m
     client:
       dns-resolver: tcp://1.1.1.1:53
