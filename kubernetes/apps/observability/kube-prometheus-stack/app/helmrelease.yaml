@@ -5,6 +5,7 @@ kind: HelmRelease
 metadata:
   name: kube-prometheus-stack
 spec:
+  interval: 15m
   chart:
     spec:
       chart: kube-prometheus-stack
@@ -13,13 +14,8 @@ spec:
         kind: HelmRepository
         name: prometheus-community
         namespace: flux-system
-  interval: 15m
-  dependsOn:
-    - name: openebs
-      namespace: storage
-    - name: thanos
-      namespace: observability
   install:
+    crds: Skip
     remediation:
       retries: 3
   upgrade:
@@ -27,20 +23,11 @@ spec:
     remediation:
       strategy: rollback
       retries: 3
-  driftDetection:
-    mode: enabled
-    ignore:
-      - paths:
-          - /spec/containers/resources/limits
-        target:
-          kind: Pod
-  valuesFrom:
-    - kind: ConfigMap
-      name: kube-state-metrics-config
-      valuesKey: kube-state-metrics.yaml
-    - kind: Secret
-      name: alertmanager-secret
-      valuesKey: alertmanager.yaml
+  dependsOn:
+    - name: openebs
+      namespace: storage
+    - name: thanos
+      namespace: observability
   values:
     ## ref: https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
     fullnameOverride: kps
@@ -49,19 +36,38 @@ spec:
     crds:
       enabled: true
 
-    grafana:
-      enabled: false # manage by itself
-      forceDeployDashboards: true
-      sidecar:
-        dashboards:
-          annotations:
-            grafana_folder: Kubernetes
-          multicluster:
-            etcd:
-              enabled: true
+    alertmanager:
+      enabled: true
+      fullnameOverride: alertmanager
 
-    # coreDns:
-    #   enabled: false
+      alertmanagerSpec:
+        replicas: 2
+        retention: 72h
+        storage:
+          volumeClaimTemplate:
+          spec:
+            storageClassName: openebs-hostpath
+            resources:
+              requests:
+                storage: 1Gi
+        useExistingSecret: true
+        configSecret: alertmanager-secret
+        resources:
+          requests:
+            cpu: 11m
+            memory: 53M
+          limits:
+            memory: 53M
+
+      ingress:
+        enabled: true
+        ingressClassName: internal
+        annotations:
+           nginx.ingress.kubernetes.io/whitelist-source-range: |
+            10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+        hosts:
+          - alertmanager.ewatkins.dev
+
     kubelet:
       enabled: true
       serviceMonitor:
@@ -74,6 +80,7 @@ spec:
           - action: drop
             sourceLabels: [__name__]
             regex: (rest_client_request_duration_seconds_bucket|rest_client_request_duration_seconds_sum|rest_client_request_duration_seconds_count)
+
     kubeApiServer:
       enabled: true
       serviceMonitor:
@@ -85,56 +92,38 @@ spec:
           - action: drop
             sourceLabels: [__name__]
             regex: (apiserver_response_sizes_bucket|apiserver_watch_events_sizes_bucket)
+
     kubeControllerManager:
       enabled: true
       endpoints: &cp
         - 10.30.4.1
         - 10.30.4.2
         - 10.30.4.3
+
     kubeEtcd:
       enabled: true
       endpoints: *cp
+      service:
+        enabled: true
+        port: 2381
+        targetPort: 2381
+      serviceMonitor:
+        metricRelabelings:
+          - action: drop
+            sourceLabels: ["__name__"]
+            regex: (etcd_request_duration_seconds_bucket|etcd_request_duration_seconds_sum|etcd_request_duration_seconds_count)
+
+    kubeScheduler:
+      enabled: true
+      endpoints: *cp
+
     kubeProxy:
       enabled: false
-    kubeScheduler:
-      enabled: false
-    kubeStateMetrics:
-      enabled: true
-      # config specified in kube-state-metrics.yaml configmap
-
-    nodeExporter:
-      enabled: true
-    prometheus-node-exporter:
-      fullnameOverride: node-exporter
-      prometheus:
-        monitor:
-          enabled: true
-          relabelings:
-            - action: replace
-              regex: (.*)
-              replacement: $1
-              sourceLabels: [__meta_kubernetes_pod_node_name]
-              targetLabel: kubernetes_node
-
-    prometheusOperator:
-      resources:
-        requests:
-          cpu: 35m
-          memory: 273M
-        limits:
-          memory: 326M
-      prometheusConfigReloader:
-        # resource config for prometheusConfigReloader
-        resources:
-          requests:
-            cpu: 11m
-            memory: 53M
-          limits:
-            memory: 53M
 
     prometheus:
       enabled: true
       fullNameOverride: prometheus
+
       ingress:
         enabled: true
         ingressClassName: internal
@@ -144,55 +133,34 @@ spec:
         hosts:
           - &host prometheus.ewatkins.dev
         pathType: Prefix
+
+      thanosService:
+        enabled: true
+
+      thanosServiceMonitor:
+        enabled: true
+
       prometheusSpec:
-        image:
-          registry: quay.io
-          repository: prometheus/prometheus
-          tag: v2.54.0-dedupelabels
         podMetadata:
           annotations:
             secret.reloader.stakater.com/reload: &secret minio-thanos-secret
-        podAntiAffinity: soft
-        podAntiAffinityTopologyKey: kubernetes.io/hostname
-        replicas: 1 # TODO: increase to 2
+        replicas: 1
         replicaExternalLabelName: __replica__
-        scrapeInterval: 1m # Must match interval in Grafana Helm chart
-
-        enableAdminAPI: true
-        externalLabels:
-          cluster: talos-cluster
-        additionalScrapeConfigsSecret:
-          enabled: false
-          # name: prometheus-additional-scrape-configs
-          # key: additionalScrapeConfigs
-
         podMonitorSelectorNilUsesHelmValues: false
         probeSelectorNilUsesHelmValues: false
         ruleSelectorNilUsesHelmValues: false
-        serviceMonitorSelectorNilUsesHelmValues: false
         scrapeConfigSelectorNilUsesHelmValues: false
-
+        serviceMonitorSelectorNilUsesHelmValues: false
+        enableAdminAPI: true
+        walCompression: true
         enableFeatures:
           - auto-gomemlimit
           - memory-snapshot-on-shutdown
           - new-service-discovery-manager
-
-        resources:
-          requests:
-            cpu: 763m
-          limits:
-            memory: 1500Mi
-
-        retention: 2d
-        retentionSize: 8GiB
-        walCompression: true
-        storageSpec:
-          volumeClaimTemplate:
-            spec:
-              storageClassName: openebs-hostpath
-              resources:
-                requests:
-                  storage: 10Gi
+        image:
+          registry: quay.io
+          repository: prometheus/prometheus
+          tag: v2.54.0-dedupelabels
         thanos:
           image: quay.io/thanos/thanos:${THANOS_VERSION}
           version: ${THANOS_VERSION#v}
@@ -212,7 +180,65 @@ spec:
                   secretKeyRef:
                     name: *secret
                     key: secretkey
-      thanosService:
-        enabled: true
-      thanosServiceMonitor:
-        enabled: true
+        retention: 2d
+        retentionSize: 8GiB
+        externalLabels:
+          cluster: talos-cluster
+        resources:
+          requests:
+            cpu: 100m
+          limits:
+            memory: 1500Mi
+        storageSpec:
+          volumeClaimTemplate:
+            spec:
+              storageClassName: openebs-hostpath
+              resources:
+                requests:
+                  storage: 10Gi
+
+        podAntiAffinity: soft
+        podAntiAffinityTopologyKey: kubernetes.io/hostname
+        scrapeInterval: 1m # Must match interval in Grafana Helm chart
+        additionalScrapeConfigsSecret:
+          enabled: false
+          # name: prometheus-additional-scrape-configs
+          # key: additionalScrapeConfigs
+
+    nodeExporter:
+      enabled: false
+
+    prometheusOperator:
+      resources:
+        requests:
+          cpu: 50m
+          memory: 256M
+        limits:
+          memory: 384M
+
+    kube-state-metrics:
+      fullnameOverride: kube-state-metrics
+      metricLabelsAllowlist:
+        - pods=[*]
+        - deployments=[*]
+        - persistentvolumeclaims=[*]
+      prometheus:
+        monitor:
+          enabled: true
+          relabelings:
+            - action: replace
+              regex: (.*)
+              replacement: $1
+              sourceLabels: ["__meta_kubernetes_pod_node_name"]
+              targetLabel: kubernetes_node
+
+    grafana:
+      enabled: false # manage by itself
+      forceDeployDashboards: true
+      sidecar:
+        dashboards:
+          annotations:
+            grafana_folder: Prometheus
+          multicluster:
+            etcd:
+              enabled: true

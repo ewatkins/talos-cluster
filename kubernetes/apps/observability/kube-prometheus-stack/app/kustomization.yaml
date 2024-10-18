@@ -2,22 +2,14 @@
 # yaml-language-server: $schema=https://json.schemastore.org/kustomization
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: observability
 resources:
-  - ./helmrelease.yaml
   - ./externalsecret.yaml
-
+  - ./helmrelease.yaml
+  - ./scrapeconfigs
+  - ./prometheusrules
 configMapGenerator:
-  - name: kube-state-metrics-config
+  - name: alertmanager-config-tpl
     files:
-      - kube-state-metrics.yaml=./kube-state-metrics.yaml
-    options:
-      labels:
-        app.kubernetes.io/part-of: flux
-        app.kubernetes.io/component: monitoring
-
+      - alertmanager.yaml=./resources/alertmanager.yaml
 generatorOptions:
   disableNameSuffixHash: true
-  annotations:
-    kustomize.toolkit.fluxcd.io/substitute: disabled
-    reloader.stakater.com/match: "true"
