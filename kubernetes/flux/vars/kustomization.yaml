@@ -4,3 +4,4 @@ resources:
   - ./cluster-settings.yaml
   - ./bws.secret.sops.yaml
   - ./cluster.externalsecret.yaml
+  - ./pushsecret.yaml
