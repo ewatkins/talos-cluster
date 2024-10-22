@@ -18,8 +18,6 @@ jobs:
     permissions:
       pull-requests: write
     strategy:
-      matrix:
-        paths: ["kubernetes"]
       max-parallel: 4
       fail-fast: false
     outputs:
@@ -57,7 +55,7 @@ jobs:
         with:
           args: >-
             get cluster
-            --path /github/workspace/default/${{ matrix.paths }}/flux
+            --path /github/workspace/default/kubernetes/flux
             --enable-images
             --output yaml
             --output-file default.yaml
@@ -67,7 +65,7 @@ jobs:
         with:
           args: >-
             get cluster
-            --path /github/workspace/pull/${{ matrix.paths }}/flux
+            --path /github/workspace/pull/kubernetes/flux
             --enable-images
             --output yaml
             --output-file pull.yaml
