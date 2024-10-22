@@ -32,6 +32,7 @@
     "*.secret.sops.env": "lock",
     "*.secret.sops.yaml": "lock",
     "secret.sops.yaml": "lock",
+    "externalsecret.yaml": "lock",
     "helmrelease.yaml": "helm",
     "*.helmrelease.yaml": "helm",
     "rbac.yaml": "key"
