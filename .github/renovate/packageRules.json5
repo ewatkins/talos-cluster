@@ -28,7 +28,7 @@
     {
       "description": ["Custom schedule for frequently updated packages"],
       "matchDataSources": ["docker", "helm"],
-      "matchPackagePatterns": ["reloader", "minio", "postgresql"],
+      "matchPackagePatterns": ["reloader", "minio", "postgresql", "kube-prometheus-stack"],
       "schedule": ["on saturday"]
     }
   ]
