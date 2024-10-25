@@ -41,7 +41,7 @@ env:
 jobs:
   renovate:
     name: Renovate
-    runs-on: ["gha-runner-scale-set"]
+    runs-on: ubuntu-latest
     steps:
       - name: Generate Token
         uses: actions/create-github-app-token@v1
