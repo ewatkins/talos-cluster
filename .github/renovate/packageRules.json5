@@ -2,24 +2,6 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "packageRules": [
     {
-      "description": ["Loose versioning for non-semver packages"],
-      "matchDatasources": ["docker"],
-      "versioning": "loose",
-      "matchPackagePatterns": ["plex", "qbittorrent"]
-    },
-    {
-      "description": ["Custom versioning for frigate"],
-      "matchDatasources": ["docker"],
-      "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)(-(?<compatibility>beta)(?<build>\\d+))?$",
-      "matchPackagePatterns": ["frigate"]
-    },
-    {
-      "description": ["Custom versioning for miniflux"],
-      "matchDatasources": ["docker"],
-      "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)-(?<compatibility>)$",
-      "matchPackagePatterns": ["miniflux"]
-    },
-    {
       "description": ["Custom versioning for minio"],
       "matchDatasources": ["docker"],
       "versioning": "regex:^RELEASE\\.(?<major>\\d+)-(?<minor>\\d+)-(?<patch>\\d+)T.*Z$",
@@ -28,8 +10,14 @@
     {
       "description": ["Custom schedule for frequently updated packages"],
       "matchDataSources": ["docker", "helm"],
-      "matchPackagePatterns": ["reloader", "minio", "postgresql", "kube-prometheus-stack"],
+      "matchPackagePatterns": ["reloader", "minio", "postgresql"],
       "schedule": ["on saturday"]
+    },
+    {
+      "description": ["Custom schedule for kube-prometheus-stack"],
+      "matchDataSources": ["docker", "helm"],
+      "matchPackagePatterns": ["kube-prometheus-stack"],
+      "schedule": ["at 9 pm"]
     }
   ]
 }
