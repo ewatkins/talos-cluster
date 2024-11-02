@@ -58,7 +58,7 @@ jobs:
 
       - if: ${{ github.event.inputs.helmRepoNamespace == '' && github.event.inputs.helmRepoName == '' }}
         name: List All Changed Files
-        run: echo "${{ steps.changed-files.outputs.all_changed_and_modified_files }}"
+        run: echo "${{ steps.changed-files.outputs.all_changed_files }}"
 
       - if: ${{ github.event.inputs.helmRepoNamespace == '' && github.event.inputs.helmRepoName == '' }}
         name: Sync Helm Repository
@@ -67,7 +67,7 @@ jobs:
         shell: bash
         run: |
           declare -a repos=()
-          for f in ${{ steps.changed-files.outputs.all_changed_and_modified_files }}; do
+          for f in ${{ steps.changed-files.outputs.all_changed_files }}; do
               repo_namespace="$(yq -r '.spec.chart.spec.sourceRef.namespace' "${f}")"
               repo_name="$(yq -r '.spec.chart.spec.sourceRef.name' "${f}")"
               repos+=("${repo_namespace}:${repo_name}")
