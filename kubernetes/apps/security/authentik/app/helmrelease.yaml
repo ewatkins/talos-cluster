@@ -52,7 +52,7 @@ spec:
       #           name: authentik-db-init
       resources:
         requests:
-          cpu: 44m
+          cpu: 100m
           memory: 588M
         limits:
           memory: 1002M
@@ -82,7 +82,7 @@ spec:
     worker:
       resources:
         requests:
-          cpu: 44m
+          cpu: 150m
           memory: 443M
         limits:
           memory: 938M
