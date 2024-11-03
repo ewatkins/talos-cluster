@@ -52,8 +52,10 @@ spec:
       #           name: authentik-db-init
       resources:
         requests:
-          cpu: 100m
-          memory: 512Mi
+          cpu: 22m
+          memory: 588M
+        limits:
+          memory: 1002M
       autoscaling:
         enabled: true
         minReplicas: 2
@@ -80,8 +82,10 @@ spec:
     worker:
       resources:
         requests:
-          cpu: 200m
-          memory: 512Mi
+          cpu: 22m
+          memory: 443M
+        limits:
+          memory: 938M
       autoscaling:
         enabled: true
         minReplicas: 2
