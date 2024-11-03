@@ -50,6 +50,10 @@ spec:
       #     envFrom:
       #       - secretRef:
       #           name: authentik-db-init
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
       autoscaling:
         enabled: true
         minReplicas: 2
@@ -74,6 +78,10 @@ spec:
           - auth.ewatkins.dev
         https: false
     worker:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
       autoscaling:
         enabled: true
         minReplicas: 2
