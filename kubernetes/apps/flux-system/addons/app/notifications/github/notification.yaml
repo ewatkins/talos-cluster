@@ -23,9 +23,12 @@ spec:
     name: github
   eventSeverity: info
   eventSources:
+    - kind: GitRepository
+      name: "*"
     - kind: Kustomization
       name: "*"
     - kind: HelmRelease
       name: "*"
   exclusionList:
-    - "waiting.*socket"
+    - "failed to extract commit hash"
+  suspend: false
