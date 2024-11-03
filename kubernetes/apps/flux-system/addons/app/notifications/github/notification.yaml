@@ -4,6 +4,7 @@ apiVersion: notification.toolkit.fluxcd.io/v1beta3
 kind: Provider
 metadata:
   name: github
+  namespace: flux-system
 spec:
   type: github
   address: https://github.com/ewatkins/talos-cluster
@@ -14,11 +15,17 @@ spec:
 apiVersion: notification.toolkit.fluxcd.io/v1beta3
 kind: Alert
 metadata:
-  name: github
+  name: talos-cluster-github
+  namespace: flux-system
 spec:
+  summary: "talos-cluster"
   providerRef:
     name: github
   eventSeverity: info
   eventSources:
     - kind: Kustomization
       name: "*"
+    - kind: HelmRelease
+      name: "*"
+  exclusionList:
+    - "waiting.*socket"
