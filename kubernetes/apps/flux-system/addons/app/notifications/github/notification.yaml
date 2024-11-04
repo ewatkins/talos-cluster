@@ -29,6 +29,4 @@ spec:
       name: "*"
     - kind: HelmRelease
       name: "*"
-  exclusionList:
-    - "failed to extract commit hash"
   suspend: false
