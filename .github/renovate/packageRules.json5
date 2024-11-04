@@ -11,17 +11,17 @@
       "description": ["Custom schedule for frequently updated packages"],
       "matchDataSources": ["docker", "helm"],
       "matchPackagePatterns": ["reloader", "minio", "postgresql"],
-      "schedule": ["0 21 * * 6"] # At 9pm on Saturdays
+      "schedule": ["0 21 * * 6"]
     },
     {
       "description": ["Custom schedule for kube-prometheus-stack"],
       "matchDataSources": ["docker", "helm"],
       "matchPackagePatterns": ["kube-prometheus-stack"],
-      "schedule": ["0 21 * * *"] # At 9pm Daily
+      "schedule": ["0 21 * * *"]
     },
     {
       "description": ["Custom schedule for everything else"],
-      "schedule": ["0 17-23 * * *"] # From 5pm to 11pm daily
+      "schedule": ["0 17-23 * * *"]
     }
   ]
 }
