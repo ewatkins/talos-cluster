@@ -11,7 +11,7 @@ Adding something to be tracked with Gatus can either be done with adding it as a
 If setting up a specific configmap just for the resource, the configmap should have the label of `gatus.io/enabled: "true"`
 
 Example:
-```
+```yaml
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -45,7 +45,7 @@ A resource can be added using a Template by including one of the following in th
 
 Also, the following postBuild subsitutions should be included in `ks.yaml`
 
-```
+```yaml
 postBuild:
   substitute:
 ```
