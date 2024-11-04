@@ -64,11 +64,11 @@ Resources that should have DNS resolved externally, and should be returning 200 
 
 ### _Guarded_
 
-Checks to make sure that the DNS record does not exist externally. These are things that should only be accessible at home.
+Checks to make sure that the DNS record does not exist externally. This should only be used if I ONLY care about making sure it's not accessible externally.
 
 ### _Internal_
 
-These are things that can be accessed outside of the home, but the url and hostname should not be readily available.
+These are things that may or may not be external, but I want to hide the url/hostname and should be returning 200 or `GATUS_STATUS`.
 
 ### _Infrastructure_
 
