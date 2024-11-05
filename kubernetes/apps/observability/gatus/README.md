@@ -4,7 +4,7 @@ Automated developer-oriented status page
 
 ## Config
 
-Adding something to be tracked with Gatus can either be done with adding it as an endpoint in `gatus/app/resources/config.yaml`, adding it's own configmap just for gatus, or adding it using the templates.
+Adding something to be tracked with Gatus can either be done with adding it as an endpoint in the [config](app/resources/config.yaml), adding a configmap just for gatus, or adding it using the [templates](../../../templates/gatus/).
 
 ## Configmap
 
