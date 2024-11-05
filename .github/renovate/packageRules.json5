@@ -18,10 +18,6 @@
       "matchDataSources": ["docker", "helm"],
       "matchPackagePatterns": ["kube-prometheus-stack"],
       "schedule": ["* 21 * * *"]
-    },
-    {
-      "description": ["Custom schedule for everything else"],
-      "schedule": ["* 17-23 * * *"]
     }
   ]
 }
