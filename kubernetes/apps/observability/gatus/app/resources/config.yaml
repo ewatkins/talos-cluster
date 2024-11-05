@@ -24,10 +24,10 @@ alerting:
       send-on-resolved: true
       failure-threshold: 5
       success-threshold: 2
-#connectivity:
-#  checker:
-#    target: 1.1.1.1:53
-#    interval: 1m
+connectivity:
+  checker:
+    target: 1.1.1.1:53
+    interval: 1m
 endpoints:
   - name: status
     group: external
