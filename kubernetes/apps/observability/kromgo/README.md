@@ -4,7 +4,7 @@ Easily expose preconfigured prometheus metrics to the outside using badges.
 
 ## Metrics
 
-Metrics that should be exposed for badges can be added to the `resources/config.yaml` file.
+Metrics that should be exposed for badges can be added to the [config](app/resources/config.yaml) file.
 
 ### _Example_
 
