@@ -43,6 +43,7 @@ spec:
       redis:
         host: dragonfly.database.svc.cluster.local
     server:
+
       # initContainers:
       #   - name: init-db
       #     image: ghcr.io/onedr0p/postgres-init:16.3
@@ -50,22 +51,27 @@ spec:
       #     envFrom:
       #       - secretRef:
       #           name: authentik-db-init
+
       resources:
         requests:
           cpu: 100m
           memory: 588M
         limits:
           memory: 1002M
+
       autoscaling:
         enabled: true
         minReplicas: 2
+
       metrics:
         prometheus:
           serviceMonitor:
             enabled: true
+
       ingress:
         enabled: true
         ingressClassName: external
+
         annotations:
           # gethomepage.dev/enabled: "true"
           # gethomepage.dev/icon: authentik.png
@@ -76,112 +82,83 @@ spec:
           # gethomepage.dev/widget.url: https://auth.ewatkins.dev
           # gethomepage.dev/widget.key: "{{HOMEPAGE_VAR_AUTHENTIK_TOKEN}}"
           external-dns.alpha.kubernetes.io/target: "external.ewatkins.dev"
+
         hosts:
           - auth.ewatkins.dev
+
         https: false
-        livenessProbe:
-          # -- Minimum consecutive failures for the [probe] to be considered failed after having succeeded
-          failureThreshold: 3
-          # -- Number of seconds after the container has started before [probe] is initiated
-          initialDelaySeconds: 30
-          # -- How often (in seconds) to perform the [probe]
-          periodSeconds: 10
-          # -- Minimum consecutive successes for the [probe] to be considered successful after having failed
-          successThreshold: 1
-          # -- Number of seconds after which the [probe] times out
-          timeoutSeconds: 1
-          ## Probe configuration
-          httpGet:
-            path: /-/health/live/
-            port: http
 
-        readinessProbe:
-          # -- Minimum consecutive failures for the [probe] to be considered failed after having succeeded
-          failureThreshold: 3
-          # -- Number of seconds after the container has started before [probe] is initiated
-          initialDelaySeconds: 30
-          # -- How often (in seconds) to perform the [probe]
-          periodSeconds: 10
-          # -- Minimum consecutive successes for the [probe] to be considered successful after having failed
-          successThreshold: 1
-          # -- Number of seconds after which the [probe] times out
-          timeoutSeconds: 1
-          ## Probe configuration
-          httpGet:
-            path: /-/health/ready/
-            port: http
+      livenessProbe:
+        failureThreshold: 3
+        initialDelaySeconds: 30
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+        httpGet:
+          path: /-/health/live/
+          port: http
 
-        startupProbe:
-          # -- Minimum consecutive failures for the [probe] to be considered failed after having succeeded
-          failureThreshold: 60
-          # -- Number of seconds after the container has started before [probe] is initiated
-          initialDelaySeconds: 30
-          # -- How often (in seconds) to perform the [probe]
-          periodSeconds: 10
-          # -- Minimum consecutive successes for the [probe] to be considered successful after having failed
-          successThreshold: 1
-          # -- Number of seconds after which the [probe] times out
-          timeoutSeconds: 1
-          ## Probe configuration
-          httpGet:
-            path: /-/health/live/
-            port: http
+      readinessProbe:
+        failureThreshold: 3
+        initialDelaySeconds: 30
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+        httpGet:
+          path: /-/health/ready/
+          port: http
+
+      startupProbe:
+        failureThreshold: 60
+        initialDelaySeconds: 30
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+        httpGet:
+          path: /-/health/live/
+          port: http
+
     worker:
+
       resources:
         requests:
           cpu: 150m
           memory: 443M
         limits:
           memory: 938M
+
       autoscaling:
         enabled: true
         minReplicas: 2
+
       livenessProbe:
-        # -- Minimum consecutive failures for the [probe] to be considered failed after having succeeded
         failureThreshold: 3
-        # -- Number of seconds after the container has started before [probe] is initiated
         initialDelaySeconds: 30
-        # -- How often (in seconds) to perform the [probe]
         periodSeconds: 10
-        # -- Minimum consecutive successes for the [probe] to be considered successful after having failed
         successThreshold: 1
-        # -- Number of seconds after which the [probe] times out
         timeoutSeconds: 1
-        ## Probe configuration
         exec:
           command:
             - ak
             - healthcheck
 
       readinessProbe:
-        # -- Minimum consecutive failures for the [probe] to be considered failed after having succeeded
         failureThreshold: 3
-        # -- Number of seconds after the container has started before [probe] is initiated
         initialDelaySeconds: 30
-        # -- How often (in seconds) to perform the [probe]
         periodSeconds: 10
-        # -- Minimum consecutive successes for the [probe] to be considered successful after having failed
         successThreshold: 1
-        # -- Number of seconds after which the [probe] times out
         timeoutSeconds: 1
-        ## Probe configuration
         exec:
           command:
             - ak
             - healthcheck
 
       startupProbe:
-        # -- Minimum consecutive failures for the [probe] to be considered failed after having succeeded
         failureThreshold: 60
-        # -- Number of seconds after the container has started before [probe] is initiated
         initialDelaySeconds: 30
-        # -- How often (in seconds) to perform the [probe]
         periodSeconds: 10
-        # -- Minimum consecutive successes for the [probe] to be considered successful after having failed
         successThreshold: 1
-        # -- Number of seconds after which the [probe] times out
         timeoutSeconds: 1
-        ## Probe configuration
         exec:
           command:
             - ak
