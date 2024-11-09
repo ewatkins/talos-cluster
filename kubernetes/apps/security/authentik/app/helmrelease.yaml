@@ -33,15 +33,18 @@ spec:
             name: authentik-secret
 
     authentik:
-      # log_level: info
       avatars: "gravatar, initials"
+
       error_reporting:
         enable: false
         send_pii: false
+
       outposts:
         container_image_base: ghcr.io/goauthentik/%(type)s:%(version)s
+
       redis:
         host: dragonfly.database.svc.cluster.local
+
     server:
 
       # initContainers:
@@ -52,16 +55,14 @@ spec:
       #       - secretRef:
       #           name: authentik-db-init
 
+      replicas: 2
+
       resources:
         requests:
           cpu: 100m
           memory: 588M
         limits:
           memory: 1002M
-
-      autoscaling:
-        enabled: true
-        minReplicas: 2
 
       metrics:
         prometheus:
@@ -89,36 +90,17 @@ spec:
         https: false
 
       livenessProbe:
-        failureThreshold: 3
         initialDelaySeconds: 30
-        periodSeconds: 10
-        successThreshold: 1
-        timeoutSeconds: 1
-        httpGet:
-          path: /-/health/live/
-          port: http
 
       readinessProbe:
-        failureThreshold: 3
         initialDelaySeconds: 30
-        periodSeconds: 10
-        successThreshold: 1
-        timeoutSeconds: 1
-        httpGet:
-          path: /-/health/ready/
-          port: http
 
       startupProbe:
-        failureThreshold: 60
         initialDelaySeconds: 30
-        periodSeconds: 10
-        successThreshold: 1
-        timeoutSeconds: 1
-        httpGet:
-          path: /-/health/live/
-          port: http
 
     worker:
+
+      replicas: 2
 
       resources:
         requests:
@@ -127,39 +109,11 @@ spec:
         limits:
           memory: 938M
 
-      autoscaling:
-        enabled: true
-        minReplicas: 2
-
       livenessProbe:
-        failureThreshold: 3
         initialDelaySeconds: 30
-        periodSeconds: 10
-        successThreshold: 1
-        timeoutSeconds: 1
-        exec:
-          command:
-            - ak
-            - healthcheck
 
       readinessProbe:
-        failureThreshold: 3
         initialDelaySeconds: 30
-        periodSeconds: 10
-        successThreshold: 1
-        timeoutSeconds: 1
-        exec:
-          command:
-            - ak
-            - healthcheck
 
       startupProbe:
-        failureThreshold: 60
         initialDelaySeconds: 30
-        periodSeconds: 10
-        successThreshold: 1
-        timeoutSeconds: 1
-        exec:
-          command:
-            - ak
-            - healthcheck
