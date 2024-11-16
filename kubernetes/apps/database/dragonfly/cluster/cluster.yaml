@@ -22,7 +22,7 @@ spec:
   resources:
     requests:
       cpu: 35m
-      memory: 105Mi
+      memory: 105M
     limits:
       memory: 512Mi # Do Not Change
   topologySpreadConstraints:
