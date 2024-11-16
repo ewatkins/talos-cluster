@@ -31,10 +31,10 @@ spec:
             image:
               repository: ghcr.io/dragonflydb/operator
               tag: v1.1.8@sha256:5e0ebd5d58066499fb19ea4102531972401f2a6100fc9f4dbc45284c4175de82
-            command: ["/manager"]
+            command: [ "/manager" ]
             args:
-              - --health-probe-bind-address=:8081
-              - --metrics-bind-address=:8080
+            - --health-probe-bind-address=:8081
+            - --metrics-bind-address=:8080
             probes:
               liveness:
                 enabled: true
@@ -60,13 +60,14 @@ spec:
                   failureThreshold: 3
             resources:
               requests:
-                cpu: 10m
+                cpu: 15m
+                memory: 105M
               limits:
-                memory: 128Mi
+                memory: 105M
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
-              capabilities: { drop: ["ALL"] }
+              capabilities: { drop: [ "ALL" ] }
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
@@ -74,12 +75,12 @@ spec:
         runAsGroup: 65534
         seccompProfile: { type: RuntimeDefault }
       topologySpreadConstraints:
-        - maxSkew: 1
-          topologyKey: kubernetes.io/hostname
-          whenUnsatisfiable: DoNotSchedule
-          labelSelector:
-            matchLabels:
-              app.kubernetes.io/name: *app
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/name: *app
     service:
       app:
         controller: *app
@@ -95,11 +96,11 @@ spec:
       app:
         serviceName: *app
         endpoints:
-          - port: metrics
-            scheme: http
-            path: /metrics
-            interval: 1m
-            scrapeTimeout: 10s
+        - port: metrics
+          scheme: http
+          path: /metrics
+          interval: 1m
+          scrapeTimeout: 10s
     env:
-      - name: DEBUG
-        value: "true"
+    - name: DEBUG
+      value: "true"
