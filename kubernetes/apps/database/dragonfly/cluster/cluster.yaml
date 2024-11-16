@@ -8,27 +8,26 @@ spec:
   image: ghcr.io/dragonflydb/dragonfly:v1.25.1
   replicas: 3
   env:
-  - name: MAX_MEMORY
-    valueFrom:
-      resourceFieldRef:
-        resource: limits.memory
-        divisor: 1Mi
-  - name: DEBUG
-    value: "true"
+    - name: MAX_MEMORY
+      valueFrom:
+        resourceFieldRef:
+          resource: limits.memory
+          divisor: 1Mi
+    - name: DEBUG
+      value: "true"
   args:
-  - --maxmemory=$(MAX_MEMORY)Mi
-  - --proactor_threads=2
-  - --cluster_mode=emulated
+    - --maxmemory=$(MAX_MEMORY)Mi
+    - --proactor_threads=2
+    - --cluster_mode=emulated
   resources:
     requests:
       cpu: 35m
-      memory: 105M
     limits:
-      memory: 105M
+      memory: 512Mi # Do Not Change
   topologySpreadConstraints:
-  - maxSkew: 1
-    topologyKey: "kubernetes.io/hostname"
-    whenUnsatisfiable: "DoNotSchedule"
-    labelSelector:
-      matchLabels:
-        app.kubernetes.io/part-of: dragonfly
+    - maxSkew: 1
+      topologyKey: "kubernetes.io/hostname"
+      whenUnsatisfiable: "DoNotSchedule"
+      labelSelector:
+        matchLabels:
+          app.kubernetes.io/part-of: dragonfly
