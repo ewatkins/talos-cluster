@@ -37,16 +37,16 @@ spec:
       create: true
 
     monitoring:
-      podMonitorEnabled: true
+      podMonitorEnabled: false
       grafanaDashboard:
         create: true
 
     resources:
       requests:
         cpu: 15m
-        memory: 127M
+        memory: 145M
       limits:
-        memory: 127M
+        memory: 145M
 
     podAnnotations:
       reloader.stakater.com/search: "true"
