@@ -21,15 +21,41 @@ spec:
     remediation:
       retries: 3
   values:
+
+    # Cert Manager Controller
     installCRDs: true
     dns01RecursiveNameservers: 1.1.1.1:53,9.9.9.9:53
     dns01RecursiveNameserversOnly: true
     podDnsPolicy: None
     podDnsConfig:
       nameservers:
-        - "1.1.1.1"
-        - "9.9.9.9"
+      - "1.1.1.1"
+      - "9.9.9.9"
     prometheus:
       enabled: true
       servicemonitor:
         enabled: true
+    resources:
+      requests:
+        cpu: 15m
+        memory: 110M
+      limits:
+        memory: 110M
+
+    # Cert Manager Webhook Resources
+    webhook:
+      resources:
+        requests:
+          cpu: 15m
+          memory: 105M
+        limits:
+          memory: 105M
+
+    # Cert Manager Cainjector Resources
+    cainjector:
+      resources:
+        requests:
+          cpu: 15m
+          memory: 110M
+        limits:
+          memory: 110M
