@@ -7,6 +7,7 @@ metadata:
 spec:
   template:
     spec:
+      ttlSecondsAfterFinished: 60
       restartPolicy: OnFailure
       containers:
         - name: init-db
