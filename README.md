@@ -71,7 +71,7 @@ My Kubernetes Cluster is deployed using [Talos](https://www.talos.dev/) Linux. I
 
 #### _TODO_: Currently on hold
 
-- [rook-ceph](https://github.com/rook/rook): Distributed storage for peristent storage.
+- [rook-ceph](https://github.com/rook/rook): Storage Orchestration for Kubernetes.
 - [volsync](https://github.com/backube/volsync): Backup and recovery of persistent volume claims.
 
 #### GitOps
