@@ -10,7 +10,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: init-db
-          image: ghcr.io/ewatkins/postgres-init:16.5
+          image: ghcr.io/ewatkins/postgres-init:16
           envFrom:
             - secretRef:
                 name: forgejo-db-init
