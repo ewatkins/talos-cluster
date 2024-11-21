@@ -5,6 +5,7 @@ kind: Job
 metadata:
   name: forgejo-init-db
 spec:
+  ttlSecondsAfterFinished: 60
   template:
     spec:
       restartPolicy: OnFailure
