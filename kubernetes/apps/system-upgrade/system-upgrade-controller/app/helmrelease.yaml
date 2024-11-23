@@ -32,37 +32,39 @@ spec:
             runAsNonRoot: true
             runAsUser: 65534
             runAsGroup: 65534
-            seccompProfile: 
+            seccompProfile:
               type: RuntimeDefault
-          affinity:
-            nodeAffinity:
-              requiredDuringSchedulingIgnoredDuringExecution:
-                nodeSelectorTerms:
-                  - matchExpressions:
-                      - key: node-role.kubernetes.io/control-plane
-                        operator: Exists
-          tolerations:
-            - key: CriticalAddonsOnly
-              operator: Exists
-            - key: node-role.kubernetes.io/control-plane
-              operator: Exists
-              effect: NoSchedule
-            - key: node-role.kubernetes.io/master
-              operator: Exists
-              effect: NoSchedule
-        
+
+          # affinity:
+          #   nodeAffinity:
+          #     requiredDuringSchedulingIgnoredDuringExecution:
+          #       nodeSelectorTerms:
+          #         - matchExpressions:
+          #             - key: node-role.kubernetes.io/control-plane
+          #               operator: Exists
+          # tolerations:
+          #   - key: CriticalAddonsOnly
+          #     operator: Exists
+          #   - key: node-role.kubernetes.io/control-plane
+          #     operator: Exists
+          #     effect: NoSchedule
+          #   - key: node-role.kubernetes.io/master
+          #     operator: Exists
+          #     effect: NoSchedule
+
         containers:
           app:
             image:
               repository: docker.io/rancher/system-upgrade-controller
-              tag: v0.14.2@sha256:3cdbfdd90f814702cefb832fc4bdb09ea93865a4d06c6bafd019d1dc6a9f34c9
+              tag: v0.14.2
             env:
               SYSTEM_UPGRADE_CONTROLLER_DEBUG: false
               SYSTEM_UPGRADE_CONTROLLER_THREADS: 2
               SYSTEM_UPGRADE_JOB_ACTIVE_DEADLINE_SECONDS: 900
               SYSTEM_UPGRADE_JOB_BACKOFF_LIMIT: 99
               SYSTEM_UPGRADE_JOB_IMAGE_PULL_POLICY: IfNotPresent
-              SYSTEM_UPGRADE_JOB_KUBECTL_IMAGE: registry.k8s.io/kubectl:v1.31.3@sha256:f5735dae787c62a225536142b5eb0fbfd5515f7a80fcf2b3a5035401b681d1db
+              SYSTEM_UPGRADE_JOB_KUBECTL_IMAGE: registry.k8s.io/kubectl:v1.31.3
+              SYSTEM_UPGRADE_JOB_POD_REPLACEMENT_POLICY: Failed # Required for Talos
               SYSTEM_UPGRADE_JOB_PRIVILEGED: true
               SYSTEM_UPGRADE_JOB_TTL_SECONDS_AFTER_FINISH: 900
               SYSTEM_UPGRADE_PLAN_POLLING_INTERVAL: 15m
@@ -79,12 +81,12 @@ spec:
                   - ALL
               seccompProfile:
                 type: RuntimeDefault
-    
-          
+
+
     serviceAccount:
       create: true
       name: system-upgrade
-      
+
     persistence:
       tmp:
         type: emptyDir
