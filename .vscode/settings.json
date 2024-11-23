@@ -1,30 +1,21 @@
 {
-  "ansible.ansible.path": ".venv/bin/ansible",
-  "ansible.python.activationScript": ".venv/bin/activate",
-  "ansible.python.interpreterPath": ".venv/bin/python3",
-  "ansible.validation.enabled": true,
-  "ansible.validation.lint.arguments": "-c ansible/.ansible-lint",
-  "ansible.validation.lint.enabled": true,
-  "ansible.validation.lint.path": ".venv/bin/ansible-lint",
   "editor.bracketPairColorization.enabled": true,
-  "editor.fontFamily": "Hack Nerd Font Regular",
-  "editor.fontSize": 13,
+  // "editor.fontFamily": "Hack Nerd Font Regular",
+  // "editor.fontSize": 13,
+  "editor.fontFamily": "FiraCode Nerd Font",
   "editor.fontLigatures": true,
   "editor.guides.bracketPairs": true,
   "editor.guides.bracketPairsHorizontal": true,
   "editor.guides.highlightActiveBracketPair": true,
   "editor.hover.delay": 1500,
   "editor.stickyScroll.enabled": false,
-  "terminal.integrated.fontFamily": "Hack Nerd Font Regular",
-  "terminal.integrated.fontSize": 13,
-  "terminal.integrated.lineHeight": 1.2,
-  "terminal.integrated.scrollback": 100000,
+  //"terminal.integrated.fontFamily": "Hack Nerd Font Regular",
+  //"terminal.integrated.fontSize": 13,
+  //"terminal.integrated.lineHeight": 1.2,
+  //"terminal.integrated.scrollback": 100000,
   "explorer.autoReveal": false,
   "files.associations": {
-    "*.json5": "jsonc",
-    "./ansible/**/*.yaml": "ansible",
-    "./ansible/**/inventory/**/*.yaml": "yaml",
-    "./terraform/**/*.tf": "terraform"
+    "**/*.json5": "jsonc",
   },
   "files.trimTrailingWhitespace": true,
   "material-icon-theme.files.associations": {
@@ -44,14 +35,27 @@
     "repositories": "database",
     "terraforms": "terraform",
     "vars": "other",
+    // top level
+    ".archive": "archive",
+    // .github
+    ".github/workflows": "robot",
     // namespaces
     "actions-runner-system": "github",
     "cert-manager": "guard",
-    "external-secrets": "keys",
+    "default": "home",
+    "digester-system": "hook",
+    "external-secrets": "secure",
+    "flux-system": "pipe",
     "kube-system": "kubernetes",
-    "observability": "event",
+    "monitoring": "event",
+    "network": "connection",
     "networking": "connection",
-    "rook-ceph": "dump"
+    "observability": "event",
+    "rook-ceph": "base",
+    "storage": "dump",
+    "system-upgrade": "update",
+    "tools": "tools",
+    "volsync": "aws"
   },
   "sops.defaults.ageKeyFile": "age.key",
   "vs-kubernetes": {
@@ -60,8 +64,6 @@
   },
   "yaml.schemaStore.enable": true,
   "yaml.schemas": {
-    "ansible": "./ansible/**/*.yaml",
     "kubernetes": "./kubernetes/**/*.yaml"
-  },
-  "prettier.quoteProps": "preserve"
+  }
 }
