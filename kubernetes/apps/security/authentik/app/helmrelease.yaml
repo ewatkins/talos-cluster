@@ -49,13 +49,13 @@ spec:
 
     server:
 
-      # initContainers:
-      #   - name: init-db
-      #     image: ghcr.io/ewatkins/postgres-init:16.3
-      #     imagePullPolicy: IfNotPresent
-      #     envFrom:
-      #       - secretRef:
-      #           name: authentik-db-init
+      initContainers:
+        - name: init-db
+          image: ghcr.io/ewatkins/postgres-init:16.3
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - secretRef:
+                name: authentik-db-init
 
       replicas: 2
 

@@ -31,7 +31,7 @@ spec:
           init-db:
             image:
               repository: ghcr.io/ewatkins/postgres-init
-              tag: 16
+              tag: 16.5
             envFrom: &envFrom
               - secretRef:
                   name: gatus-secret
