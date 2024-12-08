@@ -3,7 +3,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: gatus
+  name: &app gatus
 spec:
   interval: 30m
   chart:
@@ -25,18 +25,14 @@ spec:
   values:
     controllers:
       gatus:
+        replicas: 2
+        strategy: RollingUpdate
+        labels:
+          postgres: "true"
         annotations:
           reloader.stakater.com/auto: "true"
         initContainers:
-          init-db:
-            image:
-              repository: ghcr.io/ewatkins/postgres-init
-              tag: 16.6
-            envFrom: &envFrom
-              - secretRef:
-                  name: gatus-secret
           init-config:
-            dependsOn: init-db
             image:
               repository: ghcr.io/kiwigrid/k8s-sidecar
               tag: 1.28.1@sha256:707875abfd38af450ff420c6f271e883fc28e9ce4d3742741af993b25ae93f85
@@ -63,7 +59,9 @@ spec:
               GATUS_CONFIG_PATH: /config
               GATUS_DELAY_START_SECONDS: 5
               WEB_PORT: &port 80
-            envFrom: *envFrom
+            envFrom:
+              - secretRef:
+                  name: gatus-secret
             probes:
               liveness: &probes
                 enabled: true
@@ -95,19 +93,25 @@ spec:
         seccompProfile: { type: RuntimeDefault }
     service:
       app:
-        controller: gatus
+        controller: *app
         ports:
           http:
             port: *port
     serviceMonitor:
       app:
-        serviceName: gatus
+        serviceName: *app
         endpoints:
           - port: http
             scheme: http
             path: /metrics
             interval: 1m
             scrapeTimeout: 10s
+            metricRelabelings:
+              - action: labeldrop
+                regex: (pod)
+              - action: replace
+                sourceLabels: ["service"]
+                targetLabel: instance
     ingress:
       app:
         annotations:
@@ -122,7 +126,7 @@ spec:
                   port: http
     serviceAccount:
       create: true
-      name: gatus
+      name: *app
     persistence:
       config:
         type: emptyDir
