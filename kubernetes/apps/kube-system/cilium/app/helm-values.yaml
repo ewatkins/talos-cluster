@@ -13,8 +13,8 @@ cluster:
   name: great-lakes
 cni:
   exclusive: false
-# NOTE: devices might need to be set if you have more than one active NIC on your hosts
-# devices: eno+ eth+
+envoy:
+  enabled: false
 endpointRoutes:
   enabled: true
 hubble:
@@ -30,11 +30,24 @@ l2announcements:
   enabled: true
 loadBalancer:
   algorithm: maglev
-  mode: snat
+  mode: dsr
 localRedirectPolicy: true
 operator:
-  replicas: 1
+  replicas: 2
   rollOutPods: true
+  prometheus:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+  dashboards:
+    enabled: true
+prometheus:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    trustCRDsExist: true
+dashboards:
+  enabled: true
 rollOutCiliumPods: true
 routingMode: native
 securityContext:
