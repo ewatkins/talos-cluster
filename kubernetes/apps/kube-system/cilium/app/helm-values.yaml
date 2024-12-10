@@ -1,7 +1,8 @@
 ---
 autoDirectNodeRoutes: true
-bgpControlPlane:
+bandwidthManager:
   enabled: true
+  bbr: true
 bpf:
   masquerade: false
 cgroup:
@@ -11,17 +12,16 @@ cgroup:
 cluster:
   id: 1
   name: great-lakes
-cni:
-  exclusive: false
-envoy:
-  enabled: false
+enableIPv4BIGTCP: true
 endpointRoutes:
   enabled: true
+envoy:
+  enabled: false
 hubble:
   enabled: false
 ipam:
   mode: kubernetes
-ipv4NativeRoutingCIDR: "10.69.0.0/16"
+ipv4NativeRoutingCIDR: 10.69.0.0/16
 k8sServiceHost: 127.0.0.1
 k8sServicePort: 7445
 kubeProxyReplacement: true
