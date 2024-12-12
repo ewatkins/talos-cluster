@@ -3,6 +3,8 @@ autoDirectNodeRoutes: true
 bandwidthManager:
   enabled: true
   bbr: true
+bgpControlPlane:
+  enabled: true
 bpf:
   masquerade: false
 cgroup:
@@ -13,6 +15,8 @@ cluster:
   id: 1
   name: great-lakes
 enableIPv4BIGTCP: true
+cni:
+  exclusive: false
 endpointRoutes:
   enabled: true
 envoy:
