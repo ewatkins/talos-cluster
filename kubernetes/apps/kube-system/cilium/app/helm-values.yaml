@@ -1,8 +1,5 @@
 ---
 autoDirectNodeRoutes: true
-bandwidthManager:
-  enabled: true
-  bbr: true
 bgpControlPlane:
   enabled: true
 bpf:
@@ -14,7 +11,6 @@ cgroup:
 cluster:
   id: 1
   name: great-lakes
-enableIPv4BIGTCP: true
 cni:
   exclusive: false
 endpointRoutes:
@@ -25,7 +21,7 @@ hubble:
   enabled: false
 ipam:
   mode: kubernetes
-ipv4NativeRoutingCIDR: 10.69.0.0/16
+ipv4NativeRoutingCIDR: "10.69.0.0/16"
 k8sServiceHost: 127.0.0.1
 k8sServicePort: 7445
 kubeProxyReplacement: true
@@ -34,7 +30,7 @@ l2announcements:
   enabled: true
 loadBalancer:
   algorithm: maglev
-  mode: dsr
+  mode: snat
 localRedirectPolicy: true
 operator:
   replicas: 2
@@ -45,6 +41,8 @@ operator:
       enabled: true
   dashboards:
     enabled: true
+    annotations:
+      grafana_folder: Cilium
 prometheus:
   enabled: true
   serviceMonitor:
@@ -52,6 +50,8 @@ prometheus:
     trustCRDsExist: true
 dashboards:
   enabled: true
+  annotations:
+    grafana_folder: Cilium
 rollOutCiliumPods: true
 routingMode: native
 securityContext:
