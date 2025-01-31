@@ -49,11 +49,11 @@ spec:
         retention: 72h
         storage:
           volumeClaimTemplate:
-          spec:
-            storageClassName: openebs-hostpath
-            resources:
-              requests:
-                storage: 1Gi
+            spec:
+              storageClassName: openebs-hostpath
+              resources:
+                requests:
+                  storage: 1Gi
         useExistingSecret: true
         configSecret: alertmanager-secret
         resources:
