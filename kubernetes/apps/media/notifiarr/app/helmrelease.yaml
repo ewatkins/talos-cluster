@@ -79,19 +79,6 @@ spec:
           http:
             port: 5454
 
-    ingress:
-      app:
-        className: external
-        annotations:
-          external-dns.alpha.kubernetes.io/target: "external.ewatkins.dev"
-        hosts:
-          - host: "${SECRET_NOTIFIARR_URL}"
-            paths:
-              - path: /
-                service:
-                  identifier: app
-                  port: http
-
     persistence:
       config:
         existingClaim: notifiarr-config

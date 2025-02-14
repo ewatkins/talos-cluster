@@ -1,0 +1,20 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: notifiarr
+  annotations:
+    external-dns.alpha.kubernetes.io/target: "external.ewatkins.dev"
+spec:
+  ingressClassName: external
+  rules:
+    - host: "${SECRET_NOTIFIARR_URL}"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: notifiarr
+                port:
+                  number: 5454
