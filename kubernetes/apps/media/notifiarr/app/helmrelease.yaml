@@ -85,7 +85,7 @@ spec:
         annotations:
           external-dns.alpha.kubernetes.io/target: "external.ewatkins.dev"
         hosts:
-          - host: ${SECRET_NOTIFIARR_URL}
+          - host: "${SECRET_NOTIFIARR_URL}"
             paths:
               - path: /
                 service:
