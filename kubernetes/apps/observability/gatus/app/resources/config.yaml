@@ -7,7 +7,7 @@ storage:
   path: $${POSTGRES_URI}?sslmode=require
   caching: true
 metrics: true
-debug: false
+debug: true
 ui:
   title: Status | Talos Cluster
   header: Status
