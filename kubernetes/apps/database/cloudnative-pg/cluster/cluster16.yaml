@@ -53,8 +53,7 @@ spec:
 
   backup:
     retentionPolicy: 30d
-    barmanObjectStore:
-      serverName: &currentCluster postgres16-v1
+    barmanObjectStore: &barmanObjectStore
       data:
         compression: bzip2
       wal:
@@ -64,6 +63,7 @@ spec:
       endpointURL: ${SECRET_BACKBLAZE_ENDPOINT}
       # Note: serverName version needs to be inclemented
       # when recovering from an existing cnpg cluster
+      serverName: &currentCluster postgres16-v1
       s3Credentials:
         accessKeyId:
           name: backblaze-secret
@@ -72,30 +72,15 @@ spec:
           name: backblaze-secret
           key: application_key
 
-  # Note: previousCluster needs to be set to the name of the previous
-  # cluster when recovering from an existing cnpg cluster
-  bootstrap:
-    recovery:
-      source: &previousCluster postgres16-v8
+  # # Note: previousCluster needs to be set to the name of the previous
+  # # cluster when recovering from an existing cnpg cluster
+  # bootstrap:
+  #   recovery:
+  #     source: &previousCluster postgres16-v1
 
-  # Note: externalClusters is needed when recovering from an existing cnpg cluster
-  externalClusters:
-    - name: *previousCluster
-      barmanObjectStore:
-        serverName: *previousCluster
-        data:
-          compression: bzip2
-        wal:
-          compression: bzip2
-          maxParallel: 8
-        destinationPath: s3://cloudnative-pg/
-        endpointURL: https://s3.ewatkins.dev
-        # Note: serverName version needs to be inclemented
-        # when recovering from an existing cnpg cluster
-        s3Credentials:
-          accessKeyId:
-            name: cloudnative-pg-secret
-            key: aws-access-key-id
-          secretAccessKey:
-            name: cloudnative-pg-secret
-            key: aws-secret-access-key
+  # # Note: externalClusters is needed when recovering from an existing cnpg cluster
+  # externalClusters:
+  #   - name: *previousCluster
+  #     barmanObjectStore:
+  #       <<: *barmanObjectStore
+  #       serverName: *previousCluster
