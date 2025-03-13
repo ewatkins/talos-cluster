@@ -36,7 +36,7 @@ spec:
   values:
     image:
       repository: us-docker.pkg.dev/fairwinds-ops/oss/goldilocks
-      tag: v4.13.3
+      tag: v4.13.4
       pullPolicy: IfNotPresent
 
     controller:
