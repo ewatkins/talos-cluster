@@ -3,7 +3,7 @@
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: &app postgres16
+  name: &app postgres16-old
 spec:
   imageName: ghcr.io/cloudnative-pg/postgresql:16.8-5
   instances: 3
@@ -92,30 +92,30 @@ spec:
 
   # Note: previousCluster needs to be set to the name of the previous
   # cluster when recovering from an existing cnpg cluster
-  # bootstrap:
-  #   recovery:
-  #     source: &previousCluster postgres16-v8
+  bootstrap:
+    recovery:
+      source: &previousCluster postgres16-v8
       # backup:
       #  name: postgres16-20250315102624
 
   # Note: externalClusters is needed when recovering from an existing cnpg cluster
-  # externalClusters:
-  #   - name: *previousCluster
-  #     barmanObjectStore:
-  #       serverName: *previousCluster
-  #       data:
-  #         compression: bzip2
-  #       wal:
-  #         compression: bzip2
-  #         maxParallel: 8
-  #       destinationPath: s3://cloudnative-pg/
-  #       endpointURL: https://s3.ewatkins.dev
-  #       # Note: serverName version needs to be inclemented
-  #       # when recovering from an existing cnpg cluster
-  #       s3Credentials:
-  #         accessKeyId:
-  #           name: cloudnative-pg-secret
-  #           key: aws-access-key-id
-  #         secretAccessKey:
-  #           name: cloudnative-pg-secret
-  #           key: aws-secret-access-key
+  externalClusters:
+    - name: *previousCluster
+      barmanObjectStore:
+        serverName: *previousCluster
+        data:
+          compression: bzip2
+        wal:
+          compression: bzip2
+          maxParallel: 8
+        destinationPath: s3://cloudnative-pg/
+        endpointURL: https://s3.ewatkins.dev
+        # Note: serverName version needs to be inclemented
+        # when recovering from an existing cnpg cluster
+        s3Credentials:
+          accessKeyId:
+            name: cloudnative-pg-secret
+            key: aws-access-key-id
+          secretAccessKey:
+            name: cloudnative-pg-secret
+            key: aws-secret-access-key
