@@ -21,7 +21,7 @@ spec:
     name: postgres-superuser
 
   storage:
-    size: 25Gi
+    size: 30Gi
     storageClass: openebs-hostpath
     resizeInUseVolumes: False
 
@@ -53,48 +53,50 @@ spec:
 
   backup:
     retentionPolicy: 30d
-    # barmanObjectStore: &barmanObjectStore
-    #   data:
-    #     compression: bzip2
-    #   wal:
-    #     compression: bzip2
-    #     maxParallel: 8
-    #   destinationPath: ${SECRET_R2_BUCKET}
-    #   endpointURL: ${SECRET_R2_ENDPOINT}
-    #   # Note: serverName version needs to be inclemented
-    #   # when recovering from an existing cnpg cluster
-    #   serverName: &currentCluster postgres16-v1
-    #   s3Credentials:
-    #     accessKeyId:
-    #       name: cloudflare-r2-secret
-    #       key: aws-access-key-id
-    #     secretAccessKey:
-    #       name: cloudflare-r2-secret
-    #       key: aws-secret-access-key
     barmanObjectStore: &barmanObjectStore
-        data:
-          compression: bzip2
-        wal:
-          compression: bzip2
-          maxParallel: 8
-        destinationPath: s3://cloudnative-pg/
-        endpointURL: https://s3.ewatkins.dev
-        # Note: serverName version needs to be inclemented
-        # when recovering from an existing cnpg cluster
-        serverName: &currentCluster postgres16-v9
-        s3Credentials:
-          accessKeyId:
-            name: cloudnative-pg-secret
-            key: aws-access-key-id
-          secretAccessKey:
-            name: cloudnative-pg-secret
-            key: aws-secret-access-key
+      data:
+        compression: bzip2
+      wal:
+        compression: bzip2
+        maxParallel: 8
+      destinationPath: ${SECRET_R2_BUCKET}
+      endpointURL: ${SECRET_R2_ENDPOINT}
+      # Note: serverName version needs to be inclemented
+      # when recovering from an existing cnpg cluster
+      serverName: &currentCluster postgres16-v1
+      s3Credentials:
+        accessKeyId:
+          name: cloudflare-r2-secret
+          key: aws-access-key-id
+        secretAccessKey:
+          name: cloudflare-r2-secret
+          key: aws-secret-access-key
+  #   barmanObjectStore: &barmanObjectStore
+  #     data:
+  #       compression: bzip2
+  #     wal:
+  #       compression: bzip2
+  #       maxParallel: 8
+  #     destinationPath: s3://cloudnative-pg/
+  #     endpointURL: https://s3.ewatkins.dev
+  #     # Note: serverName version needs to be inclemented
+  #     # when recovering from an existing cnpg cluster
+  #     serverName: &currentCluster postgres16-backup
+  #     s3Credentials:
+  #       accessKeyId:
+  #         name: cloudnative-pg-secret
+  #         key: aws-access-key-id
+  #       secretAccessKey:
+  #         name: cloudnative-pg-secret
+  #         key: aws-secret-access-key
 
   # Note: previousCluster needs to be set to the name of the previous
   # cluster when recovering from an existing cnpg cluster
   bootstrap:
     recovery:
-      source: &previousCluster postgres16-v8
+      source: &previousCluster postgres16-v7
+      # backup:
+      #  name: postgres16-20250315102624
 
   # Note: externalClusters is needed when recovering from an existing cnpg cluster
   externalClusters:
