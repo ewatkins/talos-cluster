@@ -10,6 +10,8 @@ spec:
   primaryUpdateStrategy: unsupervised
   primaryUpdateMethod: switchover
 
+  logLevel: debug
+
   postgresql:
     parameters:
       max_connections: "400"
@@ -59,6 +61,25 @@ spec:
   #     wal:
   #       compression: bzip2
   #       maxParallel: 8
+  #     destinationPath: s3://cloudnative-pg/
+  #     endpointURL: https://s3.ewatkins.dev
+  #     # Note: serverName version needs to be inclemented
+  #     # when recovering from an existing cnpg cluster
+  #     serverName: &currentCluster postgres16-20250318
+  #     s3Credentials:
+  #       accessKeyId:
+  #         name: cloudnative-pg-secret
+  #         key: aws-access-key-id
+  #       secretAccessKey:
+  #         name: cloudnative-pg-secret
+  #         key: aws-secret-access-key
+
+  #   barmanObjectStore: &barmanObjectStore
+  #     data:
+  #       compression: bzip2
+  #     wal:
+  #       compression: bzip2
+  #       maxParallel: 8
   #     destinationPath: ${SECRET_R2_BUCKET}
   #     endpointURL: ${SECRET_R2_ENDPOINT}
   #     # Note: serverName version needs to be inclemented
@@ -71,51 +92,33 @@ spec:
   #       secretAccessKey:
   #         name: cloudflare-r2-secret
   #         key: aws-secret-access-key
-  #   barmanObjectStore: &barmanObjectStore
-  #     data:
-  #       compression: bzip2
-  #     wal:
-  #       compression: bzip2
-  #       maxParallel: 8
-  #     destinationPath: s3://cloudnative-pg/
-  #     endpointURL: https://s3.ewatkins.dev
-  #     # Note: serverName version needs to be inclemented
-  #     # when recovering from an existing cnpg cluster
-  #     serverName: &currentCluster postgres16-backup
-  #     s3Credentials:
-  #       accessKeyId:
-  #         name: cloudnative-pg-secret
-  #         key: aws-access-key-id
-  #       secretAccessKey:
-  #         name: cloudnative-pg-secret
-  #         key: aws-secret-access-key
 
   # Note: previousCluster needs to be set to the name of the previous
   # cluster when recovering from an existing cnpg cluster
-  # bootstrap:
-  #   recovery:
-  #     source: &previousCluster postgres16-v8
+  bootstrap:
+    recovery:
+      source: &previousCluster postgres16-v8
       # backup:
       #  name: postgres16-20250315102624
 
   # Note: externalClusters is needed when recovering from an existing cnpg cluster
-  # externalClusters:
-  #   - name: *previousCluster
-  #     barmanObjectStore:
-  #       serverName: *previousCluster
-  #       data:
-  #         compression: bzip2
-  #       wal:
-  #         compression: bzip2
-  #         maxParallel: 8
-  #       destinationPath: s3://cloudnative-pg/
-  #       endpointURL: https://s3.ewatkins.dev
-  #       # Note: serverName version needs to be inclemented
-  #       # when recovering from an existing cnpg cluster
-  #       s3Credentials:
-  #         accessKeyId:
-  #           name: cloudnative-pg-secret
-  #           key: aws-access-key-id
-  #         secretAccessKey:
-  #           name: cloudnative-pg-secret
-  #           key: aws-secret-access-key
+  externalClusters:
+    - name: *previousCluster
+      barmanObjectStore:
+        serverName: *previousCluster
+        data:
+          compression: bzip2
+        wal:
+          compression: bzip2
+          maxParallel: 8
+        destinationPath: s3://cloudnative-pg/
+        endpointURL: https://s3.ewatkins.dev
+        # Note: serverName version needs to be inclemented
+        # when recovering from an existing cnpg cluster
+        s3Credentials:
+          accessKeyId:
+            name: cloudnative-pg-secret
+            key: aws-access-key-id
+          secretAccessKey:
+            name: cloudnative-pg-secret
+            key: aws-secret-access-key
