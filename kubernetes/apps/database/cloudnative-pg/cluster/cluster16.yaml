@@ -10,8 +10,6 @@ spec:
   primaryUpdateStrategy: unsupervised
   primaryUpdateMethod: switchover
 
-  logLevel: debug
-
   postgresql:
     parameters:
       max_connections: "400"
