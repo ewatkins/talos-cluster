@@ -78,7 +78,7 @@ spec:
     recovery:
       source: &previousCluster postgres16-v3
       recoveryTarget:
-        backupID: 20250331T133501
+        backupID: 20250330T133501
 
   # Note: externalClusters is needed when recovering from an existing cnpg cluster
   externalClusters:
