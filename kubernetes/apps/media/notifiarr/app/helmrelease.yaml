@@ -86,3 +86,10 @@ spec:
       tmp:
         type: emptyDir
         medium: Memory
+
+      media:
+        type: nfs
+        server: caspian.local
+        path: /mnt/user/arrdata
+        globalMounts:
+          - path: /media
