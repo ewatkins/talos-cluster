@@ -7,6 +7,8 @@ metadata:
   namespace: flux-system
 spec:
   targetNamespace: development
+  components:
+    - ../../../../components/gatus/guarded
   path: ./kubernetes/apps/development/forgejo/app
   prune: true
   sourceRef:
