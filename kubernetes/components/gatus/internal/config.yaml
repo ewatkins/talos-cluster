@@ -1,0 +1,10 @@
+endpoints:
+  - name: "${APP}"
+    group: internal
+    url: "https://${GATUS_SUBDOMAIN:-${APP}}.${GATUS_DOMAIN:-ewatkins.dev}"
+    interval: 1m
+    ui:
+      hide-hostname: true
+      hide-url: true
+    conditions:
+      - "[STATUS] == ${GATUS_STATUS:-200}"

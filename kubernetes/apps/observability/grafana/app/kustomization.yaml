@@ -6,5 +6,4 @@ namespace: observability
 resources:
   - ./externalsecret.yaml
   - ./helmrelease.yaml
-  - ../../../../templates/gatus/internal
 
