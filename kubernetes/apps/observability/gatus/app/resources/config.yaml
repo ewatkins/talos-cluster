@@ -18,7 +18,7 @@ connectivity:
     interval: 1m
 endpoints:
   - name: flux-webhook
-    group: guarded
+    group: external
     url: https://${SECRET_FLUX_WEBHOOK_URL}
     interval: 1m
     client:
@@ -50,4 +50,4 @@ endpoints:
       hide-hostname: true
       hide-url: true
     conditions:
-      - "[STATUS] == 404"
+      - "[STATUS] == 200"
