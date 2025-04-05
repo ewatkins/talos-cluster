@@ -10,6 +10,8 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
+  components:
+    - ../../../../components/gatus/media
   dependsOn:
     - name: external-secrets-stores
   wait: false
@@ -23,4 +25,5 @@ spec:
   postBuild:
     substitute:
       APP: *app
+      GATUS_SUBDOMAIN: sab
 
