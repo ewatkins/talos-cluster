@@ -1,0 +1,7 @@
+endpoints:
+  - name: "${APP}"
+    group: media
+    url: "https://${GATUS_SUBDOMAIN:-${APP}}.${GATUS_DOMAIN:-ewatkins.dev}"
+    interval: 1m
+    conditions:
+      - "[STATUS] == ${GATUS_STATUS:-200}"
