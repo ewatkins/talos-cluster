@@ -60,9 +60,9 @@ My Kubernetes Cluster is deployed using [Talos](https://www.talos.dev/) Linux. I
 - [actions-runner-controller](https://github.com/actions/actions-runner-controller): Self-hosted Github runners.
 - [cert-manager](https://github.com/cert-manager/cert-manager): Creates SSL certificates for services in my cluster.
 - [cilium](https://github.com/cilium/cilium): Internal Kubernetes container networking interface.
-- [cloudflared](https://github.com/cloudflare/cloudflared): Enables Cloudflare secure access to certain ingresses.
+- [cloudflare-tunnel](https://github.com/cloudflare/cloudflared): Enables Cloudflare secure access to certain ingresses.
 - [grafana](https://grafana.com/): Visualization into my cluster.
-- [external-dns](https://github.com/kubernetes-sigs/external-dns): Automatically syncs ingress DNS records to a DNS provider.
+- [cloudflare-dns](https://github.com/kubernetes-sigs/external-dns): Automatically syncs ingress DNS records to a DNS provider.
 - [external-secrets](https://github.com/external-secrets/external-secrets): Managed Kubernetes secrets using an external provider (Bitwarden).
 - [ingress-nginx](https://github.com/kubernetes/ingress-nginx): Kubernetes ingress controller using NGINX as a reverse proxy and load balancer.
 - [prometheus](https://prometheus.io/): Cluster monitoring and metrics.
