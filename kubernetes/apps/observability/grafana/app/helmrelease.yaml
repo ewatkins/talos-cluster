@@ -142,7 +142,7 @@ spec:
               implementation: prometheus
     dashboards:
       default:
-        cloudflared:
+        cloudflare-tunnel:
           # renovate: depName="Cloudflare Tunnels (cloudflared)"
           gnetId: 17457
           revision: 6
