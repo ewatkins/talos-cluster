@@ -17,9 +17,9 @@ data:
       - name: s3
         group: infrastructure
         url: https://s3.ewatkins.dev
+        interval: 1m
         ui:
           hide-hostname: true
           hide-url: true
-        interval: 1m
         conditions:
           - "[STATUS] == 403"
