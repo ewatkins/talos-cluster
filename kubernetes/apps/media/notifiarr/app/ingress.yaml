@@ -4,9 +4,9 @@ kind: Ingress
 metadata:
   name: notifiarr
   annotations:
-    external-dns.alpha.kubernetes.io/target: "external.ewatkins.dev"
+    external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
 spec:
-  ingressClassName: external
+  ingressClassName: internal
   rules:
     - host: "${SECRET_NOTIFIARR_URL}"
       http:
