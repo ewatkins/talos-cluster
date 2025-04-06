@@ -25,10 +25,10 @@ spec:
   driftDetection:
     mode: enabled
     ignore:
-    - paths:
-      - /spec/containers/resources/limits
-      target:
-        kind: Pod
+      - paths:
+          - /spec/containers/resources/limits
+        target:
+          kind: Pod
   values:
     defaultPodOptions:
       securityContext:
@@ -46,10 +46,10 @@ spec:
               repository: redis/redisinsight
               tag: 2.68.0
             env:
-            - name: RI_FILES_LOGGER
-              value: "false"
-            - name: RI_STDOUT_LOGGER
-              value: "true"
+              - name: RI_FILES_LOGGER
+                value: "false"
+              - name: RI_STDOUT_LOGGER
+                value: "true"
             resources:
               requests:
                 cpu: 15m
@@ -59,7 +59,7 @@ spec:
             securityContext:
               allowPrivilegeEscalation: false
               # readOnlyRootFilesystem: true
-              capabilities: { drop: [ ALL ] }
+              capabilities: { drop: [ALL] }
     service:
       app:
         # name should not be 'redisinsight'  since the service creates environment variables
@@ -78,13 +78,12 @@ spec:
         enabled: true
         className: internal
         annotations:
-          nginx.ingress.kubernetes.io/whitelist-source-range: |
-            10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+          external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
         hosts:
-        - host: &host redis.ewatkins.dev
-          paths:
-          - path: /
-            pathType: Prefix
-            service:
-              identifier: app
-              port: http
+          - host: &host redis.ewatkins.dev
+            paths:
+              - path: /
+                pathType: Prefix
+                service:
+                  identifier: app
+                  port: http
