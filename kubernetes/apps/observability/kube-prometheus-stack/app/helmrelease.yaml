@@ -67,7 +67,7 @@ spec:
         enabled: true
         ingressClassName: internal
         annotations:
-          external-dns.alpha.kubernetes.io/hostname: "internal.ewatkins.dev"
+          external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
         hosts:
           - alerts.ewatkins.dev
 
