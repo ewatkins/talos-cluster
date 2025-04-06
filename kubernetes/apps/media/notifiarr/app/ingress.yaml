@@ -8,7 +8,7 @@ metadata:
 spec:
   ingressClassName: internal
   rules:
-    - host: "${SECRET_NOTIFIARR_URL}"
+    - host: "notifiarr.ewatkins.dev"
       http:
         paths:
           - path: /

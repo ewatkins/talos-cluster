@@ -37,12 +37,3 @@ endpoints:
     conditions:
       - "[STATUS] == 200"
       - "[BODY] == pat(*OK*)"
-  - name: notifiarr
-    group: media
-    url: https://${SECRET_NOTIFIARR_URL}
-    interval: 1m
-    ui:
-      hide-hostname: true
-      hide-url: true
-    conditions:
-      - "[STATUS] == 200"
