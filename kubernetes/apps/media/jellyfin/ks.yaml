@@ -12,8 +12,6 @@ spec:
       app.kubernetes.io/name: *app
   components:
     - ../../../../components/gatus/media
-  dependsOn:
-    - name: external-secrets-stores
   wait: false
   path: ./kubernetes/apps/media/jellyfin/app
   prune: true
