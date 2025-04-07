@@ -39,6 +39,8 @@ spec:
               JELLYFIN_FFmpeg__probesize: 50000000
               JELLYFIN_FFmpeg__analyzeduration: 50000000
               JELLYFIN_PublishedServerUrl: "https://jellynew.ewatkins.dev"
+              JELLYFIN_CONFIG_DIR: /etc/jellyfin
+              JELLYFIN_DATA_DIR: /var/lib/jellyfin
               TZ: ${TIMEZONE}
             probes:
               liveness: &probes
@@ -86,9 +88,14 @@ spec:
     persistence:
       config:
         enabled: true
-        existingClaim: *app
+        existingClaim: jellyfin-config
         globalMounts:
-          - path: /config
+          - path: /etc/jellyfin
+      data:
+        enabled: true
+        existingClaim: jellyfin-data
+        globalMounts:
+          - path: /var/lib/jellyfin
       media:
         enabled: true
         type: nfs
