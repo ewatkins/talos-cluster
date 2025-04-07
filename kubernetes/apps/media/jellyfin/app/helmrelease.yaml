@@ -22,11 +22,11 @@ spec:
   values:
     defaultPodOptions:
       enableServiceLinks: false
-      securityContext:
-        runAsUser: 568
-        runAsGroup: 568
-        fsGroup: 568
-        fsGroupChangePolicy: OnRootMismatch
+      # securityContext:
+      #  runAsUser: 568
+      #  runAsGroup: 568
+      #  fsGroup: 568
+      #  fsGroupChangePolicy: OnRootMismatch
     controllers:
       jellyfin:
         containers:
