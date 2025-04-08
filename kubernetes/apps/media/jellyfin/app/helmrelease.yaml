@@ -23,9 +23,9 @@ spec:
     defaultPodOptions:
       enableServiceLinks: false
       securityContext:
-        runAsUser: 1000
-        runAsGroup: 1000
-        fsGroup: 1000
+        runAsUser: 99
+        runAsGroup: 100
+        fsGroup: 100
         fsGroupChangePolicy: OnRootMismatch
     controllers:
       jellyfin:
@@ -38,9 +38,10 @@ spec:
               DOTNET_SYSTEM_IO_DISABLEFILELOCKING: "true"
               JELLYFIN_FFmpeg__probesize: 50000000
               JELLYFIN_FFmpeg__analyzeduration: 50000000
-              JELLYFIN_PublishedServerUrl: "https://jellynew.ewatkins.dev"
+              JELLYFIN_PublishedServerUrl: "https://jellyfin.ewatkins.dev"
               JELLYFIN_CONFIG_DIR: /etc/jellyfin
               JELLYFIN_DATA_DIR: /var/lib/jellyfin
+              JELLYFIN_CACHE_DIR: /var/cache/jellyfin
               TZ: ${TIMEZONE}
             probes:
               liveness: &probes
@@ -66,9 +67,10 @@ spec:
     service:
       app:
         controller: *app
+        annotations:
+          io.cilium/lb-ipam-ips: "10.30.4.12"
         type: LoadBalancer
-        loadBalancerIP: 10.30.4.12
-        externalTrafficPolicy: Local
+        externalTrafficPolicy: Cluster
         ports:
           http:
             port: 8096
@@ -79,7 +81,7 @@ spec:
         annotations:
           externaldns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
         hosts:
-          - host: "jellynew.ewatkins.dev"
+          - host: "jellyfin.ewatkins.dev"
             paths:
               - path: /
                 service:
@@ -110,6 +112,6 @@ spec:
           - path: /transcode
       cache:
         enabled: true
-        type: emptyDir
+        existingClaim: jellyfin-cache
         globalMounts:
-          - path: /cache
+          - path: /var/cache/jellyfin
