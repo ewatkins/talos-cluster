@@ -20,3 +20,14 @@ spec:
     requests:
       storage: 5Gi
   storageClassName: nfs-slow
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-cache
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: nfs-slow
