@@ -76,11 +76,13 @@ spec:
           externaldns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
         hosts:
           - host: requests.ewatkins.dev
-            paths:
+            paths: &paths
               - path: /
                 service:
                   identifier: app
                   port: http
+          - host: media.ewatkins.dev
+            paths: *paths
     persistence:
       config:
         existingClaim: jellyseerr-config
