@@ -30,6 +30,7 @@ spec:
               tag: 1.5.1@sha256:a1b0d3a4e6462adb448dbfe4bf466e1d1bc920c17ac97c705b6db6eeb02b37b9
             env:
               TZ: America/Chicago
+              BAZARR_CONFIG_DIR: /opt/bazarr/data
             probes:
               liveness: &probes
                 enabled: true
@@ -83,6 +84,7 @@ spec:
         existingClaim: bazarr-config
         globalMounts:
           - path: /opt/bazarr/data
+          - path: /config
       media:
         type: nfs
         server: caspian.local
