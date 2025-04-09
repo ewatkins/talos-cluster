@@ -3,7 +3,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app jellyfin
+  name: &app bazarr
   namespace: &namespace media
 spec:
   interval: 1h
@@ -22,21 +22,14 @@ spec:
       retries: 3
   values:
     controllers:
-      jellyfin:
+      bazarr:
         containers:
           app:
             image:
-              repository: ghcr.io/jellyfin/jellyfin
-              tag: 10.10.7@sha256:e4d1dc5374344446a3a78e43dd211247f22afba84ea2e5a13cbe1a94e1ff2141
+              repository: ghcr.io/home-operations/bazarr
+              tag: 1.5.1@sha256:a1b0d3a4e6462adb448dbfe4bf466e1d1bc920c17ac97c705b6db6eeb02b37b9
             env:
-              DOTNET_SYSTEM_IO_DISABLEFILELOCKING: "true"
-              JELLYFIN_FFmpeg__probesize: 50000000
-              JELLYFIN_FFmpeg__analyzeduration: 50000000
-              JELLYFIN_PublishedServerUrl: "https://jellyfin.ewatkins.dev"
-              JELLYFIN_CONFIG_DIR: /etc/jellyfin
-              JELLYFIN_DATA_DIR: /var/lib/jellyfin
-              JELLYFIN_CACHE_DIR: /var/cache/jellyfin
-              TZ: ${TIMEZONE}
+              TZ: America/Chicago
             probes:
               liveness: &probes
                 enabled: true
@@ -44,21 +37,21 @@ spec:
                 spec:
                   httpGet:
                     path: /health
-                    port: &port 8096
+                    port: &port 6767
                   initialDelaySeconds: 0
                   periodSeconds: 10
                   timeoutSeconds: 1
                   failureThreshold: 3
               readiness: *probes
-              startup:
-                enabled: false
+            securityContext: &securityContext
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
             resources:
               requests:
-                cpu: 100m
-                memory: 512Mi
+                cpu: 10m
               limits:
-                memory: 4Gi
-
+                memory: 1Gi
     defaultPodOptions:
       enableServiceLinks: false
       securityContext:
@@ -68,14 +61,10 @@ spec:
         fsGroupChangePolicy: OnRootMismatch
     service:
       app:
-        controller: *app
-        annotations:
-          io.cilium/lb-ipam-ips: "10.30.4.12"
-        type: LoadBalancer
-        externalTrafficPolicy: Cluster
+        controller: bazarr
         ports:
           http:
-            port: 8096
+            port: *port
     ingress:
       app:
         enabled: true
@@ -83,7 +72,7 @@ spec:
         annotations:
           externaldns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
         hosts:
-          - host: "jellyfin.ewatkins.dev"
+          - host: "bazarr.ewatkins.dev"
             paths:
               - path: /
                 service:
@@ -91,29 +80,12 @@ spec:
                   port: http
     persistence:
       config:
-        enabled: true
-        existingClaim: jellyfin-config
+        existingClaim: bazarr-config
         globalMounts:
-          - path: /etc/jellyfin
-      data:
-        enabled: true
-        existingClaim: jellyfin-data
-        globalMounts:
-          - path: /var/lib/jellyfin
+          - path: /opt/bazarr/data
       media:
-        enabled: true
         type: nfs
         server: caspian.local
         path: /mnt/user/arrdata
         globalMounts:
           - path: /mnt/arrdata
-      transcode:
-        enabled: true
-        type: emptyDir
-        globalMounts:
-          - path: /transcode
-      cache:
-        enabled: true
-        existingClaim: jellyfin-cache
-        globalMounts:
-          - path: /var/cache/jellyfin
