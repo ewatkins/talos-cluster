@@ -61,7 +61,7 @@ spec:
         - --retention.resolution-1h=60d
       persistence: &persistence
         enabled: true
-        storageClass: openebs-hostpath
+        storageClass: nfs-slow
         size: 10Gi
     query:
       replicas: 1 # TODO: increase to 2
