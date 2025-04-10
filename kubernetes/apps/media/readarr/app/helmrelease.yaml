@@ -1,9 +1,9 @@
 ---
-# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+# yaml-language-server: $schema=https://flux.tholinka.dev/helmrelease/v2/github/bjw-s/helm-charts/main/charts/library/common
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app bazarr
+  name: &app readarr
   namespace: &namespace media
 spec:
   interval: 1h
@@ -22,12 +22,12 @@ spec:
       retries: 3
   values:
     controllers:
-      bazarr:
+      readarr:
         containers:
           app:
             image:
-              repository: ghcr.io/home-operations/bazarr
-              tag: 1.5.1@sha256:a1b0d3a4e6462adb448dbfe4bf466e1d1bc920c17ac97c705b6db6eeb02b37b9
+              repository: ghcr.io/home-operations/readarr
+              tag: 0.4.13.2760@sha256:2fc04945fb840bc4f35e2f21c87be850c0fcd9b56fad4150381d482616675c32
             env:
               TZ: America/Chicago
             probes:
@@ -37,23 +37,22 @@ spec:
                 spec:
                   httpGet:
                     path: /health
-                    port: &port 6767
+                    port: &port 8787
                   initialDelaySeconds: 0
                   periodSeconds: 10
                   timeoutSeconds: 1
                   failureThreshold: 3
               readiness: *probes
-            securityContext: &securityContext
-              allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
-              capabilities: { drop: ["ALL"] }
             resources:
               requests:
-                cpu: 10m
+                cpu: 100m
               limits:
                 memory: 1Gi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ['ALL'] }
     defaultPodOptions:
-      enableServiceLinks: false
       securityContext:
         runAsUser: 99
         runAsGroup: 100
@@ -61,7 +60,7 @@ spec:
         fsGroupChangePolicy: OnRootMismatch
     service:
       app:
-        controller: bazarr
+        controller: readarr
         ports:
           http:
             port: *port
@@ -72,7 +71,7 @@ spec:
         annotations:
           externaldns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
         hosts:
-          - host: "bazarr.ewatkins.dev"
+          - host: "readarr.ewatkins.dev"
             paths:
               - path: /
                 service:
@@ -80,10 +79,17 @@ spec:
                   port: http
     persistence:
       config:
-        existingClaim: bazarr-config
+        existingClaim: readarr-config
         globalMounts:
-          - path: /opt/bazarr/data
+          - path: /var/lib/readarr
           - path: /config
+      config-cache:
+        existingClaim: readarr-cache
+        globalMounts:
+          - path: /var/lib/readarr/MediaCover
+          - path: /config/MediaCover
+      tmp:
+        type: emptyDir
       media:
         type: nfs
         server: caspian.local
