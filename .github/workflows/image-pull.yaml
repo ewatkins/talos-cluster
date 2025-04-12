@@ -46,7 +46,7 @@ jobs:
           args: >-
             get cluster
             --all-namespaces
-            --path /github/workspace/kubernetes/flux/cluster
+            --path /github/workspace/kubernetes/flux
             --enable-images
             --only-images
             --output json
@@ -89,7 +89,7 @@ jobs:
     if: ${{ needs.diff.outputs.images != '[]' }}
     needs: diff
     name: Image Pull - Pull Images
-    runs-on: gha-runner-scale-set
+    runs-on: talos-runner
     strategy:
       matrix:
         image: ${{ fromJSON(needs.diff.outputs.images) }}
