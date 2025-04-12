@@ -13,40 +13,64 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Generate Token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@3ff1caaa28b64c9cc276ce0a02e2ff584f3900c5 # v2.0.2
         id: app-token
         with:
           app-id: "${{ secrets.BOT_APP_ID }}"
           private-key: "${{ secrets.BOT_APP_PRIVATE_KEY }}"
 
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Get Previous Tag and Determine Next Tag
+        id: determine-next-tag
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
-          token: "${{ steps.app-token.outputs.token }}"
+          github-token: "${{ steps.app-token.outputs.token }}"
+          result-encoding: string
+          script: |
+            const { data: tags } = await github.rest.repos.listTags({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 1,
+            });
+
+            const prevTag = tags[0]?.name || "0.0.0"; // Default to "0.0.0" if no tags exist
+            const [prevMajor, prevMinor, prevPatch] = prevTag.split('.').map(Number);
+            const now = new Date();
+            const nextMajorMinor = `${now.getFullYear()}.${now.getMonth() + 1}`; // Months are 0-indexed in JavaScript
+            const nextPatch = `${prevMajor}.${prevMinor}` === nextMajorMinor ? prevPatch + 1 : 0;
+
+            console.log(`Previous tag: ${prevTag}`);
+            console.log(`Next tag: ${nextMajorMinor}.${nextPatch}`);
+
+            return `${nextMajorMinor}.${nextPatch}`;
 
       - name: Create Release
-        shell: bash
-        env:
-          GITHUB_TOKEN: "${{ steps.app-token.outputs.token }}"
-        run: |
-          # Retrieve previous release tag
-          previous_tag="$(gh release list --limit 1 | awk '{ print $1 }')"
-          previous_major="${previous_tag%%\.*}"
-          previous_minor="${previous_tag#*.}"
-          previous_minor="${previous_minor%.*}"
-          previous_patch="${previous_tag##*.}"
-          # Determine next release tag
-          next_major_minor="$(date +'%Y').$(date +'%-m')"
-          if [[ "${previous_major}.${previous_minor}" == "${next_major_minor}" ]]; then
-              echo "Month release already exists for year, incrementing patch number by 1"
-              next_patch="$((previous_patch + 1))"
-          else
-              echo "Month release does not exist for year, setting patch number to 0"
-              next_patch="0"
-          fi
-          # Create release
-          release_tag="${next_major_minor}.${next_patch}"
-          gh release create "${release_tag}" \
-              --repo="${GITHUB_REPOSITORY}" \
-              --title="${release_tag}" \
-              --generate-notes
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          github-token: "${{ steps.app-token.outputs.token }}"
+          script: |
+            # Create release
+            const release_tag = "${{ steps.determine-next-tag.outputs.result }}";
+
+            const tag = await github.rest.git.createTag({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag: tagName,
+              message: tagName,
+              object: context.sha,
+              type: "commit"
+            });
+
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/tags/${release_tag}`,
+              sha: tag.data.sha
+            });
+
+            github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: release_tag,
+              name: release_tag,
+              generate_release_notes: true
+            });
