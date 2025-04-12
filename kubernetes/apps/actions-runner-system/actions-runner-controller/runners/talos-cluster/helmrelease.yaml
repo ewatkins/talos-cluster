@@ -56,10 +56,9 @@ spec:
               - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
                 value: "false"
               - name: NODE
-                value: "10.30.4.5"
-                # valueFrom:
-                #  fieldRef:
-                #    fieldPath: metadata.Node
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.Node
             volumeMounts:
               - mountPath: /var/run/secrets/talos.dev
                 name: talos
@@ -68,4 +67,4 @@ spec:
         volumes:
           - name: talos
             secret:
-              secretName: talos-runner-secret
+              secretName: *name
