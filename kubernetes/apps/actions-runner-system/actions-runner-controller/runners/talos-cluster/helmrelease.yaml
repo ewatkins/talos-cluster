@@ -58,7 +58,7 @@ spec:
               - name: NODE
                 valueFrom:
                   fieldRef:
-                    fieldPath: metadata.Node
+                    fieldPath: status.hostIP
             volumeMounts:
               - mountPath: /var/run/secrets/talos.dev
                 name: talos
@@ -67,4 +67,4 @@ spec:
         volumes:
           - name: talos
             secret:
-              secretName: *name
+              secretName: talos-runner-secret
