@@ -4,13 +4,14 @@ Automated developer-oriented status page
 
 ## Config
 
-Adding something to be tracked with Gatus can either be done with adding it as an endpoint in the [config](app/resources/config.yaml), adding a configmap just for gatus, or adding it using the [templates](../../../templates/gatus/).
+Adding something to be tracked with Gatus can either be done with adding it as an endpoint in the [config](app/resources/config.yaml), adding a configmap just for gatus, or adding it using the [templates](../../../components/gatus/).
 
 ## Configmap
 
 If setting up a specific configmap just for the resource, the configmap should have the label of `gatus.io/enabled: "true"`
 
 Example:
+
 ```yaml
 ---
 apiVersion: v1
@@ -50,7 +51,7 @@ postBuild:
   substitute:
 ```
 
-`APP` - Application name, can be supplied with *app
+`APP` - Application name, can be supplied with \*app
 
 `GATUS_SUBDOMAIN` - Alternative subdomain that is not the app name
 
