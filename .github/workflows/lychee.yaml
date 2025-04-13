@@ -16,7 +16,7 @@ env:
 jobs:
   lychee:
     name: Lychee
-    runs-on: ["gha-runner-scale-set"]
+    runs-on: ubuntu-latest
     steps:
       - name: Generate Token
         uses: actions/create-github-app-token@v2
