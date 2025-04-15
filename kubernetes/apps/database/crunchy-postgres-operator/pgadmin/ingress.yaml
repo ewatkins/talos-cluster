@@ -1,0 +1,32 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pgadmin
+  annotations:
+    external-dns.alpha.kubernetes.io/target: internal.ewatkins.dev
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: pgAdmin
+    gethomepage.dev/description: psql management
+    gethomepage.dev/group: infra
+    gethomepage.dev/icon: sh-pgadmin.svg
+    gethomepage.dev/pod-selector: >-
+      app in (
+        pgadmin
+      )
+spec:
+  ingressClassName: internal
+  tls:
+    - hosts:
+        - &host pgadmin.ewatkins.dev
+  rules:
+    - host: *host
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: pgadmin
+                port:
+                  number: 5050

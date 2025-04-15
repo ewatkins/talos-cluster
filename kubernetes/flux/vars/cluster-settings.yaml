@@ -11,3 +11,5 @@ data:
 
   POSTGRES: "10.30.4.11"
   VECTOR: "10.30.4.13"
+
+  CRUNCHY_POSTGRES: "10.30.4.15"
