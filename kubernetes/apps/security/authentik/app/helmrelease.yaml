@@ -26,10 +26,8 @@ spec:
     global:
       podAnnotations:
         reloader.stakater.com/auto: "true"
-
       deploymentStrategy:
         type: RollingUpdate
-
       envFrom:
         - secretRef:
             name: authentik-secret
@@ -38,76 +36,52 @@ spec:
 
     authentik:
       avatars: "gravatar, initials"
-
       error_reporting:
         enable: false
         send_pii: false
-
       outposts:
         container_image_base: ghcr.io/goauthentik/%(type)s:%(version)s
-
       redis:
         host: dragonfly.database.svc.cluster.local
 
     server:
-      # initContainers:
-      #   - name: init-db
-      #     image: ghcr.io/ewatkins/postgres-init:16.8
-      #     imagePullPolicy: IfNotPresent
-      #     envFrom:
-      #       - secretRef:
-      #           name: authentik-db-init
-
       replicas: 2
-
       resources:
         requests:
           cpu: 100m
           memory: 588M
         limits:
           memory: 1002M
-
       metrics:
         prometheus:
           serviceMonitor:
             enabled: true
-
       ingress:
         enabled: true
         ingressClassName: external
-
         annotations:
           external-dns.alpha.kubernetes.io/target: "external.ewatkins.dev"
-
         hosts:
           - auth.ewatkins.dev
-
         https: false
-
       livenessProbe:
         initialDelaySeconds: 30
-
       readinessProbe:
         initialDelaySeconds: 30
-
       startupProbe:
         initialDelaySeconds: 30
 
     worker:
       replicas: 2
-
       resources:
         requests:
           cpu: 150m
           memory: 443M
         limits:
           memory: 938M
-
       livenessProbe:
         initialDelaySeconds: 30
-
       readinessProbe:
         initialDelaySeconds: 30
-
       startupProbe:
         initialDelaySeconds: 30
