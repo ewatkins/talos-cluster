@@ -31,6 +31,7 @@ spec:
           max_connections: 500
         pg_hba:
           - hostnossl all all 10.96.0.0/16 md5
+          - hostnossl all all 10.0.0.0/8 md5
           - hostssl all all all md5
 
   instances:
