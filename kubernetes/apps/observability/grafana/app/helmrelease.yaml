@@ -37,12 +37,12 @@ spec:
         target:
           kind: Pod
   values:
-    extraInitContainers:
-      - name: 01-init-db
-        image: ghcr.io/ewatkins/postgres-init:16.8
-        envFrom:
-          - secretRef:
-              name: &secret grafana-secret
+    # extraInitContainers:
+    #  - name: 01-init-db
+    #    image: ghcr.io/ewatkins/postgres-init:16.8
+    #    envFrom:
+    #      - secretRef:
+    #          name: &secret grafana-secret
     replicas: 1 # TODO: increase to 2
     env:
       GF_DATE_FORMATS_USE_BROWSER_LOCALE: true
@@ -52,7 +52,7 @@ spec:
       GF_SECURITY_ANGULAR_SUPPORT_ENABLED: true
       GF_SECURITY_COOKIE_SAMESITE: grafana
     envFromSecrets:
-      - name: *secret
+      - name: &secret grafana-secret
     grafana.ini:
       analytics:
         check_for_updates: false
@@ -177,8 +177,8 @@ spec:
           url: https://raw.githubusercontent.com/dragonflydb/dragonfly/main/tools/local/monitoring/grafana/provisioning/dashboards/dashboard.json
           datasource: Prometheus
         external-secrets:
-           url: https://raw.githubusercontent.com/external-secrets/external-secrets/main/docs/snippets/dashboard.json
-           datasource: Prometheus
+          url: https://raw.githubusercontent.com/external-secrets/external-secrets/main/docs/snippets/dashboard.json
+          datasource: Prometheus
         node-feature-discovery:
           url: https://raw.githubusercontent.com/kubernetes-sigs/node-feature-discovery/master/examples/grafana-dashboard.json
           datasource: Prometheus
