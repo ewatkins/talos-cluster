@@ -62,13 +62,16 @@ spec:
       password: &password
         type: AlphaNumeric
     # Applications
-    - name: "authentik"
+    - name: "authentik-admin"
       databases: ["authentik"]
       password: *password
-    - name: "gatus"
+    - name: "forgejo-admin"
+      databases: ["forgejo"]
+      password: *password
+    - name: "gatus-admin"
       databases: ["gatus"]
       password: *password
-    - name: "grafana"
+    - name: "grafana-admin"
       databases: ["grafana"]
       password: *password
 
