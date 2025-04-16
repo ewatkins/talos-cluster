@@ -149,13 +149,16 @@ spec:
   #       # volume: *nfs
   #       s3: *minio
 
+  service:
+    metadata:
+      annotations:
+        lbipam.cilium.io/ips: ${CRUNCHY_POSTGRES}
+    type: LoadBalancer
+
   proxy:
     pgBouncer:
       port: 5432
       service:
-        metadata:
-          annotations:
-            lbipam.cilium.io/ips: ${CRUNCHY_POSTGRES}
         type: LoadBalancer
       replicas: *replicas
       metadata:
