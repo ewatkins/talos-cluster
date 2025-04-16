@@ -10,8 +10,6 @@ spec:
   primaryUpdateStrategy: unsupervised
   primaryUpdateMethod: switchover
 
-  logLevel: debug
-
   postgresql:
     parameters:
       max_connections: "400"
@@ -65,7 +63,7 @@ spec:
       endpointURL: ${SECRET_R2_ENDPOINT}
       # Note: serverName version needs to be inclemented
       # when recovering from an existing cnpg cluster
-      serverName: &currentCluster postgres16-v5
+      serverName: &currentCluster postgres16-20250415001
       s3Credentials:
         accessKeyId:
           name: cloudflare-r2-secret
