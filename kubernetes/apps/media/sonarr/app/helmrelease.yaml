@@ -92,11 +92,6 @@ spec:
         globalMounts:
           - path: /var/lib/sonarr
           - path: /config
-      # config-cache:
-      #  existingClaim: sonarr-cache
-      #  globalMounts:
-      #    - path: /var/lib/sonarr/MediaCover
-      #    - path: /config/MediaCover
       media:
         type: nfs
         server: caspian.local
