@@ -114,20 +114,20 @@ spec:
   valuesFrom:
     # Database Secret
     - kind: Secret
-      name: &dbSecret forgejo-db-init
-      valuesKey: INIT_POSTGRES_HOST
+      name: &dbSecret forgejo-db
+      valuesKey: POSTGRES_HOST
       targetPath: gitea.config.database.HOST
     - kind: Secret
       name: *dbSecret
-      valuesKey: INIT_POSTGRES_DBNAME
+      valuesKey: POSTGRES_DBNAME
       targetPath: gitea.config.database.NAME
     - kind: Secret
       name: *dbSecret
-      valuesKey: INIT_POSTGRES_USER
+      valuesKey: POSTGRES_USER
       targetPath: gitea.config.database.USER
     - kind: Secret
       name: *dbSecret
-      valuesKey: INIT_POSTGRES_PASS
+      valuesKey: POSTGRES_PASS
       targetPath: gitea.config.database.PASSWD
 
       # Storage
