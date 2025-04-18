@@ -13,7 +13,7 @@ spec:
   components:
     - ../../../../components/gatus/external
   dependsOn:
-    - name: cloudnative-pg-cluster
+    - name: crunchy-postgres-operator-cluster
     - name: dragonfly-cluster
   path: ./kubernetes/apps/security/authentik/app
   prune: true
