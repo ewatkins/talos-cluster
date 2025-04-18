@@ -38,20 +38,3 @@ spec:
   interval: 30m
   retryInterval: 1m
   timeout: 3m
----
-# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: forgejo-init-db
-  namespace: flux-system
-spec:
-  targetNamespace: development
-  path: ./kubernetes/apps/development/forgejo/init-db
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: talos-cluster
-  interval: 30m
-  retryInterval: 1m
-  timeout: 3m
