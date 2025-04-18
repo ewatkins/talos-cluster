@@ -8,7 +8,6 @@ resources:
 
   # Flux-Kustomizations
   # Postgres
-  - ./cloudnative-pg/ks.yaml
   - ./crunchy-postgres-operator/ks.yaml
 
   # Redis
