@@ -9,6 +9,7 @@ resources:
   - ./system-upgrade-controller/ks.yaml
 configMapGenerator:
   - name: versions
+    namespace: system-upgrade
     envs:
       - versions.env
 generatorOptions:
