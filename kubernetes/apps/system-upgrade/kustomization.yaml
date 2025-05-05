@@ -9,7 +9,7 @@ resources:
   - ./system-upgrade-controller/ks.yaml
 configMapGenerator:
   - name: versions
-    env: ./versions.env
-    namespace: system-upgrade
+    envs:
+      - versions.env
 generatorOptions:
   disableNameSuffixHash: true
