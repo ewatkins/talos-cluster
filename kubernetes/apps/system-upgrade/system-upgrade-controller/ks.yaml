@@ -36,10 +36,17 @@ spec:
     - name: system-upgrade-controller
   interval: 30m
   path: ./kubernetes/apps/system-upgrade/system-upgrade-controller/plans
+  # postBuild:
+  #  substituteFrom:
+  #    - kind: ConfigMap
+  #      name: versions
   postBuild:
-    substituteFrom:
-      - kind: ConfigMap
-        name: versions
+    substitute:
+      TALOS_SCHEMATIC_ID: 1115d54aa5a8855bd413d98c022ada63bf6856d6777a7dd6a342ea74c9977e02
+      # renovate: datasource=docker depName=ghcr.io/siderolabs/installer
+      TALOS_VERSION: v1.9.5
+      # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
+      KUBERNETES_VERSION: v1.32.3
   prune: true
   retryInterval: 1m
   sourceRef:

@@ -10,5 +10,6 @@ resources:
 configMapGenerator:
   - name: versions
     env: ./versions.env
+    namespace: flux-system
 configurations:
   - ./kustomizeconfig.yaml
