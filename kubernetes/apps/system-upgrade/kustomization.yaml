@@ -7,10 +7,3 @@ resources:
   - ./namespace.yaml
   # Flux-Kustomizations
   - ./system-upgrade-controller/ks.yaml
-configMapGenerator:
-  - name: versions
-    namespace: system-upgrade
-    envs:
-      - versions.env
-generatorOptions:
-  disableNameSuffixHash: true
