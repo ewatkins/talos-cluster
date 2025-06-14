@@ -3,5 +3,6 @@ kind: Kustomization
 resources:
   - ./cluster-settings.yaml
   - ./bws.secret.sops.yaml
-  - ./cluster.externalsecret.yaml
+  # - ./cluster.externalsecret.yaml
+  - ./cluster-secrets.secret.sops.yaml
   - ./pushsecret.yaml
