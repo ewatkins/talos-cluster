@@ -15,8 +15,8 @@ spec:
     kind: GitRepository
     name: talos-cluster
   wait: true
-  dependsOn:
-    - name: cert-manager-issuers
+  # dependsOn:
+  #  - name: cert-manager-issuers
   interval: 120m
   timeout: 5m
 ---
