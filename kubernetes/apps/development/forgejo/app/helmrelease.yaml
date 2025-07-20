@@ -55,6 +55,8 @@ spec:
       enabled: false
     postgresql:
       enabled: false
+    valkey-cluster:
+      enabled: false
 
     gitea:
       admin:
