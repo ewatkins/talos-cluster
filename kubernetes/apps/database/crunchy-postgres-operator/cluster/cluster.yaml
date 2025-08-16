@@ -75,6 +75,9 @@ spec:
     - name: "grafana-admin"
       databases: ["grafana"]
       password: *password
+    - name: "paperless-admin"
+      databases: ["paperless"]
+      password: *password
 
   backups:
     pgbackrest:
