@@ -1,0 +1,100 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app pulse
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      pulse:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: docker.io/rcourtman/pulse
+              tag: v4.24.0@sha256:cd21be31392cfd597b65e7ba72786d821d88666537a43547af31cefcbf04b790
+            env:
+              TZ: America/Chicago
+              DISCOVERY_SUBNET: "10.30.2.0/24"
+              FRONTEND_PORT: &port 7655
+              BACKEND_PORT: *port
+              PULSE_PUBLIC_URL: https://pulse.ewatkins.dev
+            # envFrom:
+            #  - secretRef:
+            #      name: pulse-secret
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/health
+                    port: *port
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
+              readiness: *probes
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 10m
+                memory: 100Mi
+              limits:
+                memory: 256Mi
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+    service:
+      app:
+        controller: pulse
+        ports:
+          http:
+            port: *port
+    serviceMonitor:
+      app:
+        serviceName: pulse
+        endpoints:
+          - port: http
+    ingress:
+      app:
+        annotations:
+          external-dns.alpha.kubernetes.io/target: internal.ewatkins.dev
+        className: internal
+        hosts:
+          - host: pulse.ewatkins.dev
+            paths:
+              - path: /
+                service:
+                  identifier: app
+                  port: http
+    serviceAccount:
+      create: true
+      name: gatus
+    persistence:
+      pulse-data:
+        enabled: true
+        existingClaim: pulse-data
+        globalMounts:
+          - path: /data
