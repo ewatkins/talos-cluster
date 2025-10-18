@@ -16,4 +16,5 @@ resources:
   - ./kube-prometheus-stack/ks.yaml
   - ./loki/ks.yaml
   - ./promtail/ks.yaml
+  - ./pulse/ks.yaml
   - ./thanos/ks.yaml
