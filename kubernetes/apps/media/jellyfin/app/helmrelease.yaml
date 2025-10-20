@@ -120,7 +120,7 @@ spec:
           - path: /etc/jellyfin
       data:
         enabled: true
-        existingClaim: jellyfin-data
+        existingClaim: jellyfin-data-new
         globalMounts:
           - path: /var/lib/jellyfin
       media:
