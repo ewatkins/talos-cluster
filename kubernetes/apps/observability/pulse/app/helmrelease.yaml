@@ -72,6 +72,12 @@ spec:
         ports:
           http:
             port: *port
+    serviceMonitor:
+      main:
+        enabled: false
+        serviceName: pulse
+        endpoints:
+          - port: http
     ingress:
       app:
         annotations:
