@@ -32,7 +32,7 @@ spec:
               DISCOVERY_SUBNET: "10.30.2.0/24"
               FRONTEND_PORT: &port 7655
               BACKEND_PORT: *port
-              PULSE_PUBLIC_URL: https://pulse.ewatkins.dev
+              PUBLIC_URL: https://pulse.ewatkins.dev
             # envFrom:
             #  - secretRef:
             #      name: pulse-secret
