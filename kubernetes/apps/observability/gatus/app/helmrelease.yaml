@@ -12,7 +12,7 @@ spec:
     namespace: flux-system
   install:
     remediation:
-      retries: 3
+      retries: -1
   upgrade:
     cleanupOnFail: true
     remediation:
@@ -38,8 +38,9 @@ spec:
             resources:
               requests:
                 cpu: 10m
+                memory: 240Mi
               limits:
-                memory: 128Mi
+                memory: 320Mi
         containers:
           app:
             image:
@@ -74,17 +75,23 @@ spec:
               requests:
                 cpu: 100m
               limits:
-                memory: 256Mi
-    defaultPodOptions:
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
-        runAsGroup: 1000
-        fsGroup: 1000
-        fsGroupChangePolicy: OnRootMismatch
+                memory: 128Mi
+        pod:
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1022
+            runAsGroup: 1022
+            fsGroup: 1022
+            fsGroupChangePolicy: OnRootMismatch
+            sysctls:
+              - name: net.ipv4.ping_group_range
+                value: "0 2147483647"
+        serviceAccount:
+          identifier: gatus
     service:
       app:
         controller: gatus
+        ipFamilyPolicy: PreferDualStack
         ports:
           http:
             port: *port
@@ -93,6 +100,27 @@ spec:
         serviceName: gatus
         endpoints:
           - port: http
+            metricRelabelings:
+              - action: labeldrop
+                regex: (pod)
+              - action: replace
+                sourceLabels: ["service"]
+                targetLabel: instance
+    rbac:
+      roles:
+        gatus:
+          type: ClusterRole
+          rules:
+            - apiGroups: [""]
+              resources: ["configmaps", "secrets"]
+              verbs: ["get", "watch", "list"]
+      bindings:
+        gatus:
+          type: ClusterRoleBinding
+          roleRef:
+            identifier: gatus
+          subjects:
+            - identifier: gatus
     ingress:
       app:
         annotations:
@@ -106,11 +134,10 @@ spec:
                   identifier: app
                   port: http
     serviceAccount:
-      create: true
-      name: gatus
+      gatus: {}
     persistence:
       config:
-        existingClaim: gatus
+        type: emptyDir
       config-file:
         type: configMap
         name: gatus-configmap
