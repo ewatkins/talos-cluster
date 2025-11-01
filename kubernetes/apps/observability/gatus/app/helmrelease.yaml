@@ -88,6 +88,7 @@ spec:
                 value: "0 2147483647"
         serviceAccount:
           identifier: gatus
+          namespace: observability
     service:
       app:
         controller: gatus
