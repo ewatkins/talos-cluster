@@ -39,10 +39,10 @@ spec:
       type: kubernetes
       kubernetesModeWorkVolumeClaim:
         accessModes: ["ReadWriteOnce"]
-        storageClassName: openebs-hostpath
+        storageClassName: nfs-fast
         resources:
           requests:
-            storage: 25Gi
+            storage: 10Gi
     controllerServiceAccount:
       name: actions-runner-controller
       namespace: actions-runner-system
