@@ -113,6 +113,6 @@ spec:
     persistence:
       config:
         enabled: true
-        existingClaim: minio-nfs
+        existingClaim: minio-data
         globalMounts:
           - path: /data
