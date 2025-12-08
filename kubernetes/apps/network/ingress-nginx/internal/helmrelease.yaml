@@ -23,6 +23,8 @@ spec:
       retries: 3
   values:
     fullnameOverride: ingress-nginx-internal
+    tcp:
+      "22": "development/forgejo-ssh:22" # Forward SSH for Forgejo
     controller:
       replicaCount: 1
       service:
