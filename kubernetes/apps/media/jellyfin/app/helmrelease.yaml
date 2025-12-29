@@ -23,6 +23,8 @@ spec:
   values:
     controllers:
       jellyfin:
+        annotations:
+          reloader.stakater.com/auto: "true"
         containers:
           app:
             image:
@@ -38,57 +40,49 @@ spec:
               JELLYFIN_CACHE_DIR: /var/cache/jellyfin
               TZ: ${TIMEZONE}
             probes:
-              liveness:
-                enabled: false
-                # custom: true
-                # spec:
-                #   httpGet:
-                #     path: /health
-                #     port: 8096
-                #   initialDelaySeconds: 60 # Give Jellyfin more time to start
-                #   periodSeconds: 15 # Check less frequently
-                #   timeoutSeconds: 5 # Shorten to reduce pressure
-                #   failureThreshold: 5 # Allow more failures before restart
-              readiness:
-                enabled: false
-                # custom: true
-                # spec:
-                #   httpGet:
-                #     path: /health
-                #     port: 8096
-                #   initialDelaySeconds: 30
-                #   periodSeconds: 10
-                #   timeoutSeconds: 5
-                #   failureThreshold: 3
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health
+                    port: &port 8096
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
+              readiness: *probes
               startup:
-                enabled: false # Enable startup probe if supported
-                # custom: true
-                # spec:
-                #   httpGet:
-                #     path: /health
-                #     port: 8096
-                #   failureThreshold: 30 # Allow up to 5 minutes for startup
-                #   periodSeconds: 10
-                #   timeoutSeconds: 5
+                enabled: true
+                spec:
+                  failureThreshold: 30
+                  periodSeconds: 10
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
             resources:
+              claims:
+                - name: gpu
               requests:
                 cpu: 100m
-                memory: 4Gi
-                gpu.intel.com/i915: "1"
+                memory: 1Gi
               limits:
-                memory: 8Gi
-                gpu.intel.com/i915: "1"
-    defaultPodOptions:
-      enableServiceLinks: false
-      securityContext:
-        runAsUser: 99
-        runAsGroup: 100
-        fsGroup: 100
-        fsGroupChangePolicy: OnRootMismatch
-        supplementalGroups:
-          - 44
-          - 105
-          - 10000
+                memory: 4Gi
+        pod:
+          resourceClaims:
+            - name: gpu
+              resourceClaimTemplateName: jellyfin
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 99
+            runAsGroup: 100
+            fsGroup: 100
+            fsGroupChangePolicy: OnRootMismatch
+            supplementalGroups:
+              - 44
+              - 105
+              - 10000
     service:
       app:
         controller: *app
