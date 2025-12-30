@@ -59,6 +59,8 @@ spec:
                 memory: 100Mi
               limits:
                 memory: 256Mi
+        serviceAccount:
+          identifier: pulse
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
@@ -91,8 +93,7 @@ spec:
                   identifier: app
                   port: http
     serviceAccount:
-      create: true
-      name: gatus
+      pulse: {}
     persistence:
       pulse-data:
         enabled: true
