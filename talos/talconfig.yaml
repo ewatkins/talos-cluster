@@ -1,6 +1,8 @@
 ---
 clusterName: great-lakes
+# renovate: datasource=docker depName=ghcr.io/siderolabs/installer
 talosVersion: v1.12.0
+# renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
 kubernetesVersion: v1.34.3
 endpoint: https://10.30.4.0:6443
 allowSchedulingOnControlPlanes: true
