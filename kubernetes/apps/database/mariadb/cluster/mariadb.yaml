@@ -1,0 +1,11 @@
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: MariaDB
+metadata:
+  name: mariadb-repl
+spec:
+  replicas: 3
+  replication:
+    enabled: true
+  storage:
+    size: 5Gi
+    storageClassName: openebs-hostpath
