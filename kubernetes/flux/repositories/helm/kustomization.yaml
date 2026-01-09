@@ -16,6 +16,7 @@ resources:
   - ./intel.yaml
   - ./k8s-gateway.yaml
   - ./jetstack.yaml
+  - ./mariadb.yaml
   - ./metrics-server.yaml
   - ./node-feature-discovery.yaml
   - ./openebs.yaml
