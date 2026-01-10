@@ -6,6 +6,7 @@ metadata:
 resources:
   - ./externalsecret.yaml
   - ./mariadb.yaml
+  - ./maxscale.yaml
 
   # Pterodactyl
   - ./users/pterodactyl.yaml
@@ -15,3 +16,4 @@ resources:
   - ./users/luckperms.yaml
   - ./databases/luckperms.yaml
   - ./grants/luckperms.yaml
+  - ./connections/luckperms.yaml
