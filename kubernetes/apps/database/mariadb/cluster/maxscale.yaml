@@ -44,11 +44,11 @@ spec:
       annotations:
         lbipam.cilium.io/ips: ${MARIADB_MAXSCALE}
 
-  guiKubernetesService:
-    type: LoadBalancer
-    metadata:
-      annotations:
-        lbipam.cilium.io/ips: ${MARIADB_MAXSCALE_GUI}
+  # guiKubernetesService:
+  #   type: LoadBalancer
+  #  metadata:
+  #    annotations:
+  #      lbipam.cilium.io/ips: ${MARIADB_MAXSCALE_GUI}
 
   connection:
     secretName: mxs-galera-conn
