@@ -37,9 +37,10 @@ spec:
       timeout: 10s
 
   auth:
-    generate: true
-    adminUsername: admin
+    generate: false
+    adminUsername: mariadb-operator
     adminPasswordSecretKeyRef:
+      generate: false
       name: mariadb-root-secret
       key: password
 
