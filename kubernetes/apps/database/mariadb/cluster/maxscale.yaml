@@ -29,6 +29,7 @@ spec:
     port: 8989
     guiEnabled: true
 
+
   config:
     sync:
       database: mysql
@@ -37,18 +38,22 @@ spec:
 
   auth:
     generate: true
+    adminUsername: admin
+    adminPasswordSecretKeyRef:
+      name: mariadb-root-secret
+      key: password
 
   kubernetesService:
     type: LoadBalancer
     metadata:
       annotations:
-        lbipam.cilium.io/ips: ${MARIADB_MAXSCALE}
+        lbipam.cilium.io/ips: ${MAXSCALE}
 
-  # guiKubernetesService:
-  #   type: LoadBalancer
-  #  metadata:
-  #    annotations:
-  #      lbipam.cilium.io/ips: ${MARIADB_MAXSCALE_GUI}
+  guiKubernetesService:
+    type: LoadBalancer
+    metadata:
+      annotations:
+        lbipam.cilium.io/ips: ${MAXSCALE_GUI}
 
   connection:
     secretName: mxs-galera-conn
@@ -56,8 +61,5 @@ spec:
 
   metrics:
     enabled: true
-
-  # tls:
-  #   enabled: true
 
   requeueInterval: 1h

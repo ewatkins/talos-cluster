@@ -16,24 +16,6 @@ spec:
   galera:
     enabled: true
 
-  service:
-    type: LoadBalancer
-    metadata:
-      annotations:
-        lbipam.cilium.io/ips: ${MARIADB_SVC}
-
-  primaryService:
-    type: LoadBalancer
-    metadata:
-      annotations:
-        lbipam.cilium.io/ips: ${MARIADB_PRIMARY}
-
-  secondaryService:
-    type: LoadBalancer
-    metadata:
-      annotations:
-        lbipam.cilium.io/ips: ${MARIADB_SECONDARY}
-
   metrics:
     enabled: true
 
