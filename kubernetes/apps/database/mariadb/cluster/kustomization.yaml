@@ -4,4 +4,14 @@ metadata:
   name: helmrelease.mariadb-operator-crds
   namespace: flux-system
 resources:
+  - ./externalsecret.yaml
   - ./mariadb.yaml
+
+  # Pterodactyl
+  - ./users/pterodactyl.yaml
+  - ./grants/pterodactyl.yaml
+
+  # LuckPerms
+  - ./users/luckperms.yaml
+  - ./databases/luckperms.yaml
+  - ./grants/luckperms.yaml
