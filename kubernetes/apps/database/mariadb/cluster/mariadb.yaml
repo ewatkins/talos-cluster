@@ -1,8 +1,12 @@
 apiVersion: k8s.mariadb.com/v1alpha1
 kind: MariaDB
 metadata:
-  name: mariadb-repl
+  name: mariadb
 spec:
+  rootPasswordSecretKeyRef:
+    name: mariadb-root-secret
+    key: password
+
   replicas: 3
   replication:
     enabled: true
