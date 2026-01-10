@@ -7,16 +7,33 @@ spec:
     name: mariadb-root-secret
     key: password
 
-  replicas: 3
-  replication:
-    enabled: true
   storage:
     size: 5Gi
     storageClassName: openebs-hostpath
+
+  replicas: 3
+
+  galera:
+    enabled: true
 
   service:
     type: LoadBalancer
     metadata:
       annotations:
-        lbipam.cilium.io/ips: ${MARIADB}
+        lbipam.cilium.io/ips: ${MARIADB_SVC}
+
+  primaryService:
+    type: LoadBalancer
+    metadata:
+      annotations:
+        lbipam.cilium.io/ips: ${MARIADB_PRIMARY}
+
+  secondaryService:
+    type: LoadBalancer
+    metadata:
+      annotations:
+        lbipam.cilium.io/ips: ${MARIADB_SECONDARY}
+
+  metrics:
+    enabled: true
 

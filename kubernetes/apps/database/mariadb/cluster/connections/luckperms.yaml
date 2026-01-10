@@ -1,0 +1,19 @@
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Connection
+metadata:
+  name: luckperms
+spec:
+  maxScaleRef:
+    name: maxscale
+
+  username: luckperms
+  passwordSecretKeyRef:
+    name: luckperms-secret
+    key: password
+
+  secretName: conn-luckperms
+  port: 3306
+
+  # this will consume connections from the MaxScale client
+  healthCheck:
+    interval: 30s
