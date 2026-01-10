@@ -13,3 +13,10 @@ spec:
   storage:
     size: 5Gi
     storageClassName: openebs-hostpath
+
+  service:
+    type: LoadBalancer
+    metadata:
+      annotations:
+        lbipam.cilium.io/ips: ${MARIADB}
+
