@@ -18,6 +18,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: maxscale
+                name: maxscale-gui
                 port:
                   number: 8989
