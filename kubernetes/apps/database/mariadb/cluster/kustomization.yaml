@@ -17,4 +17,3 @@ resources:
   - ./users/luckperms.yaml
   - ./databases/luckperms.yaml
   - ./grants/luckperms.yaml
-  - ./connections/luckperms.yaml
