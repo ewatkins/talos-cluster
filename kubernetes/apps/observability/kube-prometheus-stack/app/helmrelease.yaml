@@ -99,9 +99,9 @@ spec:
     kubeControllerManager:
       enabled: true
       endpoints: &cp
-        - 10.30.4.1
-        - 10.30.4.2
-        - 10.30.4.3
+        - "{SUPERIOR}"
+        - "{HURON}"
+        - "{MICHIGAN}"
 
     kubeEtcd:
       enabled: true

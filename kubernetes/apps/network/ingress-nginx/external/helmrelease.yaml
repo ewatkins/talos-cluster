@@ -30,7 +30,7 @@ spec:
       service:
         annotations:
           external-dns.alpha.kubernetes.io/hostname: "external.ewatkins.dev"
-          io.cilium/lb-ipam-ips: "10.30.4.30"
+          io.cilium/lb-ipam-ips: "{EXTERNAL}"
         externalTrafficPolicy: Cluster
       ingressClassResource:
         name: external

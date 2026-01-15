@@ -28,6 +28,6 @@ spec:
       type: LoadBalancer
       port: 53
       annotations:
-        io.cilium/lb-ipam-ips: "10.30.4.20"
+        io.cilium/lb-ipam-ips: "{K8S_GATEWAY}"
       externalTrafficPolicy: Cluster
     watchedResources: ["Ingress", "Service"]

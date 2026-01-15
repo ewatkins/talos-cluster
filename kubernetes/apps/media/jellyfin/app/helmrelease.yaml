@@ -80,7 +80,7 @@ spec:
       app:
         controller: *app
         annotations:
-          io.cilium/lb-ipam-ips: "10.30.4.12"
+          io.cilium/lb-ipam-ips: "{JELLYFIN}"
         type: LoadBalancer
         externalTrafficPolicy: Cluster
         ports:
