@@ -23,7 +23,7 @@ nodes:
       - deviceSelector:
           hardwareAddr: bc:24:11:be:76:01
         addresses:
-          - 10.40.1.1/8
+          - 10.40.1.1/16
         routes:
           - network: 0.0.0.0/0
             gateway: 10.0.0.1
@@ -45,7 +45,7 @@ nodes:
       - deviceSelector:
           hardwareAddr: bc:24:11:be:76:02
         addresses:
-          - 10.30.4.2/8
+          - 10.30.4.2/16
         routes:
           - network: 0.0.0.0/0
             gateway: 10.0.0.1
@@ -67,7 +67,7 @@ nodes:
       - deviceSelector:
           hardwareAddr: bc:24:11:be:76:03
         addresses:
-          - 10.30.4.3/8
+          - 10.30.4.3/16
         routes:
           - network: 0.0.0.0/0
             gateway: 10.0.0.1
@@ -89,7 +89,7 @@ nodes:
       - deviceSelector:
           hardwareAddr: bc:24:11:be:76:04
         addresses:
-          - 10.30.4.4/8
+          - 10.30.4.4/16
         routes:
           - network: 0.0.0.0/0
             gateway: 10.0.0.1
@@ -109,7 +109,7 @@ nodes:
       - deviceSelector:
           hardwareAddr: bc:24:11:be:76:05
         addresses:
-          - 10.30.4.5/8
+          - 10.30.4.5/16
         routes:
           - network: 0.0.0.0/0
             gateway: 10.0.0.1
@@ -187,7 +187,7 @@ controlPlane:
       machine:
         network:
           extraHostEntries:
-            - ip: 10.30.4.1
+            - ip: 10.40.1.1
               aliases:
                 - superior
                 - superior.ewatkins.dev
@@ -266,7 +266,7 @@ worker:
       machine:
         network:
           extraHostEntries:
-            - ip: 10.30.4.1
+            - ip: 10.40.1.1
               aliases:
                 - superior
                 - superior.ewatkins.dev

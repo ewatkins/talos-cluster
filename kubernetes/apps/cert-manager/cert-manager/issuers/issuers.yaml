@@ -5,7 +5,6 @@ metadata:
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory
-    email: "${SECRET_ACME_EMAIL}"
     privateKeySecretRef:
       name: letsencrypt-production
     solvers:
@@ -25,7 +24,6 @@ metadata:
 spec:
   acme:
     server: https://acme-staging-v02.api.letsencrypt.org/directory
-    email: "${SECRET_ACME_EMAIL}"
     privateKeySecretRef:
       name: letsencrypt-staging
     solvers:

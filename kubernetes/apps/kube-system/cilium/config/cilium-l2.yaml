@@ -19,5 +19,7 @@ kind: CiliumLoadBalancerIPPool
 metadata:
   name: l2-pool
 spec:
-  - start: "{NODE_CIDR_START}"
-    stop: "{NODE_CIDR_END}"
+  blocks:
+    - cidr: "10.40.1.0/32"
+    - start: "${NODE_CIDR_START}"
+      stop: "${NODE_CIDR_END}"
