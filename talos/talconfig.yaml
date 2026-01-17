@@ -20,9 +20,8 @@ nodes:
     ipAddress: 10.40.1.1
     installDisk: /dev/sda
     networkInterfaces:
-      - interface: ens18
-        #deviceSelector:
-        #  hardwareAddr: bc:24:11:be:76:01
+      - deviceSelector:
+          hardwareAddr: bc:24:11:be:76:01
         addresses:
           - 10.30.4.1/11
         routes:
@@ -30,15 +29,16 @@ nodes:
             gateway: 10.0.0.1
         mtu: 1500
         dhcp: false
-      - interface: ens19
-        #deviceSelector:
-        #  hardwareAddr: bc:24:11:be:77:01
+      - deviceSelector:
+          hardwareAddr: bc:24:11:be:77:01
         addresses:
           - 10.40.1.1/16
         routes:
           - network: 0.0.0.0/0
             gateway: 10.40.0.1
             metric: 100
+        vip:
+          ip: 10.40.1.0
     certSANs:
       # Node IPs (new network)
       - 10.40.1.1
@@ -65,9 +65,8 @@ nodes:
     ipAddress: 10.40.1.2
     installDisk: /dev/sda
     networkInterfaces:
-      - interface: ens18
-        #deviceSelector:
-        #  hardwareAddr: bc:24:11:be:76:02
+      - deviceSelector:
+          hardwareAddr: bc:24:11:be:76:02
         addresses:
           - 10.30.4.2/11
         routes:
@@ -75,15 +74,16 @@ nodes:
             gateway: 10.0.0.1
         mtu: 1500
         dhcp: false
-      - interface: ens19
-        #deviceSelector:
-        #  hardwareAddr: bc:24:11:be:77:02
+      - deviceSelector:
+          hardwareAddr: bc:24:11:be:77:02
         addresses:
           - 10.40.1.2/16
         routes:
           - network: 0.0.0.0/0
             gateway: 10.40.0.1
             metric: 100
+        vip:
+          ip: 10.40.1.0
     certSANs:
       # Node IPs (new network)
       - 10.40.1.1
@@ -110,9 +110,8 @@ nodes:
     ipAddress: 10.40.1.3
     installDisk: /dev/sda
     networkInterfaces:
-      - interface: ens18
-        #deviceSelector:
-        #  hardwareAddr: bc:24:11:be:76:03
+      - deviceSelector:
+          hardwareAddr: bc:24:11:be:76:03
         addresses:
           - 10.30.4.3/11
         routes:
@@ -120,15 +119,16 @@ nodes:
             gateway: 10.0.0.1
         mtu: 1500
         dhcp: false
-      - interface: ens19
-        #deviceSelector:
-        #  hardwareAddr: bc:24:11:be:77:03
+      - deviceSelector:
+          hardwareAddr: bc:24:11:be:77:03
         addresses:
           - 10.40.1.3/16
         routes:
           - network: 0.0.0.0/0
             gateway: 10.40.0.1
             metric: 100
+        vip:
+          ip: 10.40.1.0
     certSANs:
       # Node IPs (new network)
       - 10.40.1.1
@@ -152,12 +152,11 @@ nodes:
       - kubernetes.default.svc.cluster.local
   - hostname: erie
     controlPlane: false
-    ipAddress: 10.30.4.4
+    ipAddress: 10.40.1.4
     installDisk: /dev/sda
     networkInterfaces:
-      - interface: ens18
-        #deviceSelector:
-        #  hardwareAddr: bc:24:11:be:76:04
+      - deviceSelector:
+          hardwareAddr: bc:24:11:be:76:04
         addresses:
           - 10.30.4.4/11
         routes:
@@ -165,9 +164,8 @@ nodes:
             gateway: 10.0.0.1
         mtu: 1500
         dhcp: false
-      - interface: ens19
-        #deviceSelector:
-        #  hardwareAddr: bc:24:11:be:77:04
+      - deviceSelector:
+          hardwareAddr: bc:24:11:be:77:04
         addresses:
           - 10.40.1.4/16
         routes:
@@ -200,9 +198,8 @@ nodes:
     ipAddress: 10.40.1.5
     installDisk: /dev/sda
     networkInterfaces:
-      - interface: ens18
-        #deviceSelector:
-        #  hardwareAddr: bc:24:11:be:76:05
+      - deviceSelector:
+          hardwareAddr: bc:24:11:be:76:05
         addresses:
           - 10.30.4.5/11
         routes:
@@ -210,9 +207,8 @@ nodes:
             gateway: 10.0.0.1
         mtu: 1500
         dhcp: false
-      - interface: ens19
-        # deviceSelector:
-        #  hardwareAddr: bc:24:11:be:77:05
+      - deviceSelector:
+          hardwareAddr: bc:24:11:be:77:05
         addresses:
           - 10.40.1.5/16
         routes:
