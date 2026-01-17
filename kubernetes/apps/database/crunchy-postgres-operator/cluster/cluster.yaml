@@ -149,14 +149,14 @@ spec:
             incremental: "30 2 * * 1-6/2" # Mon-Sat at 02:30, every 2nd day
 
   # dataSource:
-  #   pgbackrest:
-  #     stanza: db
-  #     configuration: *backupConfig
-  #     global: *backupFlag
-  #     repo:
-  #       name: repo2
-  #       # volume: *nfs
-  #       s3: *minio
+  #  pgbackrest:
+  #    stanza: db
+  #    configuration: *backupConfig
+  #    global: *backupFlag
+  #    repo:
+  #      name: repo3
+  # volume: *nfs
+  #      s3: *r2
 
   service:
     metadata:

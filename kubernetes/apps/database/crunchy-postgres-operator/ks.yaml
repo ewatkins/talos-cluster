@@ -41,6 +41,15 @@ spec:
   dependsOn:
     - name: crunchy-postgres-operator
     - name: external-secrets-stores
+  patches:
+    - target:
+        kind: Role
+        name: crunchy-postgres-instance
+        namespace: database
+      patch: |
+        - op: replace
+          path: /rules/2/verbs
+          value: ["get", "list", "patch", "update", "watch"]
 ---
 # yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
