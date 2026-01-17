@@ -4,123 +4,242 @@ clusterName: great-lakes
 talosVersion: v1.12.0
 # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
 kubernetesVersion: v1.35.0
-endpoint: https://10.30.4.0:6443
+endpoint: https://10.40.1.1:6443
 allowSchedulingOnControlPlanes: true
 cniConfig:
   name: none
 additionalApiServerCertSans:
   - cluster.local
 clusterPodNets:
-  - 10.69.0.0/16
+  - 10.40.64.0/18
 clusterSvcNets:
-  - 10.96.0.0/16
+  - 10.40.128.0/17
 nodes:
   - hostname: superior
     controlPlane: true
     ipAddress: 10.40.1.1
     installDisk: /dev/sda
     networkInterfaces:
-      - deviceSelector:
-          hardwareAddr: bc:24:11:be:76:01
+      - interface: ens18
+        #deviceSelector:
+        #  hardwareAddr: bc:24:11:be:76:01
+        addresses:
+          - 10.30.4.1/11
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 10.0.0.1
+        mtu: 1500
+        dhcp: false
+      - interface: ens19
+        #deviceSelector:
+        #  hardwareAddr: bc:24:11:be:77:01
         addresses:
           - 10.40.1.1/16
         routes:
           - network: 0.0.0.0/0
-            gateway: 10.0.0.1
-        mtu: 1500
-        dhcp: false
-        vip:
-          ip: 10.30.4.0
+            gateway: 10.40.0.1
+            metric: 100
     certSANs:
-      - 127.0.0.1
-      - 10.30.4.0
-      - 10.30.4.1
-      - 10.40.1.0
+      # Node IPs (new network)
       - 10.40.1.1
+      - 10.40.1.2
+      - 10.40.1.3
+      - 10.40.1.4
+      - 10.40.1.5
+      # Old node IPs (during migration)
+      - 10.30.4.1
+      - 10.30.4.2
+      - 10.30.4.3
+      - 10.30.4.4
+      - 10.30.4.5
+      # Load balancers / VIPs
+      - 10.30.4.0
+      - 10.40.1.0
+      # DNS names
+      - kubernetes
+      - kubernetes.default
+      - kubernetes.default.svc
+      - kubernetes.default.svc.cluster.local
   - hostname: huron
     controlPlane: true
-    ipAddress: 10.30.4.2
+    ipAddress: 10.40.1.2
     installDisk: /dev/sda
     networkInterfaces:
-      - deviceSelector:
-          hardwareAddr: bc:24:11:be:76:02
+      - interface: ens18
+        #deviceSelector:
+        #  hardwareAddr: bc:24:11:be:76:02
         addresses:
-          - 10.30.4.2/16
+          - 10.30.4.2/11
         routes:
           - network: 0.0.0.0/0
             gateway: 10.0.0.1
         mtu: 1500
         dhcp: false
-        vip:
-          ip: 10.30.4.0
+      - interface: ens19
+        #deviceSelector:
+        #  hardwareAddr: bc:24:11:be:77:02
+        addresses:
+          - 10.40.1.2/16
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 10.40.0.1
+            metric: 100
     certSANs:
-      - 127.0.0.1
-      - 10.30.4.0
-      - 10.30.4.2
-      - 10.40.1.0
+      # Node IPs (new network)
+      - 10.40.1.1
       - 10.40.1.2
+      - 10.40.1.3
+      - 10.40.1.4
+      - 10.40.1.5
+      # Old node IPs (during migration)
+      - 10.30.4.1
+      - 10.30.4.2
+      - 10.30.4.3
+      - 10.30.4.4
+      - 10.30.4.5
+      # Load balancers / VIPs
+      - 10.30.4.0
+      - 10.40.1.0
+      # DNS names
+      - kubernetes
+      - kubernetes.default
+      - kubernetes.default.svc
+      - kubernetes.default.svc.cluster.local
   - hostname: michigan
     controlPlane: true
-    ipAddress: 10.30.4.3
+    ipAddress: 10.40.1.3
     installDisk: /dev/sda
     networkInterfaces:
-      - deviceSelector:
-          hardwareAddr: bc:24:11:be:76:03
+      - interface: ens18
+        #deviceSelector:
+        #  hardwareAddr: bc:24:11:be:76:03
         addresses:
-          - 10.30.4.3/16
+          - 10.30.4.3/11
         routes:
           - network: 0.0.0.0/0
             gateway: 10.0.0.1
         mtu: 1500
         dhcp: false
-        vip:
-          ip: 10.30.4.0
+      - interface: ens19
+        #deviceSelector:
+        #  hardwareAddr: bc:24:11:be:77:03
+        addresses:
+          - 10.40.1.3/16
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 10.40.0.1
+            metric: 100
     certSANs:
-      - 127.0.0.1
-      - 10.30.4.0
-      - 10.30.4.3
-      - 10.40.1.0
+      # Node IPs (new network)
+      - 10.40.1.1
+      - 10.40.1.2
       - 10.40.1.3
+      - 10.40.1.4
+      - 10.40.1.5
+      # Old node IPs (during migration)
+      - 10.30.4.1
+      - 10.30.4.2
+      - 10.30.4.3
+      - 10.30.4.4
+      - 10.30.4.5
+      # Load balancers / VIPs
+      - 10.30.4.0
+      - 10.40.1.0
+      # DNS names
+      - kubernetes
+      - kubernetes.default
+      - kubernetes.default.svc
+      - kubernetes.default.svc.cluster.local
   - hostname: erie
     controlPlane: false
     ipAddress: 10.30.4.4
     installDisk: /dev/sda
     networkInterfaces:
-      - deviceSelector:
-          hardwareAddr: bc:24:11:be:76:04
+      - interface: ens18
+        #deviceSelector:
+        #  hardwareAddr: bc:24:11:be:76:04
         addresses:
-          - 10.30.4.4/16
+          - 10.30.4.4/11
         routes:
           - network: 0.0.0.0/0
             gateway: 10.0.0.1
         mtu: 1500
         dhcp: false
+      - interface: ens19
+        #deviceSelector:
+        #  hardwareAddr: bc:24:11:be:77:04
+        addresses:
+          - 10.40.1.4/16
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 10.40.0.1
+            metric: 100
     certSANs:
-      - 127.0.0.1
-      - 10.30.4.0
-      - 10.30.4.4
-      - 10.40.1.0
+      # Node IPs (new network)
+      - 10.40.1.1
+      - 10.40.1.2
+      - 10.40.1.3
       - 10.40.1.4
+      - 10.40.1.5
+      # Old node IPs (during migration)
+      - 10.30.4.1
+      - 10.30.4.2
+      - 10.30.4.3
+      - 10.30.4.4
+      - 10.30.4.5
+      # Load balancers / VIPs
+      - 10.30.4.0
+      - 10.40.1.0
+      # DNS names
+      - kubernetes
+      - kubernetes.default
+      - kubernetes.default.svc
+      - kubernetes.default.svc.cluster.local
   - hostname: ontario
     controlPlane: false
-    ipAddress: 10.30.4.5
+    ipAddress: 10.40.1.5
     installDisk: /dev/sda
     networkInterfaces:
-      - deviceSelector:
-          hardwareAddr: bc:24:11:be:76:05
+      - interface: ens18
+        #deviceSelector:
+        #  hardwareAddr: bc:24:11:be:76:05
         addresses:
-          - 10.30.4.5/16
+          - 10.30.4.5/11
         routes:
           - network: 0.0.0.0/0
             gateway: 10.0.0.1
         mtu: 1500
         dhcp: false
+      - interface: ens19
+        # deviceSelector:
+        #  hardwareAddr: bc:24:11:be:77:05
+        addresses:
+          - 10.40.1.5/16
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 10.40.0.1
+            metric: 100
     certSANs:
-      - 127.0.0.1
-      - 10.30.4.0
-      - 10.30.4.5
-      - 10.40.1.0
+      # Node IPs (new network)
+      - 10.40.1.1
+      - 10.40.1.2
+      - 10.40.1.3
+      - 10.40.1.4
       - 10.40.1.5
+      # Old node IPs (during migration)
+      - 10.30.4.1
+      - 10.30.4.2
+      - 10.30.4.3
+      - 10.30.4.4
+      - 10.30.4.5
+      # Load balancers / VIPs
+      - 10.30.4.0
+      - 10.40.1.0
+      # DNS names
+      - kubernetes
+      - kubernetes.default
+      - kubernetes.default.svc
+      - kubernetes.default.svc.cluster.local
 controlPlane:
   nameservers:
     - 10.0.0.1
@@ -183,30 +302,6 @@ controlPlane:
             enabled: true
             resolveMemberNames: true
             forwardKubeDNSToHost: false
-    - |
-      machine:
-        network:
-          extraHostEntries:
-            - ip: 10.40.1.1
-              aliases:
-                - superior
-                - superior.ewatkins.dev
-            - ip: 10.30.4.2
-              aliases:
-                - huron
-                - huron.ewatkins.dev
-            - ip: 10.30.4.3
-              aliases:
-                - michigan
-                - michigan.ewatkins.dev
-            - ip: 10.30.4.4
-              aliases:
-                - erie
-                - erie.ewatkins.dev
-            - ip: 10.30.4.5
-              aliases:
-                - ontario
-                - ontario.ewatkins.dev
 worker:
   nameservers:
     - 10.0.0.1
@@ -262,27 +357,3 @@ worker:
             enabled: true
             resolveMemberNames: true
             forwardKubeDNSToHost: false
-    - |
-      machine:
-        network:
-          extraHostEntries:
-            - ip: 10.40.1.1
-              aliases:
-                - superior
-                - superior.ewatkins.dev
-            - ip: 10.30.4.2
-              aliases:
-                - huron
-                - huron.ewatkins.dev
-            - ip: 10.30.4.3
-              aliases:
-                - michigan
-                - michigan.ewatkins.dev
-            - ip: 10.30.4.4
-              aliases:
-                - erie
-                - erie.ewatkins.dev
-            - ip: 10.30.4.5
-              aliases:
-                - ontario
-                - ontario.ewatkins.dev
