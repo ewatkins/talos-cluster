@@ -1,0 +1,34 @@
+---
+# yaml-language-server: $schema=https://kube-schemas.pages.dev/external-secrets.io/externalsecret_v1beta1.json
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: &name essentialsxgui-secret
+spec:
+  refreshInterval: 15m
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: bitwarden-secrets-manager
+  target:
+    name: *name
+    template:
+      engineVersion: v2
+      data:
+        password: "{{ .password}}"
+  dataFrom:
+    - extract:
+        key: *name
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: User
+metadata:
+  name: essentialsxgui
+spec:
+  mariaDbRef:
+    name: mariadb
+
+  passwordSecretKeyRef:
+    name: essentialsxgui-secret
+    key: password
+
+  maxUserConnections: 20
