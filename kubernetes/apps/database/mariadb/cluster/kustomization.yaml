@@ -37,3 +37,8 @@ resources:
   - ./users/essentialsxgui.yaml
   - ./databases/essentialsxgui.yaml
   - ./grants/essentialsxgui.yaml
+
+  # AuraSkills
+  - ./users/auraskills.yaml
+  - ./databases/auraskills.yaml
+  - ./grants/auraskills.yaml
