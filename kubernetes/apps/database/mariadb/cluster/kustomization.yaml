@@ -17,3 +17,8 @@ resources:
   - ./users/luckperms.yaml
   - ./databases/luckperms.yaml
   - ./grants/luckperms.yaml
+
+  # Bluemap
+  - ./users/bluemap.yaml
+  - ./databases/bluemap.yaml
+  - ./grants/bluemap.yaml
