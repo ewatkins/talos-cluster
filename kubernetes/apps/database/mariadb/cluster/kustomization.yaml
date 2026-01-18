@@ -22,3 +22,8 @@ resources:
   - ./users/bluemap.yaml
   - ./databases/bluemap.yaml
   - ./grants/bluemap.yaml
+
+  # Jobs
+  - ./users/jobs.yaml
+  - ./databases/jobs.yaml
+  - ./grants/jobs.yaml
