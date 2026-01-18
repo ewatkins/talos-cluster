@@ -32,3 +32,8 @@ resources:
   - ./users/playerpoints.yaml
   - ./databases/playerpoints.yaml
   - ./grants/playerpoints.yaml
+
+  # EssentialsX GUI
+  - ./users/essentialsxgui.yaml
+  - ./databases/essentialsxgui.yaml
+  - ./grants/essentialsxgui.yaml
