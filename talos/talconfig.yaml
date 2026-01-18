@@ -4,15 +4,14 @@ clusterName: great-lakes
 talosVersion: v1.12.0
 # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
 kubernetesVersion: v1.35.0
-endpoint: https://10.40.1.1:6443
+endpoint: https://10.40.1.100:6443
 allowSchedulingOnControlPlanes: true
 cniConfig:
   name: none
 additionalApiServerCertSans:
   - cluster.local
 clusterPodNets:
-  - 10.69.0.0/16      # Old CIDR - temporary
-  # - 10.40.64.0/18     # New CIDR - target
+  - 10.69.0.0/16
 clusterSvcNets:
   - 10.96.0.0/16
 nodes:
@@ -21,117 +20,63 @@ nodes:
     ipAddress: 10.40.1.1
     installDisk: /dev/sda
     networkInterfaces:
-      # - deviceSelector:
-      #     hardwareAddr: bc:24:11:be:76:01
-      #   addresses:
-      #     - 10.30.4.1/11
-      #   routes:
-      #     - network: 0.0.0.0/0
-      #       gateway: 10.0.0.1
-      #   mtu: 1500
-      #   dhcp: false
       - deviceSelector:
           hardwareAddr: bc:24:11:be:77:01
+        dhcp: false
         addresses:
           - 10.40.1.1/16
-        routes:
-          - network: 0.0.0.0/0
-            gateway: 10.40.0.1
-            metric: 100
         vip:
-          ip: 10.40.1.0
+          ip: 10.40.1.100
   - hostname: huron
     controlPlane: true
     ipAddress: 10.40.1.2
     installDisk: /dev/sda
     networkInterfaces:
-      # - deviceSelector:
-      #     hardwareAddr: bc:24:11:be:76:02
-      #   addresses:
-      #     - 10.30.4.2/11
-      #   routes:
-      #     - network: 0.0.0.0/0
-      #       gateway: 10.0.0.1
-      #   mtu: 1500
-      #   dhcp: false
       - deviceSelector:
           hardwareAddr: bc:24:11:be:77:02
+        dhcp: false
         addresses:
           - 10.40.1.2/16
-        routes:
-          - network: 0.0.0.0/0
-            gateway: 10.40.0.1
-            metric: 100
         vip:
-          ip: 10.40.1.0
+          ip: 10.40.1.100
   - hostname: michigan
     controlPlane: true
     ipAddress: 10.40.1.3
     installDisk: /dev/sda
     networkInterfaces:
-      # - deviceSelector:
-      #     hardwareAddr: bc:24:11:be:76:03
-      #   addresses:
-      #     - 10.30.4.3/11
-      #   routes:
-      #     - network: 0.0.0.0/0
-      #       gateway: 10.0.0.1
-      #   mtu: 1500
-      #   dhcp: false
       - deviceSelector:
           hardwareAddr: bc:24:11:be:77:03
+        dhcp: false
         addresses:
           - 10.40.1.3/16
-        routes:
-          - network: 0.0.0.0/0
-            gateway: 10.40.0.1
-            metric: 100
         vip:
-          ip: 10.40.1.0
+          ip: 10.40.1.100
   - hostname: erie
     controlPlane: false
     ipAddress: 10.40.1.4
     installDisk: /dev/sda
     networkInterfaces:
-      # - deviceSelector:
-      #     hardwareAddr: bc:24:11:be:76:04
-      #   addresses:
-      #     - 10.30.4.4/11
-      #   routes:
-      #     - network: 0.0.0.0/0
-      #       gateway: 10.0.0.1
-      #   mtu: 1500
-      #   dhcp: false
       - deviceSelector:
           hardwareAddr: bc:24:11:be:77:04
+        dhcp: false
         addresses:
           - 10.40.1.4/16
         routes:
           - network: 0.0.0.0/0
             gateway: 10.40.0.1
-            metric: 100
   - hostname: ontario
     controlPlane: false
     ipAddress: 10.40.1.5
     installDisk: /dev/sda
     networkInterfaces:
-      # - deviceSelector:
-      #     hardwareAddr: bc:24:11:be:76:05
-      #   addresses:
-      #     - 10.30.4.5/11
-      #   routes:
-      #     - network: 0.0.0.0/0
-      #       gateway: 10.0.0.1
-      #   mtu: 1500
-      #   dhcp: false
       - deviceSelector:
           hardwareAddr: bc:24:11:be:77:05
+        dhcp: false
         addresses:
           - 10.40.1.5/16
         routes:
           - network: 0.0.0.0/0
             gateway: 10.40.0.1
-            metric: 100
 controlPlane:
   nameservers:
     - 10.0.0.1
@@ -140,26 +85,11 @@ controlPlane:
       - 10.40.1.1
       - 10.40.1.2
       - 10.40.1.3
-      - 10.40.1.4
-      - 10.40.1.5
-      # Old node IPs (during migration)
-      - 10.30.4.1
-      - 10.30.4.2
-      - 10.30.4.3
-      - 10.30.4.4
-      - 10.30.4.5
       # Load balancers / VIPs
-      - 10.30.4.0
-      - 10.40.1.0
+      - 10.40.1.100
       # Pod/Service Networks
       - 10.69.0.0/16
-      - 10.40.64.0/18
       - 10.96.0.0/16
-      # DNS names
-      - kubernetes
-      - kubernetes.default
-      - kubernetes.default.svc
-      - kubernetes.default.svc.cluster.local
   machineFiles:
     - content: |-
         [plugins."io.containerd.cri.v1.images"]
@@ -183,7 +113,7 @@ controlPlane:
         kubelet:
           nodeIP:
             validSubnets:
-              - 10.40.1.0/24
+              - 10.40.1.0/16
           extraMounts:
             - destination: /var/openebs/local
               type: bind
@@ -226,30 +156,12 @@ worker:
   nameservers:
     - 10.0.0.1
   certSANs:
-      # Node IPs (new network)
-      - 10.40.1.1
-      - 10.40.1.2
-      - 10.40.1.3
+      # Node IPs
       - 10.40.1.4
       - 10.40.1.5
-      # Old node IPs (during migration)
-      - 10.30.4.1
-      - 10.30.4.2
-      - 10.30.4.3
-      - 10.30.4.4
-      - 10.30.4.5
-      # Load balancers / VIPs
-      - 10.30.4.0
-      - 10.40.1.0
       # Pod/Service Networks
       - 10.69.0.0/16
-      - 10.40.64.0/18
       - 10.96.0.0/16
-      # DNS names
-      - kubernetes
-      - kubernetes.default
-      - kubernetes.default.svc
-      - kubernetes.default.svc.cluster.local
   machineFiles:
     - content: |-
         [plugins."io.containerd.cri.v1.images"]
@@ -273,7 +185,7 @@ worker:
         kubelet:
           nodeIP:
             validSubnets:
-              - 10.40.1.0/24
+              - 10.40.1.0/16
           extraMounts:
             - destination: /var/openebs/local
               type: bind
