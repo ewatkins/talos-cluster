@@ -27,3 +27,8 @@ resources:
   - ./users/jobs.yaml
   - ./databases/jobs.yaml
   - ./grants/jobs.yaml
+
+  # PlayerPoints
+  - ./users/playerpoints.yaml
+  - ./databases/playerpoints.yaml
+  - ./grants/playerpoints.yaml
