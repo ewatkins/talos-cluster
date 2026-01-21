@@ -47,3 +47,8 @@ resources:
   - ./users/ultraspawners.yaml
   - ./databases/ultraspawners.yaml
   - ./grants/ultraspawners.yaml
+
+  # Privault
+  - ./users/privault.yaml
+  - ./databases/privault.yaml
+  - ./grants/privault.yaml

@@ -1,0 +1,12 @@
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Grant
+metadata:
+  name: privault
+spec:
+  mariaDbRef:
+    name: mariadb
+  privileges:
+    - "ALL PRIVILEGES"
+  database: privault
+  table: "*"
+  username: privault
