@@ -42,3 +42,8 @@ resources:
   - ./users/auraskills.yaml
   - ./databases/auraskills.yaml
   - ./grants/auraskills.yaml
+
+  # UltraSpawners
+  - ./users/ultraspawners.yaml
+  - ./databases/ultraspawners.yaml
+  - ./grants/ultraspawners.yaml
