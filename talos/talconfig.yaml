@@ -14,59 +14,81 @@ clusterPodNets:
   - 10.69.0.0/16
 clusterSvcNets:
   - 10.96.0.0/16
+patches:
+  - |-
+    machine:
+      kubelet:
+        nodeIP:
+          validSubnets:
+            - 10.40.0.1/16
+        extraMounts:
+          - destination: /var/openebs/local
+            type: bind
+            source: /var/openebs/local
+            options:
+              - rbind
+              - rshared
+              - rw
+        extraArgs:
+          rotate-server-certificates: "true"
 nodes:
   - hostname: superior
-    controlPlane: true
     ipAddress: 10.40.1.1
+    controlPlane: true
     installDisk: /dev/sda
     networkInterfaces:
       - deviceSelector:
           hardwareAddr: bc:24:11:be:77:01
-        dhcp: false
         addresses:
           - 10.40.1.1/16
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 10.40.0.1
         vip:
           ip: 10.40.1.100
   - hostname: huron
-    controlPlane: true
     ipAddress: 10.40.1.2
+    controlPlane: true
     installDisk: /dev/sda
     networkInterfaces:
       - deviceSelector:
           hardwareAddr: bc:24:11:be:77:02
-        dhcp: false
         addresses:
           - 10.40.1.2/16
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 10.40.0.1
         vip:
           ip: 10.40.1.100
   - hostname: michigan
-    controlPlane: true
     ipAddress: 10.40.1.3
+    controlPlane: true
     installDisk: /dev/sda
     networkInterfaces:
       - deviceSelector:
           hardwareAddr: bc:24:11:be:77:03
-        dhcp: false
         addresses:
           - 10.40.1.3/16
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 10.40.0.1
         vip:
           ip: 10.40.1.100
   - hostname: erie
-    controlPlane: false
     ipAddress: 10.40.1.4
+    controlPlane: false
     installDisk: /dev/sda
     networkInterfaces:
       - deviceSelector:
           hardwareAddr: bc:24:11:be:77:04
-        dhcp: false
         addresses:
           - 10.40.1.4/16
         routes:
           - network: 0.0.0.0/0
             gateway: 10.40.0.1
   - hostname: ontario
-    controlPlane: false
     ipAddress: 10.40.1.5
+    controlPlane: false
     installDisk: /dev/sda
     networkInterfaces:
       - deviceSelector:
@@ -78,18 +100,27 @@ nodes:
           - network: 0.0.0.0/0
             gateway: 10.40.0.1
 controlPlane:
+  schematic:
+    customization:
+      extraKernelArgs:
+        - net.ifnames=0
+      systemExtensions:
+        officialExtensions:
+          - siderolabs/intel-ucode
+          - siderolabs/i915
+          - siderolabs/qemu-guest-agent
   nameservers:
     - 10.0.0.1
   certSANs:
-      # Node IPs (new network)
-      - 10.40.1.1
-      - 10.40.1.2
-      - 10.40.1.3
-      # Load balancers / VIPs
-      - 10.40.1.100
-      # Pod/Service Networks
-      - 10.69.0.0/16
-      - 10.96.0.0/16
+    # Node IPs
+    - 10.40.1.1
+    - 10.40.1.2
+    - 10.40.1.3
+    # Load balancers / VIPs
+    - 10.40.1.100
+    # Pod/Service Networks
+    - 10.69.0.0/16
+    - 10.96.0.0/16
   machineFiles:
     - content: |-
         [plugins."io.containerd.cri.v1.images"]
@@ -101,32 +132,22 @@ controlPlane:
       path: /etc/cri/conf.d/20-customization.part
       op: create
   disableSearchDomain: true
-  schematic:
-    customization:
-      systemExtensions:
-        officialExtensions:
-          - siderolabs/i915
-          - siderolabs/qemu-guest-agent
   patches:
     - |-
-      machine:
-        kubelet:
-          nodeIP:
-            validSubnets:
-              - 10.40.1.0/16
-          extraMounts:
-            - destination: /var/openebs/local
-              type: bind
-              source: /var/openebs/local
-              options:
-                - rbind
-                - rshared
-                - rw
-    - |-
-      machine:
-        kubelet:
+      cluster:
+        apiServer:
           extraArgs:
-            rotate-server-certificates: "true"
+            feature-gates: MutatingAdmissionPolicy=true
+            runtime-config: admissionregistration.k8s.io/v1beta1=true
+        controllerManager:
+          extraArgs:
+            bind-address: "0.0.0.0"
+        scheduler:
+          extraArgs:
+            bind-address: "0.0.0.0"
+        etcd:
+          extraArgs:
+            listen-metrics-urls: "http://0.0.0.0:2381"
     - |-
       machine:
         sysctls:
@@ -156,12 +177,12 @@ worker:
   nameservers:
     - 10.0.0.1
   certSANs:
-      # Node IPs
-      - 10.40.1.4
-      - 10.40.1.5
-      # Pod/Service Networks
-      - 10.69.0.0/16
-      - 10.96.0.0/16
+    # Node IPs
+    - 10.40.1.4
+    - 10.40.1.5
+    # Pod/Service Networks
+    - 10.69.0.0/16
+    - 10.96.0.0/16
   machineFiles:
     - content: |-
         [plugins."io.containerd.cri.v1.images"]
@@ -175,30 +196,14 @@ worker:
   disableSearchDomain: true
   schematic:
     customization:
+      extraKernelArgs:
+        - net.ifnames=0
       systemExtensions:
         officialExtensions:
+          - siderolabs/intel-ucode
           - siderolabs/i915
           - siderolabs/qemu-guest-agent
   patches:
-    - |-
-      machine:
-        kubelet:
-          nodeIP:
-            validSubnets:
-              - 10.40.1.0/16
-          extraMounts:
-            - destination: /var/openebs/local
-              type: bind
-              source: /var/openebs/local
-              options:
-                - rbind
-                - rshared
-                - rw
-    - |-
-      machine:
-        kubelet:
-          extraArgs:
-            rotate-server-certificates: "true"
     - |-
       machine:
         sysctls:
