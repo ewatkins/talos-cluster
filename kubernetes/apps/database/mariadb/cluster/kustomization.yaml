@@ -8,6 +8,7 @@ resources:
   - ./mariadb.yaml
   - ./maxscale.yaml
   - ./ingress.yaml
+  - ./gatus.yaml
 
   # Pterodactyl
   - ./users/pterodactyl.yaml
