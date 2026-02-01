@@ -21,4 +21,4 @@ spec:
 
   myCnf: |
     [mariadb]
-    transaction-isolation = READ-COMMITTED
+    transaction-isolation = REPEATABLE-READ
