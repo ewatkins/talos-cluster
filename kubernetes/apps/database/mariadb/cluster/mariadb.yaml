@@ -21,4 +21,4 @@ spec:
 
   myCnf: |
     [mariadb]
-    transaction-isolation = READ_UNCOMMITTED
+    transaction_isolation = READ-COMMITTED
