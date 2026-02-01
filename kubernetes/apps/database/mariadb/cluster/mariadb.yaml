@@ -19,3 +19,6 @@ spec:
   metrics:
     enabled: true
 
+  myCnf: |
+    [mariadb]
+    transaction-isolation = READ-COMMITTED
