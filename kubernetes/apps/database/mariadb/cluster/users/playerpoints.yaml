@@ -31,4 +31,4 @@ spec:
     name: playerpoints-secret
     key: password
 
-  maxUserConnections: 20
+  maxUserConnections: 0

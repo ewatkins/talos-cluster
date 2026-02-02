@@ -31,4 +31,4 @@ spec:
     name: luckperms-secret
     key: password
 
-  maxUserConnections: 20
+  maxUserConnections: 0
