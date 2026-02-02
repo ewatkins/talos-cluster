@@ -31,4 +31,4 @@ spec:
     name: pterodactyl-secret
     key: password
 
-  maxUserConnections: 20
+  maxUserConnections: 0

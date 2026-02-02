@@ -31,4 +31,4 @@ spec:
     name: essentialsxgui-secret
     key: password
 
-  maxUserConnections: 20
+  maxUserConnections: 0
