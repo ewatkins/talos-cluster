@@ -3,7 +3,7 @@ autoDirectNodeRoutes: true
 bgpControlPlane:
   enabled: true
 bpf:
-  masquerade: false
+  masquerade: true
 cgroup:
   automount:
     enabled: false
@@ -21,7 +21,7 @@ hubble:
   enabled: false
 ipam:
   mode: kubernetes
-ipv4NativeRoutingCIDR: "10.40.64.0/18"
+ipv4NativeRoutingCIDR: "10.69.0.0/16"
 k8sServiceHost: 127.0.0.1
 k8sServicePort: 7445
 kubeProxyReplacement: true
