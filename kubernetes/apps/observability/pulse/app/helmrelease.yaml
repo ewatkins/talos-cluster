@@ -29,7 +29,7 @@ spec:
               tag: 5.1.2@sha256:83986ba32a6094b7e85d7a2cb6227ee36077030088f5329dbdfc203d9024a795
             env:
               TZ: America/Chicago
-              DISCOVERY_SUBNET: "10.30.2.0/24"
+              DISCOVERY_SUBNET: "10.40.1.0/24"
               FRONTEND_PORT: &port 7655
               BACKEND_PORT: *port
               PUBLIC_URL: https://pulse.ewatkins.dev
