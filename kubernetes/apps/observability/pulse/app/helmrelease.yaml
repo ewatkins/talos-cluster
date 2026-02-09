@@ -29,8 +29,8 @@ spec:
               tag: 5.1.5@sha256:c9a7240a4beb23f1cbbc17f702465807c5c3e811771e7ee11eb6968a1e41e59f
             env:
               TZ: America/Chicago
-              FRONTEND_PORT: &port "7655"
-              BACKEND_PORT: *port
+              FRONTEND_PORT: 7655
+              BACKEND_PORT: 7655
             # envFrom:
             #  - secretRef:
             #      name: pulse-secret
@@ -41,7 +41,7 @@ spec:
                 spec:
                   httpGet:
                     path: /api/health
-                    port: *port
+                    port: 7655
                   initialDelaySeconds: 0
                   periodSeconds: 10
                   timeoutSeconds: 1
@@ -75,7 +75,7 @@ spec:
         externalTrafficPolicy: Cluster
         ports:
           http:
-            port: *port
+            port: 7655
     serviceMonitor:
       main:
         enabled: false
