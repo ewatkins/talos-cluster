@@ -29,10 +29,8 @@ spec:
               tag: 5.1.5@sha256:c9a7240a4beb23f1cbbc17f702465807c5c3e811771e7ee11eb6968a1e41e59f
             env:
               TZ: America/Chicago
-              DISCOVERY_SUBNET: "10.40.1.0/24"
-              FRONTEND_PORT: &port 7655
+              FRONTEND_PORT: &port "7655"
               BACKEND_PORT: *port
-              PUBLIC_URL: https://pulse.ewatkins.dev
             # envFrom:
             #  - secretRef:
             #      name: pulse-secret
@@ -71,6 +69,10 @@ spec:
     service:
       app:
         controller: pulse
+        annotations:
+          io.cilium/lb-ipam-ips: "${PULSE}"
+        type: LoadBalancer
+        externalTrafficPolicy: Cluster
         ports:
           http:
             port: *port
