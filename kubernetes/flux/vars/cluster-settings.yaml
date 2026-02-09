@@ -33,3 +33,6 @@ data:
 
   # VECTOR
   VECTOR: "10.40.0.130"
+
+  # PULSE
+  PULSE: "10.40.0.135"
