@@ -13,6 +13,5 @@ resources:
   - ./paperless/ks.yaml
   - ./prowlarr/ks.yaml
   - ./radarr/ks.yaml
-  - ./readarr/ks.yaml
   - ./recommendarr/ks.yaml
   - ./sonarr/ks.yaml
