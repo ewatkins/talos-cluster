@@ -43,3 +43,8 @@ resources:
   - ./users/auraskills.yaml
   - ./databases/auraskills.yaml
   - ./grants/auraskills.yaml
+
+  # WildStacker
+  - ./users/wildstacker.yaml
+  - ./databases/wildstacker.yaml
+  - ./grants/wildstacker.yaml
