@@ -81,22 +81,7 @@ spec:
             scrapeTimeout: 10s
     ingress:
       app:
-        annotations:
-          external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
-        className: internal
-        hosts:
-          - host: "{{ .Release.Name }}.ewatkins.dev"
-            paths:
-              - path: /
-                service:
-                  identifier: app
-                  port: http
-          - host: s3.ewatkins.dev
-            paths:
-              - path: /
-                service:
-                  identifier: app
-                  port: s3
+        enabled: false
     persistence:
       config:
         enabled: true

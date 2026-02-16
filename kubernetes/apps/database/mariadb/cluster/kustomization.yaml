@@ -7,7 +7,7 @@ resources:
   - ./externalsecret.yaml
   - ./mariadb.yaml
   - ./maxscale.yaml
-  - ./ingress.yaml
+  - ./httproute.yaml
   - ./gatus.yaml
 
   # Pterodactyl

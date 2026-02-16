@@ -6,6 +6,7 @@ resources:
   - ./bucket.yaml
   - ./helmrelease.yaml
   - ./externalsecret.yaml
+  - ./httproute.yaml
 configMapGenerator:
   - name: thanos-cache-configmap
     files:

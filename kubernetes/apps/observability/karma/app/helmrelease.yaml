@@ -80,17 +80,7 @@ spec:
             scrapeTimeout: 10s
     ingress:
       app:
-        className: internal
-        annotations:
-          external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
-        hosts:
-          - host: &host karma.ewatkins.dev
-            paths:
-              - path: /
-                pathType: Prefix
-                service:
-                  identifier: app
-                  port: http
+        enabled: false
     persistence:
       config:
         type: emptyDir
