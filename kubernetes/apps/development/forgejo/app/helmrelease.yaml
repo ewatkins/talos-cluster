@@ -34,17 +34,7 @@ spec:
       ssh:
         port: 22
     ingress:
-      enabled: true
-      className: internal
-      annotations:
-        external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
-        nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-        nginx.ingress.kubernetes.io/ssl-passthrough: "true"
-      hosts:
-        - host: &host git.ewatkins.dev
-          paths:
-            - path: /
-              pathType: Prefix
+      enabled: false
     persistence:
       enabled: true
       create: false

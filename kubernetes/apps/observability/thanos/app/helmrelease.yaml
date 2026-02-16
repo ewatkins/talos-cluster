@@ -77,12 +77,7 @@ spec:
               key: cache.yaml
       extraArgs: ["--query-range.response-cache-config=$(THANOS_CACHE_CONFIG)"]
       ingress:
-        enabled: true
-        annotations:
-          external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
-        ingressClassName: internal
-        hosts:
-          - thanos.ewatkins.dev
+        enabled: false
       podAnnotations: &podAnnotations
         configmap.reloader.stakater.com/reload: *configMap
     rule:

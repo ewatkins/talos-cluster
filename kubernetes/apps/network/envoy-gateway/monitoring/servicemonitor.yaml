@@ -1,0 +1,16 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: envoy-gateway
+  namespace: network
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gateway-helm
+  namespaceSelector:
+    matchNames:
+      - envoy-gateway-system
+  endpoints:
+    - port: metrics
+      interval: 1m

@@ -52,15 +52,7 @@ spec:
       enabled: true
       replicaCount: 1
       ingress:
-        enabled: true
-        ingressClassName: internal
-        annotations:
-          external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
-        hosts:
-          - host: &host "goldilocks.ewatkins.dev"
-            paths:
-              - path: /
-                type: Prefix
+        enabled: false
       resources:
         requests:
           cpu: 15m

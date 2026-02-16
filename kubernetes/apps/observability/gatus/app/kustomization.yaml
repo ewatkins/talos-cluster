@@ -8,6 +8,7 @@ resources:
   - ./prometheusrule.yaml
   - ./pvc.yaml
   - ./rbac.yaml
+  - ./httproute.yaml
 configMapGenerator:
   - name: gatus-configmap
     files:
