@@ -1,0 +1,14 @@
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: open-webui-timeout
+  namespace: ai
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: open-webui
+  timeout:
+    http:
+      requestTimeout: "3600s"

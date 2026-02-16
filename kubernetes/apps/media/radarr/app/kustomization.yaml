@@ -5,6 +5,7 @@ kind: Kustomization
 resources:
   - ./pvc.yaml
   - ./helmrelease.yaml
+  - ./httproute.yaml
 configMapGenerator:
   - name: radarr-loki-rules
     files:

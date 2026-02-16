@@ -12,7 +12,7 @@ resources:
   - ./external-secrets.yaml
   - ./fairwinds.yaml
   - ./grafana.yaml
-  - ./ingress-nginx.yaml
+  - ./envoy-gateway.yaml
   - ./intel.yaml
   - ./k8s-gateway.yaml
   - ./jetstack.yaml

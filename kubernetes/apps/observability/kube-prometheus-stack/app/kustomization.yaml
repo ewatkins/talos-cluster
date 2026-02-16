@@ -7,6 +7,8 @@ resources:
   - ./helmrelease.yaml
   - ./scrapeconfigs
   - ./prometheusrules
+  - ./httproute-alertmanager.yaml
+  - ./httproute-prometheus.yaml
 
 configMapGenerator:
   - name: alertmanager-config-tpl

@@ -64,12 +64,7 @@ spec:
             memory: 53M
 
       ingress:
-        enabled: true
-        ingressClassName: internal
-        annotations:
-          external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
-        hosts:
-          - alerts.ewatkins.dev
+        enabled: false
 
     kubelet:
       enabled: true
@@ -128,13 +123,7 @@ spec:
       fullNameOverride: prometheus
 
       ingress:
-        enabled: true
-        ingressClassName: internal
-        annotations:
-          external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
-        hosts:
-          - &host prometheus.ewatkins.dev
-        pathType: Prefix
+        enabled: false
 
       thanosService:
         enabled: true

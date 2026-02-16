@@ -1,0 +1,23 @@
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: internal-client-policy
+  namespace: network
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: internal
+  http1:
+    enableTrailers: false
+  connection:
+    bufferLimit: "104857600" # 100MB
+    connectionIdleTimeout: 120s
+    http1:
+      maxRequestsPerConnection: 10000
+  tls:
+    minVersion: "1.2"
+  headers:
+    xForwardedClientCert:
+      mode: AppendForward
