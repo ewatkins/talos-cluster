@@ -37,12 +37,6 @@ spec:
     maxRunners: 3
     containerMode:
       type: kubernetes
-      kubernetesModeWorkVolumeClaim:
-        accessModes: ["ReadWriteOnce"]
-        storageClassName: nfs-fast
-        resources:
-          requests:
-            storage: 10Gi
     controllerServiceAccount:
       name: actions-runner-controller
       namespace: actions-runner-system
