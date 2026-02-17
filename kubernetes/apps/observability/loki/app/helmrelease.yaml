@@ -50,6 +50,15 @@ spec:
         auth_enabled: false
         server:
           log_level: info
+        compactor:
+          working_directory: /var/loki/compactor
+          compaction_interval: 10m
+          retention_enabled: true
+          retention_delete_delay: 2h
+          retention_delete_worker_count: 150
+          delete_request_store: filesystem
+        limits_config:
+          retention_period: 14d
         analytics:
           reporting_enabled: false
     singleBinary:
