@@ -34,6 +34,7 @@ spec:
             command: ["sh", "-c"]
             args:
               - |
+                cd /data ;
                 forgejo-runner register --no-interactive --token $(RUNNER_TOKEN) --name $(RUNNER_NAME) --instance $(FORGEJO_INSTANCE_URL) --labels self-hosted:host,docker:docker://ghcr.io/catthehacker/ubuntu:act-22.04,ubuntu-latest:docker://ghcr.io/catthehacker/ubuntu:act-22.04,ubuntu-22.04:docker://ghcr.io/catthehacker/ubuntu:act-22.04,renovate:docker://ghcr.io/catthehacker/ubuntu:act-22.04 ;
                 forgejo-runner generate-config > /data/config.yml ;
                 sed -i -e "s|network: .*|network: host|" /data/config.yml ;
@@ -73,7 +74,7 @@ spec:
               [
                 "sh",
                 "-c",
-                "while ! nc -z localhost 2376 </dev/null; do echo 'waiting for docker daemon...'; sleep 5; done; forgejo-runner --config /data/config.yml daemon",
+                "while ! nc -z localhost 2376 </dev/null; do echo 'waiting for docker daemon...'; sleep 5; done; cd /data && forgejo-runner --config /data/config.yml daemon",
               ]
             env:
               - name: DOCKER_HOST
