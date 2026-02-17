@@ -25,7 +25,17 @@ spec:
   values:
     controllers:
       forgejo-runner:
+        type: statefulset
         replicas: 2
+        statefulset:
+          podManagementPolicy: Parallel
+          volumeClaimTemplates:
+            - name: runner-data
+              accessMode: ReadWriteOnce
+              size: 128Mi
+              storageClass: openebs-hostpath
+              globalMounts:
+                - path: /data
         initContainers:
           runner-register:
             image:
@@ -35,7 +45,7 @@ spec:
             args:
               - |
                 cd /data ;
-                forgejo-runner register --no-interactive --token $(RUNNER_TOKEN) --name $(RUNNER_NAME) --instance $(FORGEJO_INSTANCE_URL) --labels self-hosted:host,docker:docker://ghcr.io/catthehacker/ubuntu:act-22.04,ubuntu-latest:docker://ghcr.io/catthehacker/ubuntu:act-22.04,ubuntu-22.04:docker://ghcr.io/catthehacker/ubuntu:act-22.04,renovate:docker://ghcr.io/catthehacker/ubuntu:act-22.04 ;
+                [ -f /data/.runner ] || forgejo-runner register --no-interactive --token $(RUNNER_TOKEN) --name $(RUNNER_NAME) --instance $(FORGEJO_INSTANCE_URL) --labels self-hosted:host,docker:docker://ghcr.io/catthehacker/ubuntu:act-22.04,ubuntu-latest:docker://ghcr.io/catthehacker/ubuntu:act-22.04,ubuntu-22.04:docker://ghcr.io/catthehacker/ubuntu:act-22.04,renovate:docker://ghcr.io/catthehacker/ubuntu:act-22.04 ;
                 forgejo-runner generate-config > /data/config.yml ;
                 sed -i -e "s|network: .*|network: host|" /data/config.yml ;
                 sed -i -e "s|^  envs:$$|  envs:\n    DOCKER_HOST: tcp://localhost:2376\n    DOCKER_TLS_VERIFY: 1\n    DOCKER_CERT_PATH: /certs/client|" /data/config.yml ;
@@ -98,7 +108,3 @@ spec:
         type: emptyDir
         globalMounts:
           - path: /certs
-      runner-data:
-        type: emptyDir
-        globalMounts:
-          - path: /data
