@@ -3,18 +3,16 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app system-upgrade-controller
+  name: &app tuppr
   namespace: flux-system
 spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  interval: 30m
-  path: ./kubernetes/apps/system-upgrade/system-upgrade-controller/app
+  interval: 1h
+  path: ./kubernetes/apps/system-upgrade/tuppr/app
   prune: true
   retryInterval: 1m
-  dependsOn:
-    - name: node-feature-discovery-rules
   sourceRef:
     kind: GitRepository
     name: talos-cluster
@@ -26,16 +24,16 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app system-upgrade-controller-plans
+  name: &app tuppr-upgrades
   namespace: flux-system
 spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: system-upgrade-controller
-  interval: 30m
-  path: ./kubernetes/apps/system-upgrade/system-upgrade-controller/plans
+    - name: tuppr
+  interval: 1h
+  path: ./kubernetes/apps/system-upgrade/tuppr/upgrades
   postBuild:
     substitute:
       TALOS_SCHEMATIC_ID: 1115d54aa5a8855bd413d98c022ada63bf6856d6777a7dd6a342ea74c9977e02
