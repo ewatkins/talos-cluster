@@ -79,11 +79,6 @@ spec:
     - name: "paperless-admin"
       databases: ["paperless"]
       password: *password
-    - name: "luckperms-admin"
-      databases: ["luckperms"]
-      password: &password
-        type: AlphaNumeric
-
   backups:
     pgbackrest:
       configuration: &backupConfig
