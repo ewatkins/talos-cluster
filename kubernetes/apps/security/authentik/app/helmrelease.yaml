@@ -66,10 +66,15 @@ spec:
         https: false
       livenessProbe:
         initialDelaySeconds: 30
+        timeoutSeconds: 10
+        failureThreshold: 5
       readinessProbe:
         initialDelaySeconds: 30
+        timeoutSeconds: 10
+        failureThreshold: 5
       startupProbe:
         initialDelaySeconds: 30
+        timeoutSeconds: 10
 
     worker:
       replicas: 2
@@ -81,7 +86,12 @@ spec:
           memory: 938M
       livenessProbe:
         initialDelaySeconds: 30
+        timeoutSeconds: 10
+        failureThreshold: 5
       readinessProbe:
         initialDelaySeconds: 30
+        timeoutSeconds: 10
+        failureThreshold: 5
       startupProbe:
         initialDelaySeconds: 30
+        timeoutSeconds: 10
