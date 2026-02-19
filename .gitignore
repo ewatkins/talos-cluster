@@ -26,6 +26,8 @@ wiki
 /config.yaml
 # Kubeconform
 scripts/
+# Claude Code
+.claude/
 # Miscellaneous
 requirements.txt
 .envrc
