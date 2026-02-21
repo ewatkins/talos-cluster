@@ -1,0 +1,23 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app network-certificates
+  namespace: flux-system
+spec:
+  targetNamespace: network
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: cert-manager-issuers
+    - name: external-secrets-stores
+  path: ./kubernetes/apps/network/certificates/app
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: talos-cluster
+  wait: true
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m
