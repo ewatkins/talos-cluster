@@ -10,7 +10,7 @@ spec:
     kubernetes:
       envoyDeployment:
         replicas: 1
-        pod:
+        container:
           resources:
             requests:
               cpu: 100m
