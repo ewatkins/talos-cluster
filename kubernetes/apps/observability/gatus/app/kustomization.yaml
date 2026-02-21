@@ -9,6 +9,7 @@ resources:
   - ./pvc.yaml
   - ./rbac.yaml
   - ./httproute.yaml
+  - ./dnsendpoint.yaml
 configMapGenerator:
   - name: gatus-configmap
     files:

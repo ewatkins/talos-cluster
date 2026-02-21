@@ -57,10 +57,9 @@ spec:
       - --crd-source-apiversion=externaldns.k8s.io/v1alpha1
       - --crd-source-kind=DNSEndpoint
       - --zone-id-filter=$(CF_ZONE_ID)
-      - --annotation-filter=external-dns.alpha.kubernetes.io/cloudflare=true
     triggerLoopOnEvent: true
     policy: sync
-    sources: ["crd", "gateway-httproute"]
+    sources: ["crd"]
     txtOwnerId: default
     txtPrefix: k8s.
     domainFilters: ["ewatkins.dev"]

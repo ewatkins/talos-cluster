@@ -1,0 +1,13 @@
+---
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: flux-webhook
+  namespace: flux-system
+spec:
+  endpoints:
+    - dnsName: flux-webhook.ewatkins.dev
+      recordTTL: 1
+      recordType: CNAME
+      targets:
+        - "${SECRET_CLOUDFLARE_TUNNEL_ID}.cfargotunnel.com"
