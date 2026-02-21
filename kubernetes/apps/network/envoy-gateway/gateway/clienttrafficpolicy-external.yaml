@@ -1,0 +1,21 @@
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: external-client-policy
+  namespace: network
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: external
+  connection:
+    bufferLimit: "104857600" # 100MB
+    connectionIdleTimeout: 120s
+    http1:
+      maxRequestsPerConnection: 10000
+  tls:
+    minVersion: "1.2"
+  headers:
+    xForwardedClientCert:
+      mode: AppendForward

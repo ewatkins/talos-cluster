@@ -6,5 +6,5 @@ resources:
   - ./externalsecret.yaml
   - ./helmrelease.yaml
   - ./pvc.yaml
-  - ./ingress.yaml
+  - ./httproute.yaml
   # - ../../../../templates/gatus/internal

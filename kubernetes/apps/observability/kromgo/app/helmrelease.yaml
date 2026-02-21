@@ -78,20 +78,7 @@ spec:
             port: *healthPort
     ingress:
       app:
-        annotations:
-          external-dns.alpha.kubernetes.io/target: "external.ewatkins.dev"
-        className: external
-        hosts:
-          - host: "{{ .Release.Name }}.ewatkins.dev"
-            paths:
-              - path: /
-                service:
-                  identifier: app
-                  port: http
-              - path: *healthPath
-                service:
-                  identifier: app
-                  port: health
+        enabled: false
     persistence:
       config-file:
         type: configMap

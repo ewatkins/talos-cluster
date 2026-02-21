@@ -1,8 +1,30 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app envoy-gateway-operator
+  namespace: flux-system
+spec:
+  targetNamespace: envoy-gateway-system
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: network-certificates
+    - name: cilium
+  path: ./kubernetes/apps/network/envoy-gateway/operator
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: talos-cluster
+  wait: true
+  interval: 30m
+  retryInterval: 1m
+  timeout: 10m
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app ingress-nginx-certificates
+  name: &app envoy-gateway-resources
   namespace: flux-system
 spec:
   targetNamespace: network
@@ -10,8 +32,9 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: cert-manager-issuers
-  path: ./kubernetes/apps/network/ingress-nginx/certificates
+    - name: envoy-gateway-operator
+    - name: network-certificates
+  path: ./kubernetes/apps/network/envoy-gateway/gateway
   prune: true
   sourceRef:
     kind: GitRepository
@@ -24,7 +47,7 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app ingress-nginx-internal
+  name: &app envoy-gateway-monitoring
   namespace: flux-system
 spec:
   targetNamespace: network
@@ -32,30 +55,9 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: ingress-nginx-certificates
-  path: ./kubernetes/apps/network/ingress-nginx/internal
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: talos-cluster
-  wait: false
-  interval: 30m
-  retryInterval: 1m
-  timeout: 5m
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: &app ingress-nginx-external
-  namespace: flux-system
-spec:
-  targetNamespace: network
-  commonMetadata:
-    labels:
-      app.kubernetes.io/name: *app
-  dependsOn:
-    - name: ingress-nginx-certificates
-  path: ./kubernetes/apps/network/ingress-nginx/external
+    - name: envoy-gateway-operator
+    - name: kube-prometheus-stack
+  path: ./kubernetes/apps/network/envoy-gateway/monitoring
   prune: true
   sourceRef:
     kind: GitRepository

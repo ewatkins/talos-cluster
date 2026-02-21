@@ -75,17 +75,7 @@ spec:
             port: *port
     ingress:
       app:
-        enabled: true
-        className: internal
-        annotations:
-          external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
-        hosts:
-          - host: "radarr.ewatkins.dev"
-            paths:
-              - path: /
-                service:
-                  identifier: app
-                  port: http
+        enabled: false
     persistence:
       config:
         existingClaim: radarr-config

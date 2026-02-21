@@ -1,0 +1,23 @@
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: envoy-proxy-external
+  namespace: network
+spec:
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        replicas: 1
+        pod:
+          resources:
+            requests:
+              cpu: 100m
+            limits:
+              memory: 256Mi
+      envoyService:
+        name: envoy-external
+        annotations:
+          io.cilium/lb-ipam-ips: "${EXTERNAL}"
+          external-dns.alpha.kubernetes.io/hostname: "external.ewatkins.dev"

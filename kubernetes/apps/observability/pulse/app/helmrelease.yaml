@@ -84,16 +84,7 @@ spec:
           - port: http
     ingress:
       app:
-        annotations:
-          external-dns.alpha.kubernetes.io/target: internal.ewatkins.dev
-        className: internal
-        hosts:
-          - host: pulse.ewatkins.dev
-            paths:
-              - path: /
-                service:
-                  identifier: app
-                  port: http
+        enabled: false
     serviceAccount:
       pulse: {}
     persistence:

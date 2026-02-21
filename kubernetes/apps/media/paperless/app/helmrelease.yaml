@@ -73,17 +73,7 @@ spec:
             port: *port
     ingress:
       app:
-        enabled: true
-        className: internal
-        annotations:
-          external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
-        hosts:
-          - host: paperless.ewatkins.dev
-            paths: &paths
-              - path: /
-                service:
-                  identifier: app
-                  port: http
+        enabled: false
     persistence:
       nas:
         enabled: true

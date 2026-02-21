@@ -70,19 +70,7 @@ spec:
             port: *port
     ingress:
       app:
-        enabled: true
-        className: internal
-        annotations:
-          external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
-        hosts:
-          - host: requests.ewatkins.dev
-            paths: &paths
-              - path: /
-                service:
-                  identifier: app
-                  port: http
-          - host: media.ewatkins.dev
-            paths: *paths
+        enabled: false
     persistence:
       config:
         existingClaim: jellyseerr-config

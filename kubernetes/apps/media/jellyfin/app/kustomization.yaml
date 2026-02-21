@@ -6,3 +6,4 @@ resources:
   - ./helmrelease.yaml
   - ./pvc.yaml
   - ./resourceclaimtemplate.yaml
+  - ./httproute.yaml
