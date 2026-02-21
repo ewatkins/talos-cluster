@@ -7,3 +7,5 @@ resources:
   - ./externalsecret.yaml
   - ./gatus.yaml
   - ./pvc.yaml
+  - ./httproute-console.yaml
+  - ./httproute-s3.yaml

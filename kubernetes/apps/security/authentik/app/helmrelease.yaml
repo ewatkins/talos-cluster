@@ -57,13 +57,7 @@ spec:
           serviceMonitor:
             enabled: true
       ingress:
-        enabled: true
-        ingressClassName: external
-        annotations:
-          external-dns.alpha.kubernetes.io/target: "external.ewatkins.dev"
-        hosts:
-          - auth.ewatkins.dev
-        https: false
+        enabled: false
       livenessProbe:
         initialDelaySeconds: 30
         timeoutSeconds: 10
