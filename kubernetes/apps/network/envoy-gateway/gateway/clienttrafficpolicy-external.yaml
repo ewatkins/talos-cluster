@@ -11,9 +11,9 @@ spec:
     name: external
   connection:
     bufferLimit: "104857600" # 100MB
-    connectionIdleTimeout: 120s
-    http1:
-      maxRequestsPerConnection: 10000
+  timeout:
+    http:
+      idleTimeout: 120s
   tls:
     minVersion: "1.2"
   headers:
