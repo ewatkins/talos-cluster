@@ -65,8 +65,11 @@ spec:
       replicas: 1
       persistence:
         enabled: true
-        storageClass: openebs-hostpath
+        storageClass: nfs-slow
         size: 20Gi
+      persistentVolumeClaimRetentionPolicy:
+        whenDeleted: Retain
+        whenScaled: Retain
     backend:
       replicas: 0
     gateway:

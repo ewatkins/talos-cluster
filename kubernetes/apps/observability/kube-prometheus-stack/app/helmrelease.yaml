@@ -50,7 +50,7 @@ spec:
         storage:
           volumeClaimTemplate:
             spec:
-              storageClassName: openebs-hostpath
+              storageClassName: nfs-slow
               resources:
                 requests:
                   storage: 1Gi
