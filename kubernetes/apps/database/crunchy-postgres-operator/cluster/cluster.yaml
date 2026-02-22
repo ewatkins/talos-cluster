@@ -42,11 +42,11 @@ spec:
           app.kubernetes.io/name: crunchy-postgres
       replicas: &replicas 3
       dataVolumeClaimSpec:
-        storageClassName: openebs-hostpath
+        storageClassName: nfs-fast
         accessModes: ["ReadWriteOnce"]
         resources:
           requests:
-            storage: 20Gi
+            storage: 2Gi
       topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: "kubernetes.io/hostname"
