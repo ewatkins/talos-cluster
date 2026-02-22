@@ -55,28 +55,6 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app crunchy-postgres-pgadmin
-  namespace: flux-system
-spec:
-  targetNamespace: database
-  commonMetadata:
-    labels:
-      app.kubernetes.io/name: *app
-  interval: 30m
-  timeout: 5m
-  path: ./kubernetes/apps/database/crunchy-postgres-operator/pgadmin
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: talos-cluster
-  wait: true
-  dependsOn:
-    - name: crunchy-postgres-operator-cluster
----
-# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
   name: &app crunchy-postgres-operator-secretstore
   namespace: flux-system
 spec:
