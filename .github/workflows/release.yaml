@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Generate Token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
         id: app-token
         with:
           app-id: "${{ secrets.BOT_APP_ID }}"
@@ -27,6 +27,5 @@ jobs:
       - name: Create Release
         uses: mirceanton/action-calver-release@2025.4.1
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ steps.app-token.outputs.token }}
           dry-run: false
-          draft: false
