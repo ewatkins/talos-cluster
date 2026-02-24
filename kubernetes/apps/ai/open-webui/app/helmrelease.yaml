@@ -46,7 +46,7 @@ spec:
               # AUTOMATIC1111_SAMPLER: DPM++ SDE
               # AUTOMATIC1111_SCHEDULER: Karras
               # Open-webui settings
-              OLLAMA_BASE_URL: http://10.30.2.10:11434
+              OLLAMA_BASE_URL: http://jetson.ewatkins.dev:11434
               ENABLE_OLLAMA_API: true
               # ENABLE_RAG_WEB_SEARCH: true
               # ENABLE_SEARCH_QUERY: true
