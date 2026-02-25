@@ -80,7 +80,7 @@ spec:
           cpu: 150m
           memory: 443M
         limits:
-          memory: 938M
+          memory: 1500M
       livenessProbe:
         initialDelaySeconds: 30
         timeoutSeconds: 10
