@@ -26,6 +26,7 @@ wiki
 /config.yaml
 # Kubeconform
 scripts/
+!scripts/kubeconform.sh
 # Claude Code
 .claude/
 # Miscellaneous

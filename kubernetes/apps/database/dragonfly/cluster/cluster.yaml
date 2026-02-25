@@ -13,8 +13,6 @@ spec:
         resourceFieldRef:
           resource: limits.memory
           divisor: 1Mi
-    - name: DEBUG
-      value: "true"
   args:
     - --maxmemory=$(MAX_MEMORY)Mi
     - --proactor_threads=2
