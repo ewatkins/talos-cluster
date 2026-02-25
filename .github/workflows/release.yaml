@@ -25,7 +25,7 @@ jobs:
           token: "${{ steps.app-token.outputs.token }}"
 
       - name: Create Release
-        uses: mirceanton/action-calver-release@2025.4.1
+        uses: mirceanton/action-calver-release@e34e40c96ed4998c9a0adb0c8d3d821b49d789a3 # 2025.11.4
         with:
           github-token: ${{ steps.app-token.outputs.token }}
           dry-run: false
