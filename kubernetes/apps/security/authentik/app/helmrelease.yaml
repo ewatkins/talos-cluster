@@ -28,6 +28,9 @@ spec:
         reloader.stakater.com/auto: "true"
       deploymentStrategy:
         type: RollingUpdate
+        rollingUpdate:
+          maxSurge: 0
+          maxUnavailable: 1
       envFrom:
         - secretRef:
             name: authentik-secret
@@ -61,7 +64,7 @@ spec:
       livenessProbe:
         initialDelaySeconds: 30
         timeoutSeconds: 10
-        failureThreshold: 5
+        failureThreshold: 10
       readinessProbe:
         initialDelaySeconds: 30
         timeoutSeconds: 10
@@ -81,7 +84,7 @@ spec:
       livenessProbe:
         initialDelaySeconds: 30
         timeoutSeconds: 10
-        failureThreshold: 5
+        failureThreshold: 10
       readinessProbe:
         initialDelaySeconds: 30
         timeoutSeconds: 10
