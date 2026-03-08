@@ -13,7 +13,7 @@ spec:
   components:
     - ../../../../components/gatus/media
   dependsOn:
-    - name: immich-postgres
+    - name: crunchy-postgres-vector
     - name: crunchy-postgres-operator-secretstore
   wait: false
   path: ./kubernetes/apps/media/immich/app

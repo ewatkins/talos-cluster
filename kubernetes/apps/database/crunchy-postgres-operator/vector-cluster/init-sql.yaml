@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: immich-postgres-init-sql
+  name: crunchy-postgres-vector-init-sql
 data:
   init.sql: |-
     \c immich

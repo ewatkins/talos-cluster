@@ -3,13 +3,13 @@
 apiVersion: postgres-operator.crunchydata.com/v1beta1
 kind: PostgresCluster
 metadata:
-  name: &name immich-postgres
+  name: &name crunchy-postgres-vector
 spec:
   postgresVersion: 16
-  image: ghcr.io/budimanjojo/crunchy-postgres-vectorchord:16-0.4.3@sha256:2ed44deacd5b1d7e59938cce6b9a4d22cd8e115a3d3f8abfb11d9e57eaae2195
+  image: ghcr.io/budimanjojo/crunchy-postgres-vectorchord:16-0.4.3
 
   databaseInitSQL:
-    name: immich-postgres-init-sql
+    name: crunchy-postgres-vector-init-sql
     key: init.sql
 
   patroni:
@@ -26,7 +26,7 @@ spec:
           - hostssl all all all md5
 
   instances:
-    - name: immich-postgres
+    - name: crunchy-postgres-vector
       replicas: 3
       dataVolumeClaimSpec:
         storageClassName: openebs-hostpath
