@@ -12,6 +12,9 @@ spec:
       app.kubernetes.io/name: *app
   components:
     - ../../../../components/gatus/media
+  dependsOn:
+    - name: immich-postgres
+    - name: crunchy-postgres-operator-secretstore
   wait: false
   path: ./kubernetes/apps/media/immich/app
   prune: true

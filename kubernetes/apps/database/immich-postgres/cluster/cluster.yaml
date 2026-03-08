@@ -1,0 +1,89 @@
+---
+# yaml-language-server: $schema=https://kube-schemas.pages.dev/postgres-operator.crunchydata.com/postgrescluster_v1beta1.json
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: &name immich-postgres
+spec:
+  postgresVersion: 16
+  image: ghcr.io/immich-app/postgres:16-vectorchord0.5.3-pgvector0.8.1@sha256:bea97ce1bdd653d1a3461629544e83374976f5799f695e9b28ee7fe77bfb150d
+
+  databaseInitSQL:
+    name: immich-postgres-init-sql
+    key: init.sql
+
+  patroni:
+    dynamicConfiguration:
+      synchronous_mode: true
+      postgresql:
+        synchronous_commit: "on"
+        parameters:
+          shared_preload_libraries: "vchord.so"
+        pg_hba:
+          - hostnossl all all 10.96.0.0/16 md5
+          - hostnossl all all 10.69.0.0/16 md5
+          - hostnossl all all 10.40.0.0/16 md5
+          - hostssl all all all md5
+
+  instances:
+    - name: immich-postgres
+      replicas: 3
+      dataVolumeClaimSpec:
+        storageClassName: openebs-hostpath
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 5Gi
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: "kubernetes.io/hostname"
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              postgres-operator.crunchydata.com/cluster: *name
+              postgres-operator.crunchydata.com/data: postgres
+
+  users:
+    - name: immich
+      databases: ["immich"]
+      password:
+        type: AlphaNumeric
+
+  backups:
+    pgbackrest:
+      global:
+        repo1-retention-full: "14"
+        repo1-retention-full-type: "time"
+      jobs:
+        ttlSecondsAfterFinished: 300
+      repos:
+        - name: repo1
+          schedules:
+            full: "0 2 * * 0"
+            differential: "0 2 * * 1-6"
+          volume:
+            volumeClaimSpec:
+              storageClassName: nfs-csi
+              accessModes: ["ReadWriteMany"]
+              resources:
+                requests:
+                  storage: 10Gi
+
+  proxy:
+    pgBouncer:
+      port: 5432
+      replicas: 1
+      config:
+        global:
+          pool_mode: transaction
+          client_tls_sslmode: prefer
+          default_pool_size: "50"
+          max_client_conn: "200"
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              postgres-operator.crunchydata.com/cluster: *name
+              postgres-operator.crunchydata.com/role: pgbouncer

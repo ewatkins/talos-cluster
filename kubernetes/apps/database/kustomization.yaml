@@ -7,6 +7,7 @@ resources:
 
   # Postgres
   - ./crunchy-postgres-operator/ks.yaml
+  - ./immich-postgres/ks.yaml
 
   # MariaDB/MySQL
   - ./mariadb/ks.yaml
