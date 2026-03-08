@@ -34,6 +34,7 @@ spec:
               REDIS_HOSTNAME: dragonfly.database.svc.cluster.local
               REDIS_PORT: "6379"
               IMMICH_MACHINE_LEARNING_URL: http://immich-machine-learning.media.svc.cluster.local:3003
+              DB_VECTOR_EXTENSION: vchord
             envFrom:
               - secretRef:
                   name: immich-db-secret
