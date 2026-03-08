@@ -104,6 +104,8 @@ spec:
         repo3-retention-full: "7" # days
         repo3-retention-full-type: time
         repo3-s3-uri-style: path
+      jobs:
+        ttlSecondsAfterFinished: 300
       manual:
         repoName: repo1
         options:
