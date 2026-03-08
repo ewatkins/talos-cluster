@@ -19,11 +19,6 @@ resources:
   - ./databases/luckperms.yaml
   - ./grants/luckperms.yaml
 
-  # Bluemap
-  - ./users/bluemap.yaml
-  - ./databases/bluemap.yaml
-  - ./grants/bluemap.yaml
-
   # Jobs
   - ./users/jobs.yaml
   - ./databases/jobs.yaml
