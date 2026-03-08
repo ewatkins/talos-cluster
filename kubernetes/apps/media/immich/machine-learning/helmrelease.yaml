@@ -28,7 +28,7 @@ spec:
           main:
             image:
               repository: ghcr.io/immich-app/immich-machine-learning
-              tag: v1.132.3
+              tag: v1.144.1
             env:
               MPLCONFIGDIR: /tmp/matplotlib
             envFrom:
