@@ -84,7 +84,7 @@ spec:
             namespace: network
             sectionName: https
         hostnames:
-          - "immich.ewatkins.dev"
+          - "photos.ewatkins.dev"
         rules:
           - matches:
               - path:
