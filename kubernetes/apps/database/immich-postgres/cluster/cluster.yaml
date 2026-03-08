@@ -64,10 +64,11 @@ spec:
           volume:
             volumeClaimSpec:
               storageClassName: nfs-csi
+              volumeName: crunchy-postgres-vector-nfs
               accessModes: ["ReadWriteMany"]
               resources:
                 requests:
-                  storage: 10Gi
+                  storage: 1Mi
 
   proxy:
     pgBouncer:
