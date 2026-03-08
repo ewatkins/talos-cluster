@@ -6,7 +6,7 @@ metadata:
   name: &name immich-postgres
 spec:
   postgresVersion: 16
-  image: ghcr.io/immich-app/postgres:16-vectorchord0.5.3-pgvector0.8.1@sha256:bea97ce1bdd653d1a3461629544e83374976f5799f695e9b28ee7fe77bfb150d
+  image: ghcr.io/budimanjojo/crunchy-postgres-vectorchord:16-0.4.3@sha256:2ed44deacd5b1d7e59938cce6b9a4d22cd8e115a3d3f8abfb11d9e57eaae2195
 
   databaseInitSQL:
     name: immich-postgres-init-sql
