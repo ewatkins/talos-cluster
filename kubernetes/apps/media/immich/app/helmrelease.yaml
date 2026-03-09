@@ -24,6 +24,19 @@ spec:
         strategy: RollingUpdate
         annotations:
           reloader.stakater.com/auto: "true"
+        initContainers:
+          init-library:
+            image:
+              repository: busybox
+              tag: latest
+            command:
+              - sh
+              - -c
+              - |
+                for dir in library upload thumbs backups profile encoded-video; do
+                  mkdir -p /library/$dir && touch /library/$dir/.immich
+                done
+                sync
         containers:
           main:
             image:
