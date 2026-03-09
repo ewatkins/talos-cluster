@@ -113,6 +113,40 @@ spec:
                 memory: 512Mi
               limits:
                 memory: 4Gi
+      valkey:
+        containers:
+          app:
+            image:
+              repository: ghcr.io/valkey-io/valkey
+              tag: 9.0.3
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  exec: &probe-exec { command: ["sh", "-c", "valkey-cli ping | grep PONG"] }
+                  initialDelaySeconds: 30
+                  periodSeconds: 10
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  exec: *probe-exec
+                  initialDelaySeconds: 5
+                  periodSeconds: 10
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  exec: *probe-exec
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 5
+                  failureThreshold: 30
     defaultPodOptions:
       securityContext:
         fsGroup: 1000
