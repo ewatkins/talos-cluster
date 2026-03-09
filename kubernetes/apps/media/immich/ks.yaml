@@ -3,7 +3,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app immich-server
+  name: &app immich
   namespace: flux-system
 spec:
   targetNamespace: media
@@ -16,7 +16,7 @@ spec:
     - name: crunchy-postgres-vector
     - name: crunchy-postgres-operator-secretstore
   wait: false
-  path: ./kubernetes/apps/media/immich/server
+  path: ./kubernetes/apps/media/immich/app
   prune: true
   sourceRef:
     kind: GitRepository
@@ -27,25 +27,3 @@ spec:
     substitute:
       APP: immich
       GATUS_PATH: /api/server/ping
----
-# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: immich-machine-learning
-  namespace: flux-system
-spec:
-  targetNamespace: media
-  commonMetadata:
-    labels:
-      app.kubernetes.io/name: immich-machine-learning
-  dependsOn:
-    - name: immich-server
-  wait: false
-  path: ./kubernetes/apps/media/immich/machine-learning
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: talos-cluster
-  interval: 30m
-  timeout: 5m
