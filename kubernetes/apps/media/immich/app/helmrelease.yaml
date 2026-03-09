@@ -34,7 +34,7 @@ spec:
               IMMICH_MEDIA_LOCATION: &mediaLocation /library
               IMMICH_MACHINE_LEARNING_URL: http://immich-machine-learning.media.svc.cluster.local:3003
               IMMICH_TRUSTED_PROXIES: 10.69.0.0/16
-              REDIS_HOSTNAME: &redisHostname dragonfly.database.svc.cluster.local
+              REDIS_HOSTNAME: &redisHostname "immich-dragonfly.media.svc.cluster.local"
               DB_URL:
                 valueFrom:
                   secretKeyRef:
