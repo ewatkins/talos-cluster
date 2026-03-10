@@ -48,7 +48,7 @@ spec:
         host: dragonfly.database.svc.cluster.local
 
     server:
-      replicas: 2
+      replicas: 1
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
