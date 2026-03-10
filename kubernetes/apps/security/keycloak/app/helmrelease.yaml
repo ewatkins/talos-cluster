@@ -45,7 +45,7 @@ spec:
                   secretKeyRef:
                     name: keycloak-db-secret
                     key: jdbc-uri
-              KC_HOSTNAME: "https://auth.ewatkins.dev"
+              KC_HOSTNAME: "https://keycloak.ewatkins.dev"
               KC_HOSTNAME_STRICT: "true"
               KC_HEALTH_ENABLED: "true"
               KC_HTTP_ENABLED: "true"
