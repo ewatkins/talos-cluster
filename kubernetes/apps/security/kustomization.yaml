@@ -7,4 +7,5 @@ resources:
   - ./namespace.yaml
   # Flux-Kustomizations
   - ./authentik/ks.yaml
+  - ./keycloak/ks.yaml
   # - dmarc-report/ks.yaml
