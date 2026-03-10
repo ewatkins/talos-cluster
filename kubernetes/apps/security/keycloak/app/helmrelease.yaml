@@ -1,0 +1,114 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app keycloak
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: keycloak
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    controllers:
+      keycloak:
+        type: statefulset
+        replicas: 1
+        rollingUpdate:
+          unavailable: 1
+        containers:
+          keycloak:
+            image:
+              repository: quay.io/keycloak/keycloak
+              tag: 26.2.5
+            args:
+              - start
+              - --db
+              - postgres
+            env:
+              KC_BOOTSTRAP_ADMIN_USERNAME: "admin"
+              KC_BOOTSTRAP_ADMIN_PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: keycloak-admin-secret
+                    key: password
+              KC_DB_URL:
+                valueFrom:
+                  secretKeyRef:
+                    name: keycloak-db-secret
+                    key: jdbc-uri
+              KC_HOSTNAME: "https://auth.ewatkins.dev"
+              KC_HOSTNAME_STRICT: "true"
+              KC_HEALTH_ENABLED: "true"
+              KC_HTTP_ENABLED: "true"
+              KC_PROXY_HEADERS: xforwarded
+              KC_PROXY_TRUSTED_ADDRESSES: "10.69.0.0/16"
+            ports:
+              - name: http
+                containerPort: 8080
+            probes:
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health/started
+                    port: 9000
+                  periodSeconds: 1
+                  failureThreshold: 600
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health/ready
+                    port: 9000
+                  periodSeconds: 10
+                  failureThreshold: 3
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health/live
+                    port: 9000
+                  periodSeconds: 10
+                  failureThreshold: 3
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+            resources:
+              requests:
+                cpu: 100m
+                memory: 666Mi
+              limits:
+                memory: 2048Mi
+        pod:
+          annotations:
+            reloader.stakater.com/auto: "true"
+
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+    service:
+      keycloak:
+        controller: keycloak
+        ports:
+          http:
+            port: 80
+            targetPort: 8080

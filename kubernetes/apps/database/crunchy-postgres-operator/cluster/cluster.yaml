@@ -64,8 +64,8 @@ spec:
       password: &password
         type: AlphaNumeric
     # Applications
-    - name: "authentik-admin"
-      databases: ["authentik"]
+    - name: "keycloak-admin"
+      databases: ["keycloak"]
       password: *password
     - name: "forgejo-admin"
       databases: ["forgejo"]
