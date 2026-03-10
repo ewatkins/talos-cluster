@@ -37,9 +37,8 @@ nodes:
     controlPlane: true
     installDisk: /dev/sda
     networkInterfaces:
-      - deviceSelector:
-          hardwareAddr: bc:24:11:be:77:01
-        dhcp: true
+      - interface: ens19
+        dhcp: false
         vip:
           ip: 10.40.1.100
   - hostname: huron
@@ -47,9 +46,8 @@ nodes:
     controlPlane: true
     installDisk: /dev/sda
     networkInterfaces:
-      - deviceSelector:
-          hardwareAddr: bc:24:11:be:77:02
-        dhcp: true
+      - interface: ens19
+        dhcp: false
         vip:
           ip: 10.40.1.100
   - hostname: michigan
@@ -57,9 +55,8 @@ nodes:
     controlPlane: true
     installDisk: /dev/sda
     networkInterfaces:
-      - deviceSelector:
-          hardwareAddr: bc:24:11:be:77:03
-        dhcp: true
+      - interface: ens19
+        dhcp: false
         vip:
           ip: 10.40.1.100
   - hostname: erie
@@ -67,22 +64,25 @@ nodes:
     controlPlane: false
     installDisk: /dev/sda
     networkInterfaces:
-      - deviceSelector:
-          hardwareAddr: bc:24:11:be:77:04
-        dhcp: true
+      - interface: ens19
+        dhcp: false
   - hostname: ontario
     ipAddress: 10.40.1.5
     controlPlane: false
     installDisk: /dev/sda
     networkInterfaces:
-      - deviceSelector:
-          hardwareAddr: bc:24:11:be:77:05
-        dhcp: true
+      - interface: ens19
+        dhcp: false
+  - hostname: tahoe
+    ipAddress: 10.40.1.6
+    controlPlane: false
+    installDisk: /dev/sda
+    networkInterfaces:
+      - interface: ens19
+        dhcp: false
 controlPlane:
   schematic:
     customization:
-      extraKernelArgs:
-        - net.ifnames=0
       systemExtensions:
         officialExtensions:
           - siderolabs/intel-ucode
@@ -159,6 +159,7 @@ worker:
     # Node IPs
     - 10.40.1.4
     - 10.40.1.5
+    - 10.40.1.6
     # Pod/Service Networks
     - 10.69.0.0/16
     - 10.96.0.0/16
@@ -175,8 +176,6 @@ worker:
   disableSearchDomain: true
   schematic:
     customization:
-      extraKernelArgs:
-        - net.ifnames=0
       systemExtensions:
         officialExtensions:
           - siderolabs/intel-ucode
