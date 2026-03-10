@@ -26,4 +26,5 @@ spec:
   postBuild:
     substitute:
       APP: immich
+      GATUS_SUBDOMAIN: photos
       GATUS_PATH: /api/server/ping
