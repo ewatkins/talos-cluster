@@ -187,8 +187,14 @@ spec:
               - name: immich-main
                 port: *port
     persistence:
+      #library:
+      #  existingClaim: immich-library
+      #  globalMounts:
+      #    - path: /test
       library:
-        existingClaim: immich-library
+        type: nfs
+        server: caspian.local
+        path: /mnt/user/immich
         globalMounts:
           - path: *mediaLocation
       cache:
