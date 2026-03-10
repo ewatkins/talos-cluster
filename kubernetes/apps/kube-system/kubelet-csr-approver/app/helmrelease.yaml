@@ -21,7 +21,7 @@ spec:
     remediation:
       retries: 3
   values:
-    providerRegex: ^(superior|huron|michigan|erie|ontario)$
+    providerRegex: ^(superior|huron|michigan|erie|ontario|tahoe)$
     bypassDnsResolution: true
     metrics:
       enable: true
