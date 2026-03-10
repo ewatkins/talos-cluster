@@ -9,6 +9,8 @@ patches:
       kind: Namespace
     patch: |-
       - op: add
-        path: /metadata/labels
-        value:
-          pod-security.kubernetes.io/enforce: privileged
+        path: /metadata/labels/pod-security.kubernetes.io~1enforce
+        value: privileged
+      - op: add
+        path: /metadata/labels/pod-security.kubernetes.io~1warn
+        value: privileged
