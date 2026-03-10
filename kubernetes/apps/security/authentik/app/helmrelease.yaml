@@ -49,6 +49,17 @@ spec:
 
     server:
       replicas: 2
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containerSecurityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
       resources:
         requests:
           cpu: 100m
@@ -75,6 +86,17 @@ spec:
 
     worker:
       replicas: 2
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containerSecurityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
       resources:
         requests:
           cpu: 150m
