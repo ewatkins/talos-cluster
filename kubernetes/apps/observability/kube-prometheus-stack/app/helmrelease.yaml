@@ -198,6 +198,13 @@ spec:
 
     prometheus-node-exporter:
       fullnameOverride: node-exporter
+      containerSecurityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        seccompProfile:
+          type: RuntimeDefault
       prometheus:
         monitor:
           enabled: true
