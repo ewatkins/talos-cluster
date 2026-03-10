@@ -1,0 +1,30 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: keycloak
+  namespace: security
+  annotations:
+    external-dns.alpha.kubernetes.io/cloudflare: "true"
+    external-dns.alpha.kubernetes.io/target: "${SECRET_CLOUDFLARE_TUNNEL_ID}.cfargotunnel.com"
+spec:
+  parentRefs:
+    - name: external
+      namespace: network
+      sectionName: https
+  hostnames:
+    - "keycloak.ewatkins.dev"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      filters:
+        - type: ResponseHeaderModifier
+          responseHeaderModifier:
+            add:
+              - name: Strict-Transport-Security
+                value: "max-age=31449600; includeSubDomains"
+      backendRefs:
+        - name: keycloak
+          port: 80

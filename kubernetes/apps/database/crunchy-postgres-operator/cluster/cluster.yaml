@@ -67,6 +67,9 @@ spec:
     - name: "authentik-admin"
       databases: ["authentik"]
       password: *password
+    - name: "keycloak-admin"
+      databases: ["keycloak"]
+      password: *password
     - name: "forgejo-admin"
       databases: ["forgejo"]
       password: *password
