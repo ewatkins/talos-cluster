@@ -445,41 +445,9 @@ data:
       width: 100%;
     }
 
-    /* order 3: email + restart icon — shown below the divider */
+    /* hide email + restart on OTP page */
     #kc-username {
-      order: 3 !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      gap: 0.45rem !important;
-      margin: 1.25rem 0 0 0 !important;
-    }
-
-    #kc-attempted-username {
-      font-family: 'JetBrains Mono', monospace !important;
-      font-size: 0.78rem !important;
-      color: rgba(255,255,255,0.4) !important;
-      font-weight: 400 !important;
-    }
-
-    .kc-tooltip-text {
       display: none !important;
-    }
-
-    #reset-login {
-      display: flex !important;
-      align-items: center !important;
-      text-decoration: none !important;
-    }
-
-    #reset-login i {
-      color: rgba(255,255,255,0.28) !important;
-      font-size: 0.8rem !important;
-      transition: color 0.15s !important;
-    }
-
-    #reset-login:hover i {
-      color: rgba(255,255,255,0.6) !important;
     }
 
     /* ── Hide "powered by Keycloak" footer ── */
