@@ -105,8 +105,7 @@ spec:
               - |
                 mkdir -p /themes/ewatkins/login/resources/css && \
                 cp /theme-src/theme.properties /themes/ewatkins/login/theme.properties && \
-                cp /theme-src/login.css /themes/ewatkins/login/resources/css/login.css && \
-                chmod -R 755 /themes
+                cp /theme-src/login.css /themes/ewatkins/login/resources/css/login.css
             securityContext:
               allowPrivilegeEscalation: false
               capabilities:
