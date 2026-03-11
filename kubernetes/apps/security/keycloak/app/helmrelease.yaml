@@ -137,3 +137,14 @@ spec:
         items:
           - key: login.css
             path: login.css
+      theme-messages:
+        type: configMap
+        name: keycloak-theme
+        advancedMounts:
+          keycloak:
+            keycloak:
+              - path: /opt/keycloak/themes/ewatkins/login/messages
+                readOnly: true
+        items:
+          - key: messages_en.properties
+            path: messages_en.properties
