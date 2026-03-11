@@ -1,0 +1,232 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-theme
+  namespace: security
+data:
+  theme.properties: |
+    parent=keycloak
+    import=common/keycloak
+    styles=css/login.css
+
+  login.css: |
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    /* ── Page background ── */
+    body.login-pf {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Inter', sans-serif;
+      background:
+        linear-gradient(rgba(5, 12, 20, 0.55), rgba(5, 12, 20, 0.55)),
+        url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&q=85&fit=crop')
+        center / cover no-repeat fixed;
+    }
+
+    /* ── Hide the default header / realm name ── */
+    #kc-header,
+    #kc-header-wrapper {
+      display: none !important;
+    }
+
+    /* ── Main layout container ── */
+    .login-pf-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    /* ── Frosted glass card ── */
+    #kc-content,
+    .card-pf {
+      background: rgba(10, 18, 32, 0.58) !important;
+      backdrop-filter: blur(28px) saturate(180%) !important;
+      -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+      border: 1px solid rgba(255, 255, 255, 0.10) !important;
+      border-radius: 20px !important;
+      box-shadow:
+        0 32px 64px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+      padding: 2.5rem !important;
+      width: 100%;
+      max-width: 440px;
+    }
+
+    /* ── Domain header injected via ::before on form ── */
+    #kc-form-login::before,
+    #kc-form-options::before {
+      display: none;
+    }
+
+    #kc-content-wrapper::before {
+      content: 'ewatkins.dev';
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.70);
+      letter-spacing: 0.04em;
+      text-align: center;
+      margin-bottom: 0.35rem;
+    }
+
+    #kc-content-wrapper::after {
+      content: 'sign in to continue';
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.38);
+      letter-spacing: 0.06em;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    /* ── Form labels ── */
+    .pf-c-form__label-text,
+    label {
+      color: rgba(200, 218, 240, 0.65) !important;
+      font-size: 0.78rem !important;
+      font-weight: 500 !important;
+      letter-spacing: 0.04em !important;
+      text-transform: uppercase !important;
+    }
+
+    /* ── Inputs ── */
+    .pf-c-form-control,
+    input[type="text"],
+    input[type="password"],
+    input[type="email"] {
+      background: rgba(8, 15, 28, 0.65) !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      border-radius: 10px !important;
+      color: #e2eaf4 !important;
+      padding: 0.6rem 0.9rem !important;
+      font-size: 0.95rem !important;
+      transition: border-color 0.2s, box-shadow 0.2s !important;
+    }
+
+    .pf-c-form-control:focus,
+    input[type="text"]:focus,
+    input[type="password"]:focus {
+      border-color: rgba(56, 189, 248, 0.45) !important;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12) !important;
+      outline: none !important;
+    }
+
+    /* ── Submit button ── */
+    #kc-login,
+    .pf-c-button.pf-m-primary {
+      background: linear-gradient(135deg, #0ea5e9, #2dd4bf) !important;
+      border: none !important;
+      border-radius: 10px !important;
+      color: #05111f !important;
+      font-weight: 700 !important;
+      font-size: 0.95rem !important;
+      letter-spacing: 0.03em !important;
+      padding: 0.7rem 1.5rem !important;
+      width: 100% !important;
+      cursor: pointer !important;
+      transition: opacity 0.2s, transform 0.1s !important;
+    }
+
+    #kc-login:hover,
+    .pf-c-button.pf-m-primary:hover {
+      opacity: 0.9 !important;
+      transform: translateY(-1px) !important;
+    }
+
+    /* ── "or continue with" divider ── */
+    #kc-social-providers {
+      position: relative;
+      margin-top: 1.5rem;
+    }
+
+    #kc-social-providers::before {
+      content: 'or continue with';
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: rgba(255, 255, 255, 0.30);
+      font-size: 0.75rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    #kc-social-providers::before,
+    #kc-social-providers::after {
+      /* The lines on each side are done via a flex trick on the text */
+    }
+
+    /* ── Social provider buttons ── */
+    #kc-social-providers ul {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 0.65rem !important;
+      list-style: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    #kc-social-providers ul li a,
+    .zocial {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 0.5rem !important;
+      background: rgba(255, 255, 255, 0.07) !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      border-radius: 10px !important;
+      color: rgba(220, 235, 255, 0.85) !important;
+      font-size: 0.85rem !important;
+      font-weight: 500 !important;
+      padding: 0.6rem 1rem !important;
+      text-decoration: none !important;
+      transition: background 0.2s, border-color 0.2s !important;
+      backdrop-filter: blur(8px) !important;
+    }
+
+    #kc-social-providers ul li a:hover,
+    .zocial:hover {
+      background: rgba(255, 255, 255, 0.13) !important;
+      border-color: rgba(56, 189, 248, 0.30) !important;
+    }
+
+    /* ── "Forgot password" and other links ── */
+    #kc-info-message,
+    .login-pf-page a,
+    #kc-form-options .checkbox label,
+    #kc-form-options a {
+      color: rgba(148, 190, 230, 0.70) !important;
+      font-size: 0.82rem !important;
+    }
+
+    #kc-form-options a:hover {
+      color: #38bdf8 !important;
+    }
+
+    /* ── Alert / error messages ── */
+    .alert {
+      background: rgba(239, 68, 68, 0.15) !important;
+      border: 1px solid rgba(239, 68, 68, 0.30) !important;
+      border-radius: 10px !important;
+      color: #fca5a5 !important;
+      padding: 0.75rem 1rem !important;
+      margin-bottom: 1rem !important;
+    }
+
+    .alert-success {
+      background: rgba(34, 197, 94, 0.12) !important;
+      border-color: rgba(34, 197, 94, 0.25) !important;
+      color: #86efac !important;
+    }
+
+    /* ── Hide "powered by Keycloak" footer ── */
+    #kc-info .instruction,
+    #powered-by-keycloak,
+    .login-pf-page .pf-l-bullseye + * {
+      display: none !important;
+    }
