@@ -51,7 +51,6 @@ spec:
               KC_HTTP_ENABLED: "true"
               KC_PROXY_HEADERS: xforwarded
               KC_PROXY_TRUSTED_ADDRESSES: "10.69.0.0/16"
-              KC_SPI_THEME_DEFAULT: ewatkins
             ports:
               - name: http
                 containerPort: 8080
@@ -105,7 +104,8 @@ spec:
               - |
                 mkdir -p /themes/ewatkins/login/resources/css && \
                 cp /theme-src/theme.properties /themes/ewatkins/login/theme.properties && \
-                cp /theme-src/login.css /themes/ewatkins/login/resources/css/login.css
+                cp /theme-src/login.css /themes/ewatkins/login/resources/css/login.css && \
+                chmod -R 755 /themes
             securityContext:
               allowPrivilegeEscalation: false
               capabilities:
