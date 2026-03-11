@@ -13,25 +13,15 @@ data:
   login.css: |
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
-    /* ── Background ── */
-    html {
+    /* ── Reset ── */
+    html, body {
+      margin: 0;
       height: 100%;
-      background:
-        linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
-        url('https://images.unsplash.com/photo-1448375240586-882707db888b?w=1920&q=85&fit=crop')
-        center center / cover no-repeat fixed !important;
-      background-color: #0d1117 !important;
+      background: #0d1117 !important;
     }
 
     body {
-      margin: 0;
-      min-height: 100%;
       font-family: 'Inter', sans-serif;
-      background: transparent !important;
-    }
-
-    .login-pf-page {
-      background: transparent !important;
     }
 
     /* ── Hide default header / realm name ── */
@@ -40,8 +30,9 @@ data:
       display: none !important;
     }
 
-    /* ── Layout ── */
+    /* ── Full-viewport background via pseudo-element ── */
     .login-pf-page {
+      position: relative;
       min-height: 100vh !important;
       display: flex !important;
       align-items: center !important;
@@ -49,9 +40,28 @@ data:
       padding: 2rem !important;
     }
 
+    .login-pf-page::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background:
+        url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&q=85&fit=crop')
+        center center / cover no-repeat;
+    }
+
+    .login-pf-page::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background: rgba(0, 0, 0, 0.45);
+    }
+
     /* ── Frosted card ── */
     .card-pf {
       position: relative;
+      z-index: 1;
       background: rgba(15, 18, 22, 0.65) !important;
       backdrop-filter: blur(20px) saturate(160%) !important;
       -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
