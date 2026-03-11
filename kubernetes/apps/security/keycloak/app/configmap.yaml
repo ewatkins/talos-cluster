@@ -11,26 +11,27 @@ data:
     styles=css/login.css
 
   login.css: |
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
-    /* ── Page background ── */
+    /* ── Background ── */
     body.login-pf {
       margin: 0;
-      min-height: 100vh;
       font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      min-height: 100vh;
       background:
-        linear-gradient(rgba(5, 12, 20, 0.55), rgba(5, 12, 20, 0.55)),
-        url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&q=85&fit=crop')
-        center / cover no-repeat fixed;
+        linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
+        url('https://source.unsplash.com/random/1920x1080/?forest,nature')
+        center center / cover no-repeat fixed;
     }
 
-    /* ── Hide the default header / realm name ── */
+    /* ── Hide default header ── */
     #kc-header,
     #kc-header-wrapper {
       display: none !important;
     }
 
-    /* ── Main layout container ── */
+    /* ── Layout ── */
     .login-pf-page {
       min-height: 100vh;
       display: flex;
@@ -39,23 +40,40 @@ data:
       padding: 2rem;
     }
 
-    /* ── Frosted glass card ── */
+    /* ── Frosted card ── */
     #kc-content,
     .card-pf {
-      background: rgba(10, 18, 32, 0.58) !important;
-      backdrop-filter: blur(28px) saturate(180%) !important;
-      -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
-      border: 1px solid rgba(255, 255, 255, 0.10) !important;
-      border-radius: 20px !important;
-      box-shadow:
-        0 32px 64px rgba(0, 0, 0, 0.55),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
-      padding: 2.5rem !important;
+      position: relative;
+      background: rgba(15, 18, 22, 0.65) !important;
+      backdrop-filter: blur(20px) saturate(160%) !important;
+      -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+      border: 1px solid rgba(255,255,255,0.1) !important;
+      border-radius: 16px !important;
+      padding: 2.75rem 2.5rem 2.25rem !important;
       width: 100%;
-      max-width: 440px;
+      max-width: 400px;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.04) inset,
+        0 24px 60px rgba(0,0,0,0.6) !important;
+      animation: rise 0.5s cubic-bezier(.16,1,.3,1) both;
     }
 
-    /* ── Domain header injected via ::before on form ── */
+    /* Subtle top highlight */
+    #kc-content::before,
+    .card-pf::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 15%; right: 15%; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+      border-radius: 100px;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(14px) scale(0.99); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* ── Brand header ── */
     #kc-form-login::before,
     #kc-form-options::before {
       display: none;
@@ -65,10 +83,10 @@ data:
       content: 'ewatkins.dev';
       display: block;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       font-weight: 500;
-      color: rgba(255, 255, 255, 0.70);
-      letter-spacing: 0.04em;
+      color: #fff;
+      letter-spacing: -0.01em;
       text-align: center;
       margin-bottom: 0.35rem;
     }
@@ -76,22 +94,30 @@ data:
     #kc-content-wrapper::after {
       content: 'sign in to continue';
       display: block;
-      font-size: 0.8rem;
-      font-weight: 400;
-      color: rgba(255, 255, 255, 0.38);
-      letter-spacing: 0.06em;
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.02em;
       text-align: center;
-      margin-bottom: 2rem;
+      margin-bottom: 1.75rem;
+    }
+
+    /* ── Page title ── */
+    #kc-page-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.9);
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.01em;
     }
 
     /* ── Form labels ── */
     .pf-c-form__label-text,
     label {
-      color: rgba(200, 218, 240, 0.65) !important;
-      font-size: 0.78rem !important;
+      color: rgba(255,255,255,0.5) !important;
+      font-size: 0.77rem !important;
       font-weight: 500 !important;
-      letter-spacing: 0.04em !important;
-      text-transform: uppercase !important;
+      letter-spacing: normal !important;
+      text-transform: none !important;
     }
 
     /* ── Inputs ── */
@@ -99,48 +125,56 @@ data:
     input[type="text"],
     input[type="password"],
     input[type="email"] {
-      background: rgba(8, 15, 28, 0.65) !important;
-      border: 1px solid rgba(255, 255, 255, 0.12) !important;
-      border-radius: 10px !important;
-      color: #e2eaf4 !important;
-      padding: 0.6rem 0.9rem !important;
-      font-size: 0.95rem !important;
-      transition: border-color 0.2s, box-shadow 0.2s !important;
+      width: 100%;
+      background: rgba(0,0,0,0.3) !important;
+      border: 1px solid rgba(255,255,255,0.12) !important;
+      border-radius: 8px !important;
+      color: #fff !important;
+      padding: 0.65rem 0.9rem !important;
+      font-size: 0.88rem !important;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s !important;
     }
 
     .pf-c-form-control:focus,
     input[type="text"]:focus,
     input[type="password"]:focus {
-      border-color: rgba(56, 189, 248, 0.45) !important;
-      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12) !important;
+      background: rgba(0,0,0,0.4) !important;
+      border-color: rgba(255,255,255,0.35) !important;
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.06) !important;
       outline: none !important;
     }
 
-    /* ── Submit button ── */
+    /* ── Submit button (white) ── */
     #kc-login,
     .pf-c-button.pf-m-primary {
-      background: linear-gradient(135deg, #0ea5e9, #2dd4bf) !important;
-      border: none !important;
-      border-radius: 10px !important;
-      color: #05111f !important;
-      font-weight: 700 !important;
-      font-size: 0.95rem !important;
-      letter-spacing: 0.03em !important;
-      padding: 0.7rem 1.5rem !important;
       width: 100% !important;
+      margin-top: 0.5rem !important;
+      padding: 0.7rem 1.5rem !important;
+      background: rgba(255,255,255,0.92) !important;
+      border: none !important;
+      border-radius: 8px !important;
+      color: #111 !important;
+      font-weight: 600 !important;
+      font-size: 0.88rem !important;
+      letter-spacing: 0.01em !important;
       cursor: pointer !important;
-      transition: opacity 0.2s, transform 0.1s !important;
+      transition: background 0.15s, box-shadow 0.15s !important;
     }
 
     #kc-login:hover,
     .pf-c-button.pf-m-primary:hover {
-      opacity: 0.9 !important;
-      transform: translateY(-1px) !important;
+      background: #fff !important;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
+      transform: none !important;
+      opacity: 1 !important;
+    }
+
+    #kc-login:active {
+      background: rgba(255,255,255,0.8) !important;
     }
 
     /* ── "or continue with" divider ── */
     #kc-social-providers {
-      position: relative;
       margin-top: 1.5rem;
     }
 
@@ -148,27 +182,24 @@ data:
       content: 'or continue with';
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      color: rgba(255, 255, 255, 0.30);
-      font-size: 0.75rem;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      margin-bottom: 1rem;
-    }
-
-    #kc-social-providers::before,
-    #kc-social-providers::after {
-      /* The lines on each side are done via a flex trick on the text */
+      justify-content: center;
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 0.02em;
+      margin-bottom: 1.1rem;
     }
 
     /* ── Social provider buttons ── */
     #kc-social-providers ul {
-      display: grid !important;
-      grid-template-columns: 1fr 1fr !important;
-      gap: 0.65rem !important;
+      display: flex !important;
+      gap: 0.6rem !important;
       list-style: none !important;
       padding: 0 !important;
       margin: 0 !important;
+    }
+
+    #kc-social-providers ul li {
+      flex: 1 !important;
     }
 
     #kc-social-providers ul li a,
@@ -177,25 +208,26 @@ data:
       align-items: center !important;
       justify-content: center !important;
       gap: 0.5rem !important;
-      background: rgba(255, 255, 255, 0.07) !important;
-      border: 1px solid rgba(255, 255, 255, 0.12) !important;
-      border-radius: 10px !important;
-      color: rgba(220, 235, 255, 0.85) !important;
-      font-size: 0.85rem !important;
+      background: rgba(255,255,255,0.06) !important;
+      border: 1px solid rgba(255,255,255,0.1) !important;
+      border-radius: 8px !important;
+      color: rgba(255,255,255,0.5) !important;
+      font-size: 0.8rem !important;
       font-weight: 500 !important;
-      padding: 0.6rem 1rem !important;
+      padding: 0.58rem 0.75rem !important;
       text-decoration: none !important;
-      transition: background 0.2s, border-color 0.2s !important;
-      backdrop-filter: blur(8px) !important;
+      transition: background 0.15s, border-color 0.15s, color 0.15s !important;
+      backdrop-filter: none !important;
     }
 
     #kc-social-providers ul li a:hover,
     .zocial:hover {
-      background: rgba(255, 255, 255, 0.13) !important;
-      border-color: rgba(56, 189, 248, 0.30) !important;
+      background: rgba(255,255,255,0.1) !important;
+      border-color: rgba(255,255,255,0.2) !important;
+      color: rgba(255,255,255,0.85) !important;
     }
 
-    /* ── "Forgot password" and other links ── */
+    /* ── Links ── */
     #kc-info-message,
     .login-pf-page a,
     #kc-form-options .checkbox label,
@@ -205,14 +237,14 @@ data:
     }
 
     #kc-form-options a:hover {
-      color: #38bdf8 !important;
+      color: rgba(255,255,255,0.8) !important;
     }
 
     /* ── Alert / error messages ── */
     .alert {
       background: rgba(239, 68, 68, 0.15) !important;
       border: 1px solid rgba(239, 68, 68, 0.30) !important;
-      border-radius: 10px !important;
+      border-radius: 8px !important;
       color: #fca5a5 !important;
       padding: 0.75rem 1rem !important;
       margin-bottom: 1rem !important;
