@@ -33,6 +33,8 @@ spec:
               - secretRef:
                   name: outline-secret
               - secretRef:
+                  name: outline-smtp
+              - secretRef:
                   name: outline-db
         containers:
           app:
@@ -47,6 +49,7 @@ spec:
               ENABLE_UPDATES: "false"
               DEFAULT_LANGUAGE: en_US
               PGSSLMODE: disable
+              SMTP_FROM_EMAIL: "outline@ewatkins.dev"
               AWS_S3_ACL: private
               AWS_S3_FORCE_PATH_STYLE: "false"
               OIDC_CLIENT_ID: outline
