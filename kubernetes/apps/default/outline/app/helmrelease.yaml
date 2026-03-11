@@ -28,7 +28,7 @@ spec:
             image:
               repository: outlinewiki/outline
               tag: 1.5.0
-            command: [sh, -c, "corepack enable && yarn db:migrate"]
+            command: [sh, -c, "node_modules/.bin/sequelize db:migrate"]
             envFrom: &envFrom
               - secretRef:
                   name: outline-secret
