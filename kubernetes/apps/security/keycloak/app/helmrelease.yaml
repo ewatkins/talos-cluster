@@ -51,6 +51,7 @@ spec:
               KC_HTTP_ENABLED: "true"
               KC_PROXY_HEADERS: xforwarded
               KC_PROXY_TRUSTED_ADDRESSES: "10.69.0.0/16"
+              KC_SPI_THEME_DEFAULT: ewatkins
             ports:
               - name: http
                 containerPort: 8080
@@ -93,6 +94,23 @@ spec:
                 memory: 666Mi
               limits:
                 memory: 2048Mi
+        initContainers:
+          theme-init:
+            image:
+              repository: busybox
+              tag: latest
+            command:
+              - sh
+              - -c
+              - |
+                mkdir -p /themes/ewatkins/login/resources/css && \
+                cp /theme-src/theme.properties /themes/ewatkins/login/theme.properties && \
+                cp /theme-src/login.css /themes/ewatkins/login/resources/css/login.css
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
         pod:
           annotations:
             reloader.stakater.com/auto: "true"
@@ -112,3 +130,20 @@ spec:
           http:
             port: 80
             targetPort: 8080
+
+    persistence:
+      theme-source:
+        type: configMap
+        name: keycloak-theme
+        advancedMounts:
+          keycloak:
+            theme-init:
+              - path: /theme-src
+      themes:
+        type: emptyDir
+        advancedMounts:
+          keycloak:
+            theme-init:
+              - path: /themes
+            keycloak:
+              - path: /opt/keycloak/themes
