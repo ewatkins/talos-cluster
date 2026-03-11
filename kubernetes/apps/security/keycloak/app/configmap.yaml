@@ -69,7 +69,7 @@ data:
       -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
       border: 1px solid rgba(255,255,255,0.1) !important;
       border-radius: 16px !important;
-      padding: 2.75rem 2.5rem 2.25rem !important;
+      padding: 1.5rem 2.5rem 2.25rem !important;
       width: 100%;
       max-width: 400px;
       box-shadow:
