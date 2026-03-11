@@ -104,7 +104,7 @@ spec:
                     severity: critical
       persistence: *persistence
     storeGateway:
-      replicas: 2
+      replicas: 1
       extraEnv: *extraEnv
       extraArgs: ["--index-cache.config=$(THANOS_CACHE_CONFIG)"]
       persistence: *persistence
