@@ -48,6 +48,8 @@ data:
       background:
         url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&q=85&fit=crop')
         center center / cover no-repeat;
+      filter: blur(6px);
+      transform: scale(1.05);
     }
 
     .login-pf-page::after {
@@ -101,25 +103,15 @@ data:
       to   { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    /* ── Brand header — replace "Sign in to your account" ── */
-    #kc-page-title {
-      font-size: 0 !important;
+    /* ── Brand header ── */
+    .login-pf-header {
       text-align: center;
+      border-bottom: none !important;
+      padding-bottom: 0 !important;
       margin-bottom: 1.75rem !important;
     }
 
-    #kc-page-title::before {
-      content: 'ewatkins.dev';
-      display: block;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 1.15rem;
-      font-weight: 500;
-      color: #fff;
-      letter-spacing: -0.01em;
-      margin-bottom: 0.35rem;
-    }
-
-    #kc-page-title::after {
+    .login-pf-header::after {
       content: 'sign in to continue';
       display: block;
       font-family: 'Inter', sans-serif;
@@ -127,6 +119,34 @@ data:
       font-weight: 400;
       color: rgba(255,255,255,0.35);
       letter-spacing: 0.02em;
+      margin-top: 0.35rem;
+    }
+
+    /* "ewatkins" white, ".dev" off-white — two inline pseudo-elements */
+    #kc-page-title {
+      font-size: 0 !important;
+      display: block;
+      text-align: center;
+      margin-bottom: 0 !important;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    #kc-page-title::before {
+      content: 'ewatkins';
+      display: inline;
+      font-size: 1.15rem;
+      font-weight: 500;
+      color: #fff;
+      letter-spacing: -0.01em;
+    }
+
+    #kc-page-title::after {
+      content: '.dev';
+      display: inline;
+      font-size: 1.15rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: -0.01em;
     }
 
     /* ── Form labels ── */
@@ -136,6 +156,25 @@ data:
       font-weight: 500 !important;
       letter-spacing: normal !important;
       text-transform: none !important;
+    }
+
+    /* Override username label text and add red asterisk */
+    label[for="username"] {
+      font-size: 0 !important;
+    }
+
+    label[for="username"]::before {
+      content: 'Email or Username';
+      font-size: 0.77rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.5);
+    }
+
+    label[for="username"]::after {
+      content: ' *';
+      font-size: 0.77rem;
+      font-weight: 500;
+      color: #f87171;
     }
 
     /* ── Inputs ── */
@@ -167,10 +206,14 @@ data:
     /* ── Password input group (input + toggle button) ── */
     .pf-c-input-group {
       background: transparent !important;
+      display: flex !important;
+      align-items: stretch !important;
     }
 
     .pf-c-input-group input.pf-c-form-control {
       border-radius: 8px 0 0 8px !important;
+      flex: 1 !important;
+      height: auto !important;
     }
 
     /* ── Password toggle button ── */
@@ -183,6 +226,10 @@ data:
       color: rgba(255,255,255,0.5) !important;
       outline: none !important;
       box-shadow: none !important;
+      align-self: stretch !important;
+      display: flex !important;
+      align-items: center !important;
+      padding: 0 0.75rem !important;
     }
 
     button.pf-m-control::after,
@@ -220,21 +267,29 @@ data:
       margin-top: 1.5rem;
     }
 
-    /* Hide Keycloak's own "Or sign in with" heading and hr */
-    #kc-social-providers h2,
+    /* Hide the <hr>, repurpose <h2> as the lined divider */
     #kc-social-providers hr {
       display: none !important;
     }
 
-    #kc-social-providers::before {
-      content: 'or continue with';
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.7rem;
-      color: rgba(255,255,255,0.3);
-      letter-spacing: 0.02em;
-      margin-bottom: 1.1rem;
+    #kc-social-providers h2 {
+      display: flex !important;
+      align-items: center !important;
+      gap: 0.75rem !important;
+      font-size: 0.7rem !important;
+      font-weight: 400 !important;
+      color: rgba(255,255,255,0.3) !important;
+      letter-spacing: 0.02em !important;
+      text-transform: lowercase !important;
+      margin: 0 0 1.1rem !important;
+    }
+
+    #kc-social-providers h2::before,
+    #kc-social-providers h2::after {
+      content: '' !important;
+      flex: 1 !important;
+      height: 1px !important;
+      background: rgba(255,255,255,0.1) !important;
     }
 
     /* ── Social provider buttons ── */
@@ -278,6 +333,31 @@ data:
       background: rgba(255,255,255,0.1) !important;
       border-color: rgba(255,255,255,0.2) !important;
       color: rgba(255,255,255,0.85) !important;
+    }
+
+    /* GitHub — dark charcoal tint */
+    a#social-github {
+      background: rgba(36, 41, 47, 0.55) !important;
+      border-color: rgba(255,255,255,0.14) !important;
+      color: rgba(255,255,255,0.8) !important;
+    }
+
+    a#social-github:hover {
+      background: rgba(36, 41, 47, 0.8) !important;
+      color: #fff !important;
+    }
+
+    /* Google — subtle blue tint */
+    a#social-google {
+      background: rgba(66, 133, 244, 0.15) !important;
+      border-color: rgba(66, 133, 244, 0.3) !important;
+      color: rgba(255,255,255,0.8) !important;
+    }
+
+    a#social-google:hover {
+      background: rgba(66, 133, 244, 0.28) !important;
+      border-color: rgba(66, 133, 244, 0.5) !important;
+      color: #fff !important;
     }
 
     /* ── Links ── */
