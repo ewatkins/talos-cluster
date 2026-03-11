@@ -286,8 +286,9 @@ data:
       margin-top: 0;
     }
 
-    /* Hide the <hr>, repurpose <h2> as the lined divider */
-    #kc-social-providers hr {
+    /* Hide the <hr> and "or continue with" heading */
+    #kc-social-providers hr,
+    #kc-social-providers h2 {
       display: none !important;
     }
 
