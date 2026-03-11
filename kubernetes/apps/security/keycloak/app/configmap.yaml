@@ -183,7 +183,11 @@ data:
       color: rgba(255,255,255,0.5) !important;
       outline: none !important;
       box-shadow: none !important;
-      --pf-c-button--after--BorderColor: transparent !important;
+    }
+
+    button.pf-m-control::after,
+    .pf-c-input-group button::after {
+      display: none !important;
     }
 
     /* ── Submit button (white) ── */
@@ -216,11 +220,9 @@ data:
       margin-top: 1.5rem;
     }
 
-    /* Hide Keycloak's own "Or sign in with" heading */
-    #kc-social-providers h4,
-    #kc-social-providers h5,
-    #kc-social-providers p,
-    #kc-social-providers > div:first-child {
+    /* Hide Keycloak's own "Or sign in with" heading and hr */
+    #kc-social-providers h2,
+    #kc-social-providers hr {
       display: none !important;
     }
 
@@ -262,6 +264,14 @@ data:
       padding: 0.58rem 0.75rem !important;
       text-decoration: none !important;
       transition: background 0.15s, border-color 0.15s, color 0.15s !important;
+      position: relative !important;
+      width: 100% !important;
+    }
+
+    /* Remove PatternFly's ::after focus ring on social buttons */
+    #kc-social-providers ul li a::after,
+    #kc-social-providers ul li a::before {
+      display: none !important;
     }
 
     #kc-social-providers ul li a:hover {
