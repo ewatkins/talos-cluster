@@ -21,11 +21,11 @@ data:
       min-height: 100vh;
       background:
         linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
-        url('https://source.unsplash.com/random/1920x1080/?forest,nature')
+        url('https://images.unsplash.com/photo-1448375240586-882707db888b?w=1920&q=85&fit=crop')
         center center / cover no-repeat fixed;
     }
 
-    /* ── Hide default header ── */
+    /* ── Hide default header/realm name ── */
     #kc-header,
     #kc-header-wrapper {
       display: none !important;
@@ -40,8 +40,7 @@ data:
       padding: 2rem;
     }
 
-    /* ── Frosted card ── */
-    #kc-content,
+    /* ── Frosted card (card-pf is the outer wrapper) ── */
     .card-pf {
       position: relative;
       background: rgba(15, 18, 22, 0.65) !important;
@@ -59,13 +58,23 @@ data:
     }
 
     /* Subtle top highlight */
-    #kc-content::before,
     .card-pf::before {
       content: '';
       position: absolute;
       top: 0; left: 15%; right: 15%; height: 1px;
       background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
       border-radius: 100px;
+      pointer-events: none;
+    }
+
+    /* ── Remove inner content box styling ── */
+    #kc-content {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      backdrop-filter: none !important;
+      border-radius: 0 !important;
     }
 
     @keyframes rise {
@@ -73,13 +82,14 @@ data:
       to   { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    /* ── Brand header ── */
-    #kc-form-login::before,
-    #kc-form-options::before {
-      display: none;
+    /* ── Brand header — replace "Sign in to your account" ── */
+    #kc-page-title {
+      font-size: 0 !important;
+      text-align: center;
+      margin-bottom: 1.75rem !important;
     }
 
-    #kc-content-wrapper::before {
+    #kc-page-title::before {
       content: 'ewatkins.dev';
       display: block;
       font-family: 'JetBrains Mono', monospace;
@@ -87,27 +97,17 @@ data:
       font-weight: 500;
       color: #fff;
       letter-spacing: -0.01em;
-      text-align: center;
       margin-bottom: 0.35rem;
     }
 
-    #kc-content-wrapper::after {
+    #kc-page-title::after {
       content: 'sign in to continue';
       display: block;
+      font-family: 'Inter', sans-serif;
       font-size: 0.72rem;
+      font-weight: 400;
       color: rgba(255,255,255,0.35);
       letter-spacing: 0.02em;
-      text-align: center;
-      margin-bottom: 1.75rem;
-    }
-
-    /* ── Page title ── */
-    #kc-page-title {
-      font-size: 1.05rem;
-      font-weight: 600;
-      color: rgba(255,255,255,0.9);
-      margin-bottom: 1.5rem;
-      letter-spacing: -0.01em;
     }
 
     /* ── Form labels ── */
