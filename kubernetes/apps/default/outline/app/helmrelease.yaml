@@ -48,7 +48,7 @@ spec:
               DEFAULT_LANGUAGE: en_US
               PGSSLMODE: disable
               AWS_S3_ACL: private
-              AWS_S3_FORCE_PATH_STYLE: "true"
+              AWS_S3_FORCE_PATH_STYLE: "false"
               OIDC_CLIENT_ID: outline
               OIDC_DISPLAY_NAME: Keycloak
               OIDC_USERNAME_CLAIM: preferred_username
