@@ -34,10 +34,6 @@ spec:
                   name: outline-secret
               - secretRef:
                   name: outline-db
-              - secretRef:
-                  name: outline-bucket
-              - secretRef:
-                  name: outline-oidc
         containers:
           app:
             image:
@@ -51,16 +47,9 @@ spec:
               ENABLE_UPDATES: "false"
               DEFAULT_LANGUAGE: en_US
               PGSSLMODE: disable
-              AWS_REGION: us-east-1
-              AWS_S3_UPLOAD_BUCKET_NAME: outline
-              AWS_S3_UPLOAD_BUCKET_URL: "https://s3.ewatkins.dev"
-              AWS_S3_FORCE_PATH_STYLE: "true"
               AWS_S3_ACL: private
+              AWS_S3_FORCE_PATH_STYLE: "true"
               OIDC_CLIENT_ID: outline
-              OIDC_AUTH_URI: "https://keycloak.ewatkins.dev/realms/master/protocol/openid-connect/auth"
-              OIDC_TOKEN_URI: "https://keycloak.ewatkins.dev/realms/master/protocol/openid-connect/token"
-              OIDC_USERINFO_URI: "https://keycloak.ewatkins.dev/realms/master/protocol/openid-connect/userinfo"
-              OIDC_LOGOUT_URI: "https://keycloak.ewatkins.dev/realms/master/protocol/openid-connect/logout"
               OIDC_DISPLAY_NAME: Keycloak
               OIDC_USERNAME_CLAIM: preferred_username
               OIDC_SCOPES: "openid profile email"
