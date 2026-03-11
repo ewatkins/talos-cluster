@@ -82,6 +82,9 @@ spec:
     - name: "paperless-admin"
       databases: ["paperless"]
       password: *password
+    - name: "outline-admin"
+      databases: ["outline"]
+      password: *password
   backups:
     pgbackrest:
       configuration: &backupConfig
