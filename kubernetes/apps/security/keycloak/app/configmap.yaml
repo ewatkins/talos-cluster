@@ -292,26 +292,6 @@ data:
       display: none !important;
     }
 
-    #kc-social-providers h2 {
-      display: flex !important;
-      align-items: center !important;
-      gap: 0.75rem !important;
-      font-size: 0.7rem !important;
-      font-weight: 400 !important;
-      color: rgba(255,255,255,0.3) !important;
-      letter-spacing: 0.02em !important;
-      text-transform: lowercase !important;
-      margin: 0 0 1.1rem !important;
-    }
-
-    #kc-social-providers h2::before,
-    #kc-social-providers h2::after {
-      content: '' !important;
-      flex: 1 !important;
-      height: 1px !important;
-      background: rgba(255,255,255,0.1) !important;
-    }
-
     /* ── Social provider buttons ── */
     #kc-social-providers ul {
       display: flex !important;
