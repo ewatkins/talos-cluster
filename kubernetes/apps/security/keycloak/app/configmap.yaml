@@ -442,6 +442,7 @@ data:
     /* order 2: "sign in to continue" divider (reuse global ::after, just set order) */
     .login-pf-header:not(:has(#kc-page-title))::after {
       order: 2;
+      width: 100%;
     }
 
     /* order 3: email + restart icon — shown below the divider */
