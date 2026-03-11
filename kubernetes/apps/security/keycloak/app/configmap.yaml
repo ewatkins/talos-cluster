@@ -416,30 +416,42 @@ data:
       color: #86efac !important;
     }
 
-    /* ── OTP / step-up pages: inject brand when no #kc-page-title ── */
+    /* ── OTP / step-up pages: brand → divider → email → form ── */
     .login-pf-header:not(:has(#kc-page-title)) {
       display: flex !important;
       flex-direction: column !important;
       align-items: center !important;
     }
 
+    /* order 1: "ewatkins.dev" split-color brand */
     .login-pf-header:not(:has(#kc-page-title))::before {
+      order: 1;
       content: 'ewatkins.dev';
       font-family: 'JetBrains Mono', monospace;
       font-size: 1.15rem;
       font-weight: 500;
-      color: rgba(255,255,255,0.9);
+      background: linear-gradient(90deg, #fff 0% 66.67%, rgba(255,255,255,0.4) 66.67% 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
       display: block;
       text-align: center;
-      margin-bottom: 0.15rem;
+      margin-bottom: 0;
     }
 
+    /* order 2: "sign in to continue" divider (reuse global ::after, just set order) */
+    .login-pf-header:not(:has(#kc-page-title))::after {
+      order: 2;
+    }
+
+    /* order 3: email + restart icon — shown below the divider */
     #kc-username {
+      order: 3 !important;
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
       gap: 0.45rem !important;
-      margin: 0 !important;
+      margin: 1.25rem 0 0 0 !important;
     }
 
     #kc-attempted-username {
