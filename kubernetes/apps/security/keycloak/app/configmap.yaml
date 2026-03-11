@@ -208,12 +208,12 @@ data:
       background: transparent !important;
       display: flex !important;
       align-items: stretch !important;
+      min-height: 0 !important;
     }
 
     .pf-c-input-group input.pf-c-form-control {
       border-radius: 8px 0 0 8px !important;
       flex: 1 !important;
-      height: auto !important;
     }
 
     /* ── Password toggle button ── */
@@ -226,7 +226,8 @@ data:
       color: rgba(255,255,255,0.5) !important;
       outline: none !important;
       box-shadow: none !important;
-      align-self: stretch !important;
+      min-height: 0 !important;
+      min-width: 0 !important;
       display: flex !important;
       align-items: center !important;
       padding: 0 0.75rem !important;
