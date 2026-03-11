@@ -174,7 +174,8 @@ data:
     }
 
     /* ── Password toggle button ── */
-    button.pf-m-control {
+    button.pf-m-control,
+    .pf-c-input-group button {
       background: rgba(0,0,0,0.3) !important;
       border: 1px solid rgba(255,255,255,0.12) !important;
       border-left: none !important;
@@ -182,6 +183,7 @@ data:
       color: rgba(255,255,255,0.5) !important;
       outline: none !important;
       box-shadow: none !important;
+      --pf-c-button--after--BorderColor: transparent !important;
     }
 
     /* ── Submit button (white) ── */
@@ -212,6 +214,14 @@ data:
     /* ── "or continue with" divider ── */
     #kc-social-providers {
       margin-top: 1.5rem;
+    }
+
+    /* Hide Keycloak's own "Or sign in with" heading */
+    #kc-social-providers h4,
+    #kc-social-providers h5,
+    #kc-social-providers p,
+    #kc-social-providers > div:first-child {
+      display: none !important;
     }
 
     #kc-social-providers::before {
