@@ -120,6 +120,12 @@ data:
       color: rgba(255,255,255,0.35);
       letter-spacing: 0.02em;
       margin-top: 0.35rem;
+      padding-bottom: 1.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .login-pf-header {
+      margin-bottom: 0 !important;
     }
 
     /* "ewatkins" white, ".dev" off-white — two inline pseudo-elements */
@@ -147,6 +153,10 @@ data:
       font-weight: 400;
       color: rgba(255,255,255,0.4);
       letter-spacing: -0.01em;
+    }
+
+    #kc-content {
+      margin-top: 1.75rem !important;
     }
 
     /* ── Form labels ── */
@@ -243,7 +253,7 @@ data:
       width: 100% !important;
       margin-top: 0.5rem !important;
       padding: 0.7rem 1.5rem !important;
-      background: rgba(255,255,255,0.92) !important;
+      background: rgba(255,255,255,0.75) !important;
       border: none !important;
       border-radius: 8px !important;
       color: #111 !important;
@@ -255,7 +265,7 @@ data:
     }
 
     input#kc-login:hover {
-      background: #fff !important;
+      background: rgba(255,255,255,0.88) !important;
       box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
     }
 
