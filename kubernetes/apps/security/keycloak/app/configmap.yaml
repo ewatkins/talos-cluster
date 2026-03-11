@@ -416,6 +416,38 @@ data:
       color: #86efac !important;
     }
 
+    /* ── OTP / step-up pages: username + restart link ── */
+    #kc-username {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 0.6rem !important;
+      margin-bottom: 1rem !important;
+    }
+
+    #kc-attempted-username {
+      color: rgba(255,255,255,0.45) !important;
+      font-size: 0.8rem !important;
+      font-family: 'JetBrains Mono', monospace !important;
+    }
+
+    #reset-login {
+      display: flex !important;
+      align-items: center !important;
+      color: rgba(255,255,255,0.25) !important;
+      font-size: 0 !important;
+      text-decoration: none !important;
+    }
+
+    #reset-login i {
+      font-size: 0.85rem !important;
+      color: rgba(255,255,255,0.3) !important;
+    }
+
+    #reset-login:hover i {
+      color: rgba(255,255,255,0.6) !important;
+    }
+
     /* ── Hide "powered by Keycloak" footer ── */
     #kc-info .instruction,
     #powered-by-keycloak,
