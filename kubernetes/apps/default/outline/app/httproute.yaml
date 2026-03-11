@@ -25,5 +25,5 @@ spec:
               - name: Strict-Transport-Security
                 value: "max-age=31449600; includeSubDomains"
       backendRefs:
-        - name: outline-app
+        - name: outline
           port: 3000
