@@ -21,8 +21,7 @@ spec:
   values:
     controllers:
       keycloak:
-        type: statefulset
-        replicas: 1
+        replicas: 2
         rollingUpdate:
           unavailable: 1
         containers:
