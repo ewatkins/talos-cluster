@@ -416,32 +416,53 @@ data:
       color: #86efac !important;
     }
 
-    /* ── OTP / step-up pages: username + restart link ── */
+    /* ── OTP / step-up pages: inject brand when no #kc-page-title ── */
+    .login-pf-header:not(:has(#kc-page-title)) {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+    }
+
+    .login-pf-header:not(:has(#kc-page-title))::before {
+      content: 'ewatkins.dev';
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.15rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.9);
+      display: block;
+      text-align: center;
+      margin-bottom: 0.15rem;
+    }
+
     #kc-username {
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
-      gap: 0.6rem !important;
-      margin-bottom: 1rem !important;
+      gap: 0.45rem !important;
+      margin: 0 !important;
     }
 
     #kc-attempted-username {
-      color: rgba(255,255,255,0.45) !important;
-      font-size: 0.8rem !important;
       font-family: 'JetBrains Mono', monospace !important;
+      font-size: 0.78rem !important;
+      color: rgba(255,255,255,0.4) !important;
+      font-weight: 400 !important;
+    }
+
+    .kc-tooltip-text {
+      display: none !important;
     }
 
     #reset-login {
       display: flex !important;
       align-items: center !important;
-      color: rgba(255,255,255,0.25) !important;
-      font-size: 0 !important;
       text-decoration: none !important;
     }
 
     #reset-login i {
-      font-size: 0.85rem !important;
-      color: rgba(255,255,255,0.3) !important;
+      color: rgba(255,255,255,0.28) !important;
+      font-size: 0.8rem !important;
+      transition: color 0.15s !important;
     }
 
     #reset-login:hover i {
