@@ -14,17 +14,24 @@ data:
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
     /* ── Background ── */
-    html, body {
-      margin: 0;
+    html {
       height: 100%;
-    }
-
-    body {
-      font-family: 'Inter', sans-serif;
       background:
         linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
         url('https://images.unsplash.com/photo-1448375240586-882707db888b?w=1920&q=85&fit=crop')
-        center center / cover no-repeat fixed;
+        center center / cover no-repeat fixed !important;
+      background-color: #0d1117 !important;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100%;
+      font-family: 'Inter', sans-serif;
+      background: transparent !important;
+    }
+
+    .login-pf-page {
+      background: transparent !important;
     }
 
     /* ── Hide default header / realm name ── */
@@ -35,11 +42,11 @@ data:
 
     /* ── Layout ── */
     .login-pf-page {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
+      min-height: 100vh !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 2rem !important;
     }
 
     /* ── Frosted card ── */
@@ -139,7 +146,24 @@ data:
       outline: none !important;
     }
 
-    /* ── Password toggle button (don't style like submit) ── */
+    /* ── Browser autofill override ── */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus {
+      -webkit-box-shadow: 0 0 0 100px rgba(8, 15, 28, 0.95) inset !important;
+      -webkit-text-fill-color: #fff !important;
+    }
+
+    /* ── Password input group (input + toggle button) ── */
+    .pf-c-input-group {
+      background: transparent !important;
+    }
+
+    .pf-c-input-group input.pf-c-form-control {
+      border-radius: 8px 0 0 8px !important;
+    }
+
+    /* ── Password toggle button ── */
     button.pf-m-control {
       background: rgba(0,0,0,0.3) !important;
       border: 1px solid rgba(255,255,255,0.12) !important;
