@@ -94,26 +94,7 @@ spec:
                 memory: 666Mi
               limits:
                 memory: 2048Mi
-        initContainers:
-          theme-init:
-            image:
-              repository: busybox
-              tag: latest
-            command:
-              - sh
-              - -c
-              - |
-                mkdir -p /themes/ewatkins/login/resources/css && \
-                cp /theme-src/theme.properties /themes/ewatkins/login/theme.properties && \
-                cp /theme-src/login.css /themes/ewatkins/login/resources/css/login.css
-            securityContext:
-              allowPrivilegeEscalation: false
-              capabilities:
-                drop:
-                  - ALL
-        pod:
-          annotations:
-            reloader.stakater.com/auto: "true"
+        pod: {}
 
     defaultPodOptions:
       securityContext:
@@ -132,18 +113,25 @@ spec:
             targetPort: 8080
 
     persistence:
-      theme-source:
+      theme-properties:
         type: configMap
         name: keycloak-theme
         advancedMounts:
           keycloak:
-            theme-init:
-              - path: /theme-src
-      themes:
-        type: emptyDir
+            keycloak:
+              - path: /opt/keycloak/themes/ewatkins/login
+                readOnly: true
+        items:
+          - key: theme.properties
+            path: theme.properties
+      theme-css:
+        type: configMap
+        name: keycloak-theme
         advancedMounts:
           keycloak:
-            theme-init:
-              - path: /themes
             keycloak:
-              - path: /opt/keycloak/themes
+              - path: /opt/keycloak/themes/ewatkins/login/resources/css
+                readOnly: true
+        items:
+          - key: login.css
+            path: login.css
