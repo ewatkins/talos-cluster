@@ -9,6 +9,7 @@ spec:
   chartRef:
     kind: OCIRepository
     name: keycloak
+  timeout: 10m
   install:
     remediation:
       retries: 3
@@ -107,8 +108,6 @@ spec:
                 cp /theme-src/login.css /themes/ewatkins/login/resources/css/login.css && \
                 chmod -R 755 /themes
             securityContext:
-              runAsNonRoot: false
-              runAsUser: 0
               allowPrivilegeEscalation: false
               capabilities:
                 drop:
