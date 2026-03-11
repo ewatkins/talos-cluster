@@ -14,18 +14,20 @@ data:
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
     /* ── Background ── */
-    body.login-pf {
+    html, body {
       margin: 0;
+      height: 100%;
+    }
+
+    body {
       font-family: 'Inter', sans-serif;
-      overflow: hidden;
-      min-height: 100vh;
       background:
         linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
         url('https://images.unsplash.com/photo-1448375240586-882707db888b?w=1920&q=85&fit=crop')
         center center / cover no-repeat fixed;
     }
 
-    /* ── Hide default header/realm name ── */
+    /* ── Hide default header / realm name ── */
     #kc-header,
     #kc-header-wrapper {
       display: none !important;
@@ -40,7 +42,7 @@ data:
       padding: 2rem;
     }
 
-    /* ── Frosted card (card-pf is the outer wrapper) ── */
+    /* ── Frosted card ── */
     .card-pf {
       position: relative;
       background: rgba(15, 18, 22, 0.65) !important;
@@ -67,7 +69,7 @@ data:
       pointer-events: none;
     }
 
-    /* ── Remove inner content box styling ── */
+    /* ── Reset inner content box ── */
     #kc-content {
       background: transparent !important;
       border: none !important;
@@ -111,8 +113,7 @@ data:
     }
 
     /* ── Form labels ── */
-    .pf-c-form__label-text,
-    label {
+    label.pf-c-form__label {
       color: rgba(255,255,255,0.5) !important;
       font-size: 0.77rem !important;
       font-weight: 500 !important;
@@ -121,11 +122,7 @@ data:
     }
 
     /* ── Inputs ── */
-    .pf-c-form-control,
-    input[type="text"],
-    input[type="password"],
-    input[type="email"] {
-      width: 100%;
+    input.pf-c-form-control {
       background: rgba(0,0,0,0.3) !important;
       border: 1px solid rgba(255,255,255,0.12) !important;
       border-radius: 8px !important;
@@ -135,18 +132,24 @@ data:
       transition: border-color 0.2s, box-shadow 0.2s, background 0.2s !important;
     }
 
-    .pf-c-form-control:focus,
-    input[type="text"]:focus,
-    input[type="password"]:focus {
+    input.pf-c-form-control:focus {
       background: rgba(0,0,0,0.4) !important;
       border-color: rgba(255,255,255,0.35) !important;
       box-shadow: 0 0 0 3px rgba(255,255,255,0.06) !important;
       outline: none !important;
     }
 
+    /* ── Password toggle button (don't style like submit) ── */
+    button.pf-m-control {
+      background: rgba(0,0,0,0.3) !important;
+      border: 1px solid rgba(255,255,255,0.12) !important;
+      border-left: none !important;
+      border-radius: 0 8px 8px 0 !important;
+      color: rgba(255,255,255,0.5) !important;
+    }
+
     /* ── Submit button (white) ── */
-    #kc-login,
-    .pf-c-button.pf-m-primary {
+    input#kc-login {
       width: 100% !important;
       margin-top: 0.5rem !important;
       padding: 0.7rem 1.5rem !important;
@@ -161,15 +164,12 @@ data:
       transition: background 0.15s, box-shadow 0.15s !important;
     }
 
-    #kc-login:hover,
-    .pf-c-button.pf-m-primary:hover {
+    input#kc-login:hover {
       background: #fff !important;
       box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
-      transform: none !important;
-      opacity: 1 !important;
     }
 
-    #kc-login:active {
+    input#kc-login:active {
       background: rgba(255,255,255,0.8) !important;
     }
 
@@ -202,8 +202,7 @@ data:
       flex: 1 !important;
     }
 
-    #kc-social-providers ul li a,
-    .zocial {
+    #kc-social-providers ul li a {
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
@@ -217,18 +216,15 @@ data:
       padding: 0.58rem 0.75rem !important;
       text-decoration: none !important;
       transition: background 0.15s, border-color 0.15s, color 0.15s !important;
-      backdrop-filter: none !important;
     }
 
-    #kc-social-providers ul li a:hover,
-    .zocial:hover {
+    #kc-social-providers ul li a:hover {
       background: rgba(255,255,255,0.1) !important;
       border-color: rgba(255,255,255,0.2) !important;
       color: rgba(255,255,255,0.85) !important;
     }
 
     /* ── Links ── */
-    #kc-info-message,
     .login-pf-page a,
     #kc-form-options .checkbox label,
     #kc-form-options a {
