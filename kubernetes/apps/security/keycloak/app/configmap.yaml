@@ -10,6 +10,9 @@ data:
     import=common/keycloak
     styles=css/login.css
 
+  messages_en.properties: |
+    doLogIn=Log In
+
   login.css: |
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
@@ -251,10 +254,10 @@ data:
       width: 100% !important;
       margin-top: 0.5rem !important;
       padding: 0.7rem 1.5rem !important;
-      background: rgba(255,255,255,0.75) !important;
-      border: none !important;
+      background: rgba(255,255,255,0.18) !important;
+      border: 1px solid rgba(255,255,255,0.22) !important;
       border-radius: 8px !important;
-      color: #111 !important;
+      color: rgba(255,255,255,0.85) !important;
       font-weight: 600 !important;
       font-size: 0.88rem !important;
       letter-spacing: 0.01em !important;
@@ -263,12 +266,13 @@ data:
     }
 
     input#kc-login:hover {
-      background: rgba(255,255,255,0.88) !important;
+      background: rgba(255,255,255,0.26) !important;
+      border-color: rgba(255,255,255,0.35) !important;
       box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
     }
 
     input#kc-login:active {
-      background: rgba(255,255,255,0.8) !important;
+      background: rgba(255,255,255,0.22) !important;
     }
 
     /* ── "or continue with" divider ── */
