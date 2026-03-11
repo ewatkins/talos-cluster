@@ -275,9 +275,15 @@ data:
       background: rgba(255,255,255,0.22) !important;
     }
 
+    /* ── Hide username/password form ── */
+    #kc-form-login,
+    #kc-form-options {
+      display: none !important;
+    }
+
     /* ── "or continue with" divider ── */
     #kc-social-providers {
-      margin-top: 1.5rem;
+      margin-top: 0;
     }
 
     /* Hide the <hr>, repurpose <h2> as the lined divider */
