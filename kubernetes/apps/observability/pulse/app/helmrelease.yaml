@@ -32,6 +32,7 @@ spec:
               FRONTEND_PORT: 7655
               BACKEND_PORT: 7655
               PULSE_PUBLIC_URL: "https://pulse.ewatkins.dev"
+              OIDC_USERNAME_CLAIM: "preferred_username"
             envFrom:
               - secretRef:
                   name: pulse-secret
