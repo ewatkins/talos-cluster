@@ -12,7 +12,7 @@ spec:
       namespace: network
       sectionName: https
   hostnames:
-    - "s3.garage.ewatkins.dev"
+    - "s3-garage.ewatkins.dev"
   rules:
     - matches:
         - path:
