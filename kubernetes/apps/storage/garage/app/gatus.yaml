@@ -10,7 +10,7 @@ data:
     endpoints:
       - name: s3
         group: infrastructure
-        url: https://s3.garage.ewatkins.dev
+        url: https://s3-garage.ewatkins.dev
         interval: 1m
         ui:
           hide-hostname: true
