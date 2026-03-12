@@ -5,7 +5,7 @@ kind: PostgresCluster
 metadata:
   name: &name crunchy-postgres-vector
 spec:
-  postgresVersion: 16
+  postgresVersion: 17
   image: ghcr.io/budimanjojo/crunchy-postgres-vectorchord:17-0.4.3@sha256:76ed3fd67179d66b8c5a56154d4714680da5557e4507160f10a9aece42465823
   config:
     parameters:
