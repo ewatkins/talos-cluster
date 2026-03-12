@@ -40,6 +40,7 @@ spec:
               MINIO_PROMETHEUS_AUTH_TYPE: public
               MINIO_SERVER_URL: https://s3.ewatkins.dev
               MINIO_UPDATE: "off"
+              MINIO_IDENTITY_OPENID_ENABLE: "off"
             envFrom:
               - secretRef:
                   name: minio-secret
