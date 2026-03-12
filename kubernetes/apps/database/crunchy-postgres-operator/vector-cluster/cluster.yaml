@@ -50,6 +50,7 @@ spec:
           labelSelector:
             matchLabels:
               postgres-operator.crunchydata.com/cluster: *name
+              postgres-operator.crunchydata.com/data: postgres
 
   users:
     - name: immich
