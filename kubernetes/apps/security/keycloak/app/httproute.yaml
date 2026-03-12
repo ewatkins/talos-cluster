@@ -11,6 +11,7 @@ spec:
       sectionName: https
   hostnames:
     - "keycloak.ewatkins.dev"
+    - "auth.ewatkins.dev"
   rules:
     - matches:
         - path:
