@@ -11,3 +11,8 @@ spec:
       recordType: CNAME
       targets:
         - "${SECRET_CLOUDFLARE_TUNNEL_ID}.cfargotunnel.com"
+    - dnsName: auth.ewatkins.dev
+      recordTTL: 1
+      recordType: CNAME
+      targets:
+        - "${SECRET_CLOUDFLARE_TUNNEL_ID}.cfargotunnel.com"
