@@ -19,3 +19,26 @@ spec:
   interval: 30m
   retryInterval: 1m
   timeout: 5m
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.ok8.sh/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: garage-webui
+  namespace: flux-system
+spec:
+  targetNamespace: storage
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: garage-webui
+  dependsOn:
+    - name: garage
+  path: ./kubernetes/apps/storage/garage/webui
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: talos-cluster
+  wait: false
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m
