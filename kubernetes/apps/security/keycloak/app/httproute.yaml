@@ -22,6 +22,9 @@ spec:
             add:
               - name: Strict-Transport-Security
                 value: "max-age=31449600; includeSubDomains"
+            set:
+              - name: Alt-Svc
+                value: "none"
       backendRefs:
         - name: keycloak
           port: 80
