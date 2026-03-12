@@ -65,9 +65,6 @@ spec:
       password: &password
         type: AlphaNumeric
     # Applications
-    - name: "authentik-admin"
-      databases: ["authentik"]
-      password: *password
     - name: "keycloak-admin"
       databases: ["keycloak"]
       password: *password
