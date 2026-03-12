@@ -83,7 +83,7 @@ spec:
                     path: /health/live
                     port: 9000
                   periodSeconds: 10
-                  failureThreshold: 3
+                  failureThreshold: 10
             securityContext:
               allowPrivilegeEscalation: false
               capabilities:
