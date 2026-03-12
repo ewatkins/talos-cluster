@@ -31,3 +31,27 @@ spec:
         io.cilium/lb-ipam-ips: "${K8S_GATEWAY}"
       externalTrafficPolicy: Cluster
     watchedResources: ["Ingress", "Service"]
+    fallthrough:
+      enabled: true
+    extraZonePlugins:
+      - name: log
+      - name: errors
+      - name: health
+        configBlock: |-
+          lameduck 5s
+      - name: ready
+      - name: prometheus
+        parameters: 0.0.0.0:9153
+      - name: hosts
+        configBlock: |-
+          10.40.0.30 keycloak.ewatkins.dev
+          10.40.0.30 auth.ewatkins.dev
+          10.40.0.30 status.ewatkins.dev
+          10.40.0.30 kromgo.ewatkins.dev
+          10.40.0.30 flux-webhook.ewatkins.dev
+          fallthrough
+      - name: forward
+        parameters: . /etc/resolv.conf
+      - name: loop
+      - name: reload
+      - name: loadbalance
