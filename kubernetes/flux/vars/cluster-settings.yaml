@@ -14,7 +14,6 @@ data:
   ONTARIO: "10.40.1.5"
 
   INTERNAL: "10.40.0.10"
-  K8S_GATEWAY: "10.40.0.20"
   EXTERNAL: "10.40.0.30"
 
   KUBE_VIP: "10.40.1.0"
