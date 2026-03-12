@@ -35,3 +35,6 @@ data:
 
   # PULSE
   PULSE: "10.40.0.135"
+
+  # GARAGE
+  GARAGE: "10.40.0.140"

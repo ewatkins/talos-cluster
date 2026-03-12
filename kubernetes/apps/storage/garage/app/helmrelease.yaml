@@ -1,0 +1,52 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: garage
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: garage
+      version: 2.1.0
+      sourceRef:
+        kind: HelmRepository
+        name: garage
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    deployment:
+      kind: StatefulSet
+      replicaCount: 3
+    garage:
+      replicationFactor: "3"
+      s3:
+        api:
+          region: "us-east-1"
+          rootDomain: ".s3.garage.ewatkins.dev"
+        web:
+          rootDomain: ".web.garage.ewatkins.dev"
+    persistence:
+      meta:
+        storageClass: openebs-hostpath
+        size: 512Mi
+      data:
+        storageClass: nfs-slow
+        size: 20Gi
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        memory: 1Gi
+    monitoring:
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
