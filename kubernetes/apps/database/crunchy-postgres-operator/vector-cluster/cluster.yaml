@@ -6,7 +6,7 @@ metadata:
   name: &name crunchy-postgres-vector
 spec:
   postgresVersion: 16
-  image: ghcr.io/budimanjojo/crunchy-postgres-vectorchord:16-0.4.3@sha256:2ed44deacd5b1d7e59938cce6b9a4d22cd8e115a3d3f8abfb11d9e57eaae2195
+  image: ghcr.io/budimanjojo/crunchy-postgres-vectorchord:17-0.4.3@sha256:76ed3fd67179d66b8c5a56154d4714680da5557e4507160f10a9aece42465823
   config:
     parameters:
       shared_preload_libraries: vchord.so
