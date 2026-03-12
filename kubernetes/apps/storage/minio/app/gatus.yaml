@@ -14,12 +14,3 @@ data:
         interval: 1m
         conditions:
           - "[STATUS] == 200"
-      - name: s3
-        group: infrastructure
-        url: https://s3.ewatkins.dev
-        interval: 1m
-        ui:
-          hide-hostname: true
-          hide-url: true
-        conditions:
-          - "[STATUS] == 403"
