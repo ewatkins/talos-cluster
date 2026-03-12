@@ -9,6 +9,7 @@ spec:
     labels:
       crunchy-userinit.ramblurr.github.com/enabled: "true"
       crunchy-userinit.ramblurr.github.com/superuser: &superuser "postgres"
+  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-16.11-2550
   postgresVersion: 16
 
   monitoring:
