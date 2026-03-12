@@ -32,7 +32,6 @@ spec:
               FRONTEND_PORT: 7655
               BACKEND_PORT: 7655
               PULSE_PUBLIC_URL: "https://pulse.ewatkins.dev"
-              PULSE_AUTH_HIDE_LOCAL_LOGIN: "true"
             envFrom:
               - secretRef:
                   name: pulse-secret
