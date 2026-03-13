@@ -40,6 +40,8 @@ spec:
               PAPERLESS_CONSUMER_SUBDIRS_AS_TAGS: "true"
               # Database
               PAPERLESS_DBENGINE: postgresql
+              # SMTP
+              PAPERLESS_EMAIL_FROM: "paperless@ewatkins.dev"
               # Remote User Auth
               PAPERLESS_ACCOUNT_ALLOW_SIGNUPS: "false"
               PAPERLESS_SOCIALACCOUNT_ALLOW_SIGNUPS: "true"
