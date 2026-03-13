@@ -9,7 +9,7 @@
     {
       matchDatasources: ["docker"],
       matchPackagePatterns: ["crunchy-postgres-vectorchord"],
-      allowedVersion: "<17"
+      allowedVersion: "/^16/"
     }
   ]
 }
