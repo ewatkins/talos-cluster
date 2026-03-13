@@ -1,21 +1,13 @@
 # [Sonarr](https://sonarr.tv/)
 
-Sonarr is a TV series collection manager for Usenet and BitTorrent users that monitors feeds for new episodes, grabs them, sorts them, and renames them automatically.
+Sonarr manages the TV series collection. It monitors configured indexers (via Prowlarr) for new episode releases, automatically grabs and sends them to a download client, then sorts and renames completed downloads into the media library.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `sonarr` |
-
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Image: `ghcr.io/home-operations/sonarr` v4.0.16.2946
-- Deployed via `bjw-s/app-template` (OCI)
-- Config stored in `sonarr-config` PVC
-- Media library mounted via NFS from `caspian.local:/mnt/user/arrdata`
+| Setting | Value | Notes |
+| --- | --- | --- |
+| Config storage | `sonarr-config` PVC | Persists library settings, quality profiles, series list, and history |
+| Media library | NFS `caspian.local:/mnt/user/arrdata` at `/mnt/arrdata` | Shared NFS mount written to after download completion |
 
 ## Links
 

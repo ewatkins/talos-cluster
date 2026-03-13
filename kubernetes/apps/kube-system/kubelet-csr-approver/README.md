@@ -1,21 +1,13 @@
 # [kubelet-csr-approver](https://github.com/postfinance/kubelet-csr-approver)
 
-kubelet-csr-approver automatically approves Kubernetes `CertificateSigningRequest` resources submitted by kubelets, removing the need for manual approval of node certificates.
+kubelet-csr-approver automatically approves `CertificateSigningRequest` resources submitted by kubelets, removing the need for manual certificate approval when nodes join or rotate their certificates.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `kubelet-csr-approver` |
-
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Helm chart: `kubelet-csr-approver` v1.2.13 from the `postfinance` Helm repository
-- Configured to approve CSRs from nodes: `superior`, `huron`, `michigan`, `erie`, `ontario`, `tahoe`
-- DNS resolution is bypassed (`bypassDnsResolution: true`) to handle Talos node name resolution
-- Prometheus ServiceMonitor enabled
+| Setting | Value | Notes |
+| --- | --- | --- |
+| Approved nodes | `superior`, `huron`, `michigan`, `erie`, `ontario`, `tahoe` | CSRs from other hostnames are rejected |
+| DNS bypass | `bypassDnsResolution: true` | Required for Talos nodes whose hostnames do not resolve via cluster DNS |
 
 ## Links
 

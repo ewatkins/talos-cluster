@@ -1,9 +1,11 @@
 # flux-system
 
-This namespace contains the Flux CD GitOps engine and its supporting configuration, including the operator, the cluster instance definition, and add-ons for monitoring and webhook delivery.
+The Flux CD GitOps engine and its supporting configuration. Flux watches `kubernetes/apps/` and reconciles cluster state from Git every 30 minutes, with immediate reconciliation triggered via GitHub webhooks.
 
 ## Apps
 
-- [flux-operator](flux-operator/README.md) - Flux Operator that manages the Flux CD installation lifecycle
-- [flux-instance](flux-instance/README.md) - The `FluxInstance` resource that declares the desired Flux distribution and components
-- [addons](addons/README.md) - Flux add-ons: Prometheus monitoring, GitHub notifications, and webhook receivers
+| App | Description |
+| --- | --- |
+| [flux-operator](flux-operator/README.md) | Kubernetes operator that manages the Flux CD installation lifecycle |
+| [flux-instance](flux-instance/README.md) | `FluxInstance` resource declaring the desired Flux distribution and components |
+| [addons](addons/README.md) | Prometheus monitoring, GitHub commit status notifications, and webhook receivers |

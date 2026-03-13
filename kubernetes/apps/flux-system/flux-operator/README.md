@@ -1,19 +1,14 @@
 # [Flux Operator](https://github.com/controlplaneio-fluxcd/flux-operator)
 
-The Flux Operator is a Kubernetes operator that manages the lifecycle of the Flux CD distribution. It installs, upgrades, and configures Flux components declared in a `FluxInstance` custom resource.
+The Flux Operator manages the Flux CD installation lifecycle. It reads a `FluxInstance` custom resource and installs, upgrades, and configures Flux components accordingly, replacing the need to manage Flux manifests directly.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `flux-operator` |
+| Setting | Value | Notes |
+| --- | --- | --- |
+| Metrics | Prometheus ServiceMonitor | Exposes operator health and reconciliation metrics |
 
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Chart: `flux-operator` v0.43.0 from `oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator`
-- Prometheus ServiceMonitor is enabled
+The operator's configuration is minimal — most Flux tuning lives in the [flux-instance](../flux-instance/README.md) `FluxInstance` resource.
 
 ## Links
 

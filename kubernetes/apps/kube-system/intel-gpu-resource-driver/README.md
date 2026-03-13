@@ -1,19 +1,15 @@
 # [Intel GPU Resource Driver](https://github.com/intel/intel-resource-drivers-for-kubernetes)
 
-The Intel GPU Resource Driver implements the Kubernetes Dynamic Resource Allocation (DRA) API for Intel GPUs, enabling workloads such as Jellyfin to request and use GPU resources for hardware-accelerated transcoding.
+The Intel GPU Resource Driver implements the Kubernetes Dynamic Resource Allocation (DRA) API for Intel GPUs. It enables workloads like Jellyfin to claim GPU resources for hardware-accelerated transcoding without relying on legacy device plugin APIs.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `intel-gpu-resource-driver` |
+| Setting | Value | Notes |
+| --- | --- | --- |
+| CDI static path | `/var/cdi/static` | Container Device Interface definitions for known devices |
+| CDI dynamic path | `/var/cdi/dynamic` | Runtime-generated CDI entries for allocated GPUs |
 
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Chart: `intel-gpu-resource-driver-chart` v0.9.1 from `oci://ghcr.io/intel/intel-resource-drivers-for-kubernetes`
-- CDI paths configured: static at `/var/cdi/static`, dynamic at `/var/cdi/dynamic`
+GPU access is requested by Jellyfin via a `ResourceClaim`. Node Feature Discovery labels nodes with Intel GPU capabilities, which the resource driver uses to advertise available devices to the scheduler.
 
 ## Links
 

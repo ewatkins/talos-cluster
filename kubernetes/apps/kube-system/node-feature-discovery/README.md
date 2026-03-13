@@ -1,20 +1,16 @@
 # [Node Feature Discovery](https://github.com/kubernetes-sigs/node-feature-discovery)
 
-Node Feature Discovery (NFD) detects hardware features and system configuration on each cluster node and exposes them as Kubernetes node labels, enabling workloads to be scheduled on nodes with specific capabilities (e.g., GPU, USB devices).
+Node Feature Discovery (NFD) detects hardware features on each cluster node and exposes them as Kubernetes node labels, enabling workloads to target nodes with specific capabilities such as Intel GPUs or connected USB devices.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `node-feature-discovery` |
+| Source | What it discovers |
+| --- | --- |
+| `pci` | PCI devices including Intel GPU presence |
+| `usb` | Connected USB devices |
+| `system` | OS-level features (kernel version, OS, architecture) |
 
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Helm chart: `node-feature-discovery` v0.18.3 from the `node-feature-discovery` Helm repository
-- Worker sources enabled: `pci`, `system`, `usb`
-- Prometheus metrics enabled
+NFD labels are used by the Intel GPU Resource Driver and can be used in node affinity rules to target specific hardware.
 
 ## Links
 

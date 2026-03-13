@@ -1,22 +1,15 @@
 # [cert-manager](https://cert-manager.io/)
 
-cert-manager is a Kubernetes operator that automates the management and issuance of TLS certificates from a variety of sources, including ACME (Let's Encrypt), self-signed, and CA issuers.
+cert-manager automates the management and issuance of TLS certificates for the cluster. It handles ACME DNS-01 challenges against Cloudflare for `*.ewatkins.dev` certificates and provides a self-signed `ClusterIssuer` for internal services.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `cert-manager` |
-
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Helm chart: `cert-manager` v1.20.0 from the `jetstack` repository
-- CRDs are installed and updated automatically (`installCRDs: true`)
-- DNS-01 challenge uses recursive nameservers `1.1.1.1` and `9.9.9.9`
-- Prometheus ServiceMonitor is enabled for metrics scraping
-- A self-signed `ClusterIssuer` is deployed alongside the operator
+| Setting | Value | Notes |
+| --- | --- | --- |
+| CRD installation | Automatic | CRDs are installed and kept in sync by the Helm chart |
+| DNS-01 nameservers | `1.1.1.1`, `9.9.9.9` | Recursive resolvers used to verify challenge propagation |
+| Self-signed issuer | `selfsigned` ClusterIssuer | Available cluster-wide for internal certificate needs |
+| Metrics | Prometheus ServiceMonitor | Exposes certificate expiry and renewal metrics |
 
 ## Links
 

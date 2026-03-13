@@ -1,7 +1,9 @@
-# security
+# Security
 
-This namespace hosts identity and access management services for the cluster.
+Identity and access management for the cluster, providing SSO and OIDC authentication across applications.
 
 ## Apps
 
-- [keycloak](keycloak/README.md) - Open-source identity and access management with OIDC/SSO support
+| App | Description |
+| --- | --- |
+| [keycloak](keycloak/README.md) | Central identity provider offering SSO and OIDC for Outline, Paperless, Forgejo, and other apps |

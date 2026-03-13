@@ -1,20 +1,12 @@
 # [Promtail](https://grafana.com/docs/loki/latest/send-data/promtail/)
 
-Promtail is an agent that ships the contents of local container logs to a Loki instance. It runs as a DaemonSet on every node and automatically discovers and tails pod log files.
+Promtail runs as a DaemonSet on every cluster node, tailing container log files and forwarding them to Loki with appropriate Kubernetes metadata labels (namespace, pod name, container name). It is the log collection agent for this cluster's observability stack.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `promtail` |
-
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Helm chart: `promtail` v6.17.1 from the `grafana` Helm repository
-- Pushes logs to `http://loki-headless.observability.svc.cluster.local:3100/loki/api/v1/push`
-- Prometheus ServiceMonitor enabled
+| Setting | Value | Notes |
+| --- | --- | --- |
+| Loki endpoint | `http://loki-headless.observability.svc.cluster.local:3100/loki/api/v1/push` | Direct push to the Loki headless service |
 
 ## Links
 

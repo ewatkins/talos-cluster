@@ -1,23 +1,22 @@
 # [tuppr](https://github.com/home-operations/charts/tree/main/charts/tuppr)
 
-tuppr is a Talos Linux upgrade controller that manages automated, sequential upgrades of Talos OS and Kubernetes versions across cluster nodes. It replaced the system-upgrade-controller in this cluster.
+tuppr manages automated, sequential upgrades of Talos Linux OS and Kubernetes versions across cluster nodes. It replaced the system-upgrade-controller and operates by reading upgrade specs from the `upgrades/` directory.
 
-## Created Resources
+## Upgrade Specs
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `tuppr` |
+| File | Purpose |
+| --- | --- |
+| `upgrades/talosupgrade.yaml` | Specifies the target Talos OS version and installer image |
+| `upgrades/kubernetesupgrade.yaml` | Specifies the target Kubernetes version |
 
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
+To trigger an upgrade, update the version field in the appropriate spec file and commit to Git. Flux reconciles the change, and tuppr performs a rolling upgrade — one node at a time — ensuring cluster availability throughout.
 
-## Notes
+## Configuration
 
-- Chart: `tuppr` v0.1.1 from `oci://ghcr.io/home-operations/charts/tuppr`
-- Runs 2 replicas for availability
-- Upgrade specs are defined in `upgrades/` directory:
-  - `talosupgrade.yaml` — specifies the target Talos version
-  - `kubernetesupgrade.yaml` — specifies the target Kubernetes version
-- Prometheus ServiceMonitor enabled
+| Setting | Value | Notes |
+| --- | --- | --- |
+| Replicas | 2 | Leader election ensures only one instance drives upgrades at a time |
+| Metrics | Prometheus ServiceMonitor | Exposes upgrade progress and status metrics |
 
 ## Links
 

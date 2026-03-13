@@ -1,21 +1,13 @@
 # [Metrics Server](https://github.com/kubernetes-sigs/metrics-server)
 
-Metrics Server is a scalable, efficient source of container resource metrics for Kubernetes built-in autoscaling pipelines. It collects CPU and memory usage from kubelets and exposes them via the Kubernetes Metrics API.
+Metrics Server collects CPU and memory usage from kubelets and exposes them via the Kubernetes Metrics API (`metrics.k8s.io`). It powers `kubectl top node`, `kubectl top pod`, and the Vertical Pod Autoscaler recommender.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `metrics-server` |
-
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Helm chart: `metrics-server` v3.13.0 from the `metrics-server` Helm repository
-- Configured to prefer `InternalIP` for kubelet address resolution
-- Metric resolution interval: 15 seconds
-- Prometheus ServiceMonitor enabled
+| Setting | Value | Notes |
+| --- | --- | --- |
+| Kubelet address type | `InternalIP` | Avoids hostname resolution issues on Talos nodes |
+| Metric resolution | 15 seconds | How frequently usage is scraped from each kubelet |
 
 ## Links
 

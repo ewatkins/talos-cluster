@@ -1,21 +1,13 @@
 # [MariaDB Operator](https://github.com/mariadb-operator/mariadb-operator)
 
-The MariaDB Operator automates the management of MariaDB instances on Kubernetes, providing lifecycle management, high availability, and backup support via custom resources.
+The MariaDB Operator manages the lifecycle of MariaDB instances on Kubernetes via `MariaDB` and related custom resources, providing high availability, backup, and restore capabilities.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `mariadb-operator-crds` |
-| [`HelmRelease`][ref-helm-release] | `mariadb-operator` |
-
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- CRDs chart: `mariadb-operator-crds` v25.10.4 from the `mariadb` Helm repository
-- Operator chart: `mariadb-operator` v25.10.4 from the `mariadb` Helm repository
-- CRDs are deployed separately to ensure they are available before the operator starts
+| Setting | Value | Notes |
+| --- | --- | --- |
+| CRD deployment | Separate HelmRelease | CRDs are deployed first to ensure they exist before the operator starts |
+| Operator chart | `mariadb-operator` | Reconciles `MariaDB`, `Backup`, `Restore`, and related CRs |
 
 ## Links
 

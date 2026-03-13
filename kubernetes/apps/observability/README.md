@@ -15,4 +15,4 @@ A comprehensive observability stack built on the Prometheus ecosystem, providing
 | [Loki](loki/README.md) | Log aggregation system |
 | [Promtail](promtail/README.md) | Log collector agent that ships logs to Loki |
 | [Pulse](pulse/README.md) | Real-time monitoring for Proxmox infrastructure |
-| [Thanos](thanos/README.md) | Highly available Prometheus with long-term storage |
+| [Thanos](thanos/README.md) | Long-term Prometheus storage with global query view |

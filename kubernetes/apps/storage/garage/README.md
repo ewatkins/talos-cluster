@@ -1,25 +1,18 @@
 # [Garage](https://garagehq.deuxfleurs.fr/)
 
-Garage is a lightweight, distributed S3-compatible object store designed for self-hosted deployments. It is used as an alternative to Minio for certain workloads and exposes an S3 endpoint at `s3-garage.ewatkins.dev`.
+Garage is a lightweight, distributed S3-compatible object store. It serves as an alternative to Minio for certain workloads and exposes a web management UI for bucket and key administration.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `garage` |
-| [`HelmRelease`][ref-helm-release] | `garage-webui` |
-
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Image: `dxflrs/garage` v2.2.0
-- WebUI image: `khairul169/garage-webui` v1.1.0
-- Both deployed via `bjw-s/app-template` (OCI)
-- S3 API on port 3900, admin API on port 3903
-- WebUI accessible at `https://garage.ewatkins.dev` via Envoy Gateway HTTPRoute
-- Config via `garage-configmap`, credentials from `garage-secret`
-- Data and metadata stored in dedicated PVCs (`garage-data`, `garage-meta`)
+| Setting | Value | Notes |
+| --- | --- | --- |
+| S3 API endpoint | `https://s3-garage.ewatkins.dev` (port 3900) | S3-compatible API for client access |
+| Admin API | Port 3903 | Internal admin endpoint for cluster operations |
+| Web UI | `https://garage.ewatkins.dev` | Management interface via Envoy Gateway HTTPRoute |
+| Config | `garage-configmap` | Garage node configuration (replication factor, metadata dir, etc.) |
+| Credentials | `garage-secret` | Admin and access key credentials |
+| Data PVC | `garage-data` | Stores object data blocks |
+| Metadata PVC | `garage-meta` | Stores bucket and object metadata |
 
 ## Links
 

@@ -1,24 +1,18 @@
 # [Immich](https://immich.app/)
 
-Immich is a high-performance, self-hosted photo and video backup solution with a mobile app, face recognition, and smart search powered by machine learning.
+Immich is the self-hosted photo and video backup solution for this cluster. It provides mobile backup, face recognition, album management, and smart search powered by on-cluster machine learning models.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `immich` |
+| Setting | Value | Notes |
+| --- | --- | --- |
+| URL | `https://photos.ewatkins.dev` | Accessible via Envoy Gateway HTTPRoute |
+| Database | PostgreSQL via `immich-db-secret` | Stores metadata, albums, users, and ML embeddings |
+| Cache | Dragonfly (Redis-compatible) | Job queue and session cache |
+| Photo library | NFS `caspian.local:/mnt/user/immich` | Primary storage for original photos and videos |
+| ML model cache | OpenEBS hostpath PVC (10Gi) | Persists downloaded face recognition and CLIP models |
 
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Image: `ghcr.io/immich-app/immich-server` v2.5.6
-- Machine learning image: `ghcr.io/immich-app/immich-machine-learning` v2.5.6
-- Deployed via `bjw-s/app-template` (OCI)
-- Accessible at `https://photos.ewatkins.dev` via Envoy Gateway HTTPRoute
-- Backed by PostgreSQL (connection URL from `immich-db-secret`) and Dragonfly as Redis
-- Photo library mounted via NFS from `caspian.local:/mnt/user/immich`
-- Machine learning model cache stored in an OpenEBS hostpath PVC (10Gi)
+The machine learning sidecar runs as a separate container alongside the server and handles face recognition and CLIP embedding generation for smart search.
 
 ## Links
 

@@ -1,23 +1,16 @@
 # [Outline](https://www.getoutline.com/)
 
-Outline is an open-source knowledge base and team wiki. It provides a modern, collaborative document editor with support for OIDC authentication.
+Outline is the team knowledge base and wiki for this cluster's documentation. It integrates with Keycloak for SSO, Dragonfly for caching, PostgreSQL for document storage, and Minio for file attachments and uploads.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `outline` |
-
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Image: `outlinewiki/outline` v1.5.0
-- Deployed via `bjw-s/app-template` (OCI)
-- Accessible at `https://notes.ewatkins.dev`
-- Backed by PostgreSQL (via `outline-db` secret) and Dragonfly for Redis-compatible caching
-- Authentication via Keycloak OIDC (`OIDC_DISPLAY_NAME: Keycloak`)
-- Object storage via Minio (`s3.ewatkins.dev`)
+| Setting | Value | Notes |
+| --- | --- | --- |
+| URL | `https://notes.ewatkins.dev` | Publicly accessible via Cloudflare tunnel |
+| Authentication | Keycloak OIDC | `OIDC_DISPLAY_NAME: Keycloak` — users log in with cluster SSO credentials |
+| Database | PostgreSQL via `outline-db` secret | Stores documents, users, and collections |
+| Cache | Dragonfly (Redis-compatible) | Session store and real-time collaboration support |
+| Object storage | Minio at `s3.ewatkins.dev` | Stores file attachments and uploaded images |
 
 ## Links
 

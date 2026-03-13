@@ -1,30 +1,20 @@
-# flux-addons
+# Flux Add-ons
 
-Flux add-ons extend the core Flux installation with observability, alerting, and webhook-triggered reconciliation support.
-
-## Created Resources
-
-| Kind | Name |
-| ---- | ---- |
-| `PodMonitor` | `flux-system` |
-| `PrometheusRule` | `flux-system` |
-| `Provider` | `github` |
-| `Alert` | `github` |
-| `Receiver` | `github` |
+Supporting resources that extend the core Flux installation with observability, GitHub status reporting, and webhook-triggered reconciliation.
 
 ## Components
 
-### Monitoring
+| Resource | Kind | Purpose |
+| --- | --- | --- |
+| `flux-system` PodMonitor | `PodMonitor` | Scrapes metrics from all Flux controllers into Prometheus |
+| `flux-system` PrometheusRule | `PrometheusRule` | Defines alerting rules for stalled or failed reconciliations |
+| `github` Provider | Flux `Provider` | Posts commit status checks to GitHub PRs |
+| `github` Alert | Flux `Alert` | Triggers the Provider on reconciliation success or failure |
+| `github` Receiver | Flux `Receiver` | Accepts GitHub push webhooks to trigger immediate reconciliation |
 
-A `PodMonitor` and `PrometheusRule` are deployed to scrape Flux controller metrics and define alerting rules for Prometheus.
+### Webhook Setup
 
-### Notifications
-
-A Flux `Provider` and `Alert` are configured to post commit status notifications back to GitHub when reconciliations succeed or fail.
-
-### Webhooks
-
-A Flux `Receiver` is exposed via an HTTPRoute to accept push events from GitHub and trigger immediate reconciliation of the cluster.
+The `Receiver` is exposed via an `HTTPRoute` on the Envoy Gateway. When a push is made to the `talos-cluster` repository, GitHub calls the receiver endpoint and Flux begins reconciling immediately — without waiting for the 30-minute polling interval.
 
 ## Links
 

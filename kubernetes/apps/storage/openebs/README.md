@@ -1,22 +1,20 @@
 # [OpenEBS](https://openebs.io/)
 
-OpenEBS provides the default local `hostpath` PersistentVolume provisioner for the cluster. It enables fast, node-local storage for workloads that do not require shared access across nodes.
+OpenEBS provides the default `hostpath` PersistentVolume provisioner for the cluster. It enables fast, node-local storage for workloads that do not require shared access across nodes — primarily the observability stack and machine learning model caches.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `openebs` |
-| `StorageClass` | `openebs-hostpath` |
+| Setting | Value | Notes |
+| --- | --- | --- |
+| Storage class | `openebs-hostpath` (default) | Used when no StorageClass is specified in a PVC |
+| Base path | `/var/openebs/local` | Host path where volumes are created on each node |
+| Enabled engines | `localpv-provisioner` only | LVM, ZFS, and Mayastor storage engines are disabled to minimize resource usage |
 
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
+## Consumers
 
-## Notes
+Workloads using OpenEBS hostpath storage include Loki, Thanos Store Gateway, Thanos Compactor, and the Immich machine learning model cache.
 
-- Helm chart: `openebs` v4.4.0 from the `openebs` Helm repository
-- Only the `localpv-provisioner` is enabled; LVM, ZFS, and Mayastor engines are disabled
-- `openebs-hostpath` is the default StorageClass with base path `/var/openebs/local`
-- Used by Loki, Thanos, machine learning caches, and other workloads requiring fast local storage
+> Because hostpath volumes are local to a single node, pods using OpenEBS PVCs will always be scheduled on the same node their data was created on. Take this into account when planning node maintenance.
 
 ## Links
 

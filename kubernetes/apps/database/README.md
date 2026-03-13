@@ -1,10 +1,12 @@
-# database
+# Database
 
-This namespace hosts database operators and in-memory data stores used by applications across the cluster.
+Database operators and in-memory data stores that back applications across the cluster.
 
 ## Apps
 
-- [crunchy-postgres-operator](crunchy-postgres-operator/README.md) - PGO operator for managing highly available PostgreSQL clusters
-- [dragonfly](dragonfly/README.md) - High-performance in-memory data store compatible with Redis APIs
-- [mariadb](mariadb/README.md) - MariaDB operator for managing MariaDB instances
-- [redisinsight](redisinsight/README.md) - GUI for exploring and managing Redis/Dragonfly data stores
+| App | Description |
+| --- | --- |
+| [crunchy-postgres-operator](crunchy-postgres-operator/README.md) | PGO operator managing highly available PostgreSQL clusters with automated backups |
+| [dragonfly](dragonfly/README.md) | High-performance Redis-compatible in-memory store used for caching and session state |
+| [mariadb](mariadb/README.md) | MariaDB operator for lifecycle management of MariaDB instances |
+| [redisinsight](redisinsight/README.md) | GUI for exploring and managing the Dragonfly data store |

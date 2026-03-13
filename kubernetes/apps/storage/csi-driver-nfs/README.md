@@ -1,22 +1,15 @@
 # [CSI Driver NFS](https://github.com/kubernetes-csi/csi-driver-nfs)
 
-The NFS CSI driver allows Kubernetes to provision PersistentVolumes backed by NFS shares, used for shared media storage and Kubernetes-managed volumes on the `caspian.local` NAS.
+The NFS CSI driver provisions PersistentVolumes backed by NFS shares on the `caspian.local` NAS. It is used for shared storage across multiple pods — primarily the media library and Kubernetes-managed application data.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `csi-driver-nfs` |
-| `StorageClass` | `nfs-slow` |
-
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Chart: `csi-driver-nfs` v4.13.1 from `oci://ghcr.io/home-operations/charts-mirror/csi-driver-nfs`
-- Creates a default `nfs-slow` StorageClass pointing to `caspian.local:/mnt/user/kubernetes`
-- NFS mount options: NFSv4.2, nconnect=16, soft, noatime
-- A second StorageClass (`nfs-fast`) is used by the actions runner but must be created separately
+| Setting | Value | Notes |
+| --- | --- | --- |
+| Default server | `caspian.local` | The NAS hosting all NFS exports |
+| `nfs-slow` StorageClass | `/mnt/user/kubernetes` | Kubernetes-managed PVC data; used for Loki, runner workspaces, and general shared PVCs |
+| Mount options | `nfsvers=4.2`, `nconnect=16`, `soft`, `noatime` | `nconnect=16` parallelizes connections for better throughput; `soft` prevents hangs on NAS failures |
+| `nfs-fast` StorageClass | (created separately) | Used by the actions-runner-controller for job workspace volumes |
 
 ## Links
 

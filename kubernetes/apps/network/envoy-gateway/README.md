@@ -1,20 +1,15 @@
 # [Envoy Gateway](https://gateway.envoyproxy.io/)
 
-Envoy Gateway is a Kubernetes Gateway API implementation backed by Envoy Proxy, providing HTTP/HTTPS routing for cluster services via `HTTPRoute` and `GatewayClass` resources.
+Envoy Gateway implements the Kubernetes Gateway API using Envoy Proxy as the data plane. It provides `internal` and `external` Gateway instances that other applications reference via `HTTPRoute` resources for HTTP/HTTPS routing.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `envoy-gateway` |
+| Gateway | Purpose |
+| --- | --- |
+| `internal` | Routes accessible only from within the LAN |
+| `external` | Routes accessible externally via the Cloudflare tunnel |
 
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Chart: `envoy-gateway` (OCI) installed via Flux `OCIRepository`
-- Provides the `internal` and `external` Gateway instances used by other applications for HTTPRoute-based routing
-- CRDs are installed on first deploy and updated on upgrades
+Applications add routing by creating `HTTPRoute` resources that reference one of these Gateways. CRDs are installed automatically on first deploy and updated on upgrades.
 
 ## Links
 

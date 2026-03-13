@@ -1,26 +1,18 @@
 # [Forgejo](https://forgejo.org/)
 
-Forgejo is a lightweight, self-hosted Git service — a community-driven fork of Gitea. It provides repository hosting, issue tracking, pull requests, and CI/CD pipelines via Forgejo Actions.
+Forgejo is the self-hosted Git service for this cluster. It provides repository hosting, issue tracking, pull requests, and CI/CD via Forgejo Actions. User registration is restricted to external (SSO) accounts only.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `forgejo` |
-| [`HelmRelease`][ref-helm-release] | `forgejo-runner` |
-
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Helm chart: `forgejo` v16.2.0 from the `forgejo` Helm repository
-- Accessible at `https://git.ewatkins.dev`
-- Registration is restricted to external accounts only (`ALLOW_ONLY_EXTERNAL_REGISTRATION: true`)
-- Backed by PostgreSQL via `forgejo-db` secret
-- Uses Dragonfly as a Redis-compatible cache, queue, and session store
-- Object storage (attachments, LFS, etc.) via Minio at `s3.ewatkins.dev:443`
-- SMTP email configured for notifications
-- Prometheus metrics and ServiceMonitor enabled
+| Setting | Value | Notes |
+| --- | --- | --- |
+| URL | `https://git.ewatkins.dev` | Publicly accessible via Cloudflare tunnel |
+| Registration | External accounts only | `ALLOW_ONLY_EXTERNAL_REGISTRATION: true` — direct signups are disabled |
+| Database | PostgreSQL via `forgejo-db` secret | Stores repositories, issues, users, and settings |
+| Cache / Queue | Dragonfly (Redis-compatible) | Used for session storage, task queues, and caching |
+| Object storage | Minio at `s3.ewatkins.dev:443` | Stores LFS objects, release attachments, and avatars |
+| Email | SMTP configured | Sends notifications for issues, PRs, and CI results |
+| Metrics | Prometheus ServiceMonitor | Exposes Forgejo application metrics |
 
 ## Links
 

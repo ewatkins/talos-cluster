@@ -1,23 +1,16 @@
 # [Crunchy Postgres Operator (PGO)](https://access.crunchydata.com/documentation/postgres-operator/latest/)
 
-PGO, the Postgres Operator from Crunchy Data, manages the full lifecycle of highly available PostgreSQL clusters on Kubernetes, including provisioning, backups, monitoring, and user management.
+PGO manages the full lifecycle of highly available PostgreSQL clusters on Kubernetes — provisioning, scaling, backups, monitoring, and user management — via `PostgresCluster` and related custom resources.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `crunchy-postgres-operator` |
-| [`HelmRelease`][ref-helm-release] | `crunchy-users` |
+| Setting | Value | Notes |
+| --- | --- | --- |
+| Operator replicas | 2 | Spread across topology zones to survive a node failure |
+| User management | `crunchy-users-helm` chart | Manages database users and passwords via Helm values |
+| Monitoring | Prometheus ServiceMonitor | Exposes per-cluster metrics via the PGO exporter sidecar |
 
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Operator chart: `pgo` v6.0.0 from `oci://registry.developers.crunchydata.com/crunchydata/pgo`
-- Runs 2 operator replicas spread across topology zones
-- Prometheus monitoring is enabled
-- User management uses the `crunchy-users-helm` chart v1.0.8
-- See [cluster/README.md](cluster/README.md) for notes on managing PostgreSQL clusters
+See [cluster/README.md](cluster/README.md) for notes on managing PostgreSQL cluster instances and handling Patroni failovers.
 
 ## Links
 

@@ -1,23 +1,16 @@
 # [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)
 
-Cloudflare Tunnel (`cloudflared`) creates an outbound-only encrypted tunnel from the cluster to the Cloudflare edge, enabling external access to internal services without opening inbound firewall ports.
+Cloudflare Tunnel (`cloudflared`) creates outbound-only encrypted connections from the cluster to the Cloudflare edge, enabling external access to internal services without requiring open inbound firewall ports or a public IP.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `cloudflare-tunnel` |
+| Setting | Value | Notes |
+| --- | --- | --- |
+| Replicas | 2 with rolling update | Two tunnels run in parallel for redundancy; Cloudflare load-balances between them |
+| Protocol | QUIC with post-quantum encryption | Lower latency than HTTP/2 fallback; post-quantum protects against future decryption attacks |
+| Credentials | `cloudflared-secret` | Contains the tunnel token; managed via ExternalSecrets from Bitwarden |
 
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Image: `docker.io/cloudflare/cloudflared` v2026.3.0
-- Deployed via `bjw-s/app-template` chart v3.7.3
-- 2 replicas with rolling update strategy for high availability
-- Transport protocol: QUIC with post-quantum encryption enabled
-- Tunnel credentials stored in the `cloudflared-secret` Secret
-- Prometheus ServiceMonitor scrapes `/metrics` endpoint
+Traffic routing rules (which hostnames map to which cluster services) are configured in the Cloudflare Zero Trust dashboard, not in this deployment.
 
 ## Links
 

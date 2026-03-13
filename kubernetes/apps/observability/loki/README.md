@@ -1,24 +1,16 @@
 # [Loki](https://grafana.com/oss/loki/)
 
-Loki is a horizontally scalable, highly available log aggregation system inspired by Prometheus. It indexes metadata (labels) rather than log content, making it cost-effective for large volumes of logs.
+Loki is the log aggregation backend for this cluster. It receives logs from Promtail running on every node and stores them for querying via Grafana. It indexes log metadata (labels) rather than full log content, keeping storage requirements low.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `loki` |
-
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Helm chart: `loki` v6.55.0 from the `grafana` Helm repository
-- Deployment mode: `SingleBinary` (single replica)
-- Storage backend: filesystem (NFS PVC `nfs-slow`, 20Gi)
-- Log retention: 14 days
-- Chunk encoding: snappy
-- Schema: TSDB v13 (from 2024-04-01)
-- Depends on `openebs` (storage namespace) for PVC provisioning
+| Setting | Value | Notes |
+| --- | --- | --- |
+| Deployment mode | `SingleBinary` | Single-replica deployment suitable for a home lab workload |
+| Storage backend | Filesystem on `nfs-slow` PVC (20Gi) | Logs are written to NFS-backed storage |
+| Retention | 14 days | Logs older than 14 days are automatically deleted |
+| Chunk encoding | snappy | Compression format for stored log chunks |
+| Schema | TSDB v13 (from 2024-04-01) | Index format; changing this requires a schema migration |
 
 ## Links
 
