@@ -1,20 +1,25 @@
 # [Goldilocks](https://github.com/FairwindsOps/goldilocks)
 
-Get resource requests "just right".
+Get resource requests "just right." Goldilocks watches running workloads and uses the Vertical Pod Autoscaler (VPA) to suggest appropriate CPU and memory requests and limits.
 
-Goldilocks is a utility that can help you identify a starting point for resource requests and limits
+## Enabling a Namespace
 
-## Label namespaces
+Add the following label to any namespace you want Goldilocks to analyze:
 
 ```yaml
 metadata:
-  ...
   labels:
     goldilocks.fairwinds.com/enabled: "true"
 ```
 
-## Setting Resources
+## Resource Limits Guidance
 
-Throttling of the CPU may occur if CPU limits are placed [ref](<https://github.com/robusta-dev/alert-explanations/wiki/CPUThrottlingHigh-(Prometheus-Alert)#why-cpu-throttling-can-occur-despite-low-cpu-usage-permalink>).
-Additionally, setting limits does not affect other containers/pods -- even if you remove this pod's CPU limit,
-_other pods are still guaranteed the CPU they **request**_
+CPU limits can cause throttling even under low utilization. See [this reference](https://github.com/robusta-dev/alert-explanations/wiki/CPUThrottlingHigh-(Prometheus-Alert)#why-cpu-throttling-can-occur-despite-low-cpu-usage-permalink) for details. Setting CPU limits does not affect other containers — other pods are still guaranteed the CPU they **request**.
+
+General recommendation: set CPU _requests_, consider omitting CPU _limits_, and always set memory limits.
+
+## Links
+
+- [Documentation](https://goldilocks.docs.fairwinds.com/)
+- [GitHub Repository](https://github.com/FairwindsOps/goldilocks)
+- [Helm Chart](https://github.com/FairwindsOps/charts/tree/master/stable/goldilocks)

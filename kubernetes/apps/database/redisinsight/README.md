@@ -1,6 +1,10 @@
 # [RedisInsight](https://github.com/RedisInsight/RedisInsight)
 
-Redis Insight is a visual tool that provides capabilities to design, develop, and optimize your Redis application.
-Query, analyse and interact with your Redis data.
+A visual management and analytics tool for Redis-compatible databases. Used to query, inspect, and interact with Dragonfly instances.
 
-> Note: RedisInsight can load Dragonfly DBs!
+> RedisInsight is compatible with Dragonfly — connect using the standard Redis connection format.
+
+## Links
+
+- [Documentation](https://redis.io/docs/connect/insight/)
+- [GitHub Repository](https://github.com/RedisInsight/RedisInsight)

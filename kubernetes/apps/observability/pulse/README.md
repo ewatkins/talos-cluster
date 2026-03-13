@@ -1,3 +1,7 @@
 # [Pulse](https://github.com/rcourtman/Pulse)
 
-Real-time monitoring for Proxmox VE, Proxmox Mail Gateway, PBS, and Docker infrastructure with alerts and webhooks.
+Real-time monitoring dashboard for Proxmox VE infrastructure. Displays node, VM, and container metrics with alerting and webhook support.
+
+## Links
+
+- [GitHub Repository](https://github.com/rcourtman/Pulse)
