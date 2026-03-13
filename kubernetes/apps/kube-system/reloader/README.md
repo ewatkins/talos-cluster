@@ -1,20 +1,17 @@
 # [Reloader](https://github.com/stakater/Reloader)
 
-Reloader watches Kubernetes `ConfigMap` and `Secret` resources for changes and automatically triggers rolling restarts of `Deployment`, `DaemonSet`, and `StatefulSet` workloads that reference them.
+Reloader watches `ConfigMap` and `Secret` resources for changes and automatically triggers rolling restarts of `Deployment`, `DaemonSet`, and `StatefulSet` workloads that reference them. This ensures configuration changes applied via Flux (including SOPS-decrypted secrets) are picked up without manual intervention.
 
-## Created Resources
+## Usage
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `reloader` |
+Annotate any workload to enable automatic restarts when its referenced configs or secrets change:
 
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
+```yaml
+annotations:
+  reloader.stakater.com/auto: "true"
+```
 
-## Notes
-
-- Helm chart: `reloader` v2.2.7 from the `stakater` Helm repository
-- Restarts are triggered by adding the annotation `reloader.stakater.com/auto: "true"` to workloads
-- Prometheus PodMonitor enabled
+Reloader will watch all ConfigMaps and Secrets mounted or referenced by that workload. On any change, it performs a rolling restart rather than a full pod kill, preserving availability.
 
 ## Links
 

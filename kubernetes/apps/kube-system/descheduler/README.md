@@ -1,21 +1,17 @@
 # [Descheduler](https://github.com/kubernetes-sigs/descheduler)
 
-The Descheduler evicts pods from nodes so they can be rescheduled onto more appropriate nodes, helping maintain balance across the cluster when scheduling constraints change after initial placement.
+The Descheduler evicts pods that violate scheduling constraints after initial placement, allowing the Kubernetes scheduler to place them on more appropriate nodes. This is particularly useful when nodes are added or when affinity rules change after pods are already running.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `descheduler` |
+| Plugin | What it fixes |
+| --- | --- |
+| `RemovePodsViolatingInterPodAntiAffinity` | Evicts pods that violate anti-affinity rules that arose after initial scheduling |
+| `RemovePodsViolatingNodeAffinity` | Evicts pods whose node affinity rules are no longer satisfied |
+| `RemovePodsViolatingNodeTaints` | Evicts pods running on nodes they should no longer tolerate |
+| `RemovePodsViolatingTopologySpreadConstraint` | Rebalances pods across zones when spread constraints are violated |
 
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Helm chart: `descheduler` v0.35.1 from the `descheduler` Helm repository
-- Runs as a `Deployment` with 2 replicas and leader election enabled
-- Active plugins: `RemovePodsViolatingInterPodAntiAffinity`, `RemovePodsViolatingNodeAffinity`, `RemovePodsViolatingNodeTaints`, `RemovePodsViolatingTopologySpreadConstraint`
-- Prometheus ServiceMonitor enabled
+The descheduler runs as a 2-replica `Deployment` with leader election — only one instance is active at a time, but the second provides fast failover.
 
 ## Links
 

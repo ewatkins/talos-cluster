@@ -1,21 +1,13 @@
 # [Recommendarr](https://github.com/tannermiddleton/recommendarr)
 
-Recommendarr is an AI-powered media recommendation engine that integrates with Sonarr and Radarr to suggest new TV shows and movies based on your existing library using large language models.
+Recommendarr analyzes the existing Sonarr and Radarr libraries and uses large language models to suggest new TV shows and movies that fit the collection's taste profile.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `recommendarr` |
-
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Image: `docker.io/tannermiddleton/recommendarr` v1.4.4
-- Deployed via `bjw-s/app-template` (OCI)
-- Accessible at `https://recommend.ewatkins.dev`
-- Data stored in `recommendarr-data` PVC
+| Setting | Value | Notes |
+| --- | --- | --- |
+| URL | `https://recommend.ewatkins.dev` | Publicly accessible via Cloudflare tunnel |
+| Data storage | `recommendarr-data` PVC | Persists LLM settings, Sonarr/Radarr connection details, and recommendation history |
 
 ## Links
 

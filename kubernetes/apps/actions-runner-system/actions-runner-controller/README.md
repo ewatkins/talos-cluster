@@ -1,23 +1,17 @@
 # [Actions Runner Controller](https://github.com/actions/actions-runner-controller)
 
-GitHub Actions Runner Controller (ARC) manages self-hosted GitHub Actions runner scale sets on Kubernetes, automatically scaling runners up and down based on workflow demand.
+GitHub Actions Runner Controller (ARC) manages self-hosted GitHub Actions runner scale sets on Kubernetes, automatically scaling runners up and down based on workflow demand. This cluster runs a dedicated scale set targeting the `talos-cluster` repository.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `actions-runner-controller` |
-| [`HelmRelease`][ref-helm-release] | `talos-runner` |
-
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- The controller uses chart `gha-runner-scale-set-controller` v0.13.1 from `oci://ghcr.io/actions/actions-runner-controller-charts`
-- The runner scale set (`talos-runner`) targets `https://github.com/ewatkins/talos-cluster` with 1–3 runners
-- Runners run in `kubernetes` container mode using NFS-backed work volumes (`nfs-fast`, 10Gi)
-- Runner image: `ghcr.io/home-operations/actions-runner`
-- Runners have access to Talos client credentials via a mounted secret
+| Setting | Value | Notes |
+| --- | --- | --- |
+| Target repository | `https://github.com/ewatkins/talos-cluster` | Runners only accept jobs from this repo |
+| Runner scale | 1–3 replicas | Scales up on queued jobs, down when idle |
+| Container mode | `kubernetes` | Each job step runs in its own Kubernetes pod |
+| Work volume | `nfs-fast`, 10Gi | NFS-backed storage for job workspace data |
+| Runner image | `ghcr.io/home-operations/actions-runner` | Custom image with Talos and cluster tooling pre-installed |
+| Talos credentials | Mounted secret | Gives runners access to `talosctl` for upgrade tasks |
 
 ## Links
 

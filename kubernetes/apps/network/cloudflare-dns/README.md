@@ -1,24 +1,15 @@
 # [cloudflare-dns (ExternalDNS)](https://github.com/kubernetes-sigs/external-dns)
 
-ExternalDNS configured with the Cloudflare provider automatically synchronizes Kubernetes `DNSEndpoint` CRD resources into Cloudflare DNS records for the `ewatkins.dev` zone.
+ExternalDNS configured with the Cloudflare provider, automatically publishing DNS records for the `ewatkins.dev` zone. It watches `DNSEndpoint` CRD resources created by other applications and keeps the corresponding Cloudflare DNS entries in sync.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `cloudflare-dns` |
-
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Chart: `external-dns` v1.20.0 from `oci://ghcr.io/home-operations/charts-mirror/external-dns`
-- Provider: Cloudflare
-- Sources: `crd` (`DNSEndpoint` resources only)
-- Records are proxied through Cloudflare (`--cloudflare-proxied`)
-- Domain filter: `ewatkins.dev`
-- TXT record ownership prefix: `k8s.`
-- Prometheus ServiceMonitor enabled
+| Setting | Value | Notes |
+| --- | --- | --- |
+| Provider | Cloudflare | Records are proxied through Cloudflare for DDoS protection and origin IP masking |
+| Sources | `crd` (`DNSEndpoint` only) | Only processes explicit `DNSEndpoint` resources, not Service or Ingress annotations |
+| Domain filter | `ewatkins.dev` | Prevents accidental modification of records outside this zone |
+| TXT ownership prefix | `k8s.` | Ownership records are prefixed to avoid collision with manually created TXT records |
 
 ## Links
 

@@ -1,21 +1,13 @@
 # [Open WebUI](https://github.com/open-webui/open-webui)
 
-Open WebUI is a user-friendly, self-hosted web interface for interacting with large language models. It supports Ollama and OpenAI-compatible APIs.
+A self-hosted web interface for interacting with large language models. In this cluster it serves as the front-end for an Ollama instance running on external Jetson hardware, keeping GPU inference off the cluster while the UI remains cluster-managed.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `open-webui` |
-
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Image: `ghcr.io/open-webui/open-webui` v0.8.10
-- Deployed via `bjw-s/app-template` chart
-- Configured to connect to an external Ollama instance at `http://jetson.ewatkins.dev:11434`
-- Persistent config stored in `open-webui-config` PVC mounted at `/app/backend/data`
+| Setting | Value | Notes |
+| --- | --- | --- |
+| Ollama backend | `http://jetson.ewatkins.dev:11434` | External Jetson host running the inference engine |
+| Persistent data | `open-webui-config` PVC at `/app/backend/data` | Stores user settings, chat history, and model configs |
 
 ## Links
 

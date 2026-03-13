@@ -1,25 +1,18 @@
 # [Paperless-ngx](https://docs.paperless-ngx.com/)
 
-Paperless-ngx is a document management system that transforms physical documents into a searchable online archive using OCR. It supports OIDC authentication and automated document ingestion.
+Paperless-ngx is the document management system for this cluster. It ingests documents from a watched NFS directory, runs OCR to make them full-text searchable, and provides a web interface for browsing and tagging the archive.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `paperless` |
-
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Image: `ghcr.io/paperless-ngx/paperless-ngx` v2.20.10
-- Deployed via `bjw-s/app-template` (OCI)
-- Accessible at `https://paperless.ewatkins.dev`
-- Backed by PostgreSQL (via `paperless-db-secret`) and Dragonfly as a Redis task queue
-- Document storage via NFS from `caspian.local:/mnt/user/paperless`
-- OCR configured for Dutch (`nld`)
-- OIDC sign-in via Keycloak (`allauth.socialaccount.providers.openid_connect`)
-- Consumer polls for new documents every 60 seconds with recursive subdirectory ingestion
+| Setting | Value | Notes |
+| --- | --- | --- |
+| URL | `https://paperless.ewatkins.dev` | Publicly accessible via Cloudflare tunnel |
+| Authentication | Keycloak OIDC | Users sign in with cluster SSO via `allauth.socialaccount.providers.openid_connect` |
+| Database | PostgreSQL via `paperless-db-secret` | Stores document metadata, tags, correspondents, and OCR text |
+| Task queue | Dragonfly (Redis-compatible) | Queues OCR and document processing jobs |
+| Document storage | NFS `caspian.local:/mnt/user/paperless` | Stores original documents and OCR output |
+| OCR language | Dutch (`nld`) | Primary language for OCR processing |
+| Consumer polling | Every 60 seconds, recursive | Watches for new documents dropped into the consume directory |
 
 ## Links
 

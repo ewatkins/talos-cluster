@@ -1,21 +1,13 @@
 # [Radarr](https://radarr.video/)
 
-Radarr is a movie collection manager for Usenet and BitTorrent users that monitors feeds for new releases, grabs them, sorts them, and renames them automatically.
+Radarr manages the movie collection. It monitors configured indexers (via Prowlarr) for new releases, automatically grabs and sends them to a download client, then sorts and renames completed downloads into the media library.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `radarr` |
-
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Image: `ghcr.io/home-operations/radarr` v6.1.1.10317
-- Deployed via `bjw-s/app-template` (OCI)
-- Config stored in `radarr-config` PVC
-- Media library mounted via NFS from `caspian.local:/mnt/user/arrdata`
+| Setting | Value | Notes |
+| --- | --- | --- |
+| Config storage | `radarr-config` PVC | Persists library settings, quality profiles, and history |
+| Media library | NFS `caspian.local:/mnt/user/arrdata` at `/mnt/arrdata` | Shared NFS mount written to after download completion |
 
 ## Links
 

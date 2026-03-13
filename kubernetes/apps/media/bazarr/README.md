@@ -1,21 +1,13 @@
 # [Bazarr](https://www.bazarr.media/)
 
-Bazarr is a companion application to Sonarr and Radarr that automatically downloads and manages subtitles for your media library.
+Bazarr automatically downloads and manages subtitles for the media library, working alongside Sonarr and Radarr to keep subtitle files in sync with new and existing content.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `bazarr` |
-
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Image: `ghcr.io/home-operations/bazarr` v1.5.6
-- Deployed via `bjw-s/app-template` (OCI)
-- Config stored in `bazarr-config` PVC mounted at `/opt/bazarr/data` and `/config`
-- Media library mounted via NFS from `caspian.local:/mnt/user/arrdata` at `/mnt/arrdata`
+| Setting | Value | Notes |
+| --- | --- | --- |
+| Config storage | `bazarr-config` PVC at `/config` | Persists subtitle settings, provider credentials, and history |
+| Media library | NFS `caspian.local:/mnt/user/arrdata` at `/mnt/arrdata` | Shared NFS mount used by all *arr applications |
 
 ## Links
 

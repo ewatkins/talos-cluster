@@ -1,7 +1,9 @@
-# development
+# Development
 
-This namespace hosts self-hosted development tooling, including a Git forge and CI runner.
+Self-hosted development tooling including a Git forge and CI runner.
 
 ## Apps
 
-- [forgejo](forgejo/README.md) - Lightweight self-hosted Git service and CI platform
+| App | Description |
+| --- | --- |
+| [forgejo](forgejo/README.md) | Self-hosted Git service with repository hosting, issue tracking, and CI/CD via Forgejo Actions |

@@ -1,20 +1,14 @@
 # [Prowlarr](https://prowlarr.com/)
 
-Prowlarr is an indexer manager and proxy for the *arr stack. It integrates with Sonarr and Radarr to provide unified indexer management without per-application configuration.
+Prowlarr centralizes indexer management for the *arr stack. Rather than configuring indexers separately in Sonarr and Radarr, Prowlarr manages them in one place and proxies search requests to all downstream applications automatically.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `prowlarr` |
+| Setting | Value | Notes |
+| --- | --- | --- |
+| Config storage | `prowlarr-config` PVC | Persists indexer definitions, API keys, and history |
 
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Image: `ghcr.io/home-operations/prowlarr` v2.3.3.5296
-- Deployed via `bjw-s/app-template` (OCI)
-- Config stored in `prowlarr-config` PVC
+Prowlarr syncs configured indexers directly to Sonarr and Radarr via their APIs. Add or update indexers in Prowlarr and they propagate automatically.
 
 ## Links
 

@@ -1,21 +1,13 @@
 # [Notifiarr](https://notifiarr.com/)
 
-Notifiarr is a notification aggregation client that consolidates alerts and events from Sonarr, Radarr, Plex, Jellyfin, and other *arr applications and forwards them to Discord, email, and other notification services.
+Notifiarr aggregates events and alerts from Sonarr, Radarr, Jellyfin, and other *arr applications and forwards them to Discord and other notification services. It provides a single place to manage all media stack notifications.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `notifiarr` |
-
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
-
-## Notes
-
-- Image: `ghcr.io/notifiarr/notifiarr` v0.9.5
-- Deployed via `bjw-s/app-template` (OCI)
-- Config stored in `notifiarr-config` PVC
-- Media library mounted via NFS from `caspian.local:/mnt/user/arrdata`
+| Setting | Value | Notes |
+| --- | --- | --- |
+| Config storage | `notifiarr-config` PVC | Persists API keys, notification rules, and integration settings |
+| Media library | NFS `caspian.local:/mnt/user/arrdata` at `/mnt/arrdata` | Allows Notifiarr to read media file details for richer notifications |
 
 ## Links
 

@@ -1,24 +1,24 @@
 # [Minio](https://min.io/)
 
-Minio is a high-performance, S3-compatible object storage server. It is used as the primary object store for Thanos long-term metric storage, Loki log storage, and Forgejo file attachments.
+Minio is the primary S3-compatible object store for this cluster. It backs Thanos long-term metric storage, Loki log storage, and Forgejo file attachments, providing a single internal S3 endpoint consumed by observability and application workloads.
 
-## Created Resources
+## Configuration
 
-| Kind | Name |
-| ---- | ---- |
-| [`HelmRelease`][ref-helm-release] | `minio` |
+| Setting | Value | Notes |
+| --- | --- | --- |
+| S3 API | `https://s3.ewatkins.dev` (port 9000) | S3 endpoint used by Thanos, Loki, and Forgejo |
+| Web console | `https://minio.ewatkins.dev` (port 9001) | Browser-based management interface |
+| OpenID/OIDC | Disabled | OIDC integration was removed after Authentik was decommissioned |
+| Data storage | `minio-data` PVC | Single PVC backing all buckets |
+| Metrics | Prometheus ServiceMonitor at `/minio/v2/metrics/cluster` | Cluster-level storage and throughput metrics |
 
-[ref-helm-release]: https://fluxcd.io/docs/components/helm/helmreleases/
+## Consumers
 
-## Notes
-
-- Image: `quay.io/minio/minio` RELEASE.2025-09-07T16-13-09Z
-- Deployed via `bjw-s/app-template` chart v3.7.3
-- S3 API accessible at `https://s3.ewatkins.dev` (port 9000)
-- Web console accessible at `https://minio.ewatkins.dev` (port 9001)
-- OpenID/OIDC integration disabled
-- Data stored in `minio-data` PVC
-- Prometheus ServiceMonitor scrapes cluster metrics at `/minio/v2/metrics/cluster`
+| App | Bucket | Purpose |
+| --- | --- | --- |
+| [Thanos](../../observability/thanos/README.md) | `thanos` | Long-term Prometheus metric storage |
+| [Loki](../../observability/loki/README.md) | `loki` | Log chunk storage (when configured for object store) |
+| [Forgejo](../../development/forgejo/README.md) | `forgejo` | LFS objects, release attachments, avatars |
 
 ## Links
 
