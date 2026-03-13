@@ -1,12 +1,10 @@
 # [Kromgo](https://github.com/kashalls/kromgo)
 
-Easily expose preconfigured prometheus metrics to the outside using badges.
+Exposes preconfigured Prometheus metrics as embeddable badges for use in READMEs and status pages.
 
-## Metrics
+## Adding Metrics
 
-Metrics that should be exposed for badges can be added to the [config](app/resources/config.yaml) file.
-
-### _Example_
+Metrics are configured in [app/resources/config.yaml](app/resources/config.yaml). Each metric specifies a PromQL query, optional suffix, and color thresholds.
 
 ```yaml
 metrics:
@@ -20,25 +18,31 @@ metrics:
     title: CPU
 ```
 
-The above metric can be accessed with a GET request to `/cluster_cpu_usage` and returns:
+A `GET /cluster_cpu_usage` request returns:
 
 ```json
 {
-  "color":"brightgreen",
-  "label":"cluster_cpu_usage",
-  "message":"6.9%",
-  "schemaVersion":1
+  "color": "brightgreen",
+  "label": "cluster_cpu_usage",
+  "message": "6.9%",
+  "schemaVersion": 1
 }
 ```
 
 ## Currently Exposed Metrics
 
-- talos_version
-- kubernetes_version
-- cluster_node_count
-- cluster_pod_count
-- cluster_cpu_usage
-- cluster_memory_usage
-- cluster_power_usage
-- cluster_age_days
-- cluster_uptime_days
+| Metric | Description |
+| --- | --- |
+| `talos_version` | Talos OS version |
+| `kubernetes_version` | Kubernetes version |
+| `cluster_node_count` | Total number of nodes |
+| `cluster_pod_count` | Total number of running pods |
+| `cluster_cpu_usage` | Average CPU utilization |
+| `cluster_memory_usage` | Average memory utilization |
+| `cluster_power_usage` | Cluster power draw |
+| `cluster_age_days` | Days since cluster creation |
+| `cluster_uptime_days` | Days since last full restart |
+
+## Links
+
+- [GitHub Repository](https://github.com/kashalls/kromgo)

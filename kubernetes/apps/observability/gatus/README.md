@@ -1,23 +1,25 @@
 # [Gatus](https://github.com/TwiN/gatus)
 
-Automated developer-oriented status page
+Automated developer-oriented status page that monitors endpoints and alerts on failures.
 
-## Config
+## Configuration
 
-Adding something to be tracked with Gatus can either be done with adding it as an endpoint in the [config](app/resources/config.yaml), adding a configmap just for gatus, or adding it using the [templates](../../../components/gatus/).
+Endpoints can be added in three ways:
 
-## Configmap
+1. Directly in the main [config](app/resources/config.yaml)
+2. Via a dedicated `ConfigMap` with the label `gatus.io/enabled: "true"`
+3. Via a shared [Kustomize component](../../../components/gatus/)
 
-If setting up a specific configmap just for the resource, the configmap should have the label of `gatus.io/enabled: "true"`
+## Adding via ConfigMap
 
-Example:
+The ConfigMap must have the label `gatus.io/enabled: "true"` to be picked up automatically.
 
 ```yaml
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: "${APP}-gatus-example"
+  name: "${APP}-gatus"
   labels:
     gatus.io/enabled: "true"
 data:
@@ -36,41 +38,25 @@ data:
           - type: pushover
 ```
 
-## Templates
+## Adding via Kustomize Component
 
-A resource can be added using a Template by including one of the following in the Kustomization.
+Include one of the following components in the app's `kustomization.yaml`:
 
-- `templates/gatus/external`
-- `templates/gatus/guarded`
-- `templates/gatus/internal`
+- `components/gatus/external` — DNS resolves externally, expects HTTP 200
+- `components/gatus/internal` — Internal only, hides URL/hostname
+- `components/gatus/guarded` — Verifies the endpoint is _not_ externally accessible
 
-Also, the following postBuild subsitutions should be included in `ks.yaml`
+Add the following to `ks.yaml` under `postBuild.substitute` as needed:
 
-```yaml
-postBuild:
-  substitute:
-```
+| Variable | Description |
+| --- | --- |
+| `APP` | Application name (usually set via `*app` substitution) |
+| `GATUS_SUBDOMAIN` | Override the subdomain if different from the app name |
+| `GATUS_PATH` | Health check path, e.g. `/-/healthz` |
+| `GATUS_STATUS` | Expected HTTP status code if not `200` |
 
-`APP` - Application name, can be supplied with \*app
+## Links
 
-`GATUS_SUBDOMAIN` - Alternative subdomain that is not the app name
-
-`GATUS_PATH` - Endpoint to use such as /-/healthz
-
-`GATUS_STATUS` - Alternative status code that should be returned, e.g. 404
-
-### _External_
-
-Resources that should have DNS resolved externally, and should be returning 200 or `GATUS_STATUS`.
-
-### _Guarded_
-
-Checks to make sure that the DNS record does not exist externally. This should only be used if I ONLY care about making sure it's not accessible externally.
-
-### _Internal_
-
-These are things that may or may not be external, but I want to hide the url/hostname and should be returning 200 or `GATUS_STATUS`.
-
-### _Infrastructure_
-
-These are things that support the cluster that I would like to keep an eye on, e.g. Postgres, Internet, Flux
+- [Documentation](https://gatus.io/docs)
+- [GitHub Repository](https://github.com/TwiN/gatus)
+- [Helm Chart](https://github.com/TwiN/gatus/tree/master/chart)
