@@ -21,6 +21,8 @@ patches:
         nodeIP:
           validSubnets:
             - 10.40.0.1/16
+        nodeLabels:
+          topology.kubernetes.io/zone: homelab
         extraMounts:
           - destination: /var/openebs/local
             type: bind

@@ -58,8 +58,8 @@ spec:
                   httpGet:
                     path: /_health
                     port: 3000
-                  initialDelaySeconds: 10
                   periodSeconds: 30
+                  failureThreshold: 3
               readiness:
                 enabled: true
                 custom: true
@@ -67,7 +67,16 @@ spec:
                   httpGet:
                     path: /_health
                     port: 3000
-                  initialDelaySeconds: 10
+                  periodSeconds: 10
+                  failureThreshold: 3
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /_health
+                    port: 3000
+                  failureThreshold: 30
                   periodSeconds: 10
             resources:
               requests:
