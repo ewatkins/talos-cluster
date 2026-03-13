@@ -8,8 +8,9 @@
     },
     {
       matchDatasources: ["docker"],
-      matchPackagePatterns: ["crunchy-postgres-vectorchord"],
-      allowedVersion: "/^16/"
+      matchPackageNames: ["/crunchy-postgres-vectorchord/"],
+      matchUpdateTypes: ["major"],
+      enabled: false
     }
   ]
 }
