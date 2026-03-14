@@ -1,6 +1,6 @@
 # [Kromgo](https://github.com/kashalls/kromgo)
 
-Exposes preconfigured Prometheus metrics as embeddable badges for use in READMEs and status pages.
+Exposes preconfigured Prometheus metrics as embeddable badges for use in READMEs and status pages. Queries are executed against Thanos Query Frontend (`thanos-query-frontend:10902`) so badges reflect the full historical dataset.
 
 ## Adding Metrics
 
@@ -15,7 +15,6 @@ metrics:
       - { color: "green", min: 0, max: 35 }
       - { color: "orange", min: 36, max: 75 }
       - { color: "red", min: 76, max: 9999 }
-    title: CPU
 ```
 
 A `GET /cluster_cpu_usage` request returns:
@@ -39,7 +38,6 @@ A `GET /cluster_cpu_usage` request returns:
 | `cluster_pod_count` | Total number of running pods |
 | `cluster_cpu_usage` | Average CPU utilization |
 | `cluster_memory_usage` | Average memory utilization |
-| `cluster_power_usage` | Cluster power draw |
 | `cluster_age_days` | Days since cluster creation |
 | `cluster_uptime_days` | Days since last full restart |
 

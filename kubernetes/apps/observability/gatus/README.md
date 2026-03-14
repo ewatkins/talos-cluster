@@ -10,6 +10,8 @@ Endpoints can be added in three ways:
 2. Via a dedicated `ConfigMap` with the label `gatus.io/enabled: "true"`
 3. Via a shared [Kustomize component](../../../components/gatus/)
 
+A `k8s-sidecar` init container runs alongside Gatus and watches cluster-wide for ConfigMaps carrying the `gatus.io/enabled` label. When a matching ConfigMap is created, updated, or deleted, the sidecar writes the config into the shared `/config` directory and Gatus picks it up without a restart.
+
 ## Adding via ConfigMap
 
 The ConfigMap must have the label `gatus.io/enabled: "true"` to be picked up automatically.
@@ -59,4 +61,4 @@ Add the following to `ks.yaml` under `postBuild.substitute` as needed:
 
 - [Documentation](https://gatus.io/docs)
 - [GitHub Repository](https://github.com/TwiN/gatus)
-- [Helm Chart](https://github.com/TwiN/gatus/tree/master/chart)
+- [Helm Chart](https://github.com/bjw-s-labs/helm-charts/tree/main/charts/other/app-template) (deployed via `app-template`)

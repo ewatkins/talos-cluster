@@ -2,6 +2,10 @@
 
 Get resource requests "just right." Goldilocks watches running workloads and uses the Vertical Pod Autoscaler (VPA) to suggest appropriate CPU and memory requests and limits.
 
+## Prerequisites
+
+Goldilocks requires VPA to be installed (`vpa` in `kube-system`). The HelmRelease declares a `dependsOn` on it — without VPA running, Goldilocks will not start.
+
 ## Enabling a Namespace
 
 Add the following label to any namespace you want Goldilocks to analyze:
@@ -11,6 +15,8 @@ metadata:
   labels:
     goldilocks.fairwinds.com/enabled: "true"
 ```
+
+Once labeled, the Goldilocks controller creates a `VerticalPodAutoscaler` object for each workload in that namespace and the dashboard surfaces the resulting recommendations.
 
 ## Resource Limits Guidance
 
