@@ -36,9 +36,9 @@ spec:
       mountOptions:
         - nfsvers=4.2
         - nconnect=16
-        - soft
-        - timeo=30
-        - retrans=2
+        - hard
+        - timeo=600
+        - retrans=5
         - noatime
       reclaimPolicy: Delete
       volumeBindingMode: Immediate
