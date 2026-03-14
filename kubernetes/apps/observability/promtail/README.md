@@ -7,6 +7,7 @@ Promtail runs as a DaemonSet on every cluster node, tailing container log files 
 | Setting | Value | Notes |
 | --- | --- | --- |
 | Loki endpoint | `http://loki-headless.observability.svc.cluster.local:3100/loki/api/v1/push` | Direct push to the Loki headless service |
+| ServiceMonitor | Enabled | Promtail's own metrics are scraped by Prometheus |
 
 ## Links
 
