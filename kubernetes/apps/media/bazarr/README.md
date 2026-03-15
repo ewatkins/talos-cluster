@@ -6,8 +6,14 @@ Bazarr automatically downloads and manages subtitles for the media library, work
 
 | Setting | Value | Notes |
 | --- | --- | --- |
-| Config storage | `bazarr-config` PVC at `/config` | Persists subtitle settings, provider credentials, and history |
-| Media library | NFS `caspian.local:/mnt/user/arrdata` at `/mnt/arrdata` | Shared NFS mount used by all *arr applications |
+| Image | `ghcr.io/home-operations/bazarr:1.5.6` | |
+| URL | `https://bazarr.ewatkins.dev` | Internal gateway only (`internal.ewatkins.dev` DNS target) |
+| Port | `6767` | HTTP |
+| Timezone | `America/Chicago` | |
+| Config storage | `bazarr-config` PVC, 5Gi (`nfs-slow`) | Mounted at `/opt/bazarr/data` and `/config` |
+| Media library | NFS `caspian.local:/mnt/user/arrdata` | Mounted at `/mnt/arrdata`; shared with all *arr apps |
+| Run as user/group | `99:100` | |
+| Memory limit | `1Gi` | |
 
 ## Links
 

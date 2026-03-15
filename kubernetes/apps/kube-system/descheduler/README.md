@@ -1,17 +1,43 @@
 # [Descheduler](https://github.com/kubernetes-sigs/descheduler)
 
-The Descheduler evicts pods that violate scheduling constraints after initial placement, allowing the Kubernetes scheduler to place them on more appropriate nodes. This is particularly useful when nodes are added or when affinity rules change after pods are already running.
+The Descheduler periodically evicts pods that violate scheduling constraints after their initial placement, allowing the Kubernetes scheduler to re-place them on more appropriate nodes. It runs as a Deployment (rather than a CronJob) with leader election so one active instance is always running.
 
-## Configuration
+## Chart
 
-| Plugin | What it fixes |
+| Field | Value |
 | --- | --- |
-| `RemovePodsViolatingInterPodAntiAffinity` | Evicts pods that violate anti-affinity rules that arose after initial scheduling |
-| `RemovePodsViolatingNodeAffinity` | Evicts pods whose node affinity rules are no longer satisfied |
-| `RemovePodsViolatingNodeTaints` | Evicts pods running on nodes they should no longer tolerate |
-| `RemovePodsViolatingTopologySpreadConstraint` | Rebalances pods across zones when spread constraints are violated |
+| Chart | `descheduler/descheduler` |
+| Version | `0.35.1` |
+| Source | HelmRepository `descheduler` in `flux-system` |
 
-The descheduler runs as a 2-replica `Deployment` with leader election — only one instance is active at a time, but the second provides fast failover.
+## Deployment settings
+
+| Setting | Value |
+| --- | --- |
+| Kind | `Deployment` |
+| Replicas | `2` |
+| Leader election | enabled |
+| Policy API version | `descheduler/v1alpha2` |
+| Metrics Service | enabled |
+| ServiceMonitor | enabled |
+
+## Evictor settings (DefaultEvictor)
+
+| Setting | Value |
+| --- | --- |
+| `evictFailedBarePods` | `true` — evict failed pods with no owner |
+| `evictLocalStoragePods` | `true` — evict pods using local storage |
+| `evictSystemCriticalPods` | `true` — evict system-critical pods if they violate constraints |
+| `nodeFit` | `true` — only evict if a suitable alternative node exists |
+
+## Active plugins
+
+| Plugin | Phase | What it fixes |
+| --- | --- | --- |
+| `RemovePodsViolatingInterPodAntiAffinity` | deschedule | Evicts pods that now violate anti-affinity rules |
+| `RemovePodsViolatingNodeAffinity` | deschedule | Evicts pods whose `requiredDuringSchedulingIgnoredDuringExecution` node affinity is no longer satisfied |
+| `RemovePodsViolatingNodeTaints` | deschedule | Evicts pods running on nodes they should no longer tolerate |
+| `RemovePodsViolatingTopologySpreadConstraint` | balance | Rebalances pods when `DoNotSchedule` or `ScheduleAnyway` spread constraints are violated |
 
 ## Links
 

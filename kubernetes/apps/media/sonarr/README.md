@@ -6,8 +6,19 @@ Sonarr manages the TV series collection. It monitors configured indexers (via Pr
 
 | Setting | Value | Notes |
 | --- | --- | --- |
-| Config storage | `sonarr-config` PVC | Persists library settings, quality profiles, series list, and history |
-| Media library | NFS `caspian.local:/mnt/user/arrdata` at `/mnt/arrdata` | Shared NFS mount written to after download completion |
+| Image | `ghcr.io/home-operations/sonarr:4.0.16.2946` | |
+| URL | `https://sonarr.ewatkins.dev` | Internal gateway only (`internal.ewatkins.dev` DNS target) |
+| Port | `80` | HTTP |
+| Instance name | `Sonarr` | |
+| Theme | `dark` | |
+| Auth method | `External` | Authentication handled upstream; disabled for local addresses |
+| Update branch | `develop` | |
+| DB logging | Disabled | |
+| Timezone | `America/Chicago` | |
+| Config PVC | `sonarr-config`, 10Gi (`nfs-slow`) | Mounted at `/var/lib/sonarr` and `/config` |
+| Media library | NFS `caspian.local:/mnt/user/arrdata` | Mounted at `/mnt/arrdata`; shared with all *arr apps |
+| Run as user/group | `99:100` | |
+| Memory limit | `1Gi` | |
 
 ## Links
 

@@ -6,8 +6,19 @@ Radarr manages the movie collection. It monitors configured indexers (via Prowla
 
 | Setting | Value | Notes |
 | --- | --- | --- |
-| Config storage | `radarr-config` PVC | Persists library settings, quality profiles, and history |
-| Media library | NFS `caspian.local:/mnt/user/arrdata` at `/mnt/arrdata` | Shared NFS mount written to after download completion |
+| Image | `ghcr.io/home-operations/radarr:6.1.1.10317` | |
+| URL | `https://radarr.ewatkins.dev` | Internal gateway only (`internal.ewatkins.dev` DNS target) |
+| Port | `80` | HTTP |
+| Instance name | `Radarr` | |
+| Theme | `dark` | |
+| Auth method | `External` | Authentication handled upstream; disabled for local addresses |
+| Update branch | `develop` | |
+| DB logging | Disabled | |
+| Timezone | `America/Chicago` | |
+| Config PVC | `radarr-config`, 10Gi (`nfs-slow`) | Mounted at `/var/lib/radarr` and `/config` |
+| Media library | NFS `caspian.local:/mnt/user/arrdata` | Mounted at `/mnt/arrdata`; shared with all *arr apps |
+| Run as user/group | `99:100` | |
+| Memory limit | `1Gi` | |
 
 ## Links
 

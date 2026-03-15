@@ -1,23 +1,36 @@
-# [Minio](https://min.io/)
+# [MinIO](https://min.io/)
 
-Minio is the primary S3-compatible object store for this cluster. It backs Thanos long-term metric storage, Loki log storage, and Forgejo file attachments, providing a single internal S3 endpoint consumed by observability and application workloads.
+MinIO is the primary S3-compatible object store for this cluster. It backs Thanos long-term metric storage, Loki log storage, and Forgejo file attachments.
 
 ## Configuration
 
 | Setting | Value | Notes |
 | --- | --- | --- |
-| S3 API | `https://s3.ewatkins.dev` (port 9000) | S3 endpoint used by Thanos, Loki, and Forgejo |
-| Web console | `https://minio.ewatkins.dev` (port 9001) | Browser-based management interface |
-| OpenID/OIDC | Disabled | OIDC integration was removed after Authentik was decommissioned |
-| Data storage | `minio-data` PVC | Single PVC backing all buckets |
-| Metrics | Prometheus ServiceMonitor at `/minio/v2/metrics/cluster` | Cluster-level storage and throughput metrics |
+| Image | `quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z` | |
+| Chart | `app-template 3.7.3` from HelmRepository `bjw-s` | |
+| S3 API URL | `https://s3.ewatkins.dev` (port 9000) | Internal gateway (`internal`); DNS via `internal.ewatkins.dev` |
+| Web console URL | `https://minio.ewatkins.dev` (port 9001) | Internal gateway; DNS via `internal.ewatkins.dev` |
+| Data PVC | `minio-data`, 20Gi, `ReadWriteMany` | StorageClass `nfs-fast` on `caspian.local:/mnt/user/kubernetes-fast` |
+| Credentials | `minio-secret` | `MINIO_ROOT_USER` and `MINIO_ROOT_PASSWORD` from Bitwarden Secrets Manager |
+| OIDC | Disabled | `MINIO_IDENTITY_OPENID_ENABLE: "off"` |
+| Auto-update | Disabled | `MINIO_UPDATE: "off"` |
+| Prometheus metrics | `/minio/v2/metrics/cluster` (port 9000) | Auth type `public`; Prometheus URL `https://prometheus.ewatkins.dev`; job ID `minio` |
+| Metrics scrape interval | 1m | ServiceMonitor scrape timeout 10s |
+| Resources | requests: 100m CPU; limits: 2Gi memory | |
+| CORS origins | `https://minio.ewatkins.dev`, `https://s3.ewatkins.dev` | |
+
+## Secrets
+
+| Secret | Source | Contents |
+| --- | --- | --- |
+| `minio-secret` | Bitwarden Secrets Manager | `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD` |
 
 ## Consumers
 
 | App | Bucket | Purpose |
 | --- | --- | --- |
 | [Thanos](../../observability/thanos/README.md) | `thanos` | Long-term Prometheus metric storage |
-| [Loki](../../observability/loki/README.md) | `loki` | Log chunk storage (when configured for object store) |
+| [Loki](../../observability/loki/README.md) | `loki` | Log chunk and index storage |
 | [Forgejo](../../development/forgejo/README.md) | `forgejo` | LFS objects, release attachments, avatars |
 
 ## Links

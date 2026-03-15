@@ -6,8 +6,13 @@ Recommendarr analyzes the existing Sonarr and Radarr libraries and uses large la
 
 | Setting | Value | Notes |
 | --- | --- | --- |
-| URL | `https://recommend.ewatkins.dev` | Publicly accessible via Cloudflare tunnel |
-| Data storage | `recommendarr-data` PVC | Persists LLM settings, Sonarr/Radarr connection details, and recommendation history |
+| Image | `docker.io/tannermiddleton/recommendarr:v1.4.4` | |
+| URL | `https://recommend.ewatkins.dev` | Internal gateway only (`internal.ewatkins.dev` DNS target) |
+| Port | `3000` | HTTP |
+| Secure cookies | Enabled (`FORCE_SECURE_COOKIES=true`) | |
+| Data PVC | `recommendarr-data`, 5Gi (`nfs-slow`) | Mounted at `/app/server/data`; persists LLM settings, API connections, and recommendation history |
+| Run as user/group | `99:100` | |
+| Memory limit | `256Mi` | |
 
 ## Links
 
