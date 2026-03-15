@@ -17,10 +17,6 @@ route:
     - receiver: "null"
       matchers:
         - alertname =~ "InfoInhibitor"
-    - receiver: pushover
-      continue: true
-      matchers:
-        - severity = "critical"
 inhibit_rules:
   - equal: ["alertname", "namespace"]
     source_matchers:
