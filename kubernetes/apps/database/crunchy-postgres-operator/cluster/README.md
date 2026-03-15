@@ -1,6 +1,13 @@
 # Crunchy Postgres Clusters
 
-Postgres clusters managed by the [Crunchy Postgres Operator (PGO)](https://access.crunchydata.com/documentation/postgres-operator/latest/).
+PostgreSQL clusters managed by the [Crunchy Postgres Operator (PGO)](https://access.crunchydata.com/documentation/postgres-operator/latest/).
+
+Two clusters are defined here:
+
+- **`crunchy-postgres`** — general-purpose PostgreSQL 16 cluster used by Keycloak, Forgejo, Gatus, Grafana, Paperless, and Outline
+- **`crunchy-postgres-vector`** — PostgreSQL 16 cluster with VectorChord (`vchord.so`) for Immich vector similarity search
+
+See [../README.md](../README.md) for full configuration details on both clusters including replica counts, storage, backup schedules, and user lists.
 
 ## Bootstrapping a New Cluster
 

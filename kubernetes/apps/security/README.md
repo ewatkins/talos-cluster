@@ -6,4 +6,4 @@ Identity and access management for the cluster, providing SSO and OIDC authentic
 
 | App | Description |
 | --- | --- |
-| [keycloak](keycloak/README.md) | Central identity provider offering SSO and OIDC for Outline, Paperless, Forgejo, and other apps |
+| [keycloak](keycloak/README.md) | Central identity provider offering SSO and OIDC for Outline, Paperless-ngx, Forgejo, and other apps |
