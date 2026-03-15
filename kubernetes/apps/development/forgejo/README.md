@@ -7,7 +7,8 @@ Forgejo is the self-hosted Git service for this cluster. It provides repository 
 | Setting | Value | Notes |
 | --- | --- | --- |
 | URL | `https://git.ewatkins.dev` | Publicly accessible via Cloudflare tunnel |
-| Registration | External accounts only | `ALLOW_ONLY_EXTERNAL_REGISTRATION: true` — the local sign-up form is disabled; accounts must be created by an admin or via a configured OAuth2 provider |
+| Authentication | GitHub OAuth2 | Users log in via GitHub; configured as an external auth source in the Forgejo admin panel |
+| Registration | Admin-provisioned only | `ALLOW_ONLY_EXTERNAL_REGISTRATION: true` disables the local sign-up form; new account creation via OAuth is also disabled, so accounts must be created by an admin before a user can log in with GitHub |
 | OpenID | Disabled | `ENABLE_OPENID_SIGNIN` and `ENABLE_OPENID_SIGNUP` are both `false` |
 | Database | PostgreSQL via `forgejo-db` secret | Stores repositories, issues, users, and settings |
 | Cache / Queue | Dragonfly (Redis-compatible) | Used for session storage, task queues, and caching |
