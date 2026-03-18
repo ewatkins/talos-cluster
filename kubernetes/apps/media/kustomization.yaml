@@ -12,7 +12,7 @@ resources:
   - ./bazarr/ks.yaml
   - ./immich/ks.yaml
   - ./jellyfin/ks.yaml
-  - ./jellyseerr/ks.yaml
+  - ./seerr/ks.yaml
   - ./notifiarr/ks.yaml
   - ./paperless/ks.yaml
   - ./prowlarr/ks.yaml
