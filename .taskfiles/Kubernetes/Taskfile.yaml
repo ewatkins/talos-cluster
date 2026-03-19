@@ -63,6 +63,9 @@ tasks:
     cmds:
       - |
         kubectl get pods -A --no-headers | awk '$5 != "0"' | while read ns pod ready status restarts age; do
+          if kubectl -n "$ns" get pod "$pod" -o jsonpath='{.metadata.labels}' 2>/dev/null | grep -q "postgres-operator.crunchydata.com"; then
+            continue
+          fi
           owner_kind=$(kubectl -n "$ns" get pod "$pod" -o jsonpath='{.metadata.ownerReferences[0].kind}' 2>/dev/null)
           owner_name=$(kubectl -n "$ns" get pod "$pod" -o jsonpath='{.metadata.ownerReferences[0].name}' 2>/dev/null)
           if [ "$owner_kind" = "ReplicaSet" ]; then
@@ -76,7 +79,7 @@ tasks:
         done | sort -u | while IFS=' ()' read resource ns _; do
           echo "Restarting $resource in $ns"
           kubectl -n "$ns" rollout restart "$resource"
-          kubectl -n "$ns" rollout status "$resource"
+          kubectl -n "$ns" rollout status "$resource" 2>/dev/null || true
         done
 
   clear-failed:

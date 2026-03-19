@@ -63,6 +63,8 @@ spec:
           reporting_enabled: false
     singleBinary:
       replicas: 1
+      podSecurityContext:
+        fsGroupChangePolicy: OnRootMismatch
       persistence:
         enabled: true
         storageClass: nfs-slow
