@@ -24,6 +24,7 @@ spec:
       memory: 105M
     limits:
       memory: 512Mi # Do Not Change
+  networkPolicyEnabled: false
   topologySpreadConstraints:
     - maxSkew: 1
       topologyKey: "kubernetes.io/hostname"
