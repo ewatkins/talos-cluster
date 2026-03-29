@@ -60,12 +60,22 @@ tasks:
 
   restart-crashing:
     desc: Rollout restart all deployments/statefulsets/daemonsets with pods that have restarted
+    summary: |
+      Args:
+        namespace: Namespace to filter (optional, default: all namespaces)
+    vars:
+      NAMESPACE: "{{.CLI_ARGS | default .namespace}}"
     cmds:
       - |
+        {{if .NAMESPACE}}
+        kubectl get pods -n {{.NAMESPACE}} --no-headers | awk '$5 != "0"' | while read pod ready status restarts age; do
+          ns={{.NAMESPACE}}
+        {{else}}
         kubectl get pods -A --no-headers | awk '$5 != "0"' | while read ns pod ready status restarts age; do
           if kubectl -n "$ns" get pod "$pod" -o jsonpath='{.metadata.labels}' 2>/dev/null | grep -q "postgres-operator.crunchydata.com"; then
             continue
           fi
+        {{end}}
           owner_kind=$(kubectl -n "$ns" get pod "$pod" -o jsonpath='{.metadata.ownerReferences[0].kind}' 2>/dev/null)
           owner_name=$(kubectl -n "$ns" get pod "$pod" -o jsonpath='{.metadata.ownerReferences[0].name}' 2>/dev/null)
           if [ "$owner_kind" = "ReplicaSet" ]; then
