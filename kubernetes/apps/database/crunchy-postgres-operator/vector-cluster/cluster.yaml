@@ -20,6 +20,9 @@ spec:
       synchronous_mode: true
       postgresql:
         synchronous_commit: "on"
+        parameters:
+          wal_keep_size: 1024  # keep 1GB of WAL locally so replicas can stream it even if archiver lags
+          archive_timeout: 300  # force WAL archiving every 5 min to prevent gaps during rapid timeline switches
         pg_hba:
           - hostnossl all all 10.96.0.0/16 md5
           - hostnossl all all 10.69.0.0/16 md5
