@@ -167,7 +167,7 @@ spec:
       #    - path: /test
       library:
         type: nfs
-        server: caspian.local
+        server: storage.ewatkins.dev
         path: /mnt/user/immich
         globalMounts:
           - path: *mediaLocation

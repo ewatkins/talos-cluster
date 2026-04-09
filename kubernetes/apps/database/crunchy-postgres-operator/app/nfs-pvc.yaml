@@ -9,7 +9,7 @@ spec:
   accessModes: ["ReadWriteMany"]
   storageClassName: nfs-csi #csi-driver-nfs
   nfs:
-    server: caspian.local
+    server: storage.ewatkins.dev
     path: /mnt/user/crunchy-postgres
   mountOptions:
     - nfsvers=4.2
@@ -31,7 +31,7 @@ spec:
   accessModes: ["ReadWriteMany"]
   storageClassName: nfs-csi #csi-driver-nfs
   nfs:
-    server: caspian.local
+    server: storage.ewatkins.dev
     path: /mnt/user/crunchy-postgres-vector
   mountOptions:
     - nfsvers=4.2

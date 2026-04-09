@@ -81,7 +81,7 @@ spec:
       nas:
         enabled: true
         type: nfs
-        server: caspian.local
+        server: storage.ewatkins.dev
         path: /mnt/user/paperless
         globalMounts:
           - path: /data/nas
