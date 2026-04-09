@@ -103,7 +103,7 @@ spec:
       media:
         enabled: true
         type: nfs
-        server: caspian.local
+        server: storage.ewatkins.dev
         path: /mnt/user/arrdata
         globalMounts:
           - path: /mnt/arrdata
