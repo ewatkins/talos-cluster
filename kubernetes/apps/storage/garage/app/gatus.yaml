@@ -9,7 +9,7 @@ data:
   config.yaml: |
     endpoints:
       - name: s3
-        group: infrastructure
+        group: Garage
         url: https://s3-garage.ewatkins.dev
         interval: 1m
         ui:
@@ -18,7 +18,7 @@ data:
         conditions:
           - "[STATUS] == 403"
       - name: garage-health
-        group: infrastructure
+        group: Garage
         url: http://garage-api.storage.svc.cluster.local:3903/health
         interval: 1m
         ui:
@@ -27,7 +27,7 @@ data:
         conditions:
           - "[STATUS] == 200"
       - name: garage-0
-        group: infrastructure
+        group: Garage
         url: tcp://garage-0.garage.storage.svc.cluster.local:3901
         interval: 1m
         ui:
@@ -36,7 +36,7 @@ data:
         conditions:
           - "[CONNECTED] == true"
       - name: garage-1
-        group: infrastructure
+        group: Garage
         url: tcp://garage-1.garage.storage.svc.cluster.local:3901
         interval: 1m
         ui:
@@ -45,7 +45,7 @@ data:
         conditions:
           - "[CONNECTED] == true"
       - name: garage-2
-        group: infrastructure
+        group: Garage
         url: tcp://garage-2.garage.storage.svc.cluster.local:3901
         interval: 1m
         ui:
