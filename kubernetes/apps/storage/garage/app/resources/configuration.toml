@@ -7,6 +7,11 @@ replication_factor = 3
 compression_level = 2
 
 rpc_bind_addr = "[::]:3901"
+bootstrap_peers = [
+    "garage-0.garage.storage.svc.cluster.local:3901",
+    "garage-1.garage.storage.svc.cluster.local:3901",
+    "garage-2.garage.storage.svc.cluster.local:3901",
+]
 
 [s3_api]
 s3_region = "us-east-1"
