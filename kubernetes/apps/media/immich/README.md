@@ -20,7 +20,7 @@ Immich runs two containers in separate controllers:
 | Trusted proxies | `10.69.0.0/16` | Pod CIDR; allows correct client IP forwarding |
 | Database | PostgreSQL via `crunchy-postgres-vector` | `DB_URL` from `immich-db-secret` ExternalSecret; uses `crunchy-postgres-vector-ha.database.svc.cluster.local:5432` |
 | Cache / job queue | DragonflyDB `immich-dragonfly.media.svc.cluster.local` | 3 replicas, 512Mi memory limit, emulated cluster mode |
-| Photo library | NFS `caspian.local:/mnt/user/immich` | Mounted at `/library` |
+| Photo library | NFS `storage.ewatkins.dev:/mnt/user/immich` | Mounted at `/library` |
 | ML model cache | OpenEBS hostpath PVC, 10Gi | Mounted at `/cache` and `/.cache` inside the ML container |
 | Server memory limit | `6Gi` | |
 | ML memory limit | `4Gi` | |

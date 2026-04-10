@@ -1,6 +1,6 @@
 # [CSI Driver NFS](https://github.com/kubernetes-csi/csi-driver-nfs)
 
-The NFS CSI driver provisions PersistentVolumes backed by NFS shares on the `caspian.local` NAS. It provides two StorageClasses for workloads that require shared or cross-node access to storage.
+The NFS CSI driver provisions PersistentVolumes backed by NFS shares on the `storage.ewatkins.dev` NAS. It provides two StorageClasses for workloads that require shared or cross-node access to storage.
 
 ## Configuration
 
@@ -8,7 +8,7 @@ The NFS CSI driver provisions PersistentVolumes backed by NFS shares on the `cas
 | --- | --- | --- |
 | Chart | `csi-driver-nfs 4.13.1` via `oci://ghcr.io/home-operations/charts-mirror/csi-driver-nfs` | |
 | Controller replicas | 1 | |
-| NAS server | `caspian.local` | |
+| NAS server | `storage.ewatkins.dev` | |
 
 ## StorageClasses
 

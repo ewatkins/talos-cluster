@@ -16,7 +16,7 @@ Sonarr manages the TV series collection. It monitors configured indexers (via Pr
 | DB logging | Disabled | |
 | Timezone | `America/Chicago` | |
 | Config PVC | `sonarr-config`, 10Gi (`nfs-slow`) | Mounted at `/var/lib/sonarr` and `/config` |
-| Media library | NFS `caspian.local:/mnt/user/arrdata` | Mounted at `/mnt/arrdata`; shared with all *arr apps |
+| Media library | NFS `storage.ewatkins.dev:/mnt/user/arrdata` | Mounted at `/mnt/arrdata`; shared with all *arr apps |
 | Run as user/group | `99:100` | |
 | Memory limit | `1Gi` | |
 

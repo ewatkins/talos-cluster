@@ -10,7 +10,7 @@ MinIO is the primary S3-compatible object store for this cluster. It backs Thano
 | Chart | `app-template 3.7.3` from HelmRepository `bjw-s` | |
 | S3 API URL | `https://s3.ewatkins.dev` (port 9000) | Internal gateway (`internal`); DNS via `internal.ewatkins.dev` |
 | Web console URL | `https://minio.ewatkins.dev` (port 9001) | Internal gateway; DNS via `internal.ewatkins.dev` |
-| Data PVC | `minio-data`, 20Gi, `ReadWriteMany` | StorageClass `nfs-fast` on `caspian.local:/mnt/user/kubernetes-fast` |
+| Data PVC | `minio-data`, 20Gi, `ReadWriteMany` | StorageClass `nfs-fast` on `storage.ewatkins.dev:/mnt/user/kubernetes-fast` |
 | Credentials | `minio-secret` | `MINIO_ROOT_USER` and `MINIO_ROOT_PASSWORD` from Bitwarden Secrets Manager |
 | OIDC | Disabled | `MINIO_IDENTITY_OPENID_ENABLE: "off"` |
 | Auto-update | Disabled | `MINIO_UPDATE: "off"` |

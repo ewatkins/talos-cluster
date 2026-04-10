@@ -11,7 +11,7 @@ Notifiarr aggregates events and alerts from the *arr stack and forwards them to 
 | Port | `5454` | HTTP |
 | Pod hostname | `notifiarr-talos` | Used for identification in Notifiarr's dashboard |
 | Config PVC | `notifiarr-config`, 1Gi (`openebs-hostpath`) | Persists notification rules and integration settings |
-| Media library | NFS `caspian.local:/mnt/user/arrdata` | Mounted at `/media`; enables file-level detail in notifications |
+| Media library | NFS `storage.ewatkins.dev:/mnt/user/arrdata` | Mounted at `/media`; enables file-level detail in notifications |
 | Run as user/group | `568:568` | |
 | Memory limit | `1Gi` | |
 
