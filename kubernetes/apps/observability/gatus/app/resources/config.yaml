@@ -18,7 +18,7 @@ connectivity:
     interval: 1m
 endpoints:
   - name: flux-webhook
-    group: external
+    group: External
     url: https://flux-webhook.ewatkins.dev
     interval: 1m
     client:
@@ -26,7 +26,7 @@ endpoints:
     conditions:
       - "[STATUS] == 404"
   - name: internet
-    group: infrastructure
+    group: Infrastructure
     url: ${SECRET_INTERNET_PING_URL}
     interval: 1m
     client:

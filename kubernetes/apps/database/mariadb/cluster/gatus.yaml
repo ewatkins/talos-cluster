@@ -9,7 +9,7 @@ data:
   config.yaml: |
     endpoints:
       - name: mariadb
-        group: infrastructure
+        group: Infrastructure
         url: tcp://10.40.0.120:3306
         interval: 1m
         conditions: ["[CONNECTED] == true"]
