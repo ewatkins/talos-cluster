@@ -78,9 +78,6 @@ spec:
                 matchLabels:
                   app.kubernetes.io/name: *app
               topologyKey: kubernetes.io/hostname
-    service:
-      app:
-        enabled: false
     persistence:
       config:
         type: configMap
