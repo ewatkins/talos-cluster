@@ -79,13 +79,8 @@ spec:
                   app.kubernetes.io/name: *app
               topologyKey: kubernetes.io/hostname
     service:
-      api:
-        controller: garage
-        ports:
-          s3:
-            port: 3900
-          admin:
-            port: 3903
+      app:
+        enabled: false
     persistence:
       config:
         type: configMap

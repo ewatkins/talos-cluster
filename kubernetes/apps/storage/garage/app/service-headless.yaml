@@ -12,3 +12,19 @@ spec:
     - name: rpc
       port: 3901
       protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: garage-api
+  namespace: storage
+spec:
+  selector:
+    app.kubernetes.io/name: garage
+  ports:
+    - name: s3
+      port: 3900
+      protocol: TCP
+    - name: admin
+      port: 3903
+      protocol: TCP
