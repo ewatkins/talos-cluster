@@ -8,9 +8,9 @@ compression_level = 2
 
 rpc_bind_addr = "[::]:3901"
 bootstrap_peers = [
-    "garage-0.garage.storage.svc.cluster.local:3901",
-    "garage-1.garage.storage.svc.cluster.local:3901",
-    "garage-2.garage.storage.svc.cluster.local:3901",
+    "6a5e804db02dfb46bffe227a38fd8695c47d21544f07a9b0cd120e9a50c2a83b@garage-0.garage.storage.svc.cluster.local:3901",
+    "1b2e500a571e25011f8eb2bccdb175ba600a615b80c47eca22c7328d8d4ab326@garage-1.garage.storage.svc.cluster.local:3901",
+    "61075c8114d5d3a79757b19993ec0669f36aa80a6f36baaf56e5d763ad318159@garage-2.garage.storage.svc.cluster.local:3901",
 ]
 
 [s3_api]
