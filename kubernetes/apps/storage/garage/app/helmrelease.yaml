@@ -20,6 +20,23 @@ spec:
   values:
     controllers:
       garage:
+        type: statefulset
+        replicas: 3
+        statefulset:
+          podManagementPolicy: Parallel
+          volumeClaimTemplates:
+            - name: data
+              accessMode: ReadWriteOnce
+              size: 10Gi
+              storageClass: openebs-hostpath
+              globalMounts:
+                - path: /data
+            - name: meta
+              accessMode: ReadWriteOnce
+              size: 512Mi
+              storageClass: openebs-hostpath
+              globalMounts:
+                - path: /meta
         annotations:
           reloader.stakater.com/auto: "true"
         containers:
@@ -48,6 +65,13 @@ spec:
         runAsGroup: 1000
         fsGroup: 1000
         fsGroupChangePolicy: OnRootMismatch
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: *app
+              topologyKey: kubernetes.io/hostname
     service:
       app:
         controller: garage
@@ -63,11 +87,3 @@ spec:
         globalMounts:
           - path: /etc/garage.toml
             subPath: configuration.toml
-      data:
-        existingClaim: garage-data
-        globalMounts:
-          - path: /data
-      meta:
-        existingClaim: garage-meta
-        globalMounts:
-          - path: /meta
