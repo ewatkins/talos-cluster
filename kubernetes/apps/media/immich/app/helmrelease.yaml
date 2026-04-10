@@ -161,10 +161,6 @@ spec:
               - name: immich-main
                 port: *port
     persistence:
-      #library:
-      #  existingClaim: immich-library
-      #  globalMounts:
-      #    - path: /test
       library:
         type: nfs
         server: storage.ewatkins.dev

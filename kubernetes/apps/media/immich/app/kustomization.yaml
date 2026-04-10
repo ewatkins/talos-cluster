@@ -6,4 +6,3 @@ resources:
   - ./cluster.yaml
   - ./helmrelease.yaml
   - ./externalsecret.yaml
-  - ./pvc.yaml
