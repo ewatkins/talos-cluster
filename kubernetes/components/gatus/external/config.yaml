@@ -1,6 +1,6 @@
 endpoints:
   - name: "${APP}"
-    group: external
+    group: External
     url: "https://${GATUS_SUBDOMAIN:=${APP}}.ewatkins.dev${GATUS_PATH:=/}"
     interval: 1m
     client:
