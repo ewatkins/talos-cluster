@@ -23,7 +23,7 @@ spec:
         type: statefulset
         replicas: 3
         statefulset:
-          podManagementPolicy: Parallel
+          podManagementPolicy: OrderedReady
           volumeClaimTemplates:
             - name: data
               accessMode: ReadWriteOnce
