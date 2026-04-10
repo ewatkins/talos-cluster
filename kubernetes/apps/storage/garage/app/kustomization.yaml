@@ -6,6 +6,7 @@ resources:
   - gatus.yaml
   - helmrelease.yaml
   - httproute-s3.yaml
+  - service-headless.yaml
 configMapGenerator:
   - name: garage-configmap
     files:

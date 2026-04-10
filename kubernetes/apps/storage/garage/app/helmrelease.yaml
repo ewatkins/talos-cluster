@@ -79,12 +79,6 @@ spec:
                   app.kubernetes.io/name: *app
               topologyKey: kubernetes.io/hostname
     service:
-      app:
-        controller: garage
-        clusterIP: None
-        ports:
-          rpc:
-            port: 3901
       api:
         controller: garage
         ports:
