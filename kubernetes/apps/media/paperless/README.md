@@ -15,7 +15,7 @@ Paperless-ngx is the document management system for this cluster. It ingests doc
 | Authentication | Keycloak OIDC via `allauth.socialaccount.providers.openid_connect` | OIDC server: `https://auth.ewatkins.dev/realms/master`; regular login form disabled; social account signups enabled, direct signups disabled |
 | Database | PostgreSQL via CrunchyDB PGBouncer | `PAPERLESS_DBHOST` and credentials from `paperless-db-secret` ExternalSecret; uses `crunchy-postgres-pguser-paperless-admin` |
 | Task queue / cache | Dragonfly at `dragonfly.database.svc.cluster.local:6379` | |
-| NFS storage | `caspian.local:/mnt/user/paperless` | Mounted at `/data/nas`; provides consume, data, export, and media directories |
+| NFS storage | `storage.ewatkins.dev:/mnt/user/paperless` | Mounted at `/data/nas`; provides consume, data, export, and media directories |
 | Consume directory | `/data/nas/consume` | Polled every 60 seconds, recursive; subdirectories applied as tags |
 | Data directory | `/data/nas/data` | |
 | Export directory | `/data/nas/export` | |

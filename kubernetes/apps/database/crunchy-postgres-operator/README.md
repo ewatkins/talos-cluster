@@ -65,7 +65,7 @@ PGO manages the full lifecycle of highly available PostgreSQL clusters on Kubern
 
 | Repo | Type | Destination | Retention | Schedule |
 | --- | --- | --- | --- | --- |
-| `repo1` | NFS PVC | `caspian.local:/mnt/user/crunchy-postgres` | 30 days | Full Sun 01:30, Diff Mon–Sat 01:30, Incr hourly |
+| `repo1` | NFS PVC | `storage.ewatkins.dev:/mnt/user/crunchy-postgres` | 30 days | Full Sun 01:30, Diff Mon–Sat 01:30, Incr hourly |
 | `repo2` | S3 (Minio) | `s3.ewatkins.dev`, bucket `crunchy-pgo` | 30 days | Full Sun 01:15, Diff Mon–Sat 01:15, Incr hourly |
 | `repo3` | S3 (Cloudflare R2) | `${SECRET_R2_ENDPOINT}`, bucket `crunchy-pgo` | 7 days | Full Sun 02:30, Incr Mon–Sat every 2nd day |
 
@@ -95,7 +95,7 @@ A separate PostgreSQL 16 cluster with the [VectorChord](https://github.com/tenso
 | Preloaded library | `vchord.so` |
 | User | `immich` → database `immich` |
 | Init SQL | Installs `vchord` and `earthdistance` extensions in the `immich` database |
-| Backup repo | NFS PVC (`caspian.local:/mnt/user/crunchy-postgres-vector`), 14-day retention |
+| Backup repo | NFS PVC (`storage.ewatkins.dev:/mnt/user/crunchy-postgres-vector`), 14-day retention |
 
 ## User Management
 

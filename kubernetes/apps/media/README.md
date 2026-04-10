@@ -21,6 +21,6 @@ Flux error events for all HelmReleases in this namespace are forwarded to Alertm
 
 ## Shared Infrastructure
 
-All *arr apps (Bazarr, Radarr, Sonarr, Prowlarr, Notifiarr, Jellyfin) mount the same NFS share `caspian.local:/mnt/user/arrdata` for the media library, enabling hardlink-based atomic moves from the download client to the final library location.
+All *arr apps (Bazarr, Radarr, Sonarr, Prowlarr, Notifiarr, Jellyfin) mount the same NFS share `storage.ewatkins.dev:/mnt/user/arrdata` for the media library, enabling hardlink-based atomic moves from the download client to the final library location.
 
 All apps use the `bjw-s app-template` Helm chart via an OCI repository in `flux-system`.

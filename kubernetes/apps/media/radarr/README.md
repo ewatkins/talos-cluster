@@ -16,7 +16,7 @@ Radarr manages the movie collection. It monitors configured indexers (via Prowla
 | DB logging | Disabled | |
 | Timezone | `America/Chicago` | |
 | Config PVC | `radarr-config`, 10Gi (`nfs-slow`) | Mounted at `/var/lib/radarr` and `/config` |
-| Media library | NFS `caspian.local:/mnt/user/arrdata` | Mounted at `/mnt/arrdata`; shared with all *arr apps |
+| Media library | NFS `storage.ewatkins.dev:/mnt/user/arrdata` | Mounted at `/mnt/arrdata`; shared with all *arr apps |
 | Run as user/group | `99:100` | |
 | Memory limit | `1Gi` | |
 

@@ -16,7 +16,7 @@ Jellyfin is the media server for this cluster, streaming movies, TV shows, and m
 | Config PVC | `jellyfin-config`, 5Gi (`nfs-slow`) | Mounted at `/etc/jellyfin` |
 | Data PVC | `jellyfin-data`, 5Gi (`nfs-slow`) | Mounted at `/var/lib/jellyfin` |
 | Cache PVC | `jellyfin-cache`, 5Gi (`nfs-fast`) | Mounted at `/var/cache/jellyfin` |
-| Media library | NFS `caspian.local:/mnt/user/arrdata` | Mounted at `/mnt/arrdata`; shared with all *arr apps |
+| Media library | NFS `storage.ewatkins.dev:/mnt/user/arrdata` | Mounted at `/mnt/arrdata`; shared with all *arr apps |
 | Run as user/group | `99:100` | |
 | Memory limit | `4Gi` | |
 
