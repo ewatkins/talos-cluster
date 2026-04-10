@@ -4,10 +4,15 @@ kind: PersistentVolume
 metadata:
   name: crunchy-postgres-nfs
 spec:
+  claimRef:
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    name: crunchy-postgres-repo1
+    namespace: database
   capacity:
     storage: 1Mi
   accessModes: ["ReadWriteMany"]
-  storageClassName: nfs-csi #csi-driver-nfs
+  storageClassName: nfs-csi
   nfs:
     server: storage.ewatkins.dev
     path: /mnt/user/crunchy-postgres
@@ -26,10 +31,20 @@ kind: PersistentVolume
 metadata:
   name: crunchy-postgres-vector-nfs
 spec:
+  claimRef:
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    name: crunchy-postgres-vector-repo1
+    namespace: database
   capacity:
     storage: 1Mi
   accessModes: ["ReadWriteMany"]
-  storageClassName: nfs-csi #csi-driver-nfs
+  storageClassName: nfs-csi
+  claimRef:
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    name: crunchy-postgres-vector-repo1
+    namespace: database
   nfs:
     server: storage.ewatkins.dev
     path: /mnt/user/crunchy-postgres-vector
