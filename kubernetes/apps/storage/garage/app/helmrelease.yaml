@@ -81,10 +81,16 @@ spec:
     service:
       app:
         controller: garage
+        clusterIP: None
+        ports:
+          rpc:
+            port: 3901
+      api:
+        controller: garage
         ports:
           s3:
             port: 3900
-          api:
+          admin:
             port: 3903
     persistence:
       config:
