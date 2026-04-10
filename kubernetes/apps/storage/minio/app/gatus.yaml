@@ -9,7 +9,7 @@ data:
   config.yaml: |
     endpoints:
       - name: minio
-        group: internal
+        group: Internal
         url: https://minio.ewatkins.dev
         interval: 1m
         conditions:
