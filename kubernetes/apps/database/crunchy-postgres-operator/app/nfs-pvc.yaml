@@ -40,11 +40,6 @@ spec:
     storage: 1Mi
   accessModes: ["ReadWriteMany"]
   storageClassName: nfs-csi
-  claimRef:
-    apiVersion: v1
-    kind: PersistentVolumeClaim
-    name: crunchy-postgres-vector-repo1
-    namespace: database
   nfs:
     server: storage.ewatkins.dev
     path: /mnt/user/crunchy-postgres-vector
