@@ -17,3 +17,39 @@ data:
           hide-url: true
         conditions:
           - "[STATUS] == 403"
+      - name: garage-health
+        group: infrastructure
+        url: http://garage-api.storage.svc.cluster.local:3903/health
+        interval: 1m
+        ui:
+          hide-hostname: true
+          hide-url: true
+        conditions:
+          - "[STATUS] == 200"
+      - name: garage-0
+        group: infrastructure
+        url: tcp://garage-0.garage.storage.svc.cluster.local:3901
+        interval: 1m
+        ui:
+          hide-hostname: true
+          hide-url: true
+        conditions:
+          - "[CONNECTED] == true"
+      - name: garage-1
+        group: infrastructure
+        url: tcp://garage-1.garage.storage.svc.cluster.local:3901
+        interval: 1m
+        ui:
+          hide-hostname: true
+          hide-url: true
+        conditions:
+          - "[CONNECTED] == true"
+      - name: garage-2
+        group: infrastructure
+        url: tcp://garage-2.garage.storage.svc.cluster.local:3901
+        interval: 1m
+        ui:
+          hide-hostname: true
+          hide-url: true
+        conditions:
+          - "[CONNECTED] == true"
