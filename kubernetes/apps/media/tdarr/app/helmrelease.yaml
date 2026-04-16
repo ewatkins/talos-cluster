@@ -3,8 +3,8 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app tdarr
-  namespace: &namespace media
+  name: tdarr
+  namespace: media
 spec:
   interval: 1h
   chartRef:
@@ -74,16 +74,24 @@ spec:
                   fieldRef:
                     fieldPath: spec.nodeName
             resources:
+              claims:
+                - name: gpu
               requests:
                 cpu: 500m
                 memory: 1Gi
               limits:
                 memory: 4Gi
         pod:
+          resourceClaims:
+            - name: gpu
+              resourceClaimTemplateName: tdarr
           securityContext:
             runAsUser: 0
             runAsGroup: 0
             fsGroup: 1000
+            supplementalGroups:
+              - 44
+              - 105
     service:
       app:
         controller: tdarr
