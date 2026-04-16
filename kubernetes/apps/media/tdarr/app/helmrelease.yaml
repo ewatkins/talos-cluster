@@ -1,0 +1,122 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app tdarr
+  namespace: &namespace media
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  maxHistory: 2
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    controllers:
+      tdarr:
+        containers:
+          server:
+            image:
+              repository: ghcr.io/haveagitgat/tdarr
+              tag: 2.45.01
+            env:
+              TZ: ${TIMEZONE}
+              PUID: "1000"
+              PGID: "1000"
+              inContainer: "true"
+              webUIPort: &webPort 8265
+              serverPort: &serverPort 8266
+              serverIP: "0.0.0.0"
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: *webPort
+                  initialDelaySeconds: 30
+                  periodSeconds: 10
+                  timeoutSeconds: 10
+                  failureThreshold: 5
+              readiness: *probes
+            resources:
+              requests:
+                cpu: 100m
+                memory: 512Mi
+              limits:
+                memory: 2Gi
+          node:
+            image:
+              repository: ghcr.io/haveagitgat/tdarr_node
+              tag: 2.45.01
+            env:
+              TZ: ${TIMEZONE}
+              PUID: "1000"
+              PGID: "1000"
+              inContainer: "true"
+              ffmpegVersion: "6"
+              nodeIP: "0.0.0.0"
+              nodePort: "8267"
+              serverIP: "0.0.0.0"
+              serverPort: *serverPort
+              nodeID:
+                valueFrom:
+                  fieldRef:
+                    fieldPath: spec.nodeName
+            resources:
+              requests:
+                cpu: 500m
+                memory: 1Gi
+              limits:
+                memory: 4Gi
+        pod:
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+            fsGroup: 1000
+    service:
+      app:
+        controller: tdarr
+        ports:
+          http:
+            port: *webPort
+          server:
+            port: *serverPort
+    ingress:
+      app:
+        enabled: false
+    persistence:
+      config:
+        existingClaim: tdarr-config
+        advancedMounts:
+          tdarr:
+            server:
+              - path: /app/server
+                subPath: server
+            node:
+              - path: /app/configs
+                subPath: config
+              - path: /app/logs
+                subPath: logs
+      media:
+        type: nfs
+        server: storage.ewatkins.dev
+        path: /mnt/user/arrdata
+        globalMounts:
+          - path: /mnt/arrdata
+      cache:
+        type: emptyDir
+        globalMounts:
+          - path: /cache
+      tmp:
+        type: emptyDir
