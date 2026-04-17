@@ -34,9 +34,6 @@ spec:
               - ln -sf /dev/dri/renderD129 /dev/dri/renderD128
             securityContext:
               privileged: true
-            volumeMounts:
-              - name: dri
-                mountPath: /dev/dri
         containers:
           server:
             image:
@@ -145,5 +142,7 @@ spec:
         hostPath: /dev/dri
         advancedMounts:
           tdarr:
+            fix-dri:
+              - path: /dev/dri
             node:
               - path: /dev/dri
