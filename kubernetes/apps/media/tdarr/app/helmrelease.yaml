@@ -23,6 +23,17 @@ spec:
   values:
     controllers:
       tdarr:
+      initContainers:
+        fix-dri:
+          image:
+            repository: busybox
+            tag: latest
+          command:
+            - sh
+            - -c
+            - ln -sf /dev/dri/renderD129 /dev/dri/renderD128
+          securityContext:
+            privileged: true
         containers:
           server:
             image:
@@ -70,6 +81,8 @@ spec:
               serverIP: "127.0.0.1"
               serverPort: *serverPort
               LD_LIBRARY_PATH: ""
+              LIBVA_DRIVER_NAME: iHD
+              LIBVA_DRIVERS_PATH: /usr/lib/x86_64-linux-gnu/dri
               nodeID:
                 valueFrom:
                   fieldRef:
