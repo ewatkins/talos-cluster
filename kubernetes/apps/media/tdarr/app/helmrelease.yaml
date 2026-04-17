@@ -23,17 +23,17 @@ spec:
   values:
     controllers:
       tdarr:
-      initContainers:
-        fix-dri:
-          image:
-            repository: busybox
-            tag: latest
-          command:
-            - sh
-            - -c
-            - ln -sf /dev/dri/renderD129 /dev/dri/renderD128
-          securityContext:
-            privileged: true
+        initContainers:
+          fix-dri:
+            image:
+              repository: busybox
+              tag: latest
+            command:
+              - sh
+              - -c
+              - ln -sf /dev/dri/renderD129 /dev/dri/renderD128
+            securityContext:
+              privileged: true
         containers:
           server:
             image:
