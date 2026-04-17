@@ -67,8 +67,9 @@ spec:
               ffmpegVersion: "6"
               nodeIP: "0.0.0.0"
               nodePort: "8267"
-              serverIP: "0.0.0.0"
+              serverIP: "127.0.0.1"
               serverPort: *serverPort
+              LD_LIBRARY_PATH: ""
               nodeID:
                 valueFrom:
                   fieldRef:
