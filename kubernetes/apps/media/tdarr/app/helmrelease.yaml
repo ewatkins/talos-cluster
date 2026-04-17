@@ -23,6 +23,17 @@ spec:
   values:
     controllers:
       tdarr:
+        initContainers:
+          fix-dri:
+            image:
+              repository: busybox
+              tag: latest
+            command:
+              - sh
+              - -c
+              - ln -sf /dev/dri/renderD129 /dev/dri/renderD128
+            securityContext:
+              privileged: true
         containers:
           server:
             image:
@@ -76,13 +87,6 @@ spec:
                 valueFrom:
                   fieldRef:
                     fieldPath: spec.nodeName
-            lifecycle:
-              postStart:
-                exec:
-                  command:
-                    - /bin/sh
-                    - -c
-                    - ln -sf /dev/dri/renderD129 /dev/dri/renderD128 || true
             resources:
               claims:
                 - name: gpu
