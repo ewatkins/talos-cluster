@@ -82,7 +82,7 @@ spec:
               serverPort: *serverPort
               LD_LIBRARY_PATH: ""
               LIBVA_DRIVER_NAME: iHD
-              LIBVA_DRIVERS_PATH: /usr/lib/x86_64-linux-gnu/dri
+              LIBVA_DRIVERS_PATH: /usr/lib/jellyfin-ffmpeg/lib/dri
               nodeID:
                 valueFrom:
                   fieldRef:
