@@ -10,6 +10,9 @@ spec:
     name: intel-gpu-resource-driver
   interval: 1h
   values:
+    kubeletPlugin:
+      nodeSelector:
+        feature.node.kubernetes.io/pci-0300_8086.present: "true"
     cdi:
       staticPath: /var/cdi/static
       dynamicPath: /var/cdi/dynamic
