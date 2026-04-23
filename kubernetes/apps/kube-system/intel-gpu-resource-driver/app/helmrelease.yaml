@@ -22,6 +22,10 @@ spec:
   values:
     nodeFeatureRules:
       enabled: true
+    kubeletPlugin:
+      privileged: true
+      healthMonitoring:
+        enabled: false
     cdi:
       staticPath: /var/cdi/static
       dynamicPath: /var/cdi/dynamic
