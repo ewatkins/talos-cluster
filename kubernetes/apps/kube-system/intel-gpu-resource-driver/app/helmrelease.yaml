@@ -8,11 +8,20 @@ spec:
   chartRef:
     kind: OCIRepository
     name: intel-gpu-resource-driver
-  interval: 1h
+  interval: 30m
+  maxHistory: 2
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  uninstall:
+    keepHistory: false
   values:
-    kubeletPlugin:
-      nodeSelector:
-        feature.node.kubernetes.io/pci-0300_8086.present: "true"
+    nodeFeatureRules:
+      enabled: true
     cdi:
       staticPath: /var/cdi/static
       dynamicPath: /var/cdi/dynamic
