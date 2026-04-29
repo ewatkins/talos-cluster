@@ -153,8 +153,6 @@ spec:
           repository: prometheus/prometheus
           tag: v2.54.0-dedupelabels
         thanos:
-          image: quay.io/thanos/thanos:${THANOS_VERSION}
-          version: ${THANOS_VERSION#v}
           objectStorageConfig:
             type: S3
             config:
