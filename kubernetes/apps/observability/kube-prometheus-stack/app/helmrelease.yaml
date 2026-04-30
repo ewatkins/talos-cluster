@@ -32,14 +32,6 @@ spec:
     - kind: ConfigMap
       name: kube-state-metrics-config
       valuesKey: kube-state-metrics.yaml
-    - kind: Secret
-      name: minio-thanos-secret
-      valuesKey: accesskey
-      targetPath: prometheus.prometheusSpec.thanos.objectStorageConfig.secret.config.access_key
-    - kind: Secret
-      name: minio-thanos-secret
-      valuesKey: secretkey
-      targetPath: prometheus.prometheusSpec.thanos.objectStorageConfig.secret.config.secret_key
   values:
     ## ref: https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
     fullnameOverride: kps
@@ -162,14 +154,9 @@ spec:
           tag: v2.54.0-dedupelabels
         thanos:
           objectStorageConfig:
-            secret:
-              type: S3
-              config:
-                bucket: thanos
-                endpoint: minio.storage.svc.cluster.local:9000
-                region: us-east-1
-                access_key: ""
-                secret_key: ""
+            existingSecret:
+              name: thanos-objstore-config
+              key: config
         retention: 2d
         retentionSize: 8GiB
         externalLabels:
