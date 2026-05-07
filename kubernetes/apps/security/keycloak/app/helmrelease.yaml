@@ -8,7 +8,8 @@ spec:
   interval: 30m
   chartRef:
     kind: OCIRepository
-    name: keycloak
+    name: app-template
+    namespace: flux-system
   timeout: 10m
   install:
     remediation:
