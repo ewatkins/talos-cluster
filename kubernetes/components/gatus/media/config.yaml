@@ -1,6 +1,6 @@
 endpoints:
   - name: "${APP}"
-    group: media
+    group: Media
     url: "https://${GATUS_SUBDOMAIN:-${APP}}.${GATUS_DOMAIN:-ewatkins.dev}${GATUS_PATH:-/}"
     interval: 1m
     conditions:
