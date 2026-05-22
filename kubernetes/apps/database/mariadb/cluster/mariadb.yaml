@@ -15,6 +15,10 @@ spec:
 
   galera:
     enabled: true
+    agent:
+      image: docker-registry3.mariadb.com/mariadb-operator/mariadb-operator:26.3.0
+    initContainer:
+      image: docker-registry3.mariadb.com/mariadb-operator/mariadb-operator:26.3.0
     recovery:
       podSyncTimeout: 30m0s
       clusterBootstrapTimeout: 40m0s
