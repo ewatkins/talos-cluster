@@ -26,7 +26,7 @@ spec:
           app:
             image:
               repository: docker.io/rcourtman/pulse
-              tag: 5.1.31@sha256:6ab1d4fb68a6dc57fbb8761cf81980370b31d3e093bb531b832d8ad519dd3b70
+              tag: 5.1.35@sha256:df83108da712b0beb1b351334b77afb1a5926e37a803b7445c5b99420c6564bb
             env:
               TZ: America/Chicago
               FRONTEND_PORT: 7655
