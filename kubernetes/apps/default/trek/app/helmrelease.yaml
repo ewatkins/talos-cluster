@@ -1,0 +1,57 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: trek
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: trek
+      version: 3.1.2
+      sourceRef:
+        kind: HelmRepository
+        name: trek
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    image:
+      repository: mauriceboe/trek
+      tag: 3.1.2
+    service:
+      type: ClusterIP
+      port: 3000
+    env:
+      NODE_ENV: production
+      PORT: 3000
+      TZ: America/Chicago
+      APP_URL: https://trek.ewatkins.dev
+      ALLOWED_ORIGINS: https://trek.ewatkins.dev
+      FORCE_HTTPS: "false"
+      TRUST_PROXY: "1"
+    existingSecret: trek-secret
+    existingSecretKey: ENCRYPTION_KEY
+    persistence:
+      enabled: true
+      data:
+        size: 2Gi
+        storageClassName: nfs-slow
+      uploads:
+        size: 5Gi
+        storageClassName: nfs-slow
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        memory: 512Mi
+    ingress:
+      enabled: false

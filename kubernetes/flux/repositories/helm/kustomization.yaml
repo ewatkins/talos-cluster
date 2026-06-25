@@ -20,3 +20,4 @@ resources:
   - ./postfinance.yaml
   - ./runix.yaml
   - ./stakater.yaml
+  - ./trek.yaml
