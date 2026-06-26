@@ -7,7 +7,7 @@ ExternalDNS configured with the UniFi webhook provider. It watches Gateway API H
 | Setting | Value | Notes |
 | --- | --- | --- |
 | Chart | `external-dns` `1.20.0` | OCI mirror at `ghcr.io/home-operations/charts-mirror/external-dns`, verified with cosign |
-| Provider | `webhook` | Uses `ghcr.io/kashalls/external-dns-unifi-webhook:v0.8.2` as a sidecar |
+| Provider | `webhook` | Uses `ghcr.io/home-operations/external-dns-unifi-webhook:0.10.6` as a sidecar |
 | UniFi controller | `https://10.0.0.1` | |
 | Sources | `gateway-httproute`, `service` | Publishes records for Gateway API HTTPRoutes and LoadBalancer Services |
 | Domain filter | `ewatkins.dev` | Scoped to this zone; records outside it are ignored |
@@ -24,4 +24,4 @@ ExternalDNS configured with the UniFi webhook provider. It watches Gateway API H
 
 - [ExternalDNS Documentation](https://kubernetes-sigs.github.io/external-dns/)
 - [GitHub Repository](https://github.com/kubernetes-sigs/external-dns)
-- [UniFi Webhook Repository](https://github.com/kashalls/external-dns-unifi-webhook)
+- [UniFi Webhook Repository](https://github.com/home-operations/external-dns-unifi-webhook)
