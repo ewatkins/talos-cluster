@@ -26,7 +26,7 @@
 
 <div align="center">
 
-[![Home-Internet](https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F2%2Ffbfbdbca-dcc6-4afb-b805-aa951be107ab.shields&label=Home%20Internet&style=for-the-badge&logo=tmobile&logoColor=white&labelColor=222222)](https://status.ewatkins.dev)&nbsp;&nbsp;
+[![Home-Internet](https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F2%2Ffbfbdbca-dcc6-4afb-b805-aa951be107ab.shields&label=Home%20Internet&style=for-the-badge&logo=ubiquiti&logoColor=white&labelColor=222222)](https://status.ewatkins.dev)&nbsp;&nbsp;
 [![Status-Page](https://img.shields.io/uptimerobot/status/m797091225-baba12b223916efaf9441add?color=brightgreen&label=Status%20Page&style=for-the-badge&logo=statuspage&logoColor=white&labelColor=222222)](https://status.ewatkins.dev)&nbsp;&nbsp;
 [![Alert Manager](https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F2%2Fac7b0558-1361-42ec-9f31-06d18a40aca8.shields&style=for-the-badge&logo=prometheus&logoColor=white&labelColor=222222)](https://status.ewatkins.dev)
 
