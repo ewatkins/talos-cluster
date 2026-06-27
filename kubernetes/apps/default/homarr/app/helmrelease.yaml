@@ -24,9 +24,15 @@ spec:
       REDIS_IS_EXTERNAL: "true"
       REDIS_HOST: dragonfly.database.svc.cluster.local
       REDIS_PORT: "6379"
+      AUTH_PROVIDERS: "oidc"
+      AUTH_OIDC_ISSUER: "https://keycloak.ewatkins.dev/realms/master"
+      AUTH_OIDC_CLIENT_NAME: "Keycloak"
+      AUTH_OIDC_AUTO_LOGIN: "true"
     database:
       type: postgresql
     envSecrets:
+      authOidcCredentials:
+        existingSecret: auth-oidc-secret
       dbCredentials:
         existingSecret: homarr-postgres
     persistence:
