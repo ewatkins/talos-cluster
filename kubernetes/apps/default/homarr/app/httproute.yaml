@@ -13,6 +13,7 @@ spec:
       sectionName: https
   hostnames:
     - "homarr.ewatkins.dev"
+    - "home.ewatkins.dev"
   rules:
     - matches:
         - path:
