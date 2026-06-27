@@ -10,4 +10,5 @@ resources:
   - ./forgejo.yaml
   - ./prometheus-community.yaml
   - ./spegel.yaml
+  - ./homarr.yaml
   - ./stevehipwell.yaml
