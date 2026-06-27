@@ -27,7 +27,7 @@ spec:
     persistence:
       homarrDatabase:
         enabled: true
-        storageClassName: ""
+        storageClassName: nfs-slow
         size: 500Mi
     ingress:
       enabled: false
