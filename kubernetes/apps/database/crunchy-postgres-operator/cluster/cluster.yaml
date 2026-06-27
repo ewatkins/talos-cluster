@@ -86,6 +86,9 @@ spec:
     - name: "outline-admin"
       databases: ["outline"]
       password: *password
+    - name: "homarr-admin"
+      databases: ["homarr"]
+      password: *password
   backups:
     pgbackrest:
       configuration: &backupConfig

@@ -10,6 +10,8 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
+  dependsOn:
+    - name: crunchy-postgres-operator-cluster
   path: ./kubernetes/apps/default/homarr/app
   prune: true
   sourceRef:
