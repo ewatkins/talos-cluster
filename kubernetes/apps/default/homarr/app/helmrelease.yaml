@@ -19,6 +19,8 @@ spec:
       strategy: rollback
       retries: 3
   values:
+    image:
+      tag: v1.68.0
     env:
       TZ: ${TIMEZONE}
       REDIS_IS_EXTERNAL: "true"
