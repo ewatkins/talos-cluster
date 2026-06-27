@@ -1,0 +1,39 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: homarr
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: homarr
+    namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    env:
+      TZ: ${TIMEZONE}
+    envSecrets:
+      dbCredentials:
+        existingSecret: homarr-db-secret
+    persistence:
+      homarrDatabase:
+        enabled: true
+        storageClassName: ""
+        size: 500Mi
+    ingress:
+      enabled: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        memory: 512Mi
