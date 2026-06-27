@@ -24,11 +24,14 @@ spec:
       REDIS_IS_EXTERNAL: "true"
       REDIS_HOST: dragonfly.database.svc.cluster.local
       REDIS_PORT: "6379"
+    database:
+      type: postgresql
+    envSecrets:
+      dbCredentials:
+        existingSecret: homarr-postgres
     persistence:
       homarrDatabase:
-        enabled: true
-        storageClassName: nfs-slow
-        size: 500Mi
+        enabled: false
     ingress:
       enabled: false
     resources:
