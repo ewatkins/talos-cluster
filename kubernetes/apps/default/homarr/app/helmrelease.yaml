@@ -21,9 +21,6 @@ spec:
   values:
     env:
       TZ: ${TIMEZONE}
-    envSecrets:
-      dbCredentials:
-        existingSecret: homarr-db-secret
     persistence:
       homarrDatabase:
         enabled: true
