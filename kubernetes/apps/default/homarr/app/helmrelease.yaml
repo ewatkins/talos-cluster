@@ -28,6 +28,7 @@ spec:
       AUTH_OIDC_ISSUER: "https://keycloak.ewatkins.dev/realms/master"
       AUTH_OIDC_CLIENT_NAME: "Keycloak"
       AUTH_OIDC_AUTO_LOGIN: "false"
+      AUTH_OIDC_GROUPS_LOCAL_MANAGEMENT: "true"
     database:
       type: postgresql
     envSecrets:
