@@ -33,5 +33,8 @@ spec:
           targetLabel: instance
   selector:
     matchLabels:
-      postgres-operator.crunchydata.com/cluster: postgres
+      # Match the exporter label only (not a specific cluster) so both
+      # crunchy-postgres and crunchy-postgres-vector are scraped. The
+      # previous `cluster: postgres` selector matched nothing — the real
+      # label value is `crunchy-postgres` — so no metrics were collected.
       postgres-operator.crunchydata.com/crunchy-postgres-exporter: "true"
