@@ -62,6 +62,13 @@ spec:
 
   backups:
     pgbackrest:
+      # Pin pgBackRest to 2.56.0 to match the bundled binary in the
+      # vectorchord database image (16-0.4.3). PGO 6.0.2 defaults the
+      # repo-host/sidecars to 2.58.0, but archive_command runs the 2.56.0
+      # binary inside the db container, so the repo-host must match or the
+      # host-to-host protocol breaks and WAL archiving fails. Revert this
+      # override once a vectorchord image with pgBackRest 2.58.0 exists.
+      image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi9-2.56.0-2550
       global:
         repo1-retention-full: "14"
         repo1-retention-full-type: time
