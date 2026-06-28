@@ -20,7 +20,7 @@ spec:
       retries: 3
   values:
     image:
-      tag: v1.68.0
+      tag: v1.68.0@sha256:5f34ec41f37915e78a75fe33ecfc5fb00404707b838aa8e50d6570564db66f8e
     env:
       TZ: ${TIMEZONE}
       REDIS_IS_EXTERNAL: "true"
