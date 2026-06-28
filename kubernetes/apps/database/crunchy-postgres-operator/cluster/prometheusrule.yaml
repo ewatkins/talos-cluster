@@ -1,0 +1,62 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/monitoring.coreos.com/prometheusrule_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: crunchy-postgres-backup-rules
+spec:
+  groups:
+    - name: crunchy-postgres.backups
+      rules:
+        # WAL archiving is actively failing. This is the exact failure mode
+        # that broke crunchy-postgres-vector for 24 days (pgBackRest version
+        # skew). Uses failed-count increase rather than time-since-archive so
+        # it does not false-positive on low-traffic clusters.
+        - alert: CrunchyPGWALArchiveFailing
+          expr: |
+            increase(ccp_archive_command_status_failed_count[10m]) > 0
+          for: 15m
+          labels:
+            severity: critical
+          annotations:
+            summary: >-
+              WAL archiving is failing on {{ $labels.pg_cluster }}
+            description: >-
+              pgBackRest archive_command has logged failures over the last
+              10 minutes. WAL segments will accumulate and backups will fail
+              until this is resolved.
+
+        # The most recent backup for a repo completed with an error.
+        - alert: CrunchyPGBackupError
+          expr: |
+            ccp_backrest_last_info_backup_error > 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: >-
+              Last {{ $labels.backup_type }} backup errored on {{ $labels.pg_cluster }} (repo {{ $labels.repo }})
+
+        # No successful full backup in over 8 days (full is scheduled weekly).
+        - alert: CrunchyPGNoRecentFullBackup
+          expr: |
+            min by (pg_cluster) (ccp_backrest_last_full_backup_time_since_completion_seconds) > 691200
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: >-
+              No full backup in over 8 days on {{ $labels.pg_cluster }}
+
+        # No successful incremental backup in over 26 hours. Healthy clusters
+        # take at least daily incrementals; min() means at least one repo must
+        # be fresh, so this fires only when every repo is stale.
+        - alert: CrunchyPGNoRecentIncrBackup
+          expr: |
+            min by (pg_cluster) (ccp_backrest_last_incr_backup_time_since_completion_seconds) > 93600
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: >-
+              No incremental backup in over 26 hours on {{ $labels.pg_cluster }}

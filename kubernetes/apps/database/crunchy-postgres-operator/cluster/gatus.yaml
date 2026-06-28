@@ -16,3 +16,27 @@ data:
         ui:
           hide-url: true
           hide-hostname: true
+
+      # Backup health, read from the pgBackRest exporter metrics via the
+      # Prometheus query API. Covers all crunchy clusters (max across them).
+      - name: crunchy-pgo-wal-archiving
+        group: Infrastructure
+        url: "http://prometheus-operated.observability.svc.cluster.local:9090/api/v1/query?query=max%28increase%28ccp_archive_command_status_failed_count%5B10m%5D%29%29"
+        interval: 5m
+        conditions:
+          - "[STATUS] == 200"
+          - "[BODY].data.result[0].value[1] == 0"
+        ui:
+          hide-url: true
+          hide-hostname: true
+
+      - name: crunchy-pgo-backups
+        group: Infrastructure
+        url: "http://prometheus-operated.observability.svc.cluster.local:9090/api/v1/query?query=max%28ccp_backrest_last_info_backup_error%29"
+        interval: 5m
+        conditions:
+          - "[STATUS] == 200"
+          - "[BODY].data.result[0].value[1] == 0"
+        ui:
+          hide-url: true
+          hide-hostname: true
