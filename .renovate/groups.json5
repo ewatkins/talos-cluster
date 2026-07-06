@@ -73,5 +73,23 @@
         commitMessageTopic: "{{{groupName}}} group",
       },
     },
+    {
+      description: "Tdarr Group",
+      groupName: "Tdarr",
+      matchDatasources: ["docker"],
+      matchPackageNames: ["/tdarr/"],
+      group: {
+        commitMessageTopic: "{{{groupName}}} group",
+      },
+    },
+    {
+      description: "Trek Group",
+      groupName: "Trek",
+      matchDatasources: ["docker", "helm"],
+      matchPackageNames: ["/trek/"],
+      group: {
+        commitMessageTopic: "{{{groupName}}} group",
+      },
+    },
   ],
 }
