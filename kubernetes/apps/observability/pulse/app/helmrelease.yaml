@@ -33,6 +33,9 @@ spec:
               BACKEND_PORT: 7655
               PULSE_PUBLIC_URL: "https://pulse.ewatkins.dev"
               OIDC_USERNAME_CLAIM: "preferred_username"
+              # pulse 6.0.4 dropped the v5 OIDC_* env contract (restored in 6.0.5),
+              # so show the local login form until then
+              PULSE_AUTH_HIDE_LOCAL_LOGIN: "false"
             envFrom:
               - secretRef:
                   name: pulse-secret
