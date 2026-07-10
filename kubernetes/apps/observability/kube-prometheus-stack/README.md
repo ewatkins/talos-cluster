@@ -27,9 +27,16 @@ This cluster uses `fullNameOverride: kps` with `cleanPrometheusOperatorObjectNam
 | Setting | Value | Notes |
 | --- | --- | --- |
 | Local retention | 2 days | Short-lived; long-term storage handled by Thanos |
-| Local storage limit | 8 GiB | WAL compression enabled |
+| Local block size limit | 15 GiB | `retentionSize`; bounds persisted blocks only, **not** the WAL |
+| PVC size | 25 GiB | Headroom so WAL spikes don't drive the node into `DiskPressure` |
+| Memory | 1 Gi request / 2 Gi limit | Reserved to avoid OOM/evict crash-loops during WAL replay |
 | Remote storage | Thanos sidecar | Uploads blocks to Minio via S3 |
 | Replica label | `__replica__` | Used for Thanos deduplication |
+
+> **Note:** `openebs-hostpath` PVs share the node's `/var` filesystem and are not
+> quota-enforced, so the PVC size is nominal. The real guard against a runaway WAL
+> filling the node is keeping Prometheus from crash-looping (adequate memory) plus
+> the retention settings above. See [Runaway WAL](#runaway-wal--diskpressure-evictions).
 
 Prometheus runs with a Thanos sidecar that exposes a gRPC store endpoint and uploads compacted blocks to the `thanos` Minio bucket. The Thanos query layer then federates across this sidecar and the store gateway to provide the full historical view.
 
@@ -60,6 +67,30 @@ Several high-cardinality label sets are dropped at scrape time to keep storage m
 ### High Memory / OOMKilled
 
 - [Identifying metrics driving high cardinality](https://www.robustperception.io/which-are-my-biggest-metrics)
+
+### Runaway WAL / DiskPressure evictions
+
+If a node hosting `prometheus-kps-0` starts evicting pods with
+`The node had condition: [DiskPressure]`, the TSDB write-ahead log has likely
+ballooned and filled the node's `/var` filesystem. This happens when Prometheus
+crash-loops (OOM/evicted) and never survives long enough to compact the head into
+a block and truncate the WAL — a self-sustaining loop, since the pod is pinned to
+the node by its local PV.
+
+Diagnose (michigan = `10.40.1.3`):
+
+```sh
+talosctl -n <node-ip> usage -H -d 2 /var/openebs/local/<pvc-id>/prometheus-db   # is `wal` huge?
+kubectl get node <node> -o jsonpath='{.spec.taints}'                            # disk-pressure taint?
+```
+
+Recover (resets local TSDB only; long-term data is safe in Thanos):
+
+```sh
+kubectl -n observability patch prometheus kps --type merge -p '{"spec":{"replicas":0}}'
+kubectl -n observability delete pvc prometheus-kps-db-prometheus-kps-0   # reclaim=Delete frees the dir
+kubectl -n observability patch prometheus kps --type merge -p '{"spec":{"replicas":1}}'
+```
 
 ### Deleting a Stuck Metric Series
 
