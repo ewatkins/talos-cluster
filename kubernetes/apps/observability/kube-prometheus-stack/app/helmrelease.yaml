@@ -158,21 +158,33 @@ spec:
               name: thanos-objstore-config
               key: config
         retention: 2d
-        retentionSize: 8GiB
+        # Keep the on-disk block size well under the PVC request. retentionSize
+        # only bounds persisted blocks, not the WAL, so leave generous headroom.
+        retentionSize: 15GiB
         externalLabels:
           cluster: talos-cluster
         resources:
           requests:
             cpu: 100m
+            # Reserve memory so the scheduler accounts for WAL replay, which is
+            # memory-hungry. Missing requests let the pod get OOM/evicted and
+            # crash-loop before it can compact + truncate the WAL.
+            memory: 1Gi
+            ephemeral-storage: 1Gi
           limits:
-            memory: 1500Mi
+            # Headroom above the request so WAL replay on restart does not OOM.
+            memory: 2Gi
+            ephemeral-storage: 2Gi
         storageSpec:
           volumeClaimTemplate:
             spec:
               storageClassName: openebs-hostpath
               resources:
                 requests:
-                  storage: 10Gi
+                  # openebs-hostpath shares the node filesystem and does not hard
+                  # enforce this, but the larger request gives the WAL room to
+                  # spike without driving the node into DiskPressure eviction.
+                  storage: 25Gi
 
         podAntiAffinity: soft
         podAntiAffinityTopologyKey: kubernetes.io/hostname
