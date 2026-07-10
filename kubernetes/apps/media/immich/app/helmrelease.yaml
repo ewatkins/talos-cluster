@@ -181,6 +181,9 @@ spec:
                 subPath: dotCache
       tmpfs:
         type: emptyDir
+        # Disk-backed emptyDir (geocoding dump + transformers cache); cap it so
+        # runaway growth evicts this pod instead of draining the node.
+        sizeLimit: 10Gi
         advancedMounts:
           immich:
             main:

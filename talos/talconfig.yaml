@@ -31,6 +31,12 @@ patches:
               - rw
         extraArgs:
           rotate-server-certificates: "true"
+        extraConfig:
+          # Prune unused images well before the ~85% DiskPressure eviction
+          # threshold; the kubelet default (85/80) races eviction. huron hit
+          # 75% with 530 cached images before this was added.
+          imageGCHighThresholdPercent: 70
+          imageGCLowThresholdPercent: 60
       nodeLabels:
         topology.kubernetes.io/zone: homelab
 nodes:
