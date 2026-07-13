@@ -64,6 +64,7 @@ spec:
                 memory: 512Mi
     defaultPodOptions:
       enableServiceLinks: false
+      automountServiceAccountToken: true
     serviceAccount:
       homepage: {}
     service:
