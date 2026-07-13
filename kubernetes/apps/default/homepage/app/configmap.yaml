@@ -345,7 +345,15 @@ data:
     }
     :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .absolute.bottom-3.left-2 > div:nth-child(1),
     :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .absolute.bottom-3.left-2 > div:nth-child(3) {
-      display: none; /* distro + hostname; keeps the x.y.z-pve version line */
+      display: none; /* distro + hostname */
+    }
+    /* glances only knows the kernel string; overwrite with the PVE release (update on upgrades) */
+    :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .absolute.bottom-3.left-2 > div:nth-child(2) {
+      font-size: 0;
+    }
+    :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .absolute.bottom-3.left-2 > div:nth-child(2)::after {
+      content: "PVE 9.2.3";
+      font-size: 0.75rem;
     }
     :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .service-container.chart,
     :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .service-container.chart > div:last-child {
