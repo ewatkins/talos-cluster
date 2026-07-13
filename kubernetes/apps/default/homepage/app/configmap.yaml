@@ -13,12 +13,11 @@ data:
     statusStyle: dot
     hideVersion: true
     background:
-      image: https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2560&q=80
-      blur: sm
+      image: https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=2560&q=80
       saturate: 100
-      brightness: 50
+      brightness: 90
       opacity: 100
-    cardBlur: md
+    cardBlur: sm
     quicklaunch:
       searchDescriptions: true
       hideInternetSearch: false
@@ -65,6 +64,13 @@ data:
         format:
           timeStyle: short
           dateStyle: long
+    - openmeteo:
+        label: Cedar Rapids
+        latitude: 41.9779
+        longitude: -91.6656
+        timezone: America/Chicago
+        units: imperial
+        cache: 5
   services.yaml: |
     - Streaming:
         - Jellyfin:
