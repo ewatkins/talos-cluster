@@ -20,21 +20,20 @@ data:
     :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .absolute.bottom-3.right-2 > div:nth-child(3) {
       display: none; /* Swap line */
     }
-    /* put CPU and Mem on one line */
+    /* put CPU and Mem on one line, evenly spaced around a dot */
     :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .absolute.bottom-3.right-2 {
       display: flex;
       flex-direction: row;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.25rem;
     }
     :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .absolute.bottom-3.right-2 > div {
       gap: 0.25rem;
     }
-    /* dot separator before Mem */
+    /* dot separator before Mem (0.25rem gap on both sides) */
     :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .absolute.bottom-3.right-2 > div:nth-child(2)::before {
       content: "·";
       opacity: 0.5;
-      margin-right: 0.25rem;
     }
     :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .absolute.bottom-3.left-2 > div:nth-child(1),
     :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .absolute.bottom-3.left-2 > div:nth-child(3) {
@@ -46,7 +45,7 @@ data:
     }
     :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .service-container.chart,
     :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .service-container.chart > div:last-child {
-      height: 44px; /* tighten now that the chart area is empty */
+      height: 30px; /* tighten now that the chart area is empty */
     }
   render.sh: |
     #!/bin/sh
