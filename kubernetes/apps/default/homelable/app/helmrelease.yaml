@@ -52,10 +52,14 @@ spec:
                   failureThreshold: 6
               readiness: *probes
             securityContext:
+              # PSS baseline forbids adding NET_RAW; run unprivileged instead —
+              # nmap falls back to TCP-connect scans and ping uses ICMP datagram
+              # sockets via the ping_group_range sysctl below.
+              runAsUser: 1000
+              runAsGroup: 1000
               allowPrivilegeEscalation: false
               capabilities:
                 drop: ["ALL"]
-                add: ["NET_RAW"] # nmap ping scans + ping status checks
             resources:
               requests:
                 cpu: 10m
@@ -83,6 +87,8 @@ spec:
               - secretRef:
                   name: homelable-secret
             securityContext:
+              runAsUser: 1000
+              runAsGroup: 1000
               allowPrivilegeEscalation: false
               capabilities:
                 drop: ["ALL"]
@@ -93,6 +99,13 @@ spec:
                 memory: 256Mi
     defaultPodOptions:
       enableServiceLinks: false
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        sysctls:
+          # Allow unprivileged ICMP echo (ping status checks) without NET_RAW
+          - name: net.ipv4.ping_group_range
+            value: "0 2147483647"
     service:
       app:
         controller: *app
