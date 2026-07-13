@@ -43,6 +43,11 @@ spec:
                   httpGet:
                     path: /api/healthcheck
                     port: &port 3000
+                    httpHeaders:
+                      # Probes hit the pod IP; homepage rejects hosts outside
+                      # HOMEPAGE_ALLOWED_HOSTS with a 400.
+                      - name: Host
+                        value: homepage.ewatkins.dev
                   initialDelaySeconds: 10
                   periodSeconds: 10
                   timeoutSeconds: 5
