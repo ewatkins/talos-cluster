@@ -14,6 +14,7 @@ data:
     hideVersion: true
     background:
       image: https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=2560&q=80
+      blur: sm
       saturate: 100
       brightness: 90
       opacity: 100
