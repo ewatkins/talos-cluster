@@ -90,10 +90,11 @@ data:
         - NAS:
             href: https://caspian.ewatkins.dev
             widget:
-              type: unraid
-              url: https://caspian.ewatkins.dev
-              key: "{{HOMEPAGE_VAR_UNRAID_KEY}}"
-              fields: ["arrayUsedSpace", "arrayFree", "arrayUsedPercent"]
+              type: glances
+              url: http://10.35.10.10:61208
+              version: 4
+              metric: fs:/rootfs/mnt/user
+              chart: false
         - Internal:
             widget:
               type: glances
