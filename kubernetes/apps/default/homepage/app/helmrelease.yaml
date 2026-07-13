@@ -35,6 +35,9 @@ spec:
             env:
               TZ: ${TIMEZONE}
               HOMEPAGE_ALLOWED_HOSTS: homepage.ewatkins.dev
+            envFrom:
+              - secretRef:
+                  name: homepage-secret
             probes:
               liveness: &probes
                 enabled: true
