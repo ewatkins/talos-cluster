@@ -24,7 +24,7 @@ data:
     layout:
       Hypervisors:
         style: row
-        columns: 2
+        columns: 3
         header: false
       Stats:
         style: row
