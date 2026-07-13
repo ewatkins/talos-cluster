@@ -7,5 +7,6 @@ resources:
   - ./namespace.yaml
   # Flux-Kustomizations
   - ./homarr/ks.yaml
+  - ./homelable/ks.yaml
   - ./outline/ks.yaml
   - ./trek/ks.yaml
