@@ -14,17 +14,15 @@ data:
     hideVersion: true
     background:
       image: https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2560&q=80
-      blur: sm
-      saturate: 50
-      brightness: 50
-      opacity: 50
+      saturate: 100
+      brightness: 60
+      opacity: 100
     cardBlur: sm
     quicklaunch:
       searchDescriptions: true
       hideInternetSearch: false
-    fiveColumns: true
     layout:
-      Media:
+      Apps:
         icon: mdi-play-circle
       Automation:
         icon: mdi-robot
@@ -32,8 +30,6 @@ data:
         icon: mdi-chart-line
       Infrastructure:
         icon: mdi-server
-      Tools:
-        icon: mdi-tools
   kubernetes.yaml: |
     mode: cluster
     gateway: true
@@ -59,7 +55,7 @@ data:
           timeStyle: short
           dateStyle: long
   services.yaml: |
-    - Media:
+    - Apps:
         - Jellyfin:
             href: https://jellyfin.ewatkins.dev
             description: Movies & TV
@@ -95,6 +91,25 @@ data:
             description: Media recommendations
             icon: mdi-movie-search
             siteMonitor: https://recommend.ewatkins.dev
+        - Open WebUI:
+            href: https://chat.ewatkins.dev
+            description: AI chat
+            icon: open-webui
+            siteMonitor: https://chat.ewatkins.dev
+        - Outline:
+            href: https://notes.ewatkins.dev
+            description: Wiki & notes
+            icon: outline
+            siteMonitor: https://notes.ewatkins.dev
+        - Paperless:
+            href: https://paperless.ewatkins.dev
+            description: Document management
+            icon: paperless-ngx
+            siteMonitor: https://paperless.ewatkins.dev
+            widget:
+              type: paperlessngx
+              url: https://paperless.ewatkins.dev
+              key: "{{HOMEPAGE_VAR_PAPERLESS_KEY}}"
     - Automation:
         - Radarr:
             href: https://radarr.ewatkins.dev
@@ -215,26 +230,6 @@ data:
             description: GitOps release tracking
             icon: mdi-map-marker-path
             siteMonitor: https://trek.ewatkins.dev
-    - Tools:
-        - Open WebUI:
-            href: https://chat.ewatkins.dev
-            description: AI chat
-            icon: open-webui
-            siteMonitor: https://chat.ewatkins.dev
-        - Outline:
-            href: https://notes.ewatkins.dev
-            description: Wiki & notes
-            icon: outline
-            siteMonitor: https://notes.ewatkins.dev
-        - Paperless:
-            href: https://paperless.ewatkins.dev
-            description: Document management
-            icon: paperless-ngx
-            siteMonitor: https://paperless.ewatkins.dev
-            widget:
-              type: paperlessngx
-              url: https://paperless.ewatkins.dev
-              key: "{{HOMEPAGE_VAR_PAPERLESS_KEY}}"
         - Homarr:
             href: https://home.ewatkins.dev
             description: Dashboard
