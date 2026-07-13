@@ -29,7 +29,18 @@ Create a Secrets Manager entry named `homelable-secret` whose value is JSON; key
 }
 ```
 
-Default login is `admin` / `admin` if `AUTH_USERNAME`/`AUTH_PASSWORD_HASH` are omitted — change it.
+`AUTH_USERNAME`/`AUTH_PASSWORD_HASH` are **required** — the app's default password hash is empty, so every login fails until they are set (the `admin`/`admin` default only applies to docker-compose deployments, which load a hash from `.env.example`). Generate the bcrypt hash inside the backend pod:
+
+```bash
+kubectl exec -it -n default deploy/homelable -c app -- \
+  python3 -c "from passlib.context import CryptContext; import getpass; print(CryptContext(schemes=['bcrypt']).hash(getpass.getpass('password: ')))"
+```
+
+After updating the Bitwarden entry, force a sync (otherwise it refreshes within 15m); Reloader restarts the pod automatically:
+
+```bash
+kubectl annotate externalsecret homelable -n default force-sync=$(date +%s) --overwrite
+```
 
 ## Notes
 
