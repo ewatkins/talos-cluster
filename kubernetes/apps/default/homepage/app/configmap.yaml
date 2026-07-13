@@ -7,16 +7,49 @@ metadata:
 data:
   settings.yaml: |
     title: Great Lakes
-    headerStyle: clean
+    theme: dark
+    color: slate
+    headerStyle: boxed
     statusStyle: dot
     hideVersion: true
+    background:
+      image: https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2560&q=80
+      blur: sm
+      saturate: 50
+      brightness: 50
+      opacity: 50
+    cardBlur: sm
     quicklaunch:
       searchDescriptions: true
       hideInternetSearch: false
+    layout:
+      Media:
+        style: row
+        columns: 4
+        icon: mdi-play-circle
+      Automation:
+        style: row
+        columns: 3
+        icon: mdi-robot
+      Observability:
+        style: row
+        columns: 3
+        icon: mdi-chart-line
+      Infrastructure:
+        style: row
+        columns: 3
+        icon: mdi-server
+      Tools:
+        style: row
+        columns: 3
+        icon: mdi-tools
   kubernetes.yaml: |
     mode: cluster
     gateway: true
   widgets.yaml: |
+    - greeting:
+        text_size: xl
+        text: Great Lakes
     - kubernetes:
         cluster:
           show: true
@@ -25,10 +58,7 @@ data:
           showLabel: true
           label: great-lakes
         nodes:
-          show: true
-          cpu: true
-          memory: true
-          showLabel: true
+          show: false
     - search:
         provider: duckduckgo
         target: _blank
@@ -38,14 +68,154 @@ data:
           timeStyle: short
           dateStyle: long
   services.yaml: |
-    - Apps:
+    - Media:
+        - Jellyfin:
+            href: https://jellyfin.ewatkins.dev
+            description: Movies & TV
+            icon: jellyfin
+            siteMonitor: https://jellyfin.ewatkins.dev
+        - Requests:
+            href: https://requests.ewatkins.dev
+            description: Media requests
+            icon: jellyseerr
+            siteMonitor: https://requests.ewatkins.dev
+        - Immich:
+            href: https://photos.ewatkins.dev
+            description: Photo library
+            icon: immich
+            siteMonitor: https://photos.ewatkins.dev
+        - Recommendarr:
+            href: https://recommend.ewatkins.dev
+            description: Media recommendations
+            icon: mdi-movie-search
+            siteMonitor: https://recommend.ewatkins.dev
+    - Automation:
+        - Radarr:
+            href: https://radarr.ewatkins.dev
+            description: Movie management
+            icon: radarr
+            siteMonitor: https://radarr.ewatkins.dev
+        - Sonarr:
+            href: https://sonarr.ewatkins.dev
+            description: TV management
+            icon: sonarr
+            siteMonitor: https://sonarr.ewatkins.dev
+        - Prowlarr:
+            href: https://prowlarr.ewatkins.dev
+            description: Indexer management
+            icon: prowlarr
+            siteMonitor: https://prowlarr.ewatkins.dev
+        - Bazarr:
+            href: https://bazarr.ewatkins.dev
+            description: Subtitles
+            icon: bazarr
+            siteMonitor: https://bazarr.ewatkins.dev
+        - Tdarr:
+            href: https://tdarr.ewatkins.dev
+            description: Transcoding
+            icon: tdarr
+            siteMonitor: https://tdarr.ewatkins.dev
+        - Notifiarr:
+            href: https://notifiarr.ewatkins.dev
+            description: Notifications
+            icon: notifiarr
+            siteMonitor: https://notifiarr.ewatkins.dev
+    - Observability:
+        - Grafana:
+            href: https://grafana.ewatkins.dev
+            description: Dashboards
+            icon: grafana
+            siteMonitor: https://grafana.ewatkins.dev
+        - Gatus:
+            href: https://status.ewatkins.dev
+            description: Uptime monitoring
+            icon: gatus
+            siteMonitor: https://status.ewatkins.dev
+        - Pulse:
+            href: https://pulse.ewatkins.dev
+            description: Proxmox monitoring
+            icon: mdi-heart-pulse
+            siteMonitor: https://pulse.ewatkins.dev
+        - Thanos:
+            href: https://thanos.ewatkins.dev
+            description: Long-term metrics
+            icon: thanos
+            siteMonitor: https://thanos.ewatkins.dev
+        - Goldilocks:
+            href: https://goldilocks.ewatkins.dev
+            description: Resource recommendations
+            icon: mdi-scale-balance
+            siteMonitor: https://goldilocks.ewatkins.dev
+        - Kromgo:
+            href: https://kromgo.ewatkins.dev
+            description: Metrics badges
+            icon: mdi-chart-box
+            siteMonitor: https://kromgo.ewatkins.dev
+    - Infrastructure:
+        - Keycloak:
+            href: https://keycloak.ewatkins.dev
+            description: Identity & SSO
+            icon: keycloak
+            siteMonitor: https://keycloak.ewatkins.dev
+        - Forgejo:
+            href: https://git.ewatkins.dev
+            description: Git hosting
+            icon: forgejo
+            siteMonitor: https://git.ewatkins.dev
+        - Minio:
+            href: https://minio.ewatkins.dev
+            description: Object storage
+            icon: minio
+            siteMonitor: https://minio.ewatkins.dev
+        - RedisInsight:
+            href: https://redis.ewatkins.dev
+            description: Redis GUI
+            icon: redis
+            siteMonitor: https://redis.ewatkins.dev
+        - MaxScale:
+            href: https://maxscale.ewatkins.dev
+            description: MariaDB proxy
+            icon: mariadb
+            siteMonitor: https://maxscale.ewatkins.dev
+        - Trek:
+            href: https://trek.ewatkins.dev
+            description: GitOps release tracking
+            icon: mdi-map-marker-path
+            siteMonitor: https://trek.ewatkins.dev
+    - Tools:
+        - Open WebUI:
+            href: https://chat.ewatkins.dev
+            description: AI chat
+            icon: open-webui
+            siteMonitor: https://chat.ewatkins.dev
+        - Outline:
+            href: https://notes.ewatkins.dev
+            description: Wiki & notes
+            icon: outline
+            siteMonitor: https://notes.ewatkins.dev
+        - Paperless:
+            href: https://paperless.ewatkins.dev
+            description: Document management
+            icon: paperless-ngx
+            siteMonitor: https://paperless.ewatkins.dev
         - Homarr:
             href: https://home.ewatkins.dev
             description: Dashboard
             icon: homarr
+            siteMonitor: https://home.ewatkins.dev
+        - Homelable:
+            href: https://homelab.ewatkins.dev
+            description: Homelab inventory
+            icon: mdi-label
+            siteMonitor: https://homelab.ewatkins.dev
   bookmarks.yaml: |
     - Infrastructure:
         - Cluster repo:
             - abbr: GH
+              icon: github
               href: https://github.com/ewatkins/talos-cluster
+        - Homepage docs:
+            - abbr: HP
+              icon: homepage
+              href: https://gethomepage.dev
   docker.yaml: ""
