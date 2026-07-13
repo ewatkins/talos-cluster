@@ -22,26 +22,17 @@ data:
     quicklaunch:
       searchDescriptions: true
       hideInternetSearch: false
+    fiveColumns: true
     layout:
       Media:
-        style: row
-        columns: 4
         icon: mdi-play-circle
       Automation:
-        style: row
-        columns: 3
         icon: mdi-robot
       Observability:
-        style: row
-        columns: 3
         icon: mdi-chart-line
       Infrastructure:
-        style: row
-        columns: 3
         icon: mdi-server
       Tools:
-        style: row
-        columns: 3
         icon: mdi-tools
   kubernetes.yaml: |
     mode: cluster
