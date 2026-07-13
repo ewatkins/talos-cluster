@@ -6,7 +6,7 @@ Self-hosted homelab infrastructure visualization: interactive network diagrams w
 
 | Setting | Value | Notes |
 | --- | --- | --- |
-| Backend image | `ghcr.io/pouzor/homelable-backend:3.0.0` | Runs with `NET_RAW` for nmap/ping |
+| Backend image | `ghcr.io/pouzor/homelable-backend:3.0.0` | Runs unprivileged (PSS `baseline` forbids `NET_RAW`): nmap uses TCP-connect scans; ping works via the `net.ipv4.ping_group_range` sysctl |
 | Frontend image | `ghcr.io/pouzor/homelable-frontend:3.0.0` | nginx; config overridden to proxy API to localhost (same pod) |
 | MCP image | `ghcr.io/pouzor/homelable-mcp:3.0.0` | Same pod; `BACKEND_URL=http://127.0.0.1:8000` |
 | URL | `https://homelab.ewatkins.dev` | Internal gateway only |
@@ -35,6 +35,7 @@ Default login is `admin` / `admin` if `AUTH_USERNAME`/`AUTH_PASSWORD_HASH` are o
 
 - Backend and MCP containers both load `homelable-secret`, so `MCP_SERVICE_KEY` (MCP → backend auth) matches automatically.
 - The backend scans the LAN from the pod network (SNAT to node IP); ARP-based discovery does not cross the L2 boundary, so scans rely on ICMP/TCP probes.
+- If unprivileged scanning proves too limited, the alternative is labeling the namespace `pod-security.kubernetes.io/enforce: privileged` (like `media`) and restoring the `NET_RAW` capability.
 
 ## Links
 
