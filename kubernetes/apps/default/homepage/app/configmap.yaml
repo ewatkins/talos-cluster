@@ -24,7 +24,7 @@ data:
     layout:
       Stats:
         style: row
-        columns: 4
+        columns: 6
         header: false
       Streaming:
         style: row
@@ -66,21 +66,27 @@ data:
         cache: 5
   services.yaml: |
     - Stats:
-        - Cluster:
+        - pve01:
             widget:
-              type: prometheusmetric
-              url: http://kps-prometheus.observability.svc.cluster.local:9090
-              metrics:
-                - label: CPU
-                  query: round(100 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100, 0.1)
-                  format:
-                    type: number
-                    suffix: "%"
-                - label: Memory
-                  query: round(100 * (1 - sum(node_memory_MemAvailable_bytes) / sum(node_memory_MemTotal_bytes)), 0.1)
-                  format:
-                    type: number
-                    suffix: "%"
+              type: glances
+              url: http://10.35.1.1:61208
+              version: 4
+              metric: info
+              chart: false
+        - pve02:
+            widget:
+              type: glances
+              url: http://10.35.1.2:61208
+              version: 4
+              metric: info
+              chart: false
+        - pve03:
+            widget:
+              type: glances
+              url: http://10.35.1.3:61208
+              version: 4
+              metric: info
+              chart: false
         - NAS:
             href: https://caspian.ewatkins.dev
             widget:
