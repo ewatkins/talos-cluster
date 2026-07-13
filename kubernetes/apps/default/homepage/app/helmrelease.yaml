@@ -102,8 +102,8 @@ spec:
       custom-css:
         type: configMap
         name: homepage-custom-css
-        # Written by the homepage-css-renderer CronJob (not in Git).
-        optional: true
+        # Written by the homepage-css-renderer CronJob (not in Git); must exist
+        # before first deploy — run the CronJob manually when bootstrapping.
         globalMounts:
           - path: /app/config/custom.css
             subPath: custom.css
