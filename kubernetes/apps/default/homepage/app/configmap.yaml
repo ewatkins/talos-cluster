@@ -72,21 +72,21 @@ data:
               url: http://10.35.1.1:61208
               version: 4
               metric: info
-              chart: false
+              chart: true
         - pve02:
             widget:
               type: glances
               url: http://10.35.1.2:61208
               version: 4
               metric: info
-              chart: false
+              chart: true
         - pve03:
             widget:
               type: glances
               url: http://10.35.1.3:61208
               version: 4
               metric: info
-              chart: false
+              chart: true
         - NAS:
             href: https://caspian.ewatkins.dev
             widget:
@@ -94,21 +94,21 @@ data:
               url: http://10.35.10.10:61208
               version: 4
               metric: fs:/rootfs/mnt/user
-              chart: false
+              chart: true
         - Internal:
             widget:
               type: glances
               url: http://10.35.10.10:61208
               version: 4
               metric: network:bond0
-              chart: false
+              chart: true
         - External:
             widget:
               type: glances
               url: http://10.35.10.10:61208
               version: 4
               metric: network:bond1
-              chart: false
+              chart: true
     - Streaming:
         - Jellyfin:
             href: https://jellyfin.ewatkins.dev
