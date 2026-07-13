@@ -74,16 +74,31 @@ data:
             description: Movies & TV
             icon: jellyfin
             siteMonitor: https://jellyfin.ewatkins.dev
+            widget:
+              type: jellyfin
+              url: https://jellyfin.ewatkins.dev
+              key: "{{HOMEPAGE_VAR_JELLYFIN_KEY}}"
+              enableBlocks: true
+              enableNowPlaying: true
         - Requests:
             href: https://requests.ewatkins.dev
             description: Media requests
             icon: jellyseerr
             siteMonitor: https://requests.ewatkins.dev
+            widget:
+              type: jellyseerr
+              url: https://requests.ewatkins.dev
+              key: "{{HOMEPAGE_VAR_JELLYSEERR_KEY}}"
         - Immich:
             href: https://photos.ewatkins.dev
             description: Photo library
             icon: immich
             siteMonitor: https://photos.ewatkins.dev
+            widget:
+              type: immich
+              url: https://photos.ewatkins.dev
+              key: "{{HOMEPAGE_VAR_IMMICH_KEY}}"
+              version: 2
         - Recommendarr:
             href: https://recommend.ewatkins.dev
             description: Media recommendations
@@ -95,26 +110,45 @@ data:
             description: Movie management
             icon: radarr
             siteMonitor: https://radarr.ewatkins.dev
+            widget:
+              type: radarr
+              url: https://radarr.ewatkins.dev
+              key: "{{HOMEPAGE_VAR_RADARR_KEY}}"
         - Sonarr:
             href: https://sonarr.ewatkins.dev
             description: TV management
             icon: sonarr
             siteMonitor: https://sonarr.ewatkins.dev
+            widget:
+              type: sonarr
+              url: https://sonarr.ewatkins.dev
+              key: "{{HOMEPAGE_VAR_SONARR_KEY}}"
         - Prowlarr:
             href: https://prowlarr.ewatkins.dev
             description: Indexer management
             icon: prowlarr
             siteMonitor: https://prowlarr.ewatkins.dev
+            widget:
+              type: prowlarr
+              url: https://prowlarr.ewatkins.dev
+              key: "{{HOMEPAGE_VAR_PROWLARR_KEY}}"
         - Bazarr:
             href: https://bazarr.ewatkins.dev
             description: Subtitles
             icon: bazarr
             siteMonitor: https://bazarr.ewatkins.dev
+            widget:
+              type: bazarr
+              url: https://bazarr.ewatkins.dev
+              key: "{{HOMEPAGE_VAR_BAZARR_KEY}}"
         - Tdarr:
             href: https://tdarr.ewatkins.dev
             description: Transcoding
             icon: tdarr
             siteMonitor: https://tdarr.ewatkins.dev
+            widget:
+              type: tdarr
+              url: https://tdarr.ewatkins.dev
         - Notifiarr:
             href: https://notifiarr.ewatkins.dev
             description: Notifications
@@ -126,11 +160,19 @@ data:
             description: Dashboards
             icon: grafana
             siteMonitor: https://grafana.ewatkins.dev
+            widget:
+              type: grafana
+              url: https://grafana.ewatkins.dev
+              username: "{{HOMEPAGE_VAR_GRAFANA_USER}}"
+              password: "{{HOMEPAGE_VAR_GRAFANA_PASS}}"
         - Gatus:
             href: https://status.ewatkins.dev
             description: Uptime monitoring
             icon: gatus
             siteMonitor: https://status.ewatkins.dev
+            widget:
+              type: gatus
+              url: https://status.ewatkins.dev
         - Pulse:
             href: https://pulse.ewatkins.dev
             description: Proxmox monitoring
@@ -198,6 +240,10 @@ data:
             description: Document management
             icon: paperless-ngx
             siteMonitor: https://paperless.ewatkins.dev
+            widget:
+              type: paperlessngx
+              url: https://paperless.ewatkins.dev
+              key: "{{HOMEPAGE_VAR_PAPERLESS_KEY}}"
         - Homarr:
             href: https://home.ewatkins.dev
             description: Dashboard
