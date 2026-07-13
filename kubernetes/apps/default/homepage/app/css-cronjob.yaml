@@ -32,15 +32,16 @@ data:
   render.sh: |
     #!/bin/sh
     set -eu
+    # NOTE: $$ escapes Flux postBuild substitution; the pod runs plain ${...}
     STATE=$(curl -fsS --max-time 30 \
-      -H "X-API-Token: ${PULSE_API_TOKEN}" \
+      -H "X-API-Token: $${PULSE_API_TOKEN}" \
       http://pulse.observability.svc.cluster.local:7655/api/state)
 
     mkdir -p /tmp/out
     cp /config/custom.css.tmpl /tmp/out/custom.css
 
     # Pulse names nodes "pve01", "pve01 (pve02)", ... -> prefer the parenthesised name
-    echo "${STATE}" | jq -re '
+    echo "$${STATE}" | jq -re '
       [.resources[]
         | select((.platformData.pveVersion? // .proxmox.pveVersion?) != null)
         | {name: (if (.name | test("\\((pve[0-9]+)\\)")) then (.name | capture("\\((?<x>pve[0-9]+)\\)").x) else .name end),
