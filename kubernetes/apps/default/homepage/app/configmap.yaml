@@ -1,0 +1,51 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: homepage-config
+  namespace: default
+data:
+  settings.yaml: |
+    title: Great Lakes
+    headerStyle: clean
+    statusStyle: dot
+    hideVersion: true
+    quicklaunch:
+      searchDescriptions: true
+      hideInternetSearch: false
+  kubernetes.yaml: |
+    mode: cluster
+    gateway: true
+  widgets.yaml: |
+    - kubernetes:
+        cluster:
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true
+          label: great-lakes
+        nodes:
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true
+    - search:
+        provider: duckduckgo
+        target: _blank
+    - datetime:
+        text_size: xl
+        format:
+          timeStyle: short
+          dateStyle: long
+  services.yaml: |
+    - Apps:
+        - Homarr:
+            href: https://home.ewatkins.dev
+            description: Dashboard
+            icon: homarr
+  bookmarks.yaml: |
+    - Infrastructure:
+        - Cluster repo:
+            - abbr: GH
+              href: https://github.com/ewatkins/talos-cluster
+  docker.yaml: ""
