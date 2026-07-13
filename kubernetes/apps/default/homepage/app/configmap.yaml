@@ -22,6 +22,10 @@ data:
       searchDescriptions: true
       hideInternetSearch: false
     layout:
+      Stats:
+        style: row
+        columns: 4
+        header: false
       Streaming:
         style: row
         columns: 2
@@ -53,28 +57,73 @@ data:
     - greeting:
         text_size: 2xl
         text: Great Lakes
-    - kubernetes:
-        cluster:
-          show: true
-          cpu: true
-          memory: true
-          showLabel: true
-          label: great-lakes
-        nodes:
-          show: false
-    - datetime:
-        text_size: xl
-        format:
-          timeStyle: short
-          dateStyle: long
     - openmeteo:
-        label: Cedar Rapids
+        label: Current
         latitude: 41.9779
         longitude: -91.6656
         timezone: America/Chicago
         units: imperial
         cache: 5
   services.yaml: |
+    - Stats:
+        - Cluster:
+            description: 6 nodes on Proxmox
+            widget:
+              type: prometheusmetric
+              url: http://kps-prometheus.observability.svc.cluster.local:9090
+              metrics:
+                - label: CPU
+                  query: round(100 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100, 0.1)
+                  format:
+                    type: number
+                    suffix: "%"
+                - label: Memory
+                  query: round(100 * (1 - sum(node_memory_MemAvailable_bytes) / sum(node_memory_MemTotal_bytes)), 0.1)
+                  format:
+                    type: number
+                    suffix: "%"
+        - Storage:
+            description: OpenEBS local
+            widget:
+              type: prometheusmetric
+              url: http://kps-prometheus.observability.svc.cluster.local:9090
+              metrics:
+                - label: Used
+                  query: sum(node_filesystem_size_bytes{mountpoint="/var"} - node_filesystem_avail_bytes{mountpoint="/var"})
+                  format:
+                    type: bytes
+                - label: Total
+                  query: sum(node_filesystem_size_bytes{mountpoint="/var"})
+                  format:
+                    type: bytes
+        - Network:
+            description: bond0
+            widget:
+              type: prometheusmetric
+              url: http://kps-prometheus.observability.svc.cluster.local:9090
+              metrics:
+                - label: RX
+                  query: sum(rate(node_network_receive_bytes_total{device=~"bond0|ens18"}[2m]))
+                  format:
+                    type: byterate
+                - label: TX
+                  query: sum(rate(node_network_transmit_bytes_total{device=~"bond0|ens18"}[2m]))
+                  format:
+                    type: byterate
+        - Workloads:
+            description: Kubernetes
+            widget:
+              type: prometheusmetric
+              url: http://kps-prometheus.observability.svc.cluster.local:9090
+              metrics:
+                - label: Pods
+                  query: sum(kube_pod_status_phase{phase="Running"})
+                  format:
+                    type: number
+                - label: Nodes Ready
+                  query: sum(kube_node_status_condition{condition="Ready",status="true"})
+                  format:
+                    type: number
     - Streaming:
         - Jellyfin:
             href: https://jellyfin.ewatkins.dev
