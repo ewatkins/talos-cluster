@@ -82,20 +82,14 @@ data:
                   format:
                     type: number
                     suffix: "%"
-        - Storage:
-            description: OpenEBS local
+        - NAS:
+            href: https://caspian.ewatkins.dev
+            description: Unraid (caspian)
             widget:
-              type: prometheusmetric
-              url: http://kps-prometheus.observability.svc.cluster.local:9090
-              metrics:
-                - label: Used
-                  query: sum(node_filesystem_size_bytes{mountpoint="/var"} - node_filesystem_avail_bytes{mountpoint="/var"})
-                  format:
-                    type: bytes
-                - label: Total
-                  query: sum(node_filesystem_size_bytes{mountpoint="/var"})
-                  format:
-                    type: bytes
+              type: unraid
+              url: https://caspian.ewatkins.dev
+              key: "{{HOMEPAGE_VAR_UNRAID_KEY}}"
+              fields: ["arrayUsedSpace", "arrayFree", "arrayUsedPercent"]
         - Network:
             description: bond0
             widget:
