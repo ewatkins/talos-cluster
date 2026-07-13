@@ -15,28 +15,41 @@ data:
     background:
       image: https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2560&q=80
       saturate: 100
-      brightness: 60
+      brightness: 75
       opacity: 100
     cardBlur: sm
     quicklaunch:
       searchDescriptions: true
       hideInternetSearch: false
     layout:
-      Apps:
-        icon: mdi-play-circle
-      Automation:
-        icon: mdi-robot
-      Observability:
-        icon: mdi-chart-line
-      Infrastructure:
-        icon: mdi-server
+      Streaming:
+        style: row
+        columns: 2
+        header: false
+      Requests:
+        style: row
+        columns: 3
+        header: false
+      Pipeline:
+        style: row
+        columns: 3
+        header: false
+      Monitoring:
+        style: row
+        columns: 3
+        header: false
+      Workspace:
+        style: row
+        columns: 2
+        header: false
+      Services:
+        style: row
+        columns: 4
+        header: false
   kubernetes.yaml: |
     mode: cluster
     gateway: true
   widgets.yaml: |
-    - greeting:
-        text_size: xl
-        text: Great Lakes
     - kubernetes:
         cluster:
           show: true
@@ -46,19 +59,16 @@ data:
           label: great-lakes
         nodes:
           show: false
-    - search:
-        provider: duckduckgo
-        target: _blank
     - datetime:
         text_size: xl
         format:
           timeStyle: short
           dateStyle: long
   services.yaml: |
-    - Apps:
+    - Streaming:
         - Jellyfin:
             href: https://jellyfin.ewatkins.dev
-            description: Movies & TV
+            description: Watch movies and TV shows.
             icon: jellyfin
             siteMonitor: https://jellyfin.ewatkins.dev
             widget:
@@ -67,18 +77,9 @@ data:
               key: "{{HOMEPAGE_VAR_JELLYFIN_KEY}}"
               enableBlocks: true
               enableNowPlaying: true
-        - Requests:
-            href: https://requests.ewatkins.dev
-            description: Media requests
-            icon: jellyseerr
-            siteMonitor: https://requests.ewatkins.dev
-            widget:
-              type: jellyseerr
-              url: https://requests.ewatkins.dev
-              key: "{{HOMEPAGE_VAR_JELLYSEERR_KEY}}"
         - Immich:
             href: https://photos.ewatkins.dev
-            description: Photo library
+            description: Photo and video library.
             icon: immich
             siteMonitor: https://photos.ewatkins.dev
             widget:
@@ -86,34 +87,19 @@ data:
               url: https://photos.ewatkins.dev
               key: "{{HOMEPAGE_VAR_IMMICH_KEY}}"
               version: 2
-        - Recommendarr:
-            href: https://recommend.ewatkins.dev
-            description: Media recommendations
-            icon: mdi-movie-search
-            siteMonitor: https://recommend.ewatkins.dev
-        - Open WebUI:
-            href: https://chat.ewatkins.dev
-            description: AI chat
-            icon: open-webui
-            siteMonitor: https://chat.ewatkins.dev
-        - Outline:
-            href: https://notes.ewatkins.dev
-            description: Wiki & notes
-            icon: outline
-            siteMonitor: https://notes.ewatkins.dev
-        - Paperless:
-            href: https://paperless.ewatkins.dev
-            description: Document management
-            icon: paperless-ngx
-            siteMonitor: https://paperless.ewatkins.dev
+    - Requests:
+        - Requests:
+            href: https://requests.ewatkins.dev
+            description: Request movies and TV shows.
+            icon: jellyseerr
+            siteMonitor: https://requests.ewatkins.dev
             widget:
-              type: paperlessngx
-              url: https://paperless.ewatkins.dev
-              key: "{{HOMEPAGE_VAR_PAPERLESS_KEY}}"
-    - Automation:
+              type: jellyseerr
+              url: https://requests.ewatkins.dev
+              key: "{{HOMEPAGE_VAR_JELLYSEERR_KEY}}"
         - Radarr:
             href: https://radarr.ewatkins.dev
-            description: Movie management
+            description: Request and manage movies.
             icon: radarr
             siteMonitor: https://radarr.ewatkins.dev
             widget:
@@ -122,16 +108,17 @@ data:
               key: "{{HOMEPAGE_VAR_RADARR_KEY}}"
         - Sonarr:
             href: https://sonarr.ewatkins.dev
-            description: TV management
+            description: Request and manage TV shows.
             icon: sonarr
             siteMonitor: https://sonarr.ewatkins.dev
             widget:
               type: sonarr
               url: https://sonarr.ewatkins.dev
               key: "{{HOMEPAGE_VAR_SONARR_KEY}}"
+    - Pipeline:
         - Prowlarr:
             href: https://prowlarr.ewatkins.dev
-            description: Indexer management
+            description: Tracker and indexer manager.
             icon: prowlarr
             siteMonitor: https://prowlarr.ewatkins.dev
             widget:
@@ -140,7 +127,7 @@ data:
               key: "{{HOMEPAGE_VAR_PROWLARR_KEY}}"
         - Bazarr:
             href: https://bazarr.ewatkins.dev
-            description: Subtitles
+            description: Subtitle management.
             icon: bazarr
             siteMonitor: https://bazarr.ewatkins.dev
             widget:
@@ -149,21 +136,16 @@ data:
               key: "{{HOMEPAGE_VAR_BAZARR_KEY}}"
         - Tdarr:
             href: https://tdarr.ewatkins.dev
-            description: Transcoding
+            description: Distributed transcoding.
             icon: tdarr
             siteMonitor: https://tdarr.ewatkins.dev
             widget:
               type: tdarr
               url: https://tdarr.ewatkins.dev
-        - Notifiarr:
-            href: https://notifiarr.ewatkins.dev
-            description: Notifications
-            icon: notifiarr
-            siteMonitor: https://notifiarr.ewatkins.dev
-    - Observability:
+    - Monitoring:
         - Grafana:
             href: https://grafana.ewatkins.dev
-            description: Dashboards
+            description: Metrics dashboards.
             icon: grafana
             siteMonitor: https://grafana.ewatkins.dev
             widget:
@@ -173,7 +155,7 @@ data:
               password: "{{HOMEPAGE_VAR_GRAFANA_PASS}}"
         - Gatus:
             href: https://status.ewatkins.dev
-            description: Uptime monitoring
+            description: Uptime monitoring.
             icon: gatus
             siteMonitor: https://status.ewatkins.dev
             widget:
@@ -181,9 +163,40 @@ data:
               url: https://status.ewatkins.dev
         - Pulse:
             href: https://pulse.ewatkins.dev
-            description: Proxmox monitoring
+            description: Proxmox monitoring.
             icon: mdi-heart-pulse
             siteMonitor: https://pulse.ewatkins.dev
+    - Workspace:
+        - Paperless:
+            href: https://paperless.ewatkins.dev
+            description: Document management.
+            icon: paperless-ngx
+            siteMonitor: https://paperless.ewatkins.dev
+            widget:
+              type: paperlessngx
+              url: https://paperless.ewatkins.dev
+              key: "{{HOMEPAGE_VAR_PAPERLESS_KEY}}"
+        - Open WebUI:
+            href: https://chat.ewatkins.dev
+            description: AI chat.
+            icon: open-webui
+            siteMonitor: https://chat.ewatkins.dev
+    - Services:
+        - Outline:
+            href: https://notes.ewatkins.dev
+            description: Wiki & notes
+            icon: outline
+            siteMonitor: https://notes.ewatkins.dev
+        - Recommendarr:
+            href: https://recommend.ewatkins.dev
+            description: Media recommendations
+            icon: mdi-movie-search
+            siteMonitor: https://recommend.ewatkins.dev
+        - Notifiarr:
+            href: https://notifiarr.ewatkins.dev
+            description: Notifications
+            icon: notifiarr
+            siteMonitor: https://notifiarr.ewatkins.dev
         - Thanos:
             href: https://thanos.ewatkins.dev
             description: Long-term metrics
@@ -199,7 +212,6 @@ data:
             description: Metrics badges
             icon: mdi-chart-box
             siteMonitor: https://kromgo.ewatkins.dev
-    - Infrastructure:
         - Keycloak:
             href: https://keycloak.ewatkins.dev
             description: Identity & SSO
@@ -240,14 +252,9 @@ data:
             description: Homelab inventory
             icon: mdi-label
             siteMonitor: https://homelab.ewatkins.dev
-  bookmarks.yaml: |
-    - Infrastructure:
-        - Cluster repo:
-            - abbr: GH
-              icon: github
-              href: https://github.com/ewatkins/talos-cluster
-        - Homepage docs:
-            - abbr: HP
-              icon: homepage
-              href: https://gethomepage.dev
+        - Cluster Repo:
+            href: https://github.com/ewatkins/talos-cluster
+            description: GitOps source
+            icon: github
+  bookmarks.yaml: ""
   docker.yaml: ""
