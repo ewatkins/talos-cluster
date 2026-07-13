@@ -67,7 +67,6 @@ data:
   services.yaml: |
     - Stats:
         - Cluster:
-            description: 6 nodes on Proxmox
             widget:
               type: prometheusmetric
               url: http://kps-prometheus.observability.svc.cluster.local:9090
@@ -84,14 +83,12 @@ data:
                     suffix: "%"
         - NAS:
             href: https://caspian.ewatkins.dev
-            description: Unraid (caspian)
             widget:
               type: unraid
               url: https://caspian.ewatkins.dev
               key: "{{HOMEPAGE_VAR_UNRAID_KEY}}"
               fields: ["arrayUsedSpace", "arrayFree", "arrayUsedPercent"]
         - Network:
-            description: bond0
             widget:
               type: prometheusmetric
               url: http://kps-prometheus.observability.svc.cluster.local:9090
@@ -105,7 +102,6 @@ data:
                   format:
                     type: byterate
         - Workloads:
-            description: Kubernetes
             widget:
               type: prometheusmetric
               url: http://kps-prometheus.observability.svc.cluster.local:9090
