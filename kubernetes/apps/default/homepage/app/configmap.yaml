@@ -99,21 +99,21 @@ data:
               url: http://10.35.10.10:61208
               version: 4
               metric: fs:/rootfs/mnt/user
-              chart: true
+              chart: false
         - Internal:
             widget:
               type: glances
               url: http://10.35.10.10:61208
               version: 4
               metric: network:bond0
-              chart: true
+              chart: false
         - External:
             widget:
               type: glances
               url: http://10.35.10.10:61208
               version: 4
               metric: network:bond1
-              chart: true
+              chart: false
     - Streaming:
         - Jellyfin:
             href: https://jellyfin.ewatkins.dev
@@ -335,3 +335,19 @@ data:
             icon: github
   bookmarks.yaml: ""
   docker.yaml: ""
+  custom.css: |
+    /* PVE stat cards: flat (no gradient), CPU/Mem only, PVE version bottom-left */
+    :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) div[class*="bg-linear-to-br"] {
+      display: none; /* gradient backdrop */
+    }
+    :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .absolute.bottom-3.right-2 > div:nth-child(3) {
+      display: none; /* Swap line */
+    }
+    :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .absolute.bottom-3.left-2 > div:nth-child(1),
+    :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .absolute.bottom-3.left-2 > div:nth-child(3) {
+      display: none; /* distro + hostname; keeps the x.y.z-pve version line */
+    }
+    :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .service-container.chart,
+    :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .service-container.chart > div:last-child {
+      height: 44px; /* tighten now that the chart area is empty */
+    }
