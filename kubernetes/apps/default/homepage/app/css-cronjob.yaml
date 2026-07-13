@@ -1,0 +1,133 @@
+---
+# Renders homepage's custom.css with live pve-manager versions pulled from
+# Pulse's API, and writes it to the (unmanaged) homepage-custom-css ConfigMap.
+# The ConfigMap is intentionally NOT in Git so Flux doesn't revert the job's
+# updates.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: homepage-css-renderer
+  namespace: default
+data:
+  custom.css.tmpl: |
+    /* PVE stat cards: flat (no gradient), CPU/Mem only, PVE version bottom-left */
+    :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) div[class*="bg-linear-to-br"] {
+      display: none; /* gradient backdrop */
+    }
+    :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .absolute.bottom-3.right-2 > div:nth-child(3) {
+      display: none; /* Swap line */
+    }
+    :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .absolute.bottom-3.left-2 > div:nth-child(1),
+    :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .absolute.bottom-3.left-2 > div:nth-child(3) {
+      display: none; /* distro + hostname */
+    }
+    /* hide glances' kernel string; the job appends per-node ::after rules with the real PVE release */
+    :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .absolute.bottom-3.left-2 > div:nth-child(2) {
+      font-size: 0;
+    }
+    :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .service-container.chart,
+    :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .service-container.chart > div:last-child {
+      height: 44px; /* tighten now that the chart area is empty */
+    }
+  render.sh: |
+    #!/bin/sh
+    set -eu
+    STATE=$(curl -fsS --max-time 30 \
+      -H "X-API-Token: ${PULSE_API_TOKEN}" \
+      http://pulse.observability.svc.cluster.local:7655/api/state)
+
+    mkdir -p /tmp/out
+    cp /config/custom.css.tmpl /tmp/out/custom.css
+
+    # Pulse names nodes "pve01", "pve01 (pve02)", ... -> prefer the parenthesised name
+    echo "${STATE}" | jq -re '
+      [.resources[]
+        | select((.platformData.pveVersion? // .proxmox.pveVersion?) != null)
+        | {name: (if (.name | test("\\((pve[0-9]+)\\)")) then (.name | capture("\\((?<x>pve[0-9]+)\\)").x) else .name end),
+           ver: ((.platformData.pveVersion // .proxmox.pveVersion) | split("/")[1])}]
+      | unique_by(.name)
+      | if length == 0 then error("no pveVersion found in pulse state") else . end
+      | .[]
+      | "li[data-name=\"\(.name)\"] .absolute.bottom-3.left-2 > div:nth-child(2)::after { content: \"PVE \(.ver)\"; font-size: 0.75rem; }"
+    ' >> /tmp/out/custom.css
+
+    kubectl create configmap homepage-custom-css \
+      --from-file=custom.css=/tmp/out/custom.css \
+      --dry-run=client -o yaml | kubectl apply -f -
+    echo "rendered custom.css:"
+    tail -n 3 /tmp/out/custom.css
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: homepage-css-renderer
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: homepage-css-renderer
+  namespace: default
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "create", "patch", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: homepage-css-renderer
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: homepage-css-renderer
+subjects:
+  - kind: ServiceAccount
+    name: homepage-css-renderer
+    namespace: default
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: homepage-css-renderer
+  namespace: default
+spec:
+  schedule: "17 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          serviceAccountName: homepage-css-renderer
+          restartPolicy: OnFailure
+          containers:
+            - name: render
+              image: alpine/k8s:1.34.9
+              command: ["/bin/sh", "/config/render.sh"]
+              env:
+                - name: PULSE_API_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: homepage-secret
+                      key: PULSE_API_TOKEN
+              volumeMounts:
+                - name: renderer
+                  mountPath: /config
+                  readOnly: true
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+              resources:
+                requests:
+                  cpu: 10m
+                limits:
+                  memory: 128Mi
+          volumes:
+            - name: renderer
+              configMap:
+                name: homepage-css-renderer
