@@ -45,7 +45,7 @@ data:
     }
     :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .service-container.chart,
     :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .service-container.chart > div:last-child {
-      height: 30px; /* tighten now that the chart area is empty */
+      height: 20px; /* tighten now that the chart area is empty */
     }
   render.sh: |
     #!/bin/sh
