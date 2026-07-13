@@ -51,15 +51,21 @@ data:
     mode: cluster
     gateway: true
   widgets.yaml: |
+    - greeting:
+        text_size: 2xl
+        text: Great Lakes
     - kubernetes:
         cluster:
           show: true
           cpu: true
           memory: true
           showLabel: true
-          label: great-lakes
+          label: cluster
         nodes:
-          show: false
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true
     - datetime:
         text_size: xl
         format:
