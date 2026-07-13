@@ -123,8 +123,12 @@ spec:
                   readOnly: true
               securityContext:
                 allowPrivilegeEscalation: false
+                runAsNonRoot: true
+                runAsUser: 65534
                 capabilities:
                   drop: ["ALL"]
+                seccompProfile:
+                  type: RuntimeDefault
               resources:
                 requests:
                   cpu: 10m
