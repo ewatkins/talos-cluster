@@ -33,7 +33,7 @@ Create a Secrets Manager entry named `homelable-secret` whose value is JSON; key
 
 ```bash
 kubectl exec -it -n default deploy/homelable -c app -- \
-  python3 -c "from passlib.context import CryptContext; import getpass; print(CryptContext(schemes=['bcrypt']).hash(getpass.getpass('password: ')))"
+  python3 -c "import bcrypt, getpass; print(bcrypt.hashpw(getpass.getpass('password: ').encode(), bcrypt.gensalt(12)).decode())"
 ```
 
 After updating the Bitwarden entry, force a sync (otherwise it refreshes within 15m); Reloader restarts the pod automatically:
