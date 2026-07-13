@@ -22,9 +22,13 @@ data:
       searchDescriptions: true
       hideInternetSearch: false
     layout:
+      Hypervisors:
+        style: row
+        columns: 3
+        header: false
       Stats:
         style: row
-        columns: 6
+        columns: 3
         header: false
       Streaming:
         style: row
@@ -65,7 +69,7 @@ data:
         units: imperial
         cache: 5
   services.yaml: |
-    - Stats:
+    - Hypervisors:
         - pve01:
             widget:
               type: glances
@@ -87,6 +91,7 @@ data:
               version: 4
               metric: info
               chart: true
+    - Stats:
         - NAS:
             href: https://caspian.ewatkins.dev
             widget:
