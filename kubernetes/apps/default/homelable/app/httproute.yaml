@@ -6,6 +6,11 @@ metadata:
   namespace: default
   annotations:
     external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: "Homelable"
+    gethomepage.dev/description: "Network visualization"
+    gethomepage.dev/group: "Apps"
+    gethomepage.dev/icon: "mdi-lan"
 spec:
   parentRefs:
     - name: internal
