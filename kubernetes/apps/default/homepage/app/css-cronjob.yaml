@@ -18,6 +18,10 @@ data:
       background-color: rgb(15 23 42 / 0.45) !important; /* slate-900, up from default 20% */
       border: 1px solid rgb(255 255 255 / 0.08) !important;
     }
+    .service-card:hover {
+      background-color: rgb(30 41 59 / 0.6) !important; /* slate-800, restores hover feedback */
+      border-color: rgb(255 255 255 / 0.15) !important;
+    }
 
     /* PVE stat cards: flat (no gradient), CPU/Mem only, PVE version bottom-left */
     :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) div[class*="bg-linear-to-br"] {
