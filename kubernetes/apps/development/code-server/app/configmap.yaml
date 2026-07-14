@@ -94,3 +94,9 @@ data:
     ewatkins:!:20645:0:99999:7:::
   nopasswd: |
     ewatkins ALL=(ALL) NOPASSWD:ALL
+  # linuxserver custom-cont-init hook for the ssh sidecar: its PUID user is
+  # created with home /config; move it to the real home so logins land there
+  # and authorized_keys is ~/.ssh/authorized_keys on the PVC.
+  ssh-home.sh: |
+    #!/bin/bash
+    usermod -d /home/ewatkins ewatkins
