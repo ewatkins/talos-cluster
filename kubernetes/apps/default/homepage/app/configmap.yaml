@@ -12,8 +12,8 @@ data:
     headerStyle: clean
     hideVersion: true
     background:
-      image: https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&q=85&fit=crop
-      blur: xl
+      image: https://images.unsplash.com/photo-1542810444-515316abdc7a?w=1920&q=85&fit=crop
+      blur: md
       saturate: 150
       brightness: 50
       opacity: 100
