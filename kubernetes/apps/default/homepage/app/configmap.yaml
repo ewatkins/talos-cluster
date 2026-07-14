@@ -13,8 +13,9 @@ data:
     hideVersion: true
     background:
       image: https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&q=85&fit=crop
-      saturate: 100
-      brightness: 55
+      blur: xl
+      saturate: 150
+      brightness: 50
       opacity: 100
     cardBlur: sm
     quicklaunch:
