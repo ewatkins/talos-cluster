@@ -10,8 +10,9 @@ VS Code in the browser, used as the central development environment for this clu
 | Chart | `app-template` (OCI) from `flux-system` | |
 | URL | `https://code.ewatkins.dev` (port 8080) | Internal gateway; DNS via `internal.ewatkins.dev` |
 | Auth | Keycloak OIDC via Envoy SecurityPolicy | code-server itself runs `--auth none` |
-| Home | `/home/ewatkins` (PVC root) | `HOME` env overrides the image's `/home/coder`; uid 1000's passwd entry still says `coder`, so shell prompts show `coder` |
-| Workspace | `/home/ewatkins/workspace` | Opened by default on login |
+| Home | `/home/ewatkins` (PVC root) | `HOME` env overrides the image's `/home/coder` |
+| Identity | uid/gid 1000 = `ewatkins` | `code-server-identity` ConfigMap overrides `/etc/passwd`, `group`, `shadow`, and `sudoers.d/nopasswd` (all four needed — PAM validates sudo against shadow). Regenerate from the image when bumping its tag |
+| Workspace | `/home/ewatkins` | code-server opens the home directory itself |
 | Config PVC | `code-server-config`, 50Gi, `ReadWriteOnce` | StorageClass `nfs-fast` |
 | Cluster access | ServiceAccount `code-server` bound to `cluster-admin` | `kubectl`/`flux` use the in-cluster config |
 | Resources | requests: 100m CPU, 1Gi memory; limits: 8Gi memory | |
@@ -62,10 +63,10 @@ talhelper genconfig   # decrypts talsecret.sops.yaml with the mounted Age key
 
 ## Working on this repo from code-server
 
-The repo's root `Taskfile.yaml` pins `SOPS_AGE_KEY_FILE` and `KUBECONFIG` to repo-root paths, which override the pod's environment. After cloning to `~/workspace/talos-cluster`, run once:
+The repo's root `Taskfile.yaml` pins `SOPS_AGE_KEY_FILE` and `KUBECONFIG` to repo-root paths, which override the pod's environment. After cloning to `~/talos-cluster`, run once:
 
 ```bash
-cd ~/workspace/talos-cluster
+cd ~/talos-cluster
 
 # Taskfile expects ./age.key
 ln -s /var/run/secrets/sops/age.key age.key
