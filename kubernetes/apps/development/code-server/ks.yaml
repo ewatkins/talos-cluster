@@ -1,0 +1,25 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app code-server
+  namespace: flux-system
+spec:
+  targetNamespace: development
+  components:
+    - ../../../../components/gatus/internal
+  path: ./kubernetes/apps/development/code-server/app
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: talos-cluster
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m
+  postBuild:
+    substitute:
+      APP: *app
+      GATUS_SUBDOMAIN: code
+      # Unauthenticated requests are redirected to Keycloak by the SecurityPolicy
+      GATUS_STATUS: "302"

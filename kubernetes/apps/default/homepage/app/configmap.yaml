@@ -316,6 +316,12 @@ data:
             icon: forgejo
             namespace: development
             app: forgejo
+        - code-server:
+            href: https://code.ewatkins.dev
+            description: Web IDE
+            icon: code-server
+            namespace: development
+            app: code-server
         - Minio:
             href: https://minio.ewatkins.dev
             description: Object storage
