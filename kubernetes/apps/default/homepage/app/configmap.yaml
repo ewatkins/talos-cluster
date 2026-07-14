@@ -235,12 +235,15 @@ data:
             widget:
               type: gatus
               url: https://status.ewatkins.dev
-        - Pulse:
-            href: https://pulse.ewatkins.dev
-            description: Proxmox monitoring.
-            icon: mdi-heart-pulse
-            namespace: observability
-            app: pulse
+        - Proxmox:
+            href: https://pve01.ewatkins.dev
+            description: Virtualization cluster.
+            icon: proxmox
+            widget:
+              type: proxmox
+              url: https://pve01.ewatkins.dev
+              username: "{{HOMEPAGE_VAR_PROXMOX_USER}}"
+              password: "{{HOMEPAGE_VAR_PROXMOX_PASS}}"
     - Workspace:
         - Paperless:
             href: https://paperless.ewatkins.dev
