@@ -10,6 +10,9 @@ spec:
     kind: OCIRepository
     name: app-template
     namespace: flux-system
+  # The first install downloads the toolchain before the pod can go Ready;
+  # the default 5m wait is not enough and its remediation uninstalls the release.
+  timeout: 15m
   install:
     remediation:
       retries: 3
@@ -28,9 +31,14 @@ spec:
           # Defined in rbac.yaml, bound to cluster-admin
           name: code-server
         initContainers:
-          # Installs the same CLI toolchain as `task workstation:generic-linux`
-          # into an emptyDir on PATH, so tools are refreshed on every pod start
-          # rather than going stale on the PVC.
+          # Installs the CLI toolchain onto the PVC at ~/.local/bin, keyed by the
+          # version marker below. Downloads come straight from each project's
+          # release URL: an installer-redirector service (i.jpillora.com, as used
+          # by `task workstation:generic-linux`) is a hard dependency for every
+          # pod start, and the pod cannot schedule while it is down.
+          #
+          # A restart with a matching marker skips the install entirely, so the
+          # pod also starts with no network at all.
           tools:
             image:
               repository: docker.io/library/alpine
@@ -40,32 +48,57 @@ spec:
               - -c
               - |
                 set -eu
-                apk add --no-cache bash curl tar >/dev/null
+
+                TALHELPER=v3.1.13
+                AGE=v1.3.1
+                FLUX=2.9.2
+                SOPS=v3.13.2
+                TASK=v3.52.0
+                HELMFILE=1.7.0
+                JQ=jq-1.8.2
+                KUSTOMIZE=v5.8.1
+                YQ=v4.53.3
+                TALOSCTL=v1.13.6
+                KUBECONFORM=v0.8.0
+                KUBECTL=v1.36.2
+                HELM=v3.21.3
+
+                BIN=/home/coder/.local/bin
+                MARKER="$${BIN}/.toolchain"
+                STAMP="$${TALHELPER} $${AGE} $${FLUX} $${SOPS} $${TASK} $${HELMFILE} $${JQ} $${KUSTOMIZE} $${YQ} $${TALOSCTL} $${KUBECONFORM} $${KUBECTL} $${HELM}"
+
                 # The PVC is provisioned root-owned; code-server runs as uid 1000.
-                chown 1000:1000 /home/coder
-                cd /tools
-                for pkg in \
-                  budimanjojo/talhelper?as=talhelper \
-                  FiloSottile/age?as=age \
-                  fluxcd/flux2?as=flux \
-                  getsops/sops?as=sops \
-                  go-task/task?as=task \
-                  helmfile/helmfile?as=helmfile \
-                  jqlang/jq?as=jq \
-                  kubernetes-sigs/kustomize?as=kustomize \
-                  mikefarah/yq?as=yq \
-                  siderolabs/talos?as=talosctl \
-                  yannh/kubeconform?as=kubeconform
-                do
-                  # The doubled $ escapes Flux postBuild envsubst, which would
-                  # otherwise try to substitute the shell loop variable.
-                  curl -fsSL "https://i.jpillora.com/$${pkg}&type=script" | bash
-                done
-                curl -fsSL -o kubectl \
-                  "https://dl.k8s.io/release/$(curl -fsSL https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-                curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 \
-                  | USE_SUDO="false" HELM_INSTALL_DIR="/tools" bash
-                chmod -R 0755 /tools
+                mkdir -p "$${BIN}"
+                chown 1000:1000 /home/coder "$${BIN}" /home/coder/.local
+
+                if [ -f "$${MARKER}" ] && [ "$$(cat "$${MARKER}")" = "$${STAMP}" ]; then
+                  echo "toolchain up to date, skipping install"
+                  exit 0
+                fi
+
+                apk add --no-cache curl tar >/dev/null
+                cd "$${BIN}"
+
+                # Single binaries
+                curl -fsSL -o sops       "https://github.com/getsops/sops/releases/download/$${SOPS}/sops-$${SOPS}.linux.amd64"
+                curl -fsSL -o jq         "https://github.com/jqlang/jq/releases/download/$${JQ}/jq-linux-amd64"
+                curl -fsSL -o yq         "https://github.com/mikefarah/yq/releases/download/$${YQ}/yq_linux_amd64"
+                curl -fsSL -o talosctl   "https://github.com/siderolabs/talos/releases/download/$${TALOSCTL}/talosctl-linux-amd64"
+                curl -fsSL -o kubectl    "https://dl.k8s.io/release/$${KUBECTL}/bin/linux/amd64/kubectl"
+
+                # Tarballs: extract just the binary we want
+                curl -fsSL "https://github.com/budimanjojo/talhelper/releases/download/$${TALHELPER}/talhelper_linux_amd64.tar.gz"            | tar xz talhelper
+                curl -fsSL "https://github.com/FiloSottile/age/releases/download/$${AGE}/age-$${AGE}-linux-amd64.tar.gz"                      | tar xz --strip-components=1 age/age age/age-keygen
+                curl -fsSL "https://github.com/fluxcd/flux2/releases/download/v$${FLUX}/flux_$${FLUX}_linux_amd64.tar.gz"                     | tar xz flux
+                curl -fsSL "https://github.com/go-task/task/releases/download/$${TASK}/task_linux_amd64.tar.gz"                               | tar xz task
+                curl -fsSL "https://github.com/helmfile/helmfile/releases/download/v$${HELMFILE}/helmfile_$${HELMFILE}_linux_amd64.tar.gz"    | tar xz helmfile
+                curl -fsSL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F$${KUSTOMIZE}/kustomize_$${KUSTOMIZE}_linux_amd64.tar.gz" | tar xz kustomize
+                curl -fsSL "https://github.com/yannh/kubeconform/releases/download/$${KUBECONFORM}/kubeconform-linux-amd64.tar.gz"            | tar xz kubeconform
+                curl -fsSL "https://get.helm.sh/helm-$${HELM}-linux-amd64.tar.gz"                                                             | tar xz --strip-components=1 linux-amd64/helm
+
+                chmod 0755 *
+                echo "$${STAMP}" > "$${MARKER}"
+                chown -R 1000:1000 "$${BIN}"
             securityContext:
               runAsUser: 0
               runAsGroup: 0
@@ -88,7 +121,7 @@ spec:
               - /home/coder/workspace
             env:
               TZ: America/New_York
-              PATH: /tools:/home/coder/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+              PATH: /home/coder/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
               SOPS_AGE_KEY_FILE: /home/coder/.config/sops/age/keys.txt
               # Written by `talhelper genconfig`; not stored as a secret
               TALOSCONFIG: /home/coder/workspace/talos-cluster/talos/clusterconfig/talosconfig
@@ -138,10 +171,6 @@ spec:
         existingClaim: code-server-config
         globalMounts:
           - path: /home/coder
-      tools:
-        type: emptyDir
-        globalMounts:
-          - path: /tools
       secret:
         type: secret
         name: code-server-secret
