@@ -248,30 +248,22 @@ spec:
         seccompProfile:
           type: RuntimeDefault
 
-    # Both services hold the same LAN IP (Cilium permits this when the
-    # sharing keys match and ports do not overlap), so code.ewatkins.dev
-    # serves https (Keycloak via oauth2-proxy) and ssh on standard ports.
+    # One Service for both protocols, deliberately: Cilium L2-announces per
+    # service, so two services sharing this IP get announced from different
+    # nodes — two MACs answering ARP for one address — and established
+    # connections reset whenever the client's ARP cache flips.
     service:
       app:
         controller: *app
         type: LoadBalancer
         annotations:
           io.cilium/lb-ipam-ips: "${CODE_SERVER}"
-          io.cilium/lb-ipam-sharing-key: code-server
           external-dns.alpha.kubernetes.io/hostname: code.ewatkins.dev
         externalTrafficPolicy: Cluster
         ports:
           https:
             port: 443
             targetPort: 8443
-      ssh:
-        controller: *app
-        type: LoadBalancer
-        annotations:
-          io.cilium/lb-ipam-ips: "${CODE_SERVER}"
-          io.cilium/lb-ipam-sharing-key: code-server
-        externalTrafficPolicy: Cluster
-        ports:
           ssh:
             port: 22
             targetPort: 2222
