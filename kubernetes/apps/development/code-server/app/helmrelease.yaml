@@ -63,7 +63,7 @@ spec:
                 KUBECTL=v1.36.2
                 HELM=v3.21.3
 
-                BIN=/home/coder/.local/bin
+                BIN=/home/ewatkins/.local/bin
                 MARKER="$${BIN}/.toolchain"
                 STAMP="$${TALHELPER} $${AGE} $${FLUX} $${SOPS} $${TASK} $${HELMFILE} $${JQ} $${KUSTOMIZE} $${YQ} $${TALOSCTL} $${KUBECONFORM} $${KUBECTL} $${HELM}"
 
@@ -73,13 +73,13 @@ spec:
                 # is the default folder code-server opens; it does not create it.
                 # If workspace exists as a non-directory (mkdir -p fails EEXIST),
                 # preserve it under another name rather than crash-looping.
-                WS=/home/coder/workspace
+                WS=/home/ewatkins/workspace
                 if [ ! -d "$${WS}" ] && { [ -e "$${WS}" ] || [ -L "$${WS}" ]; }; then
                   echo "workspace exists as non-directory, moving aside: $$(ls -ld "$${WS}")"
                   mv "$${WS}" "$${WS}.pre-init.$$(date +%s)"
                 fi
-                mkdir -p "$${BIN}" /home/coder/.config "$${WS}"
-                chown 1000:1000 /home/coder /home/coder/.local /home/coder/.config "$${WS}" "$${BIN}"
+                mkdir -p "$${BIN}" /home/ewatkins/.config "$${WS}"
+                chown 1000:1000 /home/ewatkins /home/ewatkins/.local /home/ewatkins/.config "$${WS}" "$${BIN}"
 
                 if [ -f "$${MARKER}" ] && [ "$$(cat "$${MARKER}")" = "$${STAMP}" ]; then
                   echo "toolchain up to date, skipping install"
@@ -128,13 +128,16 @@ spec:
               - none
               - --bind-addr
               - 0.0.0.0:8080
-              - /home/coder/workspace
+              - /home/ewatkins/workspace
             env:
               TZ: America/New_York
-              PATH: /home/coder/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+              # The image bakes HOME=/home/coder (the passwd entry for uid 1000);
+              # override it so everything lands on the PVC mounted at /home/ewatkins.
+              HOME: /home/ewatkins
+              PATH: /home/ewatkins/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
               SOPS_AGE_KEY_FILE: /var/run/secrets/sops/age.key
               # Written by `talhelper genconfig`; not stored as a secret
-              TALOSCONFIG: /home/coder/workspace/talos-cluster/talos/clusterconfig/talosconfig
+              TALOSCONFIG: /home/ewatkins/workspace/talos-cluster/talos/clusterconfig/talosconfig
             probes:
               liveness: &probe
                 enabled: true
@@ -180,14 +183,14 @@ spec:
       config:
         existingClaim: code-server-config
         globalMounts:
-          - path: /home/coder
+          - path: /home/ewatkins
       secret:
         type: secret
         name: code-server-secret
         defaultMode: 0400
         # Mounted outside $HOME on purpose: a mount inside the home PVC makes the
         # kubelet create its parent dirs as root, and code-server (uid 1000) then
-        # cannot create /home/coder/.config/code-server.
+        # cannot create /home/ewatkins/.config/code-server.
         advancedMounts:
           code-server:
             app:

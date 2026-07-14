@@ -10,7 +10,8 @@ VS Code in the browser, used as the central development environment for this clu
 | Chart | `app-template` (OCI) from `flux-system` | |
 | URL | `https://code.ewatkins.dev` (port 8080) | Internal gateway; DNS via `internal.ewatkins.dev` |
 | Auth | Keycloak OIDC via Envoy SecurityPolicy | code-server itself runs `--auth none` |
-| Workspace | `/home/coder/workspace` | Opened by default on login |
+| Home | `/home/ewatkins` (PVC root) | `HOME` env overrides the image's `/home/coder`; uid 1000's passwd entry still says `coder`, so shell prompts show `coder` |
+| Workspace | `/home/ewatkins/workspace` | Opened by default on login |
 | Config PVC | `code-server-config`, 50Gi, `ReadWriteOnce` | StorageClass `nfs-fast` |
 | Cluster access | ServiceAccount `code-server` bound to `cluster-admin` | `kubectl`/`flux` use the in-cluster config |
 | Resources | requests: 100m CPU, 1Gi memory; limits: 8Gi memory | |
@@ -38,7 +39,7 @@ Versions are **pinned in the init container script** and downloaded from each pr
 
 The install is guarded by a version marker (`~/.local/bin/.toolchain`). A restart whose pinned versions match the marker skips the install entirely, so the pod starts even with no network. Bumping a version in the script invalidates the marker and reinstalls.
 
-Anything else in `/home/coder` (VS Code extensions, dotfiles, language runtimes, cloned repos) persists on the PVC too. Note that **no secret is mounted under `/home/coder`**: a mount there makes the kubelet create its parent directories as root inside the PVC, and code-server then cannot write its own `~/.config`.
+Anything else in `/home/ewatkins` (VS Code extensions, dotfiles, language runtimes, cloned repos) persists on the PVC too. Note that **no secret is mounted under `/home/ewatkins`**: a mount there makes the kubelet create its parent directories as root inside the PVC, and code-server then cannot write its own `~/.config`.
 
 ## Secrets
 
