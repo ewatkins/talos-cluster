@@ -13,6 +13,7 @@ VS Code in the browser, used as the central development environment for this clu
 | Home | `/home/ewatkins` (PVC root) | `HOME` env overrides the image's `/home/coder` |
 | Identity | uid/gid 1000 = `ewatkins` | `code-server-identity` ConfigMap overrides `/etc/passwd`, `group`, `shadow`, and `sudoers.d/nopasswd` (all four needed — PAM validates sudo against shadow). Regenerate from the image when bumping its tag |
 | Workspace | `/home/ewatkins` | code-server opens the home directory itself |
+| SSH | `ssh ewatkins@code-ssh.ewatkins.dev` (port 22) | Sidecar `linuxserver/openssh-server` on a dedicated LB IP (`${CODE_SERVER_SSH}` = 10.40.0.145); key auth only |
 | Config PVC | `code-server-config`, 50Gi, `ReadWriteOnce` | StorageClass `nfs-fast` |
 | Cluster access | ServiceAccount `code-server` bound to `cluster-admin` | `kubectl`/`flux` use the in-cluster config |
 | Resources | requests: 100m CPU, 1Gi memory; limits: 8Gi memory | |
@@ -84,6 +85,15 @@ talhelper genconfig
 ```
 
 Both files are gitignored, and both live on the PVC, so this survives pod restarts.
+
+## SSH
+
+A `linuxserver/openssh-server` sidecar shares the pod and the home PVC, exposed on its own LAN LoadBalancer IP so it can use the standard port 22 (the internal gateway's 22 belongs to forgejo). unifi-dns publishes `code-ssh.ewatkins.dev` from the service annotation.
+
+- **Key auth only** (`PASSWORD_ACCESS=false`). Add keys to `~/.ssh/authorized_keys` from the IDE terminal — a `custom-cont-init` script (`ssh-home.sh` in the identity ConfigMap) moves the sidecar user's home from the image default `/config` to `/home/ewatkins`, so sshd reads the same home the IDE uses.
+- Host keys persist in `~/.ssh-server/` (the sidecar's `/config`, a subdirectory of the home PVC), so clients don't see host-key warnings after pod restarts.
+- An SSH session is nearly as privileged as the IDE terminal: the pod's ServiceAccount token (cluster-admin) automounts into every container, and the shared toolchain's `kubectl` works against it. Only the age key mount (`/var/run/secrets/sops/age.key`) is app-container-only. `scp`, `rsync`, `sftp`, and VS Code Remote-SSH all work.
+- First-time setup: `mkdir -p ~/.ssh && chmod 700 ~/.ssh`, then append your public key to `~/.ssh/authorized_keys` (mode 600). sshd `StrictModes` requires the home not be group/world-writable; the init container enforces `0755`.
 
 ## Health Monitoring
 

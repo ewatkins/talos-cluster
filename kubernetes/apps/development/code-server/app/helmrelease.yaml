@@ -72,6 +72,8 @@ spec:
                 # under it, which left it owned by root on the volume.
                 mkdir -p "$${BIN}" /home/ewatkins/.config
                 chown 1000:1000 /home/ewatkins /home/ewatkins/.local /home/ewatkins/.config "$${BIN}"
+                # sshd StrictModes rejects a group/world-writable home
+                chmod 0755 /home/ewatkins
 
                 if [ -f "$${MARKER}" ] && [ "$$(cat "$${MARKER}")" = "$${STAMP}" ]; then
                   echo "toolchain up to date, skipping install"
@@ -154,6 +156,29 @@ spec:
                 memory: 1Gi
               limits:
                 memory: 8Gi
+          # SSH access from the LAN (scp/rsync, VS Code Remote-SSH). s6 starts
+          # as root and drops to PUID; a custom-cont-init script moves the user
+          # home from /config to /home/ewatkins, so logins land in the real
+          # home and authorized_keys is ~/.ssh/authorized_keys on the PVC —
+          # manageable from the IDE itself.
+          ssh:
+            image:
+              repository: lscr.io/linuxserver/openssh-server
+              tag: 10.3_p1-r0-ls231
+            env:
+              TZ: America/New_York
+              PUID: "1000"
+              PGID: "1000"
+              USER_NAME: ewatkins
+              PASSWORD_ACCESS: "false"
+            securityContext:
+              runAsUser: 0
+              runAsGroup: 0
+            resources:
+              requests:
+                cpu: 10m
+              limits:
+                memory: 256Mi
 
     defaultPodOptions:
       # Stable shell hostname (ewatkins@code) instead of the generated pod name
@@ -172,6 +197,19 @@ spec:
         ports:
           http:
             port: 8080
+      # Dedicated LAN IP so SSH can live on the standard port 22 (the internal
+      # gateway's 22 belongs to forgejo). unifi-dns publishes the hostname.
+      ssh:
+        controller: *app
+        type: LoadBalancer
+        annotations:
+          io.cilium/lb-ipam-ips: "${CODE_SERVER_SSH}"
+          external-dns.alpha.kubernetes.io/hostname: code-ssh.ewatkins.dev
+        externalTrafficPolicy: Cluster
+        ports:
+          ssh:
+            port: 22
+            targetPort: 2222
 
     persistence:
       config:
@@ -192,6 +230,25 @@ spec:
                 readOnly: true
               - path: /etc/group
                 subPath: group
+                readOnly: true
+      # sshd host keys persist across restarts (subdir of the home PVC), and
+      # the home-move script runs via the lsio custom-cont-init hook.
+      ssh-config:
+        existingClaim: code-server-config
+        advancedMounts:
+          code-server:
+            ssh:
+              - path: /config
+                subPath: .ssh-server
+      ssh-init:
+        type: configMap
+        name: code-server-identity
+        defaultMode: 0755
+        advancedMounts:
+          code-server:
+            ssh:
+              - path: /custom-cont-init.d/10-home.sh
+                subPath: ssh-home.sh
                 readOnly: true
       identity-sudoers:
         type: configMap
