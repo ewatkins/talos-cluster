@@ -286,6 +286,10 @@ data:
             icon: mdi-scale-balance
             namespace: observability
             app: goldilocks
+        - NGINX Proxy Manager:
+            href: https://proxy.ewatkins.dev
+            description: Reverse proxy
+            icon: nginx-proxy-manager
         - Keycloak:
             href: https://keycloak.ewatkins.dev
             description: Identity & SSO
