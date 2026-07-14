@@ -40,7 +40,7 @@ data:
         header: false
       Pipeline:
         style: row
-        columns: 3
+        columns: 4
         header: false
       Monitoring:
         style: row
@@ -170,6 +170,14 @@ data:
               url: https://sonarr.ewatkins.dev
               key: "{{HOMEPAGE_VAR_SONARR_KEY}}"
     - Pipeline:
+        - SABnzbd:
+            href: https://sab.ewatkins.dev
+            description: Usenet downloader.
+            icon: sabnzbd
+            widget:
+              type: sabnzbd
+              url: https://sab.ewatkins.dev
+              key: "{{HOMEPAGE_VAR_SABNZBD_KEY}}"
         - Prowlarr:
             href: https://prowlarr.ewatkins.dev
             description: Tracker and indexer manager.
