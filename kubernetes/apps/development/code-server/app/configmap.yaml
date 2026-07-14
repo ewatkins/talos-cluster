@@ -110,6 +110,18 @@ data:
     # refuses group-readable host keys and exits ("no hostkeys available").
     chmod 600 /config/ssh_host_keys/ssh_host_*_key 2>/dev/null || true
 
+    # Server-side keepalives: without them idle sessions get reaped by
+    # conntrack along the path (UniFi inter-VLAN, Cilium LB), surfacing as
+    # "client_loop: send disconnect: Broken pipe". Ping every 30s, allow 4
+    # misses (2 minutes) before sshd gives up on a dead client.
+    SSHD_CONF=/config/sshd/sshd_config
+    if [ -f "$SSHD_CONF" ]; then
+      sed -i -E 's/^#?ClientAliveInterval[[:space:]].*/ClientAliveInterval 30/' "$SSHD_CONF"
+      sed -i -E 's/^#?ClientAliveCountMax[[:space:]].*/ClientAliveCountMax 4/' "$SSHD_CONF"
+      grep -q '^ClientAliveInterval' "$SSHD_CONF" || echo 'ClientAliveInterval 30' >> "$SSHD_CONF"
+      grep -q '^ClientAliveCountMax' "$SSHD_CONF" || echo 'ClientAliveCountMax 4' >> "$SSHD_CONF"
+    fi
+
     # Sync authorized_keys from GitHub on every pod start via ssh-import-id
     # (both accounts). Imported into a temp file and installed atomically:
     # GitHub stays authoritative (revoking a key there removes it here), but
