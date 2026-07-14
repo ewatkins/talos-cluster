@@ -40,7 +40,7 @@ data:
         header: false
       Pipeline:
         style: row
-        columns: 4
+        columns: 3
         header: false
       Monitoring:
         style: row
@@ -52,7 +52,7 @@ data:
         header: false
       Services:
         style: row
-        columns: 4
+        columns: 3
         header: false
   kubernetes.yaml: |
     mode: cluster
