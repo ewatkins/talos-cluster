@@ -292,12 +292,6 @@ data:
             icon: mdi-scale-balance
             namespace: observability
             app: goldilocks
-        - Kromgo:
-            href: https://kromgo.ewatkins.dev
-            description: Metrics badges
-            icon: mdi-chart-box
-            namespace: observability
-            app: kromgo
         - Keycloak:
             href: https://keycloak.ewatkins.dev
             description: Identity & SSO
@@ -322,12 +316,6 @@ data:
             icon: redis
             namespace: database
             app: redisinsight
-        - MaxScale:
-            href: https://maxscale.ewatkins.dev
-            description: MariaDB proxy
-            icon: mariadb
-            namespace: database
-            app: maxscale
         - Trek:
             href: https://trek.ewatkins.dev
             description: GitOps release tracking
