@@ -290,10 +290,20 @@ data:
             href: https://proxy.ewatkins.dev
             description: Reverse proxy
             icon: nginx-proxy-manager
+            widget:
+              type: npm
+              url: https://proxy.ewatkins.dev
+              username: "{{HOMEPAGE_VAR_NPM_USER}}"
+              password: "{{HOMEPAGE_VAR_NPM_PASS}}"
         - Proxmox Backup Server:
             href: https://pbs.ewatkins.dev
             description: VM & container backups
             icon: proxmox-backup-server
+            widget:
+              type: proxmoxbackupserver
+              url: https://pbs.ewatkins.dev
+              username: "{{HOMEPAGE_VAR_PBS_USER}}"
+              password: "{{HOMEPAGE_VAR_PBS_PASS}}"
         - Keycloak:
             href: https://keycloak.ewatkins.dev
             description: Identity & SSO
