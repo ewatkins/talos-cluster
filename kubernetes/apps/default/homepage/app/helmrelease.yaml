@@ -34,7 +34,7 @@ spec:
               tag: v1.13.2@sha256:a0b71c8e757298d02560186bab9fbe3fc2d375c523a62cc1019177b37e48aa28
             env:
               TZ: ${TIMEZONE}
-              HOMEPAGE_ALLOWED_HOSTS: homepage.ewatkins.dev
+              HOMEPAGE_ALLOWED_HOSTS: home.ewatkins.dev
             envFrom:
               - secretRef:
                   name: homepage-secret
@@ -50,7 +50,7 @@ spec:
                       # Probes hit the pod IP; homepage rejects hosts outside
                       # HOMEPAGE_ALLOWED_HOSTS with a 400.
                       - name: Host
-                        value: homepage.ewatkins.dev
+                        value: home.ewatkins.dev
                   initialDelaySeconds: 10
                   periodSeconds: 10
                   timeoutSeconds: 5

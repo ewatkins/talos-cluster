@@ -98,7 +98,7 @@ data:
               metric: info
               chart: true
     - Stats:
-        - NAS:
+        - NAS - Caspian:
             href: https://caspian.ewatkins.dev
             icon: unraid
             widget:

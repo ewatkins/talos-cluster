@@ -14,24 +14,24 @@ metadata:
 data:
   custom.css.tmpl: |
     /* Stat cards (NAS + PVE): full-height icon on the left, text stacked to its right */
-    :is(li[data-name="NAS"], li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .service-icon {
+    :is(li[data-name="NAS - Caspian"], li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .service-icon {
       position: absolute !important;
       top: 0;
       bottom: 0;
       left: 0.25rem;
       width: 3rem;
     }
-    :is(li[data-name="NAS"], li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .service-icon > * {
+    :is(li[data-name="NAS - Caspian"], li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .service-icon > * {
       height: 2.5rem !important;
       width: 2.5rem !important;
       max-height: none !important;
       max-width: none !important;
     }
-    :is(li[data-name="NAS"], li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .service-title {
+    :is(li[data-name="NAS - Caspian"], li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .service-title {
       padding-left: 3rem; /* keep title clear of the now-absolute icon */
     }
     /* NAS (chart:false): block anchors to card; p-1 (0.25) + icon (3) + title px-2 (0.5) */
-    li[data-name="NAS"] .absolute.bottom-3.left-3 {
+    li[data-name="NAS - Caspian"] .absolute.bottom-3.left-3 {
       left: 3.75rem;
     }
     /* PVE (chart:true): block anchors to relative service-container, 0.25rem inside card */
