@@ -71,8 +71,15 @@ spec:
                 # .config is repaired too: an earlier revision mounted a secret
                 # under it, which left it owned by root on the volume. workspace
                 # is the default folder code-server opens; it does not create it.
-                mkdir -p "$${BIN}" /home/coder/.config /home/coder/workspace
-                chown 1000:1000 /home/coder /home/coder/.local /home/coder/.config /home/coder/workspace "$${BIN}"
+                # If workspace exists as a non-directory (mkdir -p fails EEXIST),
+                # preserve it under another name rather than crash-looping.
+                WS=/home/coder/workspace
+                if [ ! -d "$${WS}" ] && { [ -e "$${WS}" ] || [ -L "$${WS}" ]; }; then
+                  echo "workspace exists as non-directory, moving aside: $$(ls -ld "$${WS}")"
+                  mv "$${WS}" "$${WS}.pre-init.$$(date +%s)"
+                fi
+                mkdir -p "$${BIN}" /home/coder/.config "$${WS}"
+                chown 1000:1000 /home/coder /home/coder/.local /home/coder/.config "$${WS}" "$${BIN}"
 
                 if [ -f "$${MARKER}" ] && [ "$$(cat "$${MARKER}")" = "$${STAMP}" ]; then
                   echo "toolchain up to date, skipping install"
