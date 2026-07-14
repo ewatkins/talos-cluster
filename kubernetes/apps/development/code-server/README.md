@@ -63,6 +63,20 @@ talhelper genconfig   # decrypts talsecret.sops.yaml with the mounted Age key
 
 `TALOSCONFIG` points at the file this writes. `kubectl` needs no kubeconfig at all — it falls back to the pod's ServiceAccount.
 
+## Homebrew and Claude Code
+
+Both live in persistent storage and are installed **once from the IDE terminal** (they self-update thereafter, so they are deliberately not managed by the init container's pinned toolchain):
+
+```bash
+# Homebrew — /home/linuxbrew is a PVC mount (~/.linuxbrew-home), so bottles work and installs persist
+NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Claude Code — installs to ~/.local/bin, config in ~/.claude
+curl -fsSL https://claude.ai/install.sh | bash
+```
+
+`brew shellenv` is evaluated by `/etc/profile.d/toolchain.sh` when brew is present. Caveats: brew formulas without bottles need a compiler (`brew install gcc` — also persisted); neither brew nor other glibc-linked tools run in **ssh sessions**, which land in the musl (Alpine) sidecar — use the IDE terminal for those.
+
 ## Working on this repo from code-server
 
 The repo's root `Taskfile.yaml` pins `SOPS_AGE_KEY_FILE` and `KUBECONFIG` to repo-root paths, which override the pod's environment. After cloning to `~/talos-cluster`, run once:

@@ -70,8 +70,11 @@ spec:
                 # The PVC is provisioned root-owned; code-server runs as uid 1000.
                 # .config is repaired too: an earlier revision mounted a secret
                 # under it, which left it owned by root on the volume.
-                mkdir -p "$${BIN}" /home/ewatkins/.config
-                chown 1000:1000 /home/ewatkins /home/ewatkins/.local /home/ewatkins/.config "$${BIN}"
+                # .linuxbrew-home backs the /home/linuxbrew mount in the app
+                # container; pre-created here so kubelet's subPath handling
+                # doesn't make it root-owned.
+                mkdir -p "$${BIN}" /home/ewatkins/.config /home/ewatkins/.linuxbrew-home
+                chown 1000:1000 /home/ewatkins /home/ewatkins/.local /home/ewatkins/.config /home/ewatkins/.linuxbrew-home "$${BIN}"
                 # sshd StrictModes rejects a group/world-writable home
                 chmod 0755 /home/ewatkins
 
@@ -131,7 +134,7 @@ spec:
               # The image bakes HOME=/home/coder (the passwd entry for uid 1000);
               # override it so everything lands on the PVC mounted at /home/ewatkins.
               HOME: /home/ewatkins
-              PATH: /home/ewatkins/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+              PATH: /home/ewatkins/.local/bin:/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
               SOPS_AGE_KEY_FILE: /var/run/secrets/sops/age.key
               # Written by `talhelper genconfig`; not stored as a secret
               TALOSCONFIG: /home/ewatkins/talos-cluster/talos/clusterconfig/talosconfig
@@ -276,6 +279,17 @@ spec:
         existingClaim: code-server-config
         globalMounts:
           - path: /home/ewatkins
+      # Homebrew hard-requires /home/linuxbrew/.linuxbrew for bottles; that
+      # path is on the ephemeral rootfs, so back it with the PVC (visible as
+      # ~/.linuxbrew-home). App container only: brew is glibc, and the ssh
+      # sidecar is musl (Alpine).
+      brew:
+        existingClaim: code-server-config
+        advancedMounts:
+          code-server:
+            app:
+              - path: /home/linuxbrew
+                subPath: .linuxbrew-home
       # Rename uid/gid 1000 from the image's `coder` to `ewatkins` (prompt,
       # whoami, ls -l). Split in two because sudoers must be 0440.
       identity:

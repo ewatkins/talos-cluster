@@ -106,6 +106,9 @@ data:
   toolchain.sh: |
     export PATH="/home/ewatkins/.local/bin:$$PATH"
     export TALOSCONFIG="$${TALOSCONFIG:-/home/ewatkins/talos-cluster/talos/clusterconfig/talosconfig}"
+    if [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
+      eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+    fi
   # linuxserver custom-cont-init hook for the ssh sidecar: its PUID user is
   # created with home /config; move it to the real home so logins land there
   # and authorized_keys is ~/.ssh/authorized_keys on the PVC.
