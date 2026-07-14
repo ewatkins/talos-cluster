@@ -1,0 +1,37 @@
+---
+# Dedicated gateway for code-server: one LAN IP (${CODE_SERVER}) serving both
+# HTTPS (Keycloak OIDC enforced on the HTTPRoute) and SSH on their standard
+# ports. SSH cannot share the internal gateway, whose port 22 is forgejo's.
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: code
+  namespace: network
+spec:
+  gatewayClassName: envoy-internal
+  infrastructure:
+    parametersRef:
+      group: gateway.envoyproxy.io
+      kind: EnvoyProxy
+      name: envoy-proxy-code
+  listeners:
+    - name: https
+      protocol: HTTPS
+      port: 443
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: ewatkins-dev-production-tls
+            namespace: network
+      allowedRoutes:
+        namespaces:
+          from: All
+    - name: ssh
+      protocol: TCP
+      port: 22
+      allowedRoutes:
+        namespaces:
+          from: All
+        kinds:
+          - group: gateway.networking.k8s.io
+            kind: TCPRoute

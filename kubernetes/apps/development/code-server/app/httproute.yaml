@@ -4,11 +4,11 @@ kind: HTTPRoute
 metadata:
   name: code-server
   namespace: development
-  annotations:
-    external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
+  # No external-dns target annotation: unifi-dns publishes an A record from
+  # the parent gateway's own address (${CODE_SERVER}).
 spec:
   parentRefs:
-    - name: internal
+    - name: code
       namespace: network
       sectionName: https
   hostnames:

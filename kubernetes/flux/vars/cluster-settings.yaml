@@ -39,5 +39,5 @@ data:
   # GARAGE
   GARAGE: "10.40.0.140"
 
-  # CODE-SERVER
-  CODE_SERVER_SSH: "10.40.0.145"
+  # CODE-SERVER (https + ssh on the dedicated `code` gateway)
+  CODE_SERVER: "10.40.0.145"

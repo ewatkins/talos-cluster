@@ -4,10 +4,12 @@ kind: Kustomization
 resources:
   - ./envoyproxy-internal.yaml
   - ./envoyproxy-external.yaml
+  - ./envoyproxy-code.yaml
   - ./gatewayclass-internal.yaml
   - ./gatewayclass-external.yaml
   - ./gateway-internal.yaml
   - ./gateway-external.yaml
+  - ./gateway-code.yaml
   - ./httproute-redirect.yaml
   - ./clienttrafficpolicy-internal.yaml
   - ./clienttrafficpolicy-external.yaml
