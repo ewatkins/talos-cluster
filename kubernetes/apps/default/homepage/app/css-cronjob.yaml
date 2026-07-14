@@ -31,7 +31,7 @@ data:
       padding-left: 3rem; /* keep title clear of the now-absolute icon */
     }
     li[data-name="NAS"] .absolute.bottom-3.left-3 {
-      left: 3.5rem; /* align free-space text under the title, right of icon */
+      left: 3.75rem; /* card p-1 (0.25) + icon (3) + title px-2 (0.5) = aligned with "NAS" */
     }
 
     /* Make service cards stand out against the background */
