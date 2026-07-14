@@ -131,9 +131,12 @@ spec:
               - /home/ewatkins
             env:
               TZ: America/New_York
-              # The image bakes HOME=/home/coder (the passwd entry for uid 1000);
-              # override it so everything lands on the PVC mounted at /home/ewatkins.
+              # The image bakes HOME=/home/coder and USER=coder (its original
+              # passwd identity); override both to match the renamed uid 1000
+              # (tools like the brew installer trust $USER).
               HOME: /home/ewatkins
+              USER: ewatkins
+              LOGNAME: ewatkins
               PATH: /home/ewatkins/.local/bin:/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
               SOPS_AGE_KEY_FILE: /var/run/secrets/sops/age.key
               # Written by `talhelper genconfig`; not stored as a secret
