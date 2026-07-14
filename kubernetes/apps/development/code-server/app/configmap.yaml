@@ -4,6 +4,11 @@ kind: ConfigMap
 metadata:
   name: code-server-identity
   namespace: development
+  annotations:
+    # Lets the controller's reloader.stakater.com/search find this ConfigMap,
+    # so edits roll the pod (required: these are subPath mounts, which never
+    # see ConfigMap updates in a running pod).
+    reloader.stakater.com/match: "true"
 data:
   # /etc/passwd, group, shadow, and sudoers.d/nopasswd from
   # ghcr.io/coder/code-server, with uid/gid 1000 renamed coder -> ewatkins.
