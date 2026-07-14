@@ -1,0 +1,96 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: code-server-identity
+  namespace: development
+data:
+  # /etc/passwd, group, shadow, and sudoers.d/nopasswd from
+  # ghcr.io/coder/code-server, with uid/gid 1000 renamed coder -> ewatkins.
+  # Mounted over the image's copies so the login user matches Keycloak.
+  # shadow holds only a lock marker (!), no password hash. All four are
+  # needed: PAM validates sudo against shadow, and the sudoers rule must
+  # name the new user. Regenerate when bumping the code-server image.
+  passwd: |
+    root:x:0:0:root:/root:/bin/bash
+    daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+    bin:x:2:2:bin:/bin:/usr/sbin/nologin
+    sys:x:3:3:sys:/dev:/usr/sbin/nologin
+    sync:x:4:65534:sync:/bin:/bin/sync
+    games:x:5:60:games:/usr/games:/usr/sbin/nologin
+    man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+    lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+    mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+    news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+    uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+    proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+    www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+    backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+    list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+    irc:x:39:39:ircd:/run/ircd:/usr/sbin/nologin
+    _apt:x:42:65534::/nonexistent:/usr/sbin/nologin
+    nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+    ewatkins:x:1000:1000::/home/ewatkins:/bin/bash
+  group: |
+    root:x:0:
+    daemon:x:1:
+    bin:x:2:
+    sys:x:3:
+    adm:x:4:
+    tty:x:5:
+    disk:x:6:
+    lp:x:7:
+    mail:x:8:
+    news:x:9:
+    uucp:x:10:
+    man:x:12:
+    proxy:x:13:
+    kmem:x:15:
+    dialout:x:20:
+    fax:x:21:
+    voice:x:22:
+    cdrom:x:24:
+    floppy:x:25:
+    tape:x:26:
+    sudo:x:27:
+    audio:x:29:
+    dip:x:30:
+    www-data:x:33:
+    backup:x:34:
+    operator:x:37:
+    list:x:38:
+    irc:x:39:
+    src:x:40:
+    shadow:x:42:
+    utmp:x:43:
+    video:x:44:
+    sasl:x:45:
+    plugdev:x:46:
+    staff:x:50:
+    games:x:60:
+    users:x:100:ewatkins
+    nogroup:x:65534:
+    _ssh:x:101:
+    ewatkins:x:1000:
+  shadow: |
+    root:*:20627:0:99999:7:::
+    daemon:*:20627:0:99999:7:::
+    bin:*:20627:0:99999:7:::
+    sys:*:20627:0:99999:7:::
+    sync:*:20627:0:99999:7:::
+    games:*:20627:0:99999:7:::
+    man:*:20627:0:99999:7:::
+    lp:*:20627:0:99999:7:::
+    mail:*:20627:0:99999:7:::
+    news:*:20627:0:99999:7:::
+    uucp:*:20627:0:99999:7:::
+    proxy:*:20627:0:99999:7:::
+    www-data:*:20627:0:99999:7:::
+    backup:*:20627:0:99999:7:::
+    list:*:20627:0:99999:7:::
+    irc:*:20627:0:99999:7:::
+    _apt:*:20627:0:99999:7:::
+    nobody:*:20627:0:99999:7:::
+    ewatkins:!:20645:0:99999:7:::
+  nopasswd: |
+    ewatkins ALL=(ALL) NOPASSWD:ALL

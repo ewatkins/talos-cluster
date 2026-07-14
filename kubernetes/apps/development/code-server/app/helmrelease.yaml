@@ -69,17 +69,9 @@ spec:
 
                 # The PVC is provisioned root-owned; code-server runs as uid 1000.
                 # .config is repaired too: an earlier revision mounted a secret
-                # under it, which left it owned by root on the volume. workspace
-                # is the default folder code-server opens; it does not create it.
-                # If workspace exists as a non-directory (mkdir -p fails EEXIST),
-                # preserve it under another name rather than crash-looping.
-                WS=/home/ewatkins/workspace
-                if [ ! -d "$${WS}" ] && { [ -e "$${WS}" ] || [ -L "$${WS}" ]; }; then
-                  echo "workspace exists as non-directory, moving aside: $$(ls -ld "$${WS}")"
-                  mv "$${WS}" "$${WS}.pre-init.$$(date +%s)"
-                fi
-                mkdir -p "$${BIN}" /home/ewatkins/.config "$${WS}"
-                chown 1000:1000 /home/ewatkins /home/ewatkins/.local /home/ewatkins/.config "$${WS}" "$${BIN}"
+                # under it, which left it owned by root on the volume.
+                mkdir -p "$${BIN}" /home/ewatkins/.config
+                chown 1000:1000 /home/ewatkins /home/ewatkins/.local /home/ewatkins/.config "$${BIN}"
 
                 if [ -f "$${MARKER}" ] && [ "$$(cat "$${MARKER}")" = "$${STAMP}" ]; then
                   echo "toolchain up to date, skipping install"
@@ -128,7 +120,7 @@ spec:
               - none
               - --bind-addr
               - 0.0.0.0:8080
-              - /home/ewatkins/workspace
+              - /home/ewatkins
             env:
               TZ: America/New_York
               # The image bakes HOME=/home/coder (the passwd entry for uid 1000);
@@ -137,7 +129,7 @@ spec:
               PATH: /home/ewatkins/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
               SOPS_AGE_KEY_FILE: /var/run/secrets/sops/age.key
               # Written by `talhelper genconfig`; not stored as a secret
-              TALOSCONFIG: /home/ewatkins/workspace/talos-cluster/talos/clusterconfig/talosconfig
+              TALOSCONFIG: /home/ewatkins/talos-cluster/talos/clusterconfig/talosconfig
             probes:
               liveness: &probe
                 enabled: true
@@ -184,6 +176,36 @@ spec:
         existingClaim: code-server-config
         globalMounts:
           - path: /home/ewatkins
+      # Rename uid/gid 1000 from the image's `coder` to `ewatkins` (prompt,
+      # whoami, ls -l). Split in two because sudoers must be 0440.
+      identity:
+        type: configMap
+        name: code-server-identity
+        defaultMode: 0644
+        advancedMounts:
+          code-server:
+            app:
+              - path: /etc/passwd
+                subPath: passwd
+                readOnly: true
+              - path: /etc/group
+                subPath: group
+                readOnly: true
+      identity-sudoers:
+        type: configMap
+        name: code-server-identity
+        defaultMode: 0440
+        advancedMounts:
+          code-server:
+            app:
+              - path: /etc/sudoers.d/nopasswd
+                subPath: nopasswd
+                readOnly: true
+              # PAM validates sudo accounts against shadow; without this entry
+              # sudo fails with "account validation failure".
+              - path: /etc/shadow
+                subPath: shadow
+                readOnly: true
       secret:
         type: secret
         name: code-server-secret
