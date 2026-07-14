@@ -48,7 +48,7 @@ data:
         header: false
       Workspace:
         style: row
-        columns: 2
+        columns: 3
         header: false
       Services:
         style: row
@@ -144,17 +144,18 @@ data:
               type: jellyseerr
               url: https://requests.ewatkins.dev
               key: "{{HOMEPAGE_VAR_JELLYSEERR_KEY}}"
-        - Immich:
-            href: https://photos.ewatkins.dev
-            description: Photo and video library.
-            icon: immich
+        - Recommendarr:
+            href: https://recommend.ewatkins.dev
+            description: Media recommendations
+            icon: mdi-movie-search
             namespace: media
-            app: immich
-            widget:
-              type: immich
-              url: https://photos.ewatkins.dev
-              key: "{{HOMEPAGE_VAR_IMMICH_KEY}}"
-              version: 2
+            app: recommendarr
+        - Notifiarr:
+            href: https://notifiarr.ewatkins.dev
+            description: Notifications
+            icon: notifiarr
+            namespace: media
+            app: notifiarr
     - Requests:
         - SABnzbd:
             href: https://sab.ewatkins.dev
@@ -261,6 +262,17 @@ data:
             icon: open-webui
             namespace: ai
             app: open-webui
+        - Immich:
+            href: https://photos.ewatkins.dev
+            description: Photo and video library.
+            icon: immich
+            namespace: media
+            app: immich
+            widget:
+              type: immich
+              url: https://photos.ewatkins.dev
+              key: "{{HOMEPAGE_VAR_IMMICH_KEY}}"
+              version: 2
     - Services:
         - Outline:
             href: https://notes.ewatkins.dev
@@ -268,18 +280,6 @@ data:
             icon: outline
             namespace: default
             app: outline
-        - Recommendarr:
-            href: https://recommend.ewatkins.dev
-            description: Media recommendations
-            icon: mdi-movie-search
-            namespace: media
-            app: recommendarr
-        - Notifiarr:
-            href: https://notifiarr.ewatkins.dev
-            description: Notifications
-            icon: notifiarr
-            namespace: media
-            app: notifiarr
         - Goldilocks:
             href: https://goldilocks.ewatkins.dev
             description: Resource recommendations
