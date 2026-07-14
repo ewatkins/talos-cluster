@@ -13,35 +13,6 @@ metadata:
     kustomize.toolkit.fluxcd.io/substitute: disabled
 data:
   custom.css.tmpl: |
-    /* Service cards — frosted glass matching Keycloak login */
-    .service-card {
-      position: relative !important;
-      background: rgba(15, 18, 22, 0.65) !important;
-      backdrop-filter: blur(20px) saturate(160%) !important;
-      -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
-      border: 1px solid rgba(255, 255, 255, 0.1) !important;
-      border-radius: 16px !important;
-      box-shadow:
-        0 0 0 1px rgba(255, 255, 255, 0.04) inset,
-        0 8px 32px rgba(0, 0, 0, 0.5) !important;
-    }
-
-    /* Remove Homepage's gradient backdrops on cards and group wrappers */
-    div[class*="bg-linear-to-br"] {
-      background-image: none !important;
-    }
-
-    /* Subtle top highlight */
-    .service-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 15%; right: 15%; height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-      border-radius: 100px;
-      pointer-events: none;
-      z-index: 1;
-    }
-
     /* PVE stat cards: flat (no gradient), CPU/Mem only, PVE version bottom-left */
     :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) div[class*="bg-linear-to-br"] {
       display: none; /* gradient backdrop */
