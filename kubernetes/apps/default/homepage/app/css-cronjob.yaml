@@ -13,6 +13,12 @@ metadata:
     kustomize.toolkit.fluxcd.io/substitute: disabled
 data:
   custom.css.tmpl: |
+    /* Make service cards stand out against the background */
+    .service-card {
+      background-color: rgb(15 23 42 / 0.45) !important; /* slate-900, up from default 20% */
+      border: 1px solid rgb(255 255 255 / 0.08) !important;
+    }
+
     /* PVE stat cards: flat (no gradient), CPU/Mem only, PVE version bottom-left */
     :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) div[class*="bg-linear-to-br"] {
       display: none; /* gradient backdrop */
