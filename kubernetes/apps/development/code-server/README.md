@@ -32,9 +32,13 @@ Because code-server runs with `--auth none`, anything that can reach the Service
 
 ## Toolchain
 
-An init container installs the same CLI tools as `task workstation:generic-linux` (talhelper, age, flux, sops, task, helmfile, jq, kustomize, yq, talosctl, kubeconform, kubectl, helm) into an `emptyDir` mounted at `/tools`, which is first on `PATH`. Tools are reinstalled on every pod start, so they track upstream rather than going stale on the PVC — a pod restart requires network access to GitHub.
+An init container installs the same CLI tools as `task workstation:generic-linux` (talhelper, age, flux, sops, task, helmfile, jq, kustomize, yq, talosctl, kubeconform, kubectl, helm) into `~/.local/bin` on the PVC, which is first on `PATH`.
 
-Anything installed into `/home/coder` (VS Code extensions, dotfiles, language runtimes, cloned repos) persists on the PVC.
+Versions are **pinned in the init container script** and downloaded from each project's release URL. Deliberately *not* via an installer-redirector like `i.jpillora.com` (which `task workstation:generic-linux` uses): that would make every pod start depend on a third-party service being healthy, and the pod cannot schedule while it is down — which is exactly what happened when that service started returning HTTP 500.
+
+The install is guarded by a version marker (`~/.local/bin/.toolchain`). A restart whose pinned versions match the marker skips the install entirely, so the pod starts even with no network. Bumping a version in the script invalidates the marker and reinstalls.
+
+Anything else in `/home/coder` (VS Code extensions, dotfiles, language runtimes, cloned repos) persists on the PVC too. Note that **no secret is mounted under `/home/coder`**: a mount there makes the kubelet create its parent directories as root inside the PVC, and code-server then cannot write its own `~/.config`.
 
 ## Secrets
 
@@ -43,7 +47,7 @@ The `code-server-secret` Secret is assembled from two Bitwarden items:
 | Bitwarden item | Field | Becomes |
 | --- | --- | --- |
 | `code-server-secret` | `CODE_SERVER_OIDC_CLIENT_SECRET` | `client-secret` (read by the SecurityPolicy) |
-| `sops-age` | `age_agekey` (base64) | `age.key`, mounted at `/home/coder/.config/sops/age/keys.txt` (`SOPS_AGE_KEY_FILE`) |
+| `sops-age` | `age_agekey` (base64) | `age.key`, mounted at `/var/run/secrets/sops/age.key` (`SOPS_AGE_KEY_FILE`) |
 
 The Age key is **not** copied into a code-server-specific field. It is read from the `sops-age` Bitwarden item, which `kubernetes/flux/vars/pushsecret.yaml` keeps in sync with the live `sops-age` Secret in `flux-system` — the one Flux actually decrypts with. Rotating the key therefore reaches code-server on its own.
 
@@ -63,7 +67,7 @@ The repo's root `Taskfile.yaml` pins `SOPS_AGE_KEY_FILE` and `KUBECONFIG` to rep
 cd ~/workspace/talos-cluster
 
 # Taskfile expects ./age.key
-ln -s /home/coder/.config/sops/age/keys.txt age.key
+ln -s /var/run/secrets/sops/age.key age.key
 
 # Taskfile expects ./kubeconfig; build one from the pod's ServiceAccount.
 # tokenFile (not an embedded token) so it follows the projected token as it rotates.

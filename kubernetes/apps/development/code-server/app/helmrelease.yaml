@@ -68,8 +68,10 @@ spec:
                 STAMP="$${TALHELPER} $${AGE} $${FLUX} $${SOPS} $${TASK} $${HELMFILE} $${JQ} $${KUSTOMIZE} $${YQ} $${TALOSCTL} $${KUBECONFORM} $${KUBECTL} $${HELM}"
 
                 # The PVC is provisioned root-owned; code-server runs as uid 1000.
-                mkdir -p "$${BIN}"
-                chown 1000:1000 /home/coder "$${BIN}" /home/coder/.local
+                # .config is repaired too: an earlier revision mounted a secret
+                # under it, which left it owned by root on the volume.
+                mkdir -p "$${BIN}" /home/coder/.config
+                chown 1000:1000 /home/coder /home/coder/.local /home/coder/.config "$${BIN}"
 
                 if [ -f "$${MARKER}" ] && [ "$$(cat "$${MARKER}")" = "$${STAMP}" ]; then
                   echo "toolchain up to date, skipping install"
@@ -122,7 +124,7 @@ spec:
             env:
               TZ: America/New_York
               PATH: /home/coder/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-              SOPS_AGE_KEY_FILE: /home/coder/.config/sops/age/keys.txt
+              SOPS_AGE_KEY_FILE: /var/run/secrets/sops/age.key
               # Written by `talhelper genconfig`; not stored as a secret
               TALOSCONFIG: /home/coder/workspace/talos-cluster/talos/clusterconfig/talosconfig
             probes:
@@ -175,9 +177,12 @@ spec:
         type: secret
         name: code-server-secret
         defaultMode: 0400
+        # Mounted outside $HOME on purpose: a mount inside the home PVC makes the
+        # kubelet create its parent dirs as root, and code-server (uid 1000) then
+        # cannot create /home/coder/.config/code-server.
         advancedMounts:
           code-server:
             app:
-              - path: /home/coder/.config/sops/age/keys.txt
+              - path: /var/run/secrets/sops/age.key
                 subPath: age.key
                 readOnly: true
