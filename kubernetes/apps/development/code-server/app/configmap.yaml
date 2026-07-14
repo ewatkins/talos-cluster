@@ -100,3 +100,18 @@ data:
   ssh-home.sh: |
     #!/bin/bash
     usermod -d /home/ewatkins ewatkins
+
+    # kubelet fsGroup handling loosens these to 0660 at mount time; sshd
+    # refuses group-readable host keys and exits ("no hostkeys available").
+    chmod 600 /config/ssh_host_keys/ssh_host_*_key 2>/dev/null || true
+
+    # Sync authorized_keys from GitHub on every pod start. Best effort: on
+    # failure the previous file stays, so a GitHub outage can't lock you out.
+    # Note this overwrites manual edits — add keys at github.com/settings/keys.
+    mkdir -p /home/ewatkins/.ssh
+    chmod 700 /home/ewatkins/.ssh
+    if curl -sf --max-time 10 https://github.com/ewatkins.keys -o /tmp/github.keys && [ -s /tmp/github.keys ]; then
+      cp /tmp/github.keys /home/ewatkins/.ssh/authorized_keys
+      chmod 600 /home/ewatkins/.ssh/authorized_keys
+    fi
+    chown -R 1000:1000 /home/ewatkins/.ssh

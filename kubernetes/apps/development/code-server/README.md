@@ -91,10 +91,10 @@ Both files are gitignored, and both live on the PVC, so this survives pod restar
 
 A `linuxserver/openssh-server` sidecar shares the pod and the home PVC. The ssh Service holds the **same LAN IP as the https Service** (`${CODE_SERVER}` = 10.40.0.145) via Cilium's `io.cilium/lb-ipam-sharing-key` — allowed because their ports don't overlap — so `code.ewatkins.dev` serves both protocols on standard ports. unifi-dns publishes the A record from the https service annotation. (The internal gateway couldn't host this: its port 22 belongs to forgejo.)
 
-- **Key auth only** (`PASSWORD_ACCESS=false`). Add keys to `~/.ssh/authorized_keys` from the IDE terminal — a `custom-cont-init` script (`ssh-home.sh` in the identity ConfigMap) moves the sidecar user's home from the image default `/config` to `/home/ewatkins`, so sshd reads the same home the IDE uses.
+- **Key auth only** (`PASSWORD_ACCESS=false`). `~/.ssh/authorized_keys` is **synced from `https://github.com/ewatkins.keys` on every pod start** by the `ssh-home.sh` custom-cont-init script (which also moves the sidecar user's home from the image default `/config` to `/home/ewatkins`). Manage keys at github.com/settings/keys; manual edits to the file are overwritten. The sync is best-effort — if GitHub is unreachable the previous file is kept, so an outage cannot cause lockout.
 - Host keys persist in `~/.ssh-server/` (the sidecar's `/config`, a subdirectory of the home PVC), so clients don't see host-key warnings after pod restarts.
 - An SSH session is nearly as privileged as the IDE terminal: the pod's ServiceAccount token (cluster-admin) automounts into every container, and the shared toolchain's `kubectl` works against it. Only the age key mount (`/var/run/secrets/sops/age.key`) is app-container-only. `scp`, `rsync`, `sftp`, and VS Code Remote-SSH all work.
-- First-time setup: `mkdir -p ~/.ssh && chmod 700 ~/.ssh`, then append your public key to `~/.ssh/authorized_keys` (mode 600). sshd `StrictModes` requires the home not be group/world-writable; the init container enforces `0755`.
+- No first-time key setup needed — the GitHub sync provides the initial `authorized_keys` too. sshd `StrictModes` requires the home not be group/world-writable; the init container enforces `0755`. The same script also re-tightens host keys to `0600`: kubelet's `fsGroup` handling loosens them to `0660` at mount time, which sshd refuses ("no hostkeys available").
 
 ## Health Monitoring
 
