@@ -13,25 +13,30 @@ metadata:
     kustomize.toolkit.fluxcd.io/substitute: disabled
 data:
   custom.css.tmpl: |
-    /* NAS card: full-height icon on the left, title and free-space stacked to its right */
-    li[data-name="NAS"] .service-icon {
+    /* Stat cards (NAS + PVE): full-height icon on the left, text stacked to its right */
+    :is(li[data-name="NAS"], li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .service-icon {
       position: absolute !important;
       top: 0;
       bottom: 0;
       left: 0.25rem;
       width: 3rem;
     }
-    li[data-name="NAS"] .service-icon > * {
+    :is(li[data-name="NAS"], li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .service-icon > * {
       height: 2.5rem !important;
       width: 2.5rem !important;
       max-height: none !important;
       max-width: none !important;
     }
-    li[data-name="NAS"] .service-title {
+    :is(li[data-name="NAS"], li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .service-title {
       padding-left: 3rem; /* keep title clear of the now-absolute icon */
     }
+    /* NAS (chart:false): block anchors to card; p-1 (0.25) + icon (3) + title px-2 (0.5) */
     li[data-name="NAS"] .absolute.bottom-3.left-3 {
-      left: 3.75rem; /* card p-1 (0.25) + icon (3) + title px-2 (0.5) = aligned with "NAS" */
+      left: 3.75rem;
+    }
+    /* PVE (chart:true): block anchors to relative service-container, 0.25rem inside card */
+    :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .absolute.bottom-3.left-2 {
+      left: 3.5rem;
     }
 
     /* Make service cards stand out against the background */
