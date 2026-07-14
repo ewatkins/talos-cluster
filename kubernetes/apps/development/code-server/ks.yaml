@@ -21,5 +21,8 @@ spec:
     substitute:
       APP: *app
       GATUS_SUBDOMAIN: code
-      # Unauthenticated requests are redirected to Keycloak by the SecurityPolicy
-      GATUS_STATUS: "302"
+      # oauth2-proxy's own health endpoint: unauthenticated and no redirect.
+      # Probing / instead would follow the login redirect to Keycloak and end up
+      # asserting Keycloak is up, not code-server. The pod leaves the Service
+      # endpoints if any container goes unready, so this still catches an outage.
+      GATUS_PATH: /ping
