@@ -8,19 +8,19 @@ VS Code in the browser, used as the central development environment for this clu
 | --- | --- | --- |
 | Image | `ghcr.io/coder/code-server:4.128.0` | Official upstream image |
 | Chart | `app-template` (OCI) from `flux-system` | |
-| URL | `https://code.ewatkins.dev` (port 8080) | Internal gateway; DNS via `internal.ewatkins.dev` |
-| Auth | Keycloak OIDC via Envoy SecurityPolicy | code-server itself runs `--auth none` |
+| URL | `https://code.ewatkins.dev` | A record to `${CODE_SERVER}` (10.40.0.145); no gateway involved |
+| Auth | Keycloak OIDC via in-pod oauth2-proxy sidecar | TLS from cert-manager (`code-server-tls`); code-server itself runs `--auth none` on loopback |
 | Home | `/home/ewatkins` (PVC root) | `HOME` env overrides the image's `/home/coder` |
 | Identity | uid/gid 1000 = `ewatkins` | `code-server-identity` ConfigMap overrides `/etc/passwd`, `group`, `shadow`, and `sudoers.d/nopasswd` (all four needed — PAM validates sudo against shadow). Regenerate from the image when bumping its tag |
 | Workspace | `/home/ewatkins` | code-server opens the home directory itself |
-| SSH | `ssh ewatkins@code-ssh.ewatkins.dev` (port 22) | Sidecar `linuxserver/openssh-server` on a dedicated LB IP (`${CODE_SERVER_SSH}` = 10.40.0.145); key auth only |
+| SSH | `ssh ewatkins@code.ewatkins.dev` (port 22) | Sidecar `linuxserver/openssh-server`; same IP as https via Cilium `lb-ipam-sharing-key` |
 | Config PVC | `code-server-config`, 50Gi, `ReadWriteOnce` | StorageClass `nfs-fast` |
 | Cluster access | ServiceAccount `code-server` bound to `cluster-admin` | `kubectl`/`flux` use the in-cluster config |
 | Resources | requests: 100m CPU, 1Gi memory; limits: 8Gi memory | |
 
 ## Authentication
 
-Unauthenticated requests to `https://code.ewatkins.dev` are redirected to Keycloak (302). The Keycloak client must be created manually in the `master` realm:
+code-server has no native OIDC, so an **oauth2-proxy sidecar** owns port 443: it terminates TLS (cert-manager `Certificate`, dns01), runs the Keycloak OIDC flow, and proxies authenticated traffic (websockets included) to code-server on loopback `127.0.0.1:8080` — which is unreachable from outside the pod, so there is no unauthenticated bypass path, in-cluster or otherwise. Unauthenticated requests are redirected to Keycloak (302). The Keycloak client must be created manually in the `master` realm:
 
 | Setting | Value |
 | --- | --- |
@@ -31,7 +31,7 @@ Unauthenticated requests to `https://code.ewatkins.dev` are redirected to Keyclo
 
 The generated client secret goes into the Bitwarden `code-server-secret` item as `CODE_SERVER_OIDC_CLIENT_SECRET`.
 
-Because code-server runs with `--auth none`, anything that can reach the Service directly inside the cluster bypasses Keycloak. The gateway is the only intended path in.
+oauth2-proxy also needs a cookie-encryption secret in the Bitwarden item: `CODE_SERVER_COOKIE_SECRET`, generated with `openssl rand -base64 32 | tr -- '+/' '-_'`.
 
 ## Toolchain
 
@@ -49,7 +49,8 @@ The `code-server-secret` Secret is assembled from two Bitwarden items:
 
 | Bitwarden item | Field | Becomes |
 | --- | --- | --- |
-| `code-server-secret` | `CODE_SERVER_OIDC_CLIENT_SECRET` | `client-secret` (read by the SecurityPolicy) |
+| `code-server-secret` | `CODE_SERVER_OIDC_CLIENT_SECRET` | `client-secret` (oauth2-proxy) |
+| `code-server-secret` | `CODE_SERVER_COOKIE_SECRET` | `cookie-secret` (oauth2-proxy session encryption) |
 | `sops-age` | `age_agekey` (base64) | `age.key`, mounted at `/var/run/secrets/sops/age.key` (`SOPS_AGE_KEY_FILE`) |
 
 The Age key is **not** copied into a code-server-specific field. It is read from the `sops-age` Bitwarden item, which `kubernetes/flux/vars/pushsecret.yaml` keeps in sync with the live `sops-age` Secret in `flux-system` — the one Flux actually decrypts with. Rotating the key therefore reaches code-server on its own.
@@ -88,7 +89,7 @@ Both files are gitignored, and both live on the PVC, so this survives pod restar
 
 ## SSH
 
-A `linuxserver/openssh-server` sidecar shares the pod and the home PVC, exposed on its own LAN LoadBalancer IP so it can use the standard port 22 (the internal gateway's 22 belongs to forgejo). unifi-dns publishes `code-ssh.ewatkins.dev` from the service annotation.
+A `linuxserver/openssh-server` sidecar shares the pod and the home PVC. The ssh Service holds the **same LAN IP as the https Service** (`${CODE_SERVER}` = 10.40.0.145) via Cilium's `io.cilium/lb-ipam-sharing-key` — allowed because their ports don't overlap — so `code.ewatkins.dev` serves both protocols on standard ports. unifi-dns publishes the A record from the https service annotation. (The internal gateway couldn't host this: its port 22 belongs to forgejo.)
 
 - **Key auth only** (`PASSWORD_ACCESS=false`). Add keys to `~/.ssh/authorized_keys` from the IDE terminal — a `custom-cont-init` script (`ssh-home.sh` in the identity ConfigMap) moves the sidecar user's home from the image default `/config` to `/home/ewatkins`, so sshd reads the same home the IDE uses.
 - Host keys persist in `~/.ssh-server/` (the sidecar's `/config`, a subdirectory of the home PVC), so clients don't see host-key warnings after pod restarts.

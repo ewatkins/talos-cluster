@@ -117,11 +117,14 @@ spec:
               repository: ghcr.io/coder/code-server
               tag: 4.128.0
             args:
-              # Authentication is handled by Keycloak at the gateway, not by code-server.
+              # Authentication is handled by the oauth2-proxy sidecar (Keycloak
+              # OIDC), not by code-server. Loopback bind means the only network
+              # paths into the pod are oauth2-proxy (443) and sshd (22) — port
+              # 8080 is unreachable from outside the pod.
               - --auth
               - none
               - --bind-addr
-              - 0.0.0.0:8080
+              - 127.0.0.1:8080
               - /home/ewatkins
             env:
               TZ: America/New_York
@@ -133,13 +136,14 @@ spec:
               # Written by `talhelper genconfig`; not stored as a secret
               TALOSCONFIG: /home/ewatkins/talos-cluster/talos/clusterconfig/talosconfig
             probes:
+              # exec, not httpGet: the kubelet probes the pod IP, but
+              # code-server binds loopback only.
               liveness: &probe
                 enabled: true
                 custom: true
                 spec:
-                  httpGet:
-                    path: /healthz
-                    port: 8080
+                  exec:
+                    command: ["curl", "-sf", "http://127.0.0.1:8080/healthz"]
                   initialDelaySeconds: 15
                   periodSeconds: 30
                   timeoutSeconds: 5
@@ -156,6 +160,59 @@ spec:
                 memory: 1Gi
               limits:
                 memory: 8Gi
+          # Keycloak OIDC + TLS at the pod edge. code-server has no native
+          # OIDC; this sidecar owns port 443 of the shared LB IP and proxies
+          # authenticated (websocket-capable) traffic to loopback 8080. The
+          # /oauth2/callback redirect path matches the existing Keycloak client.
+          oauth2-proxy:
+            image:
+              repository: quay.io/oauth2-proxy/oauth2-proxy
+              tag: v7.15.3
+            args:
+              - --https-address=0.0.0.0:8443
+              - --tls-cert-file=/tls/tls.crt
+              - --tls-key-file=/tls/tls.key
+              - --upstream=http://127.0.0.1:8080
+              - --redirect-url=https://code.ewatkins.dev/oauth2/callback
+              - --provider=oidc
+              - --oidc-issuer-url=https://keycloak.ewatkins.dev/realms/master
+              - --client-id=code-server
+              - --email-domain=*
+              - --code-challenge-method=S256
+              - --skip-provider-button
+              - --cookie-secure=true
+            env:
+              OAUTH2_PROXY_CLIENT_SECRET:
+                valueFrom:
+                  secretKeyRef:
+                    name: code-server-secret
+                    key: client-secret
+              OAUTH2_PROXY_COOKIE_SECRET:
+                valueFrom:
+                  secretKeyRef:
+                    name: code-server-secret
+                    key: cookie-secret
+            probes:
+              liveness: &oap
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /ping
+                    port: 8443
+                    scheme: HTTPS
+                  initialDelaySeconds: 5
+                  periodSeconds: 30
+              readiness: *oap
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: [ALL] }
+            resources:
+              requests:
+                cpu: 10m
+              limits:
+                memory: 128Mi
           # SSH access from the LAN (scp/rsync, VS Code Remote-SSH). s6 starts
           # as root and drops to PUID; a custom-cont-init script moves the user
           # home from /config to /home/ewatkins, so logins land in the real
@@ -191,20 +248,28 @@ spec:
         seccompProfile:
           type: RuntimeDefault
 
+    # Both services hold the same LAN IP (Cilium permits this when the
+    # sharing keys match and ports do not overlap), so code.ewatkins.dev
+    # serves https (Keycloak via oauth2-proxy) and ssh on standard ports.
     service:
       app:
         controller: *app
+        type: LoadBalancer
+        annotations:
+          io.cilium/lb-ipam-ips: "${CODE_SERVER}"
+          io.cilium/lb-ipam-sharing-key: code-server
+          external-dns.alpha.kubernetes.io/hostname: code.ewatkins.dev
+        externalTrafficPolicy: Cluster
         ports:
-          http:
-            port: 8080
-      # Dedicated LAN IP so SSH can live on the standard port 22 (the internal
-      # gateway's 22 belongs to forgejo). unifi-dns publishes the hostname.
+          https:
+            port: 443
+            targetPort: 8443
       ssh:
         controller: *app
         type: LoadBalancer
         annotations:
-          io.cilium/lb-ipam-ips: "${CODE_SERVER_SSH}"
-          external-dns.alpha.kubernetes.io/hostname: code-ssh.ewatkins.dev
+          io.cilium/lb-ipam-ips: "${CODE_SERVER}"
+          io.cilium/lb-ipam-sharing-key: code-server
         externalTrafficPolicy: Cluster
         ports:
           ssh:
@@ -230,6 +295,14 @@ spec:
                 readOnly: true
               - path: /etc/group
                 subPath: group
+                readOnly: true
+      tls:
+        type: secret
+        name: code-server-tls
+        advancedMounts:
+          code-server:
+            oauth2-proxy:
+              - path: /tls
                 readOnly: true
       # sshd host keys persist across restarts (subdir of the home PVC), and
       # the home-move script runs via the lsio custom-cont-init hook.
