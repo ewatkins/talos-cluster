@@ -8,12 +8,12 @@ VS Code in the browser, used as the central development environment for this clu
 | --- | --- | --- |
 | Image | `ghcr.io/coder/code-server:4.128.0` | Official upstream image |
 | Chart | `app-template` (OCI) from `flux-system` | |
-| URL | `https://code.ewatkins.dev` (port 8080) | Dedicated `code` gateway at `${CODE_SERVER}` (10.40.0.145); A record via unifi-dns |
+| URL | `https://code.ewatkins.dev` (port 8080) | Internal gateway; DNS via `internal.ewatkins.dev` |
 | Auth | Keycloak OIDC via Envoy SecurityPolicy | code-server itself runs `--auth none` |
 | Home | `/home/ewatkins` (PVC root) | `HOME` env overrides the image's `/home/coder` |
 | Identity | uid/gid 1000 = `ewatkins` | `code-server-identity` ConfigMap overrides `/etc/passwd`, `group`, `shadow`, and `sudoers.d/nopasswd` (all four needed — PAM validates sudo against shadow). Regenerate from the image when bumping its tag |
 | Workspace | `/home/ewatkins` | code-server opens the home directory itself |
-| SSH | `ssh ewatkins@code.ewatkins.dev` (port 22) | Sidecar `linuxserver/openssh-server` behind the dedicated `code` gateway; key auth only |
+| SSH | `ssh ewatkins@code-ssh.ewatkins.dev` (port 22) | Sidecar `linuxserver/openssh-server` on a dedicated LB IP (`${CODE_SERVER_SSH}` = 10.40.0.145); key auth only |
 | Config PVC | `code-server-config`, 50Gi, `ReadWriteOnce` | StorageClass `nfs-fast` |
 | Cluster access | ServiceAccount `code-server` bound to `cluster-admin` | `kubectl`/`flux` use the in-cluster config |
 | Resources | requests: 100m CPU, 1Gi memory; limits: 8Gi memory | |
@@ -88,7 +88,7 @@ Both files are gitignored, and both live on the PVC, so this survives pod restar
 
 ## SSH
 
-A `linuxserver/openssh-server` sidecar shares the pod and the home PVC. HTTPS and SSH both ride the dedicated `code` Envoy gateway (`kubernetes/apps/network/envoy-gateway/gateway/gateway-code.yaml`) on one LAN IP (`${CODE_SERVER}` = 10.40.0.145), so both use their standard ports under the single name `code.ewatkins.dev` — the internal gateway could not host SSH, its port 22 belongs to forgejo. unifi-dns publishes the A record from the gateway address.
+A `linuxserver/openssh-server` sidecar shares the pod and the home PVC, exposed on its own LAN LoadBalancer IP so it can use the standard port 22 (the internal gateway's 22 belongs to forgejo). unifi-dns publishes `code-ssh.ewatkins.dev` from the service annotation.
 
 - **Key auth only** (`PASSWORD_ACCESS=false`). Add keys to `~/.ssh/authorized_keys` from the IDE terminal — a `custom-cont-init` script (`ssh-home.sh` in the identity ConfigMap) moves the sidecar user's home from the image default `/config` to `/home/ewatkins`, so sshd reads the same home the IDE uses.
 - Host keys persist in `~/.ssh-server/` (the sidecar's `/config`, a subdirectory of the home PVC), so clients don't see host-key warnings after pod restarts.
