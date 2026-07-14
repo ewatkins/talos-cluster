@@ -12,7 +12,7 @@ spec:
       namespace: network
       sectionName: https
   hostnames:
-    - "homepage.ewatkins.dev"
+    - "home.ewatkins.dev"
   rules:
     - matches:
         - path:
