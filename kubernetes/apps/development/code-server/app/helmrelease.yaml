@@ -197,9 +197,19 @@ spec:
         ports:
           http:
             port: 8080
-          # Backend for the code gateway's TCP:22 listener (TCPRoute)
+      # Dedicated LAN IP so SSH can live on the standard port 22 (the internal
+      # gateway's 22 belongs to forgejo). unifi-dns publishes the hostname.
+      ssh:
+        controller: *app
+        type: LoadBalancer
+        annotations:
+          io.cilium/lb-ipam-ips: "${CODE_SERVER_SSH}"
+          external-dns.alpha.kubernetes.io/hostname: code-ssh.ewatkins.dev
+        externalTrafficPolicy: Cluster
+        ports:
           ssh:
-            port: 2222
+            port: 22
+            targetPort: 2222
 
     persistence:
       config:
