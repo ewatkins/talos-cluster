@@ -110,13 +110,18 @@ data:
     # refuses group-readable host keys and exits ("no hostkeys available").
     chmod 600 /config/ssh_host_keys/ssh_host_*_key 2>/dev/null || true
 
-    # Sync authorized_keys from GitHub on every pod start. Best effort: on
-    # failure the previous file stays, so a GitHub outage can't lock you out.
-    # Note this overwrites manual edits — add keys at github.com/settings/keys.
+    # Sync authorized_keys from GitHub on every pod start via ssh-import-id
+    # (both accounts). Imported into a temp file and installed atomically:
+    # GitHub stays authoritative (revoking a key there removes it here), but
+    # a failed fetch keeps the previous file, so an outage can't lock you out.
     mkdir -p /home/ewatkins/.ssh
     chmod 700 /home/ewatkins/.ssh
-    if curl -sf --max-time 10 https://github.com/ewatkins.keys -o /tmp/github.keys && [ -s /tmp/github.keys ]; then
-      cp /tmp/github.keys /home/ewatkins/.ssh/authorized_keys
-      chmod 600 /home/ewatkins/.ssh/authorized_keys
+    apk add --no-cache ssh-import-id >/dev/null 2>&1 || true
+    if command -v ssh-import-id >/dev/null 2>&1; then
+      TMP=$(mktemp)
+      if ssh-import-id -o "$TMP" gh:ewatkins gh:mmu-ewatkins && [ -s "$TMP" ]; then
+        install -o 1000 -g 1000 -m 600 "$TMP" /home/ewatkins/.ssh/authorized_keys
+      fi
+      rm -f "$TMP"
     fi
     chown -R 1000:1000 /home/ewatkins/.ssh
