@@ -26,6 +26,11 @@ data:
         0 8px 32px rgba(0, 0, 0, 0.5) !important;
     }
 
+    /* Remove Homepage's default inner gradient backdrop */
+    .service-card div[class*="bg-linear-to-br"] {
+      display: none;
+    }
+
     /* Subtle top highlight */
     .service-card::before {
       content: '';
