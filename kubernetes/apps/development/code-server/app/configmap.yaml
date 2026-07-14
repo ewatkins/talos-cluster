@@ -99,6 +99,13 @@ data:
     ewatkins:!:20645:0:99999:7:::
   nopasswd: |
     ewatkins ALL=(ALL) NOPASSWD:ALL
+  # Mounted at /etc/profile.d/toolchain.sh in both the app and ssh containers.
+  # Login shells (code-server's integrated terminal, ssh -t) run /etc/profile,
+  # which hard-resets PATH and clobbers the container env; profile.d runs
+  # after that reset. The fresh PVC home has no dotfiles to do this instead.
+  toolchain.sh: |
+    export PATH="/home/ewatkins/.local/bin:$$PATH"
+    export TALOSCONFIG="$${TALOSCONFIG:-/home/ewatkins/talos-cluster/talos/clusterconfig/talosconfig}"
   # linuxserver custom-cont-init hook for the ssh sidecar: its PUID user is
   # created with home /config; move it to the real home so logins land there
   # and authorized_keys is ~/.ssh/authorized_keys on the PVC.
@@ -120,6 +127,13 @@ data:
       sed -i -E 's/^#?ClientAliveCountMax[[:space:]].*/ClientAliveCountMax 4/' "$SSHD_CONF"
       grep -q '^ClientAliveInterval' "$SSHD_CONF" || echo 'ClientAliveInterval 30' >> "$SSHD_CONF"
       grep -q '^ClientAliveCountMax' "$SSHD_CONF" || echo 'ClientAliveCountMax 4' >> "$SSHD_CONF"
+      # Put the shared toolchain (~/.local/bin) on PATH for ssh sessions.
+      # SetEnv covers non-interactive commands (ssh host cmd, Remote-SSH);
+      # the profile.d file below covers interactive logins, where Alpine's
+      # /etc/profile hard-resets PATH and would clobber SetEnv.
+      grep -q '^SetEnv ' "$SSHD_CONF" || cat >> "$SSHD_CONF" <<'SSHEOF'
+    SetEnv PATH=/home/ewatkins/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin TALOSCONFIG=/home/ewatkins/talos-cluster/talos/clusterconfig/talosconfig
+    SSHEOF
     fi
 
     # Sync authorized_keys from GitHub on every pod start via ssh-import-id
