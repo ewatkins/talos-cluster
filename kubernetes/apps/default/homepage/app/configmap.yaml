@@ -32,7 +32,7 @@ data:
         header: false
       Streaming:
         style: row
-        columns: 2
+        columns: 3
         header: false
       Requests:
         style: row
@@ -134,6 +134,16 @@ data:
               key: "{{HOMEPAGE_VAR_JELLYFIN_KEY}}"
               enableBlocks: true
               enableNowPlaying: false
+        - Requests:
+            href: https://requests.ewatkins.dev
+            description: Request movies and TV shows.
+            icon: jellyseerr
+            namespace: media
+            app: seerr
+            widget:
+              type: jellyseerr
+              url: https://requests.ewatkins.dev
+              key: "{{HOMEPAGE_VAR_JELLYSEERR_KEY}}"
         - Immich:
             href: https://photos.ewatkins.dev
             description: Photo and video library.
@@ -146,16 +156,14 @@ data:
               key: "{{HOMEPAGE_VAR_IMMICH_KEY}}"
               version: 2
     - Requests:
-        - Requests:
-            href: https://requests.ewatkins.dev
-            description: Request movies and TV shows.
-            icon: jellyseerr
-            namespace: media
-            app: seerr
+        - SABnzbd:
+            href: https://sab.ewatkins.dev
+            description: Usenet downloader.
+            icon: sabnzbd
             widget:
-              type: jellyseerr
-              url: https://requests.ewatkins.dev
-              key: "{{HOMEPAGE_VAR_JELLYSEERR_KEY}}"
+              type: sabnzbd
+              url: https://sab.ewatkins.dev
+              key: "{{HOMEPAGE_VAR_SABNZBD_KEY}}"
         - Radarr:
             href: https://radarr.ewatkins.dev
             description: Request and manage movies.
@@ -177,14 +185,6 @@ data:
               url: https://sonarr.ewatkins.dev
               key: "{{HOMEPAGE_VAR_SONARR_KEY}}"
     - Pipeline:
-        - SABnzbd:
-            href: https://sab.ewatkins.dev
-            description: Usenet downloader.
-            icon: sabnzbd
-            widget:
-              type: sabnzbd
-              url: https://sab.ewatkins.dev
-              key: "{{HOMEPAGE_VAR_SABNZBD_KEY}}"
         - Prowlarr:
             href: https://prowlarr.ewatkins.dev
             description: Tracker and indexer manager.
