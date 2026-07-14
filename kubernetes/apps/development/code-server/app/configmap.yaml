@@ -104,8 +104,12 @@ data:
   # which hard-resets PATH and clobbers the container env; profile.d runs
   # after that reset. The fresh PVC home has no dotfiles to do this instead.
   toolchain.sh: |
-    export PATH="/home/ewatkins/.local/bin:$$PATH"
+    # Prepend unconditionally (fixed paths), so a login shell reaches these
+    # even when /etc/profile has reset PATH and even if brew was installed
+    # after code-server resolved its shell environment.
+    export PATH="/home/ewatkins/.local/bin:/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$$PATH"
     export TALOSCONFIG="$${TALOSCONFIG:-/home/ewatkins/talos-cluster/talos/clusterconfig/talosconfig}"
+    # brew shellenv also exports HOMEBREW_* vars; harmless if brew is absent.
     if [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
       eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
     fi
