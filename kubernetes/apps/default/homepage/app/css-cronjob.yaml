@@ -13,6 +13,11 @@ metadata:
     kustomize.toolkit.fluxcd.io/substitute: disabled
 data:
   custom.css.tmpl: |
+    /* Darker service cards for readability against background image */
+    .service-card {
+      background-color: rgb(15 23 42 / 0.5) !important; /* slate-900 @ 50% vs default 20% */
+    }
+
     /* PVE stat cards: flat (no gradient), CPU/Mem only, PVE version bottom-left */
     :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) div[class*="bg-linear-to-br"] {
       display: none; /* gradient backdrop */
