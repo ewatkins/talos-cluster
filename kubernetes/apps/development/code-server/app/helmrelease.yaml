@@ -57,7 +57,9 @@ spec:
                   siderolabs/talos?as=talosctl \
                   yannh/kubeconform?as=kubeconform
                 do
-                  curl -fsSL "https://i.jpillora.com/${pkg}&type=script" | bash
+                  # The doubled $ escapes Flux postBuild envsubst, which would
+                  # otherwise try to substitute the shell loop variable.
+                  curl -fsSL "https://i.jpillora.com/$${pkg}&type=script" | bash
                 done
                 curl -fsSL -o kubectl \
                   "https://dl.k8s.io/release/$(curl -fsSL https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
