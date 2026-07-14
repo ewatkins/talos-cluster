@@ -280,12 +280,6 @@ data:
             icon: notifiarr
             namespace: media
             app: notifiarr
-        - Thanos:
-            href: https://thanos.ewatkins.dev
-            description: Long-term metrics
-            icon: thanos
-            namespace: observability
-            app: thanos
         - Goldilocks:
             href: https://goldilocks.ewatkins.dev
             description: Resource recommendations
