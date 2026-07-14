@@ -156,6 +156,8 @@ spec:
                 memory: 8Gi
 
     defaultPodOptions:
+      # Stable shell hostname (ewatkins@code) instead of the generated pod name
+      hostname: code
       securityContext:
         runAsUser: 1000
         runAsGroup: 1000
