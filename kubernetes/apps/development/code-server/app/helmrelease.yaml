@@ -223,7 +223,7 @@ spec:
               repository: lscr.io/linuxserver/openssh-server
               tag: 10.3_p1-r0-ls231
             env:
-              TZ: America/New_York
+              TZ: America/Chicago
               PUID: "1000"
               PGID: "1000"
               USER_NAME: ewatkins
@@ -238,6 +238,9 @@ spec:
                 memory: 256Mi
 
     defaultPodOptions:
+      # app-template disables SA token automount by default; without it there
+      # is no in-cluster config and kubectl falls back to localhost:8080.
+      automountServiceAccountToken: true
       # Stable shell hostname (ewatkins@code) instead of the generated pod name
       hostname: code
       securityContext:
