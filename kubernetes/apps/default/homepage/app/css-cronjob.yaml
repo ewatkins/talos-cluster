@@ -13,6 +13,13 @@ metadata:
     kustomize.toolkit.fluxcd.io/substitute: disabled
 data:
   custom.css.tmpl: |
+    /* Frosted glass service cards */
+    .service-card {
+      background: rgba(15, 18, 22, 0.55) !important;
+      backdrop-filter: blur(16px) saturate(160%) !important;
+      -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
+    }
+
     /* PVE stat cards: flat (no gradient), CPU/Mem only, PVE version bottom-left */
     :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) div[class*="bg-linear-to-br"] {
       display: none; /* gradient backdrop */
