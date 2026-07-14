@@ -317,12 +317,6 @@ data:
             namespace: default
             app: trek
             pod_selector: app=trek
-        - Homarr:
-            href: https://home.ewatkins.dev
-            description: Dashboard
-            icon: homarr
-            namespace: default
-            app: homarr
         - Homelable:
             href: https://homelab.ewatkins.dev
             description: Homelab inventory
