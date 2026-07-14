@@ -288,6 +288,15 @@ spec:
               - path: /etc/group
                 subPath: group
                 readOnly: true
+              # Login shells reset PATH via /etc/profile; this restores the
+              # toolchain after that reset.
+              - path: /etc/profile.d/toolchain.sh
+                subPath: toolchain.sh
+                readOnly: true
+            ssh:
+              - path: /etc/profile.d/toolchain.sh
+                subPath: toolchain.sh
+                readOnly: true
       tls:
         type: secret
         name: code-server-tls
