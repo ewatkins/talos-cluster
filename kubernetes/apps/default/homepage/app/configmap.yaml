@@ -71,6 +71,7 @@ data:
   services.yaml: |
     - Hypervisors:
         - pve01:
+            href: https://pve01.ewatkins.dev
             icon: proxmox
             widget:
               type: glances
@@ -79,6 +80,7 @@ data:
               metric: info
               chart: true
         - pve02:
+            href: https://pve02.ewatkins.dev
             icon: proxmox
             widget:
               type: glances
@@ -87,6 +89,7 @@ data:
               metric: info
               chart: true
         - pve03:
+            href: https://pve03.ewatkins.dev
             icon: proxmox
             widget:
               type: glances
