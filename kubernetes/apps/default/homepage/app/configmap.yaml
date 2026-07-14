@@ -94,7 +94,7 @@ data:
     - Stats:
         - NAS:
             href: https://caspian.ewatkins.dev
-            icon: unraid
+            icon: si-unraid
             widget:
               type: glances
               url: http://10.35.10.10:61208

@@ -23,14 +23,6 @@ data:
       border-color: rgb(255 255 255 / 0.15) !important;
     }
 
-    /* NAS card: unraid glyph is wide/short, so scale the box up to fill card height */
-    li[data-name="NAS"] .service-icon img {
-      height: 2.75rem !important;
-      width: 2.75rem !important;
-      max-height: none !important;
-      max-width: none !important;
-    }
-
     /* PVE stat cards: flat (no gradient), CPU/Mem only, PVE version bottom-left */
     :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) div[class*="bg-linear-to-br"] {
       display: none; /* gradient backdrop */
