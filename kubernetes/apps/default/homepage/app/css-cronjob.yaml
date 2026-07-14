@@ -39,6 +39,23 @@ data:
       left: 3.5rem;
     }
 
+    /* Streaming group: Recommendarr + Notifiarr stack in the third column,
+       Jellyfin and Requests span both rows at full height */
+    :is(li[data-name="Jellyfin"], li[data-name="Requests"]) {
+      grid-row: span 2;
+    }
+    li[data-name="Recommendarr"] {
+      grid-column: 3;
+      grid-row: 1;
+    }
+    li[data-name="Notifiarr"] {
+      grid-column: 3;
+      grid-row: 2;
+    }
+    :is(li[data-name="Jellyfin"], li[data-name="Requests"]) .service-card {
+      height: calc(100% - 0.5rem); /* fill the spanned rows (minus mb-2) */
+    }
+
     /* Make service cards stand out against the background */
     .service-card {
       background-color: rgb(15 23 42 / 0.45) !important; /* slate-900, up from default 20% */
