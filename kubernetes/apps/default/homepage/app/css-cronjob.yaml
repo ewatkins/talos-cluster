@@ -23,6 +23,12 @@ data:
       border-color: rgb(255 255 255 / 0.15) !important;
     }
 
+    /* NAS card: enlarge icon to fill card height */
+    li[data-name="NAS"] img {
+      height: 2rem !important;
+      width: 2rem !important;
+    }
+
     /* PVE stat cards: flat (no gradient), CPU/Mem only, PVE version bottom-left */
     :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) div[class*="bg-linear-to-br"] {
       display: none; /* gradient backdrop */
