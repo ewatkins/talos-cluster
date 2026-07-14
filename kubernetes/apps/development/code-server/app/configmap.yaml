@@ -108,7 +108,9 @@ data:
     # even when /etc/profile has reset PATH and even if brew was installed
     # after code-server resolved its shell environment.
     export PATH="/home/ewatkins/.local/bin:/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$$PATH"
-    export TALOSCONFIG="$${TALOSCONFIG:-/home/ewatkins/talos-cluster/talos/clusterconfig/talosconfig}"
+    # talosctl's own default location, independent of where the repo is cloned.
+    # Populate it once with: talosctl config merge <clone>/talos/clusterconfig/talosconfig
+    export TALOSCONFIG="$${TALOSCONFIG:-/home/ewatkins/.talos/config}"
     # brew shellenv also exports HOMEBREW_* vars; harmless if brew is absent.
     if [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
       eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
