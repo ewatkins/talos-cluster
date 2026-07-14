@@ -290,6 +290,10 @@ data:
             href: https://proxy.ewatkins.dev
             description: Reverse proxy
             icon: nginx-proxy-manager
+        - Proxmox Backup Server:
+            href: https://pbs.ewatkins.dev
+            description: VM & container backups
+            icon: proxmox-backup-server
         - Keycloak:
             href: https://keycloak.ewatkins.dev
             description: Identity & SSO
