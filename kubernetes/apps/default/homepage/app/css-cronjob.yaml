@@ -13,6 +13,27 @@ metadata:
     kustomize.toolkit.fluxcd.io/substitute: disabled
 data:
   custom.css.tmpl: |
+    /* NAS card: full-height icon on the left, title and free-space stacked to its right */
+    li[data-name="NAS"] .service-icon {
+      position: absolute !important;
+      top: 0;
+      bottom: 0;
+      left: 0.25rem;
+      width: 3rem;
+    }
+    li[data-name="NAS"] .service-icon > * {
+      height: 2.5rem !important;
+      width: 2.5rem !important;
+      max-height: none !important;
+      max-width: none !important;
+    }
+    li[data-name="NAS"] .service-title {
+      padding-left: 3rem; /* keep title clear of the now-absolute icon */
+    }
+    li[data-name="NAS"] .absolute.bottom-3.left-3 {
+      left: 3.5rem; /* align free-space text under the title, right of icon */
+    }
+
     /* Make service cards stand out against the background */
     .service-card {
       background-color: rgb(15 23 42 / 0.45) !important; /* slate-900, up from default 20% */
