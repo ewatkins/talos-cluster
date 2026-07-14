@@ -65,14 +65,19 @@ Helm controller OOM watch (applied to `helm-controller` only):
 
 ## ExternalSecrets
 
-Two `ExternalSecret` resources are defined in the `flux-system` namespace, both pulling from `ClusterSecretStore/bitwarden-secrets-manager` with a 15-minute refresh interval:
+One `ExternalSecret` is defined in the `flux-system` namespace, pulling from `ClusterSecretStore/bitwarden-secrets-manager` with a 15-minute refresh interval:
 
 | ExternalSecret | Target Secret | Key Mapped |
 | --- | --- | --- |
 | `github-webhook-token-secret` | `github-webhook-token-secret` | `token` |
-| `sops-age-secret` | `sops-age-secret` | `age.agekey` (from `SOPS_PRIVATE_KEY`) |
 
-The `sops-age-secret` provides the Age private key that Flux uses to decrypt SOPS-encrypted secrets at reconcile time.
+### Why the Age key is *not* managed here
+
+A `sops-age-secret` ExternalSecret used to live here, described as the key "Flux uses to decrypt SOPS-encrypted secrets". That was never true, and it could not be — it is circular:
+
+`sops-age` (bootstrapped imperatively) → decrypts `kubernetes/flux/vars/bws.secret.sops.yaml` → `bws-secrets` → credential for `ClusterSecretStore/bitwarden-secrets-manager` → ExternalSecrets
+
+An ExternalSecret is therefore *downstream* of SOPS decryption and cannot supply the key that makes decryption possible. Flux decrypts with the `sops-age` Secret, created out-of-band by `task flux:bootstrap-secrets` and committed SOPS-encrypted at `kubernetes/bootstrap/flux/age-key.secret.sops.yaml`. Do not replace it with an ExternalSecret; a cold cluster would deadlock.
 
 ## Grafana Dashboards
 
