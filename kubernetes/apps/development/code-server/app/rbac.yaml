@@ -1,0 +1,15 @@
+---
+# The `code-server` ServiceAccount itself is created by the app-template chart;
+# this only grants it cluster-admin so kubectl/flux work from the in-cluster config.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: code-server
+subjects:
+  - kind: ServiceAccount
+    name: code-server
+    namespace: development
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
