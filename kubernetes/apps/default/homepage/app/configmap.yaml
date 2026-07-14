@@ -130,7 +130,7 @@ data:
               url: https://jellyfin.ewatkins.dev
               key: "{{HOMEPAGE_VAR_JELLYFIN_KEY}}"
               enableBlocks: true
-              enableNowPlaying: true
+              enableNowPlaying: false
         - Immich:
             href: https://photos.ewatkins.dev
             description: Photo and video library.
