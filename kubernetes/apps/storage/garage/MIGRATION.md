@@ -186,9 +186,38 @@ Output secret keys are also renamed off `MINIO_*` where the consumer allows.
      `https://s3-garage.ewatkins.dev` / `us-east-1` (moved off iDrive e2's values). iDrive creds
      kept in the Bitwarden item for rollback. Output keys are Outline's `AWS_*` env schema
      (no `MINIO_` naming to remove).
-   - Verified: ES synced with correct Garage cred lengths; pod healthy, no S3 errors. Outline
-     connects lazily (no startup bucket check) — final smoke test is a doc image upload/download,
-     confirmed landing in `garage-outline:outline`.
+   - **CORS is required** (see below) — Outline uploads go *browser → S3 directly* via a
+     presigned URL, so the bucket needs a CORS rule or uploads fail with **no server-side error**
+     in Outline's logs (the failure is browser↔Garage).
+   - Verified: ES synced with correct Garage cred lengths; image upload + existing-image read
+     both confirmed against `garage-outline:outline`.
+
+### Garage bucket CORS (imperative — NOT in Git)
+
+Garage has no CORS CRD or CLI subcommand; CORS is set via the S3 `PutBucketCors` API and stored
+in Garage's bucket metadata (persists across restarts, but **would be lost if the bucket is
+recreated**). Any bucket serving **browser-direct uploads** needs this. The key must hold
+`owner` permission to set it:
+
+```bash
+# grant owner (one-time; RW alone cannot set bucket config)
+kubectl -n storage exec garage-0 -c app -- /garage bucket allow --owner outline --key outline-key
+
+# set the CORS rule (aws-cli; creds = that bucket's Garage key)
+aws s3api put-bucket-cors \
+  --endpoint-url https://s3-garage.ewatkins.dev --region us-east-1 --bucket outline \
+  --cors-configuration '{"CORSRules":[{
+    "AllowedOrigins":["https://notes.ewatkins.dev"],
+    "AllowedMethods":["GET","PUT","POST","HEAD","DELETE"],
+    "AllowedHeaders":["*"],"ExposeHeaders":["ETag"],"MaxAgeSeconds":3000}]}'
+
+# verify: expect HTTP 200 + access-control-allow-origin/-methods
+curl -sk -X OPTIONS https://s3-garage.ewatkins.dev/outline/x -D - -o /dev/null \
+  -H 'Origin: https://notes.ewatkins.dev' -H 'Access-Control-Request-Method: PUT' | grep -i access-control
+```
+
+> Forgejo/Thanos/pgBackRest do **not** need CORS — they talk to S3 server-side, not from a
+> browser.
 4. **Crunchy pgBackRest (last — most critical)** — in
    [crunchy .../cluster.yaml](../../database/crunchy-postgres-operator/cluster/cluster.yaml)
    set repo2 `endpoint: s3-garage.ewatkins.dev` (keep `repo2-s3-uri-style: path`); new creds.
