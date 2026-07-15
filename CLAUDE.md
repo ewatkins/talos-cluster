@@ -15,13 +15,14 @@ task                          # List all tasks
 task configure                # Full bootstrap: template → encrypt → validate
 task flux:reconcile           # Force Flux to sync Git → cluster
 task flux:apply               # Apply a specific kustomization
-task kubernetes:kubeconform   # Validate all manifests against schemas
+task kubernetes:validate      # Validate all manifests against schemas (kubeconform)
 task kubernetes:resources     # Gather cluster diagnostics
 task talos:bootstrap          # Initialize a new cluster (etcd → kubeconfig → apps)
 task talos:upgrade node=NODE  # Upgrade a single Talos node (e.g., node=superior)
 task talos:upgrade-k8s        # Upgrade Kubernetes version
 task sops:encrypt             # Encrypt all .sops.yaml files
-task workstation:deps         # Install required CLI tools locally
+task workstation:brew         # Install CLI tools locally — pick per platform:
+                              #   :brew (Brewfile), :arch (Archfile), :generic-linux (curl into .bin/)
 ```
 
 **Environment requirements:** `KUBECONFIG=./kubeconfig` and `SOPS_AGE_KEY_FILE=./age.key` are set automatically by Task. A Python virtualenv at `.venv/` is required for templating (`task workstation:venv`).
@@ -98,7 +99,7 @@ Use `${VARIABLE_NAME}` syntax in manifests; variables are defined in those two f
 
 Before committing changes to manifests, run:
 ```bash
-task kubernetes:kubeconform   # Schema validation
+task kubernetes:validate      # Schema validation
 ```
 
 CI runs `flux-local` validation on PRs (`.github/workflows/flux-local.yaml`).
