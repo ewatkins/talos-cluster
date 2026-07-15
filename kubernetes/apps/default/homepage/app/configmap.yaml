@@ -30,6 +30,10 @@ data:
         style: row
         columns: 3
         header: false
+      Infrastructure:
+        style: row
+        columns: 2
+        header: false
       Streaming:
         style: row
         columns: 3
@@ -44,7 +48,7 @@ data:
         header: false
       Monitoring:
         style: row
-        columns: 3
+        columns: 2
         header: false
       Workspace:
         style: row
@@ -121,6 +125,25 @@ data:
               version: 4
               metric: network:bond1
               chart: false
+    - Infrastructure:
+        - Proxmox:
+            href: https://pve01.ewatkins.dev
+            description: Virtualization cluster.
+            icon: proxmox
+            widget:
+              type: proxmox
+              url: https://pve01.ewatkins.dev
+              username: "{{HOMEPAGE_VAR_PROXMOX_USER}}"
+              password: "{{HOMEPAGE_VAR_PROXMOX_PASS}}"
+        - Proxmox Backup Server:
+            href: https://pbs.ewatkins.dev
+            description: VM & container backups
+            icon: proxmox-backup-server
+            widget:
+              type: proxmoxbackupserver
+              url: https://pbs.ewatkins.dev
+              username: "{{HOMEPAGE_VAR_PBS_USER}}"
+              password: "{{HOMEPAGE_VAR_PBS_PASS}}"
     - Streaming:
         - Jellyfin:
             href: https://jellyfin.ewatkins.dev
@@ -236,15 +259,6 @@ data:
             widget:
               type: gatus
               url: https://status.ewatkins.dev
-        - Proxmox:
-            href: https://pve01.ewatkins.dev
-            description: Virtualization cluster.
-            icon: proxmox
-            widget:
-              type: proxmox
-              url: https://pve01.ewatkins.dev
-              username: "{{HOMEPAGE_VAR_PROXMOX_USER}}"
-              password: "{{HOMEPAGE_VAR_PROXMOX_PASS}}"
     - Workspace:
         - Paperless:
             href: https://paperless.ewatkins.dev
@@ -295,15 +309,6 @@ data:
               url: https://proxy.ewatkins.dev
               username: "{{HOMEPAGE_VAR_NPM_USER}}"
               password: "{{HOMEPAGE_VAR_NPM_PASS}}"
-        - Proxmox Backup Server:
-            href: https://pbs.ewatkins.dev
-            description: VM & container backups
-            icon: proxmox-backup-server
-            widget:
-              type: proxmoxbackupserver
-              url: https://pbs.ewatkins.dev
-              username: "{{HOMEPAGE_VAR_PBS_USER}}"
-              password: "{{HOMEPAGE_VAR_PBS_PASS}}"
         - Keycloak:
             href: https://keycloak.ewatkins.dev
             description: Identity & SSO
@@ -322,12 +327,12 @@ data:
             icon: code-server
             namespace: development
             app: code-server
-        - Minio:
-            href: https://minio.ewatkins.dev
+        - Garage:
+            href: https://garage.ewatkins.dev
             description: Object storage
-            icon: minio
+            icon: garage
             namespace: storage
-            app: minio
+            app: garage-webui
         - RedisInsight:
             href: https://redis.ewatkins.dev
             description: Redis GUI
