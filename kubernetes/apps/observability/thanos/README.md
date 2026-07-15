@@ -1,6 +1,6 @@
 # [Thanos](https://thanos.io/)
 
-Thanos extends the kube-prometheus-stack Prometheus instance with long-term metric storage and a global query layer. Prometheus runs a Thanos sidecar that uploads compacted blocks to Minio. The Thanos query layer federates across the live sidecar and the store gateway to serve the full historical range.
+Thanos extends the kube-prometheus-stack Prometheus instance with long-term metric storage and a global query layer. Prometheus runs a Thanos sidecar that uploads compacted blocks to Garage. The Thanos query layer federates across the live sidecar and the store gateway to serve the full historical range.
 
 ## Components
 
@@ -16,7 +16,7 @@ Thanos extends the kube-prometheus-stack Prometheus instance with long-term metr
 
 | Setting | Value | Notes |
 | --- | --- | --- |
-| Object store | Minio bucket `thanos` at `minio.storage.svc.cluster.local:9000` | Long-term metric storage |
+| Object store | Garage bucket `thanos` at `garage-api.storage.svc.cluster.local:3900` | Long-term metric storage; `garage-api` serves S3 (the `garage` svc is RPC-only) |
 | Retention raw | 14 days | Full-resolution data |
 | Retention 5m | 30 days | 5-minute downsampled data |
 | Retention 1h | 60 days | 1-hour downsampled data |
