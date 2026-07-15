@@ -172,12 +172,24 @@ Output secret keys are also renamed off `MINIO_*` where the consumer allows.
      (`targetPath` keeps Forgejo's `gitea.config.storage.MINIO_*` schema — unavoidable).
    - Verified: all 7 storage backends init against Garage with no errors. Final human smoke
      test: upload an avatar/attachment, confirm the object lands in `garage-forgejo:forgejo`.
-2. **Thanos** — in [thanos/app/helmrelease.yaml](../../observability/thanos/app/helmrelease.yaml)
-   set `endpoint: garage.storage.svc.cluster.local:3900` (keep `insecure: true`,
-   `region: us-east-1`); re-point `minio-thanos-secret` ExternalSecret to the Garage fields. Also
-   repoint the Flux [Bucket](../../observability/thanos/app/bucket.yaml) source and change its
-   `dependsOn: minio` → `garage`. Final `rclone sync minio:thanos …` first. Verify queries +
-   a compaction cycle.
+2. **Thanos** ✅ **DONE** — [helmrelease.yaml](../../observability/thanos/app/helmrelease.yaml),
+   [externalsecret.yaml](../../observability/thanos/app/externalsecret.yaml),
+   [bucket.yaml](../../observability/thanos/app/bucket.yaml):
+   - `endpoint: garage-api.storage.svc.cluster.local:3900` — **note the service**: `garage-api`
+     serves the S3 API (3900); the `garage` service is **RPC-only** (3901). Keep `insecure: true`
+     (plain HTTP in-cluster) and `region: us-east-1`.
+   - Secret renamed `minio-thanos-secret` → **`thanos-secret`**, backed by a **new Bitwarden item
+     `thanos-secret`** with fields `garage-accesskey` / `garage-secretkey`. Output keys stay
+     `accesskey`/`secretkey` (Flux `Bucket` + helmrelease `valuesFrom` convention).
+   - `dependsOn: minio` → `garage`; README refreshed.
+   - Final `rclone sync minio:thanos garage-thanos:thanos` immediately before cutover (83 objects
+     / 12.506 GiB matched on both sides).
+   - Verified: HelmRelease Ready; store-gateway `bucket store ready` after loading blocks from
+     Garage; compact `successfully synchronized block metadata` (22 blocks); all 8 pods Running.
+
+   > **Orphaned Flux `Bucket`:** the `thanos` Bucket source (created 2024-06-08) has **never**
+   > produced an artifact — nothing references it, and it perpetually tries to download the whole
+   > 12.5 GiB bucket and times out. It was equally broken against Minio. Candidate for deletion.
 3. **Outline** ✅ **DONE** — [helmrelease.yaml](../../default/outline/app/helmrelease.yaml)
    + [externalsecret.yaml](../../default/outline/app/externalsecret.yaml):
    - `AWS_S3_FORCE_PATH_STYLE: "true"` (path-style, from Phase 2).
