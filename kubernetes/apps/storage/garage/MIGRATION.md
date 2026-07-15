@@ -178,11 +178,17 @@ Output secret keys are also renamed off `MINIO_*` where the consumer allows.
    repoint the Flux [Bucket](../../observability/thanos/app/bucket.yaml) source and change its
    `dependsOn: minio` → `garage`. Final `rclone sync minio:thanos …` first. Verify queries +
    a compaction cycle.
-3. **Outline** — in [outline/app/helmrelease.yaml](../../default/outline/app/helmrelease.yaml)
-   apply the Phase 2 path-style change; update the `outline-secret` Bitwarden item's
-   `access_key_id` / `secret_access_key` to the Garage key and `bucket_url` / `region` to the
-   Garage endpoint (`https://s3-garage.ewatkins.dev` / `us-east-1`), moving it off iDrive e2.
-   Verify document upload/download.
+3. **Outline** ✅ **DONE** — [helmrelease.yaml](../../default/outline/app/helmrelease.yaml)
+   + [externalsecret.yaml](../../default/outline/app/externalsecret.yaml):
+   - `AWS_S3_FORCE_PATH_STYLE: "true"` (path-style, from Phase 2).
+   - ExternalSecret creds re-pointed to Bitwarden `garage-access-key-id` /
+     `garage-secret-access-key`; non-secret `AWS_S3_UPLOAD_BUCKET_URL` /`AWS_REGION` hardcoded to
+     `https://s3-garage.ewatkins.dev` / `us-east-1` (moved off iDrive e2's values). iDrive creds
+     kept in the Bitwarden item for rollback. Output keys are Outline's `AWS_*` env schema
+     (no `MINIO_` naming to remove).
+   - Verified: ES synced with correct Garage cred lengths; pod healthy, no S3 errors. Outline
+     connects lazily (no startup bucket check) — final smoke test is a doc image upload/download,
+     confirmed landing in `garage-outline:outline`.
 4. **Crunchy pgBackRest (last — most critical)** — in
    [crunchy .../cluster.yaml](../../database/crunchy-postgres-operator/cluster/cluster.yaml)
    set repo2 `endpoint: s3-garage.ewatkins.dev` (keep `repo2-s3-uri-style: path`); new creds.
