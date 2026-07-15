@@ -341,8 +341,10 @@ data:
             app: redisinsight
         - Trek:
             href: https://trek.ewatkins.dev
-            description: GitOps release tracking
-            icon: mdi-map-marker-path
+            description: Travel & trip planner
+            # No dashboard-icons entry for TREK; use upstream's own branded logo
+            # (icon.svg carries its own background, so it works on any theme).
+            icon: https://cdn.jsdelivr.net/gh/mauriceboe/TREK@main/client/public/icons/icon.svg
             namespace: default
             app: trek
             # trek's upstream chart labels pods `app: trek`, not the
