@@ -156,14 +156,28 @@ rclone sync idrive:outline     garage-outline:outline      --progress --transfer
 
 ## Phase 4 — Cut over one consumer at a time (low-risk first)
 
-1. **Thanos** — in [thanos/app/helmrelease.yaml](../../observability/thanos/app/helmrelease.yaml)
+**Credential approach:** the Garage key/secret were added as **new fields** in each app's
+existing Bitwarden item, and each app's **ExternalSecret is re-pointed** to read those fields
+(the live Minio/iDrive fields are left in place for rollback; Bitwarden cleanup happens later).
+Output secret keys are also renamed off `MINIO_*` where the consumer allows.
+
+1. **Forgejo** ✅ **DONE** — [helmrelease.yaml](../../development/forgejo/app/helmrelease.yaml)
+   + [externalsecret.yaml](../../development/forgejo/app/externalsecret.yaml):
+   - `MINIO_ENDPOINT: s3-garage.ewatkins.dev:443`
+   - `MINIO_BUCKET_LOOKUP: path` — **required**: Forgejo uses the minio-go client, whose
+     auto-detection could pick virtual-host (`forgejo.s3-garage…`, no wildcard DNS). Pin `path`.
+   - ExternalSecret `forgejo-bucket` output keys renamed `MINIO_ACCESS_KEY_ID`/`_SECRET_` →
+     `access-key-id`/`secret-access-key`, sourced from Bitwarden `garage-access-key-id` /
+     `garage-secret-access-key`; helmrelease `valuesFrom.valuesKey` updated to match
+     (`targetPath` keeps Forgejo's `gitea.config.storage.MINIO_*` schema — unavoidable).
+   - Verified: all 7 storage backends init against Garage with no errors. Final human smoke
+     test: upload an avatar/attachment, confirm the object lands in `garage-forgejo:forgejo`.
+2. **Thanos** — in [thanos/app/helmrelease.yaml](../../observability/thanos/app/helmrelease.yaml)
    set `endpoint: garage.storage.svc.cluster.local:3900` (keep `insecure: true`,
-   `region: us-east-1`); update `minio-thanos-secret` Bitwarden item to the Garage key. Also
+   `region: us-east-1`); re-point `minio-thanos-secret` ExternalSecret to the Garage fields. Also
    repoint the Flux [Bucket](../../observability/thanos/app/bucket.yaml) source and change its
-   `dependsOn: minio` → `garage`. Verify queries + a compaction cycle.
-2. **Forgejo** — in [forgejo/app/helmrelease.yaml](../../development/forgejo/app/helmrelease.yaml)
-   set `MINIO_ENDPOINT: s3-garage.ewatkins.dev:443`; update `forgejo-bucket` Bitwarden creds.
-   Verify avatar/attachment/LFS read+write.
+   `dependsOn: minio` → `garage`. Final `rclone sync minio:thanos …` first. Verify queries +
+   a compaction cycle.
 3. **Outline** — in [outline/app/helmrelease.yaml](../../default/outline/app/helmrelease.yaml)
    apply the Phase 2 path-style change; update the `outline-secret` Bitwarden item's
    `access_key_id` / `secret_access_key` to the Garage key and `bucket_url` / `region` to the
