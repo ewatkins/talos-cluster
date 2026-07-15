@@ -26,16 +26,16 @@ spec:
   dependsOn:
     - name: openebs
       namespace: storage
-    - name: minio
+    - name: garage
       namespace: storage
   valuesFrom:
     - targetPath: objstoreConfig.value.config.access_key
       kind: Secret
-      name: minio-thanos-secret
+      name: thanos-secret
       valuesKey: accesskey
     - targetPath: objstoreConfig.value.config.secret_key
       kind: Secret
-      name: minio-thanos-secret
+      name: thanos-secret
       valuesKey: secretkey
   values:
     objstoreConfig:
@@ -43,7 +43,8 @@ spec:
         type: s3
         config:
           bucket: thanos
-          endpoint: minio.storage.svc.cluster.local:9000
+          # garage-api serves the S3 API on 3900; the `garage` svc is RPC-only (3901)
+          endpoint: garage-api.storage.svc.cluster.local:3900
           region: us-east-1
           insecure: true
     additionalEndpoints:

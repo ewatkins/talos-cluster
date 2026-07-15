@@ -8,9 +8,9 @@ metadata:
 spec:
   provider: generic
   interval: 5m0s
-  endpoint: minio.storage.svc.cluster.local:9000
+  endpoint: garage-api.storage.svc.cluster.local:3900
   region: us-east-1
   insecure: true
   secretRef:
-    name: minio-thanos-secret
+    name: thanos-secret
   bucketName: thanos
