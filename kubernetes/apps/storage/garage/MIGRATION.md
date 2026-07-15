@@ -96,16 +96,25 @@ The key secrets were stored as **new fields** in each app's Bitwarden item (e.g.
 `garage-accesskey` / `garage-secretkey`), alongside the existing live creds so nothing breaks
 before cutover. The configs are re-pointed to the Garage fields in Phase 4.
 
-## Phase 2 — DNS/TLS for virtual-hosted access (Outline only)
+## Phase 2 — Addressing decision + endpoint verification ✅ COMPLETE
 
-Outline sets `AWS_S3_FORCE_PATH_STYLE: "false"`, so it addresses buckets as
-`<bucket>.s3-garage.ewatkins.dev`. Two options:
+**Decision: path-style** — so **no wildcard DNS/TLS work is needed** (the alternative would
+have been a `*.s3-garage.ewatkins.dev` record + TLS SAN for virtual-hosted access). Outline
+currently uses virtual-hosted (`AWS_S3_FORCE_PATH_STYLE: "false"`); it will switch to path-style
+against Garage's flat `s3-garage.ewatkins.dev` endpoint.
 
-- **(a)** Add a wildcard `*.s3-garage.ewatkins.dev` DNS record + gateway route + TLS SAN
-  matching Garage's `root_domain`.
-- **(b) Preferred:** set `AWS_S3_FORCE_PATH_STYLE: "true"` in
-  [outline/app/helmrelease.yaml](../../default/outline/app/helmrelease.yaml) and point it at
-  the flat `s3-garage.ewatkins.dev` endpoint — avoids the wildcard-cert hassle.
+The `AWS_S3_FORCE_PATH_STYLE: "true"` flip in
+[outline/app/helmrelease.yaml](../../default/outline/app/helmrelease.yaml) is **deferred to the
+Phase 4 Outline cutover**, done atomically with the endpoint/creds swap — flipping it early
+would switch the still-live iDrive e2 connection to path-style (unverified there) for no gain.
+
+Garage's gateway S3 endpoint (`s3-garage.ewatkins.dev` → `garage-api:3900`) was verified:
+
+- `GET https://s3-garage.ewatkins.dev/` → HTTP 403 (as Gatus expects).
+- `GET https://s3-garage.ewatkins.dev/thanos/` → Garage S3 XML `AccessDenied` naming the
+  `thanos` bucket and region `us-east-1` — confirms the gateway route reaches the Garage S3 API
+  and **path-style addressing resolves correctly**. This is the endpoint Forgejo, Crunchy, and
+  Outline use at cutover (Thanos uses the in-cluster `garage.storage.svc.cluster.local:3900`).
 
 ## Phase 3 — Copy data (source stays live)
 
