@@ -345,7 +345,10 @@ data:
             icon: mdi-map-marker-path
             namespace: default
             app: trek
-            pod_selector: app=trek
+            # trek's upstream chart labels pods `app: trek`, not the
+            # `app.kubernetes.io/name` that homepage's `app:` field selects on,
+            # so override the selector. The field is podSelector, not pod_selector.
+            podSelector: app=trek
         - Homelable:
             href: https://homelab.ewatkins.dev
             description: Homelab inventory
