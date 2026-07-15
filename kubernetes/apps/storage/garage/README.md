@@ -1,6 +1,6 @@
 # [Garage](https://garagehq.deuxfleurs.fr/)
 
-Garage is a lightweight, distributed S3-compatible object store. It is deployed as a single-node instance with a separate web management UI. The web UI is protected by Keycloak OIDC via an Envoy Gateway SecurityPolicy.
+Garage is a lightweight, distributed S3-compatible object store. It is deployed as a 3-node StatefulSet (`garage-0/1/2`, one per control-plane host via pod anti-affinity) with `replication_factor = 3`, alongside a separate web management UI. The web UI is protected by Keycloak OIDC via an Envoy Gateway SecurityPolicy.
 
 ## Components
 
@@ -13,7 +13,7 @@ Garage is a lightweight, distributed S3-compatible object store. It is deployed 
 
 | Setting | Value | Notes |
 | --- | --- | --- |
-| Image | `dxflrs/garage:v2.2.0` | |
+| Image | `dxflrs/garage:v2.3.0` | |
 | Chart | `app-template` (OCI) from `flux-system` | Both components use `app-template` |
 | S3 API endpoint | `https://s3-garage.ewatkins.dev` (port 3900) | Internal gateway; DNS via `internal.ewatkins.dev` |
 | S3 region | `us-east-1` | |
@@ -21,11 +21,12 @@ Garage is a lightweight, distributed S3-compatible object store. It is deployed 
 | Admin API port | 3903 | Internal only |
 | RPC port | 3901 | Bind `[::]:3901`; public addr `127.0.0.1:3901` |
 | DB engine | `lmdb` | |
-| Replication factor | 1 | Single-node deployment |
+| Replication factor | 3 | 3-node cluster |
 | Compression level | 2 | |
 | Metadata snapshot interval | 6h | |
-| Data PVC | `garage-data`, 20Gi, `ReadWriteOnce` | StorageClass `nfs-slow` |
-| Metadata PVC | `garage-meta`, 512Mi, `ReadWriteOnce` | StorageClass `openebs-hostpath` |
+| Data PVC | `data-garage-{0,1,2}`, 10Gi, `ReadWriteOnce` | StorageClass `openebs-hostpath` (per-replica volumeClaimTemplate) |
+| Metadata PVC | `meta-garage-{0,1,2}`, 512Mi, `ReadWriteOnce` | StorageClass `openebs-hostpath` (per-replica volumeClaimTemplate) |
+| Scheduling | control-plane nodes; one pod per host | `nodeAffinity` + `podAntiAffinity` on `kubernetes.io/hostname` |
 | Resources (garage) | requests: 100m CPU; limits: 1Gi memory | |
 | Security context | `runAsUser: 1000`, `runAsNonRoot: true`, `readOnlyRootFilesystem: true` | |
 
