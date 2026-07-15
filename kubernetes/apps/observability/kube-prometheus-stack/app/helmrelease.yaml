@@ -134,7 +134,9 @@ spec:
       prometheusSpec:
         podMetadata:
           annotations:
-            secret.reloader.stakater.com/reload: &secret minio-thanos-secret
+            # Watch the objstore secret the Thanos sidecar actually reads (generated
+            # by the thanos chart) so endpoint/cred changes restart Prometheus.
+            secret.reloader.stakater.com/reload: thanos-objstore-config
         replicas: 1
         replicaExternalLabelName: __replica__
         podMonitorSelectorNilUsesHelmValues: false
