@@ -89,7 +89,7 @@ Use `${VARIABLE_NAME}` syntax in manifests; variables are defined in those two f
 ## Talos Cluster Details
 
 - Cluster name: `great-lakes`
-- Talos version: v1.13.2 | Kubernetes: v1.36.0
+- Talos version: v1.13.6 | Kubernetes: v1.36.2
 - Node IPs: superior=10.40.1.1, huron=10.40.1.2, michigan=10.40.1.3, erie=10.40.1.4, ontario=10.40.1.5, tahoe=10.40.1.6
 - Pod CIDR: `10.69.0.0/16` | Service CIDR: `10.96.0.0/16`
 - Generated node configs live in `talos/clusterconfig/` — regenerate with `talhelper genconfig` after editing `talconfig.yaml`
