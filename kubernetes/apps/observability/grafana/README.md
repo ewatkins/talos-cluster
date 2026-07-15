@@ -16,7 +16,7 @@ Dashboards are provisioned automatically from the HelmRelease `values.dashboards
 
 | Folder | Contents |
 | --- | --- |
-| `default` | Cloudflare tunnels, external-dns, MinIO, node-exporter, Spegel, cert-manager, external-secrets, goldilocks, etc. |
+| `default` | Cloudflare tunnels, external-dns, node-exporter, Spegel, cert-manager, external-secrets, goldilocks, etc. |
 | `flux` | Flux cluster health and control plane |
 | `kubernetes` | API server, CoreDNS, global view, namespaces, nodes, PVCs, volumes |
 | `prometheus` | Prometheus internals |
