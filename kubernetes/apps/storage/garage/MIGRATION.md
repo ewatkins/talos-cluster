@@ -159,7 +159,7 @@ rclone sync idrive:outline     garage-outline:outline      --progress --transfer
   marker files (~2.6 KiB) that Thanos had written to Garage. No block data was lost and Thanos
   re-derived them (`partial=0`), but `copy` is the correct, additive tool for any catch-up.
 
-## Phase 4 — Cut over one consumer at a time (low-risk first)
+## Phase 4 — Cut over one consumer at a time (low-risk first) ✅ COMPLETE
 
 **Credential approach:** the Garage key/secret were added as **new fields** in each app's
 existing Bitwarden item, and each app's **ExternalSecret is re-pointed** to read those fields
@@ -246,10 +246,58 @@ curl -sk -X OPTIONS https://s3-garage.ewatkins.dev/outline/x -D - -o /dev/null \
 
 > Forgejo/Thanos/pgBackRest do **not** need CORS — they talk to S3 server-side, not from a
 > browser.
-4. **Crunchy pgBackRest (last — most critical)** — in
-   [crunchy .../cluster.yaml](../../database/crunchy-postgres-operator/cluster/cluster.yaml)
-   set repo2 `endpoint: s3-garage.ewatkins.dev` (keep `repo2-s3-uri-style: path`); new creds.
-   Then **run a full backup and a test restore** before trusting it.
+4. **Crunchy pgBackRest (last — most critical)** ✅ **DONE** —
+   [cluster.yaml](../../database/crunchy-postgres-operator/cluster/cluster.yaml) +
+   [externalsecret.yaml](../../database/crunchy-postgres-operator/cluster/externalsecret.yaml):
+   - repo2 `endpoint: s3-garage.ewatkins.dev`, `repo2-s3-uri-style: path` kept. repo1 (PVC) and
+     repo3 (Cloudflare R2) untouched; `dataSource` still clones from repo3.
+   - Creds come from a **new Bitwarden item `crunchy-bucket`** (`garage-accesskey` /
+     `garage-secretkey`), merged in via a second `dataFrom.extract` alongside the existing
+     `crunchy-postgres-secret` item, which still supplies the R2 + cipher values.
+   - Verified end to end:
+     - WAL archiving live on Garage; segment chain contiguous across the cutover (no gap —
+       Minio's last segment was `…DF`, Garage picked up at `…E0` with 226 contiguous segments).
+     - **Full backup written natively to Garage** (`20260715-210859F`, ~90s) — confirmed present
+       in Garage and **absent from Minio**, proving the write path (not just an rclone artifact).
+     - **Restore proven**: a throwaway `PostgresCluster` cloned from repo2/Garage came up ready;
+       all 9 databases restored at byte-identical sizes with `COUNT(*)` spot-checks matching
+       production (forgejo users/repos/actions, outline, keycloak, grafana, paperless, authentik).
+       Cluster + PVCs deleted afterward.
+
+   > **⚠️ Gotcha — pgbackrest repo indexes must start at 1 (bites any repo2/repo3 restore).**
+   > During the restore phase PGO renders **only the `dataSource` repo** into the restore job's
+   > `pgbackrest_instance.conf`. Cloning from `repo.name: repo2` therefore produces a config with
+   > `repo2-*` but **no repo1**, and pgbackrest rejects `--repo=2` with
+   > `ERROR: [032]: key '2' is not valid for 'repo' option` before it ever contacts S3.
+   > Renaming the dataSource repo to `repo1` is **not** a fix — the creds in `s3.conf` are
+   > index-bound (`repo2-s3-key`). Declare an unused posix repo1 in `dataSource.global` so the
+   > index range is valid while repo2 keeps matching its creds:
+   >
+   > ```yaml
+   > dataSource:
+   >   pgbackrest:
+   >     global:
+   >       repo1-path: /pgdata/unused-repo1   # unused; makes --repo=2 in range
+   >       repo2-path: /crunchy-pgo
+   >       repo2-s3-uri-style: path
+   >     repo:
+   >       name: repo2
+   > ```
+   >
+   > Note this affects the **`dataSource: repo3` (R2) clone path in `cluster.yaml` too** — it only
+   > works today because that cluster's own spec defines repo1/2/3, so the index range is valid.
+
+   > **Triggering an off-schedule backup without touching Git:** the repo2 full only runs Sundays
+   > (`15 1 * * 0`). Rather than editing `manual.repoName`, clone the CronJob's own spec —
+   > it runs the identical `pgbackrest backup --stanza=db --repo=2 --type=full`:
+   >
+   > ```bash
+   > kubectl create job -n database --from=cronjob/crunchy-postgres-repo2-full repo2-full-adhoc
+   > ```
+
+   > **Reading timestamps:** `rclone lsl` prints **local** time; pgbackrest labels/`info` are
+   > **UTC**. A backup labelled `…-201507I` shows an mtime of `16:15` at UTC-4. Compare like for
+   > like before concluding a write path is stale.
 
 After each cutover, watch the app + its Gatus check for a full cycle before moving on.
 
