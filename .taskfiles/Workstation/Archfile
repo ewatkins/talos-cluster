@@ -11,6 +11,7 @@ kubeconform
 kubectl-bin
 kustomize
 moreutils
+rclone
 sops
 stern-bin
 talhelper-bin
