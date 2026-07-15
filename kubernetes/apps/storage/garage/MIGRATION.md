@@ -5,14 +5,18 @@ Migration plan for moving object storage off [Minio](../minio/) onto [Garage](./
 ## Scope
 
 Loki uses `type: filesystem` (not S3) and Grafana only imports a Minio *dashboard*, so
-neither is a consumer. The real S3 consumers are **four**:
+neither is a consumer. Four consumers are being consolidated onto Garage:
 
-| Consumer | Bucket | Endpoint used | Addressing | Creds secret |
+| Consumer | Bucket | Current source | Addressing | Creds secret |
 | --- | --- | --- | --- | --- |
-| Thanos | `thanos` | `minio.storage.svc.cluster.local:9000` (in-cluster) | path, insecure | `minio-thanos-secret` (accesskey/secretkey) |
-| Forgejo | `forgejo` | `s3.ewatkins.dev:443` (gateway) | minio-go SDK | `forgejo-bucket` (MINIO_ACCESS_KEY_ID/SECRET) |
-| Outline | `AWS_S3_BUCKET` | gateway | **virtual-hosted** (`AWS_S3_FORCE_PATH_STYLE: "false"`) | outline externalsecret |
-| Crunchy pgBackRest (repo2) | `crunchy-pgo` | `s3.ewatkins.dev` (gateway) | path (`repo2-s3-uri-style: path`) | crunchy externalsecret |
+| Thanos | `thanos` | Minio `minio.storage.svc.cluster.local:9000` (in-cluster) | path, insecure | `minio-thanos-secret` (accesskey/secretkey) |
+| Forgejo | `forgejo` | Minio `s3.ewatkins.dev:443` (gateway) | minio-go SDK | `forgejo-bucket` (MINIO_ACCESS_KEY_ID/SECRET) |
+| Crunchy pgBackRest (repo2) | `crunchy-pgo` | Minio `s3.ewatkins.dev` (gateway) | path (`repo2-s3-uri-style: path`) | crunchy externalsecret |
+| Outline | `outline` | **iDrive e2** `h4d6.ch.idrivee2-28.com` (region `us-midwest-1`) — *not Minio* | **virtual-hosted** (`AWS_S3_FORCE_PATH_STYLE: "false"`) | `outline-secret` externalsecret |
+
+> **Note:** Outline is already off Minio (it runs on iDrive e2). It is included here to
+> consolidate all object storage onto Garage, so its Phase 3 data sync pulls from **iDrive e2**,
+> not Minio.
 
 **Garage targets:** in-cluster `garage.storage.svc.cluster.local:3900`, gateway
 `s3-garage.ewatkins.dev`, region `us-east-1`.
@@ -68,19 +72,29 @@ Phase 1 starts from a clean slate.
 > node identity**. After any such rebuild, update `bootstrap_peers` and re-run
 > `layout assign` / `layout remove` for the changed ID, or the node will sit roleless.
 
-## Phase 1 — Provision buckets + keys
+## Phase 1 — Provision buckets + keys ✅ COMPLETE
 
-For each bucket (`thanos`, `forgejo`, `crunchy-pgo`, and Outline's bucket):
+Four buckets created, each with a dedicated RW key:
+
+| Bucket | Key name | Key ID (public) |
+| --- | --- | --- |
+| `thanos` | `thanos-key` | `GK8954a77e6774242451088383` |
+| `forgejo` | `forgejo-key` | `GK2c46cd0def8a3a177df09ff0` |
+| `crunchy-pgo` | `crunchy-key` | `GKae42f67abd16ea8ebbb29d02` |
+| `outline` | `outline-key` | `GK57319b5e07d7498dea8c1c26` |
+
+Commands used (keys were created by the operator so the secrets never entered the assistant
+transcript; permission bindings run by key name):
 
 ```bash
 /garage bucket create <bucket>
-/garage key create <app>-key
+/garage key create <app>-key        # run manually; secret -> Bitwarden
 /garage bucket allow --read --write <bucket> --key <app>-key
 ```
 
-Store each key's ID/secret in the corresponding **Bitwarden Secrets Manager** item (the same
-item its ExternalSecret extracts from). Keep the Minio creds in those items until cutover so
-nothing breaks mid-flight.
+The key secrets were stored as **new fields** in each app's Bitwarden item (e.g.
+`garage-accesskey` / `garage-secretkey`), alongside the existing live creds so nothing breaks
+before cutover. The configs are re-pointed to the Garage fields in Phase 4.
 
 ## Phase 2 — DNS/TLS for virtual-hosted access (Outline only)
 
@@ -93,15 +107,16 @@ Outline sets `AWS_S3_FORCE_PATH_STYLE: "false"`, so it addresses buckets as
   [outline/app/helmrelease.yaml](../../default/outline/app/helmrelease.yaml) and point it at
   the flat `s3-garage.ewatkins.dev` endpoint — avoids the wildcard-cert hassle.
 
-## Phase 3 — Copy data (Minio still live)
+## Phase 3 — Copy data (source stays live)
 
-Per bucket, using `rclone` with `minio:` and `garage:` remotes:
+Per bucket, using `rclone`. The three Minio buckets sync from a `minio:` remote; **Outline
+syncs from its `idrive:` remote** (iDrive e2), not Minio:
 
 ```bash
 rclone sync minio:thanos      garage:thanos      --progress
 rclone sync minio:forgejo     garage:forgejo     --progress
 rclone sync minio:crunchy-pgo garage:crunchy-pgo --progress
-rclone sync minio:<outline>   garage:<outline>   --progress
+rclone sync idrive:outline    garage:outline     --progress   # source is iDrive e2
 ```
 
 Thanos/pgBackRest buckets can be large — run an initial sync, then a final delta sync
@@ -117,8 +132,11 @@ immediately before each cutover.
 2. **Forgejo** — in [forgejo/app/helmrelease.yaml](../../development/forgejo/app/helmrelease.yaml)
    set `MINIO_ENDPOINT: s3-garage.ewatkins.dev:443`; update `forgejo-bucket` Bitwarden creds.
    Verify avatar/attachment/LFS read+write.
-3. **Outline** — apply the Phase 2 path-style change + new creds. Verify document
-   upload/download.
+3. **Outline** — in [outline/app/helmrelease.yaml](../../default/outline/app/helmrelease.yaml)
+   apply the Phase 2 path-style change; update the `outline-secret` Bitwarden item's
+   `access_key_id` / `secret_access_key` to the Garage key and `bucket_url` / `region` to the
+   Garage endpoint (`https://s3-garage.ewatkins.dev` / `us-east-1`), moving it off iDrive e2.
+   Verify document upload/download.
 4. **Crunchy pgBackRest (last — most critical)** — in
    [crunchy .../cluster.yaml](../../database/crunchy-postgres-operator/cluster/cluster.yaml)
    set repo2 `endpoint: s3-garage.ewatkins.dev` (keep `repo2-s3-uri-style: path`); new creds.
@@ -126,16 +144,19 @@ immediately before each cutover.
 
 After each cutover, watch the app + its Gatus check for a full cycle before moving on.
 
-## Phase 5 — Decommission Minio
+## Phase 5 — Decommission old storage
 
 Once all four are verified (give Thanos/pgBackRest a few days of successful backup cycles):
 
-- Remove the Minio creds from each app's Bitwarden item.
+- Remove the old creds from each app's Bitwarden item (Minio for Thanos/Forgejo/Crunchy,
+  iDrive e2 for Outline).
 - Delete `kubernetes/apps/storage/minio/` and its entry in
   [storage/kustomization.yaml](../kustomization.yaml).
 - Retain the `minio-data` PVC briefly as a safety net, then reclaim.
+- For Outline: once verified on Garage, cancel/clean up the external **iDrive e2** bucket.
 
 ## Rollback
 
 Until Phase 5, rollback for any consumer is: revert its endpoint/creds change in Git and
-reconcile — Minio still holds the data. That is why Minio stays fully live through Phase 4.
+reconcile — the original source still holds the data (Minio for Thanos/Forgejo/Crunchy, iDrive
+e2 for Outline). That is why the old sources stay fully live through Phase 4.
