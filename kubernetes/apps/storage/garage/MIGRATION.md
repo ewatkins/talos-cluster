@@ -25,29 +25,48 @@ kubectl -n storage exec garage-0 -c app -- /garage <command>
 
 ---
 
-## Phase 0 — Stand up Garage correctly (blocker)
+## Phase 0 — Stand up Garage correctly ✅ COMPLETE
 
-1. **Resolve the topology contradiction.** The [helmrelease](./app/helmrelease.yaml) is a
-   **3-replica StatefulSet** with `replication_factor = 3` in
-   [configuration.toml](./app/resources/configuration.toml), but the [README](./README.md)
-   describes a single-node/rf-1 deployment. Manifests are the source of truth — update the
-   README to describe the 3-node cluster (rf 3).
-2. Deploy Garage, then verify the cluster forms — all three nodes must be connected:
+Garage was already deployed as a 3-node StatefulSet (`garage-0/1/2`, `dxflrs/garage:v2.3.0`,
+`replication_factor = 3`), but a health check found the cluster **degraded** and the
+[README](./README.md) stale. Both were fixed.
 
-   ```bash
-   kubectl -n storage exec garage-0 -c app -- /garage status   # expect garage-0/1/2
-   ```
+### What was wrong
 
-   The hardcoded `bootstrap_peers` node IDs in `configuration.toml` must match the nodes'
-   actual identities. If `status` shows fewer than 3 nodes, that mismatch is the cause.
-3. Apply the storage layout (required before any write works with rf 3):
+- **Ghost node in the layout.** Layout v1 assigned a role to node `1b2e500a…`, an identity
+  that was **never a running node** (`FAILED NODES / never seen`).
+- **Real garage-1 had no role.** Its metadata PVC had been recreated ~4 days prior, so it came
+  up with a *new* identity `0c97bad9…` and showed `NO ROLE ASSIGNED` — connected but storing
+  nothing. Net effect: rf 3 but only **2 of 3** nodes actually held data.
+- **Stale `bootstrap_peers`.** [configuration.toml](./app/resources/configuration.toml) still
+  listed garage-1's dead `1b2e500a…` identity.
+- **Stale README.** Claimed single-node / rf 1 / `v2.2.0` / 20Gi-`nfs-slow` data PVCs.
 
-   ```bash
-   # for each of the 3 node IDs from `garage status`
-   /garage layout assign -z dc1 -c 20G <node-id>
-   /garage layout apply --version 1
-   ```
-4. Confirm `garage status` shows all nodes with role/capacity assigned.
+### What was done
+
+```bash
+# 1. Re-point garage-1 to its real identity, drop the ghost, apply as layout v2
+kubectl -n storage exec garage-0 -c app -- /garage layout assign 0c97bad959a5f39a -z dc1 -c 10G
+kubectl -n storage exec garage-0 -c app -- /garage layout remove 1b2e500a571e2501
+kubectl -n storage exec garage-0 -c app -- /garage layout apply --version 2
+
+# 2. Retire the old draining layout that was stuck on the (dead) ghost node
+kubectl -n storage exec garage-0 -c app -- /garage layout skip-dead-nodes --version 2
+```
+
+- Replaced the stale `bootstrap_peers` entry in `configuration.toml`
+  (`1b2e500a…` → `0c97bad9…`).
+- Corrected the README to the real topology (3-node / rf 3 / `v2.3.0` / 10Gi-`openebs-hostpath`).
+
+### End state
+
+`garage status` shows **3 HEALTHY nodes** (garage-0/1/2), no FAILED nodes, single live layout
+version **#2**, 256 partitions per node at 3× replication. No buckets or keys existed yet, so
+Phase 1 starts from a clean slate.
+
+> **Gotcha for future node rebuilds:** wiping a Garage node's metadata PVC gives it a **new
+> node identity**. After any such rebuild, update `bootstrap_peers` and re-run
+> `layout assign` / `layout remove` for the changed ID, or the node will sit roleless.
 
 ## Phase 1 — Provision buckets + keys
 
