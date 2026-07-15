@@ -30,7 +30,7 @@ This cluster uses `fullNameOverride: kps` with `cleanPrometheusOperatorObjectNam
 | Local block size limit | 15 GiB | `retentionSize`; bounds persisted blocks only, **not** the WAL |
 | PVC size | 25 GiB | Headroom so WAL spikes don't drive the node into `DiskPressure` |
 | Memory | 1 Gi request / 2 Gi limit | Reserved to avoid OOM/evict crash-loops during WAL replay |
-| Remote storage | Thanos sidecar | Uploads blocks to Minio via S3 |
+| Remote storage | Thanos sidecar | Uploads blocks to Garage via S3 |
 | Replica label | `__replica__` | Used for Thanos deduplication |
 
 > **Note:** `openebs-hostpath` PVs share the node's `/var` filesystem and are not
@@ -38,7 +38,7 @@ This cluster uses `fullNameOverride: kps` with `cleanPrometheusOperatorObjectNam
 > filling the node is keeping Prometheus from crash-looping (adequate memory) plus
 > the retention settings above. See [Runaway WAL](#runaway-wal--diskpressure-evictions).
 
-Prometheus runs with a Thanos sidecar that exposes a gRPC store endpoint and uploads compacted blocks to the `thanos` Minio bucket. The Thanos query layer then federates across this sidecar and the store gateway to provide the full historical view.
+Prometheus runs with a Thanos sidecar that exposes a gRPC store endpoint and uploads compacted blocks to the `thanos` Garage bucket. The Thanos query layer then federates across this sidecar and the store gateway to provide the full historical view.
 
 ## Alertmanager Configuration
 

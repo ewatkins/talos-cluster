@@ -12,7 +12,7 @@ Forgejo is the self-hosted Git service for this cluster. It provides repository 
 | OpenID | Disabled | `ENABLE_OPENID_SIGNIN` and `ENABLE_OPENID_SIGNUP` are both `false` |
 | Database | PostgreSQL via `forgejo-db` secret | Stores repositories, issues, users, and settings |
 | Cache / Queue | Dragonfly (Redis-compatible) | Used for session storage, task queues, and caching |
-| Object storage | Minio at `s3.ewatkins.dev:443` | Stores LFS objects, release attachments, and avatars |
+| Object storage | Garage at `s3-garage.ewatkins.dev:443` (path-style) | Stores LFS objects, release attachments, and avatars |
 | Email | SMTP configured | Sends notifications for issues, PRs, and CI results |
 | Metrics | Prometheus ServiceMonitor | Exposes Forgejo application metrics |
 

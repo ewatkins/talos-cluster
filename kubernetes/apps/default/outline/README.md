@@ -1,6 +1,6 @@
 # [Outline](https://www.getoutline.com/)
 
-A team knowledge base and wiki. Integrates with Keycloak for OIDC authentication, Dragonfly for caching, PostgreSQL (via PgBouncer) for document storage, Minio for file uploads, and SMTP for email notifications.
+A team knowledge base and wiki. Integrates with Keycloak for OIDC authentication, Dragonfly for caching, PostgreSQL (via PgBouncer) for document storage, Garage for file uploads, and SMTP for email notifications.
 
 ## Configuration
 
@@ -19,7 +19,7 @@ A team knowledge base and wiki. Integrates with Keycloak for OIDC authentication
 | OIDC provider | Keycloak (`OIDC_DISPLAY_NAME: Keycloak`, `OIDC_CLIENT_ID: outline`) |
 | OIDC scopes | `openid profile email` |
 | OIDC username claim | `preferred_username` |
-| S3 storage | Minio (credentials from `outline-secret`), private ACL |
+| S3 storage | Garage at `s3-garage.ewatkins.dev` (credentials from `outline-secret`), path-style, private ACL |
 | SMTP from address | `outline@ewatkins.dev` |
 | `FORCE_HTTPS` | `false` (TLS terminated at gateway) |
 | `ENABLE_UPDATES` | `false` |

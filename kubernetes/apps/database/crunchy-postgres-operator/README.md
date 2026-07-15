@@ -66,7 +66,7 @@ PGO manages the full lifecycle of highly available PostgreSQL clusters on Kubern
 | Repo | Type | Destination | Retention | Schedule |
 | --- | --- | --- | --- | --- |
 | `repo1` | NFS PVC | `storage.ewatkins.dev:/mnt/user/crunchy-postgres` | 30 days | Full Sun 01:30, Diff Mon–Sat 01:30, Incr hourly |
-| `repo2` | S3 (Minio) | `s3.ewatkins.dev`, bucket `crunchy-pgo` | 30 days | Full Sun 01:15, Diff Mon–Sat 01:15, Incr hourly |
+| `repo2` | S3 (Garage) | `s3-garage.ewatkins.dev`, bucket `crunchy-pgo` | 30 days | Full Sun 01:15, Diff Mon–Sat 01:15, Incr hourly |
 | `repo3` | S3 (Cloudflare R2) | `${SECRET_R2_ENDPOINT}`, bucket `crunchy-pgo` | 7 days | Full Sun 02:30, Incr Mon–Sat every 2nd day |
 
 Compression: `bz2` level 9. Repos 1 and 3 use cipher encryption. Data source for cluster bootstrap is `repo3` (R2).
@@ -74,7 +74,7 @@ Compression: `bz2` level 9. Repos 1 and 3 use cipher encryption. Data source for
 ### Secrets
 
 The `crunchy-postgres-secret` ExternalSecret (sourced from Bitwarden) provides:
-- Minio S3 access key and secret (`repo2`)
+- Garage S3 access key and secret (`repo2`, from the `crunchy-bucket` Bitwarden item)
 - Cloudflare R2 access key and secret (`repo3`)
 - pgBackRest cipher passphrase (repos 1 and 3)
 

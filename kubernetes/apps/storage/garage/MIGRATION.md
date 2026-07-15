@@ -301,19 +301,57 @@ curl -sk -X OPTIONS https://s3-garage.ewatkins.dev/outline/x -D - -o /dev/null \
 
 After each cutover, watch the app + its Gatus check for a full cycle before moving on.
 
-## Phase 5 — Decommission old storage
+## Phase 5 — Decommission old storage ✅ COMPLETE (data retained, not yet reclaimed)
 
-Once all four are verified (give Thanos/pgBackRest a few days of successful backup cycles):
+Pre-flight — confirmed **no live consumer** referenced Minio: the only remaining
+`s3.ewatkins.dev` hits were stale READMEs, and the only ExternalSecret sourcing Minio creds was
+Minio's own (`storage/minio-secret`, pruned with the app). Loki was double-checked: it is
+`type: filesystem` / `object_store: filesystem`, so its **2.2 GiB / 18k-object `loki` bucket in
+Minio is orphaned legacy data** from before that switch — nothing reads it.
 
+> **🛑 The trap: pruning Minio would have destroyed the rollback data.** `minio/ks.yaml` has
+> `prune: true` and `pvc.yaml` lives inside its app path, so deleting the app from Git makes Flux
+> prune the `minio-data` PVC. Its PV (`nfs-fast`) had **`persistentVolumeReclaimPolicy: Delete`**,
+> which would have deleted the PV *and* the NFS directory backing it — one commit, all Minio data
+> gone. **Always neutralise the reclaim policy before removing a stateful app from Git.**
+>
+> ```bash
+> # 1. make the data survive PVC deletion (do this FIRST)
+> kubectl patch pv <pv-name> -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
+> # 2. belt and braces: stop Flux pruning the PVC at all
+> kubectl annotate pvc -n storage minio-data kustomize.toolkit.fluxcd.io/prune=disabled --overwrite
+> ```
+
+Done:
+
+- PV `pvc-be96e7a5-0a4c-47de-8f6a-c8323c1639e1` flipped `Delete` → **`Retain`**; `minio-data` PVC
+  annotated `prune: disabled`.
+- Deleted `kubernetes/apps/storage/minio/` and its entry in
+  [storage/kustomization.yaml](../kustomization.yaml) → Flux prunes the HelmRelease, Deployment,
+  HTTPRoutes, Gatus check, and ExternalSecret.
+- Removed the orphaned **MinIO Grafana dashboard** (gnetId 13502) — no metrics source once Minio
+  is gone. Refreshed the stale Minio→Garage references across the app READMEs.
+
+Still outstanding (deliberately):
+
+- **Reclaim the data.** The NFS directory survives at
+  `storage.ewatkins.dev:/mnt/user/kubernetes-fast/pvc-be96e7a5-0a4c-47de-8f6a-c8323c1639e1`
+  (buckets: `crunchy-pgo`, `forgejo`, `loki`, `thanos`). Delete the released PV + that directory
+  once Garage has a few days of clean backup cycles.
 - Remove the old creds from each app's Bitwarden item (Minio for Thanos/Forgejo/Crunchy,
-  iDrive e2 for Outline).
-- Delete `kubernetes/apps/storage/minio/` and its entry in
-  [storage/kustomization.yaml](../kustomization.yaml).
-- Retain the `minio-data` PVC briefly as a safety net, then reclaim.
-- For Outline: once verified on Garage, cancel/clean up the external **iDrive e2** bucket.
+  iDrive e2 for Outline) — including `minio-thanos-secret`.
+- For Outline: cancel/clean up the external **iDrive e2** bucket.
+- Homepage still has a Minio tile
+  ([configmap.yaml](../../default/homepage/app/configmap.yaml)) pointing at the now-dead
+  `minio.ewatkins.dev`.
 
 ## Rollback
 
-Until Phase 5, rollback for any consumer is: revert its endpoint/creds change in Git and
-reconcile — the original source still holds the data (Minio for Thanos/Forgejo/Crunchy, iDrive
-e2 for Outline). That is why the old sources stay fully live through Phase 4.
+Through Phase 4, rollback for any consumer was: revert its endpoint/creds change in Git and
+reconcile — the original source still held the data (Minio for Thanos/Forgejo/Crunchy, iDrive e2
+for Outline). That is why the old sources stayed fully live through Phase 4.
+
+**After Phase 5** the Minio *service* is gone, but its data is **not**: the PV is `Retain`ed, so
+rollback means re-applying the minio app from Git history and re-binding a PVC to the retained
+volume (clear its `claimRef` to make it `Available` again). That option disappears once the
+directory above is reclaimed.
