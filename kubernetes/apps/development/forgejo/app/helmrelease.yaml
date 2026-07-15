@@ -93,9 +93,11 @@ spec:
           PROVIDER: redis
           PROVIDER_CONFIG: redis://dragonfly.database.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s
         storage:
+          # "minio" is Forgejo's name for its S3-compatible storage backend
+          # (minio-go client); it is backed by Garage, not the retired Minio.
           STORAGE_TYPE: minio
           MINIO_USE_SSL: true
-          MINIO_ENDPOINT: s3.ewatkins.dev:443
+          MINIO_ENDPOINT: s3-garage.ewatkins.dev:443
           MINIO_BUCKET: forgejo
           MINIO_LOCATION: us-east-1
           MINIO_INSECURE_SKIP_VERIFY: false
@@ -125,9 +127,9 @@ spec:
       # Storage
     - kind: Secret
       name: &forgejoBucket forgejo-bucket
-      valuesKey: MINIO_ACCESS_KEY_ID
+      valuesKey: access-key-id
       targetPath: gitea.config.storage.MINIO_ACCESS_KEY_ID
     - kind: Secret
       name: *forgejoBucket
-      valuesKey: MINIO_SECRET_ACCESS_KEY
+      valuesKey: secret-access-key
       targetPath: gitea.config.storage.MINIO_SECRET_ACCESS_KEY
