@@ -116,20 +116,43 @@ Garage's gateway S3 endpoint (`s3-garage.ewatkins.dev` → `garage-api:3900`) wa
   and **path-style addressing resolves correctly**. This is the endpoint Forgejo, Crunchy, and
   Outline use at cutover (Thanos uses the in-cluster `garage.storage.svc.cluster.local:3900`).
 
-## Phase 3 — Copy data (source stays live)
+## Phase 3 — Copy data (source stays live) ✅ COMPLETE (initial bulk sync)
 
-Per bucket, using `rclone`. The three Minio buckets sync from a `minio:` remote; **Outline
-syncs from its `idrive:` remote** (iDrive e2), not Minio:
+Tooling: `rclone` (added to the workstation [Brewfile](../../../../.taskfiles/Workstation/Brewfile)
+and [Archfile](../../../../.taskfiles/Workstation/Archfile)). Run from the workstation, which
+can reach `s3.ewatkins.dev`, `s3-garage.ewatkins.dev`, and iDrive e2.
+
+**Remote layout:** each Garage key is scoped to a single bucket, so a single `garage:` remote
+can't reach all four — use **one Garage remote per bucket** (`garage-thanos`, `garage-forgejo`,
+`garage-crunchy`, `garage-outline`), each with that bucket's existing key. Sources: `minio`
+(root creds; reads thanos/forgejo/crunchy-pgo) and `idrive` (outline-secret creds; reads
+outline). Garage remotes use `provider = Other` + explicit `endpoint` → rclone auto-uses
+path-style. The `rclone.conf` holds secrets, so it lives only on the workstation (not in Git).
 
 ```bash
-rclone sync minio:thanos      garage:thanos      --progress
-rclone sync minio:forgejo     garage:forgejo     --progress
-rclone sync minio:crunchy-pgo garage:crunchy-pgo --progress
-rclone sync idrive:outline    garage:outline     --progress   # source is iDrive e2
+rclone sync minio:thanos       garage-thanos:thanos        --progress --transfers 8
+rclone sync minio:forgejo      garage-forgejo:forgejo      --progress --transfers 8
+rclone sync minio:crunchy-pgo  garage-crunchy:crunchy-pgo  --progress --transfers 8
+rclone sync idrive:outline     garage-outline:outline      --progress --transfers 8
 ```
 
-Thanos/pgBackRest buckets can be large — run an initial sync, then a final delta sync
-immediately before each cutover.
+**Verification results (initial sync):**
+
+| Bucket | Result |
+| --- | --- |
+| `thanos` | 83 objects / 12.506 GiB — matched after a delta sync |
+| `forgejo` | 11 objects — byte-identical |
+| `crunchy-pgo` | 25,328 files — `rclone check` **0 differences** after a delta sync |
+| `outline` | 4 objects — byte-identical (iDrive e2 → Garage) |
+
+**Notes / lessons:**
+
+- `rclone check` reports "N hashes could not be checked" — **normal**; Garage returns non-MD5
+  ETags for multipart uploads, so rclone falls back to size comparison.
+- `thanos` and `crunchy-pgo` are **continuously written** (Thanos ships TSDB blocks; pgBackRest
+  archives WAL), so they drift by a few objects between sync and check. Re-running that bucket's
+  `rclone sync` clears it. Each needs a **final delta sync at its cutover** (Phase 4).
+- `forgejo` and `outline` are static — fully done, no further sync needed before cutover.
 
 ## Phase 4 — Cut over one consumer at a time (low-risk first)
 
