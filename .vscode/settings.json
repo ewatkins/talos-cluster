@@ -8,16 +8,6 @@
   "editor.stickyScroll.enabled": false,
   "explorer.autoReveal": false,
   "files.trimTrailingWhitespace": true,
-  "material-icon-theme.files.associations": {
-    // TODO: https://github.com/PKief/vscode-material-icon-theme/issues/330
-    "*.secret.sops.env": "lock",
-    "*.secret.sops.yaml": "lock",
-    "secret.sops.yaml": "lock",
-    "externalsecret.yaml": "lock",
-    "helmrelease.yaml": "helm",
-    "*.helmrelease.yaml": "helm",
-    "rbac.yaml": "key"
-  },
   "material-icon-theme.folders.associations": {
     ".taskfiles": "utils",
     "bootstrap": "import",
@@ -47,5 +37,5 @@
     "tools": "tools",
     "volsync": "aws"
   },
-  "sops.defaults.ageKeyFile": "age.key"
+  "sops.defaults.ageKeyFile": "/var/run/secrets/sops/age.key"
 }
