@@ -297,7 +297,7 @@ data:
         - Goldilocks:
             href: https://goldilocks.ewatkins.dev
             description: Resource recommendations
-            icon: mdi-scale-balance
+            icon: goldilocks
             namespace: observability
             app: goldilocks
         - NGINX Proxy Manager:
@@ -354,7 +354,7 @@ data:
         - Homelable:
             href: https://homelab.ewatkins.dev
             description: Homelab inventory
-            icon: mdi-label
+            icon: homelable
             namespace: default
             app: homelable
         - Cluster Repo:
