@@ -344,7 +344,7 @@ Still outstanding (deliberately):
   fields pruned from the surviving items (`forgejo-bucket`, `crunchy-postgres-secret`,
   `outline-secret` — the last also dropping the now-hardcoded `bucket_name`/`region`). Each item
   now holds only the fields its ExternalSecret still references (Garage/R2/OIDC/etc.).
-- For Outline: cancel/clean up the external **iDrive e2** bucket.
+- ~~For Outline: cancel/clean up the external **iDrive e2** bucket.~~ ✅ **DONE** — bucket deleted.
 - ~~Homepage Minio tile~~ ✅ **DONE** — replaced with a Garage tile in
   [configmap.yaml](../../default/homepage/app/configmap.yaml).
 
