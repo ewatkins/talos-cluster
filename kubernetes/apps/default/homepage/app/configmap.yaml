@@ -50,23 +50,14 @@ data:
         columns: 3
         header: false
       # Apps — productivity + dev
-      Productivity:
+      Apps:
         style: row
-        columns: 3
-        header: false
-      Development:
-        style: row
-        columns: 3
-        header: false
-      # Platform — cluster plumbing
-      Platform:
-        style: row
-        columns: 3
+        columns: 2
         header: false
       # Media Tools — media-stack backends, parked at the bottom
       Media Tools:
         style: row
-        columns: 4
+        columns: 3
         header: false
   kubernetes.yaml: |
     mode: cluster
@@ -238,45 +229,34 @@ data:
               type: sabnzbd
               url: https://sab.ewatkins.dev
               key: "{{HOMEPAGE_VAR_SABNZBD_KEY}}"
-    - Productivity:
+    - Apps:
         - Outline:
             href: https://notes.ewatkins.dev
-            description: Wiki & notes
             icon: outline
             namespace: default
             app: outline
         - Open WebUI:
             href: https://chat.ewatkins.dev
-            description: AI chat
             icon: open-webui
             namespace: ai
             app: open-webui
         - Paperless:
             href: https://paperless.ewatkins.dev
-            description: Document management.
             icon: paperless-ngx
             namespace: media
             app: paperless
-            widget:
-              type: paperlessngx
-              url: https://paperless.ewatkins.dev
-              key: "{{HOMEPAGE_VAR_PAPERLESS_KEY}}"
         - Trek:
             href: https://trek.ewatkins.dev
-            description: Travel & trip planner
             icon: https://cdn.jsdelivr.net/gh/mauriceboe/TREK@main/client/public/icons/icon.svg
             namespace: default
             app: trek
-        - Homelable:
+        - Homelab:
             href: https://homelab.ewatkins.dev
-            description: Homelab inventory
             icon: homelable
             namespace: default
             app: homelable
-    - Development:
-        - Forgejo:
+        - Git:
             href: https://git.ewatkins.dev
-            description: Git hosting
             icon: forgejo
             namespace: development
             app: forgejo
@@ -287,42 +267,35 @@ data:
             app: code-server
         - Cluster Repo:
             href: https://github.com/ewatkins/talos-cluster
-            description: GitOps source
             icon: github-light
-    - Platform:
         - Keycloak:
             href: https://keycloak.ewatkins.dev
-            description: Identity & SSO
             icon: keycloak
             namespace: security
             app: keycloak
         - NGINX Proxy Manager:
             href: https://proxy.ewatkins.dev
-            description: Reverse proxy
             icon: nginx-proxy-manager
-            widget:
-              type: npm
-              url: https://proxy.ewatkins.dev
-              username: "{{HOMEPAGE_VAR_NPM_USER}}"
-              password: "{{HOMEPAGE_VAR_NPM_PASS}}"
         - Garage:
             href: https://garage.ewatkins.dev
-            description: Object storage
             icon: garage
             namespace: storage
             app: garage-webui
         - RedisInsight:
             href: https://redis.ewatkins.dev
-            description: Redis GUI
             icon: redis
             namespace: database
             app: redisinsight
         - Goldilocks:
             href: https://goldilocks.ewatkins.dev
-            description: Resource recommendations
             icon: goldilocks
             namespace: observability
             app: goldilocks
+        - Notifiarr:
+            href: https://notifiarr.ewatkins.dev
+            icon: notifiarr
+            namespace: media
+            app: notifiarr
     - Media Tools:
         - Prowlarr:
             href: https://prowlarr.ewatkins.dev
@@ -353,11 +326,5 @@ data:
             widget:
               type: tdarr
               url: https://tdarr.ewatkins.dev
-        - Notifiarr:
-            href: https://notifiarr.ewatkins.dev
-            description: Notifications
-            icon: notifiarr
-            namespace: media
-            app: notifiarr
   bookmarks.yaml: ""
   docker.yaml: ""
