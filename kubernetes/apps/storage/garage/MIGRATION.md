@@ -301,7 +301,7 @@ curl -sk -X OPTIONS https://s3-garage.ewatkins.dev/outline/x -D - -o /dev/null \
 
 After each cutover, watch the app + its Gatus check for a full cycle before moving on.
 
-## Phase 5 — Decommission old storage ✅ COMPLETE (data retained, not yet reclaimed)
+## Phase 5 — Decommission old storage ✅ COMPLETE
 
 Pre-flight — confirmed **no live consumer** referenced Minio: the only remaining
 `s3.ewatkins.dev` hits were stale READMEs, and the only ExternalSecret sourcing Minio creds was
@@ -332,13 +332,13 @@ Done:
 - Removed the orphaned **MinIO Grafana dashboard** (gnetId 13502) — no metrics source once Minio
   is gone. Refreshed the stale Minio→Garage references across the app READMEs.
 
-Still outstanding (deliberately):
+Cleanup — all complete:
 
-- **Reclaim the data.** The NFS directory survives at
-  `storage.ewatkins.dev:/mnt/user/kubernetes-fast/pvc-be96e7a5-0a4c-47de-8f6a-c8323c1639e1`
-  (buckets: `crunchy-pgo`, `forgejo`, `loki`, `thanos`). The `minio-data` PVC is still Bound
-  (`prune: disabled`) holding the `Retain`ed PV. Delete the PVC + released PV + that directory
-  once Garage has a few days of clean backup cycles.
+- ~~**Reclaim the data.**~~ ✅ **DONE** — the `minio-data` PVC, its `Retain`ed PV
+  `pvc-be96e7a5-0a4c-47de-8f6a-c8323c1639e1`, and the backing NFS directory
+  (`storage.ewatkins.dev:/mnt/user/kubernetes-fast/pvc-be96e7a5-…`) were all deleted. No dangling
+  PVC/PV remains. **This was the last rollback path** for the Minio-side data — the migration is
+  now irreversible.
 - ~~Remove the old creds from each app's Bitwarden item.~~ ✅ **DONE** — standalone Minio items
   deleted (`minio-secret`, `minio-loki-secret`, `minio-thanos-secret`), and the stale rollback
   fields pruned from the surviving items (`forgejo-bucket`, `crunchy-postgres-secret`,
@@ -354,7 +354,8 @@ Through Phase 4, rollback for any consumer was: revert its endpoint/creds change
 reconcile — the original source still held the data (Minio for Thanos/Forgejo/Crunchy, iDrive e2
 for Outline). That is why the old sources stayed fully live through Phase 4.
 
-**After Phase 5** the Minio *service* is gone, but its data is **not**: the PV is `Retain`ed, so
-rollback means re-applying the minio app from Git history and re-binding a PVC to the retained
-volume (clear its `claimRef` to make it `Available` again). That option disappears once the
-directory above is reclaimed.
+**After Phase 5 (now fully reclaimed) there is no rollback.** The retained PV and its backing NFS
+directory have been deleted, so the Minio-side data no longer exists and the app-level rollback
+creds have been pruned from Bitwarden. Garage is the sole source of truth for all four consumers.
+Recovery from here means restoring from each consumer's own backup chain (e.g. Crunchy's repo3/R2,
+Thanos block history), not re-pointing at Minio.
