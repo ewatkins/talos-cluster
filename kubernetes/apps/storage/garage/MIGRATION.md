@@ -339,9 +339,11 @@ Still outstanding (deliberately):
   (buckets: `crunchy-pgo`, `forgejo`, `loki`, `thanos`). The `minio-data` PVC is still Bound
   (`prune: disabled`) holding the `Retain`ed PV. Delete the PVC + released PV + that directory
   once Garage has a few days of clean backup cycles.
-- Remove the old creds from each app's Bitwarden item — **Minio creds done** (`minio-secret`,
-  `minio-loki-secret`, `minio-thanos-secret` deleted from Bitwarden; no ExternalSecret referenced
-  them). **Still pending:** the iDrive e2 creds in Outline's Bitwarden item.
+- ~~Remove the old creds from each app's Bitwarden item.~~ ✅ **DONE** — standalone Minio items
+  deleted (`minio-secret`, `minio-loki-secret`, `minio-thanos-secret`), and the stale rollback
+  fields pruned from the surviving items (`forgejo-bucket`, `crunchy-postgres-secret`,
+  `outline-secret` — the last also dropping the now-hardcoded `bucket_name`/`region`). Each item
+  now holds only the fields its ExternalSecret still references (Garage/R2/OIDC/etc.).
 - For Outline: cancel/clean up the external **iDrive e2** bucket.
 - ~~Homepage Minio tile~~ ✅ **DONE** — replaced with a Garage tile in
   [configmap.yaml](../../default/homepage/app/configmap.yaml).
