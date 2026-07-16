@@ -336,14 +336,15 @@ Still outstanding (deliberately):
 
 - **Reclaim the data.** The NFS directory survives at
   `storage.ewatkins.dev:/mnt/user/kubernetes-fast/pvc-be96e7a5-0a4c-47de-8f6a-c8323c1639e1`
-  (buckets: `crunchy-pgo`, `forgejo`, `loki`, `thanos`). Delete the released PV + that directory
+  (buckets: `crunchy-pgo`, `forgejo`, `loki`, `thanos`). The `minio-data` PVC is still Bound
+  (`prune: disabled`) holding the `Retain`ed PV. Delete the PVC + released PV + that directory
   once Garage has a few days of clean backup cycles.
-- Remove the old creds from each app's Bitwarden item (Minio for Thanos/Forgejo/Crunchy,
-  iDrive e2 for Outline) — including `minio-thanos-secret`.
+- Remove the old creds from each app's Bitwarden item — **Minio creds done** (`minio-secret`,
+  `minio-loki-secret`, `minio-thanos-secret` deleted from Bitwarden; no ExternalSecret referenced
+  them). **Still pending:** the iDrive e2 creds in Outline's Bitwarden item.
 - For Outline: cancel/clean up the external **iDrive e2** bucket.
-- Homepage still has a Minio tile
-  ([configmap.yaml](../../default/homepage/app/configmap.yaml)) pointing at the now-dead
-  `minio.ewatkins.dev`.
+- ~~Homepage Minio tile~~ ✅ **DONE** — replaced with a Garage tile in
+  [configmap.yaml](../../default/homepage/app/configmap.yaml).
 
 ## Rollback
 
