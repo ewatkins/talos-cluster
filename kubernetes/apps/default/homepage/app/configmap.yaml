@@ -52,7 +52,7 @@ data:
         header: false
       Workspace:
         style: row
-        columns: 3
+        columns: 2
         header: false
       Services:
         style: row
@@ -270,12 +270,6 @@ data:
               type: paperlessngx
               url: https://paperless.ewatkins.dev
               key: "{{HOMEPAGE_VAR_PAPERLESS_KEY}}"
-        - Open WebUI:
-            href: https://chat.ewatkins.dev
-            description: AI chat.
-            icon: open-webui
-            namespace: ai
-            app: open-webui
         - Immich:
             href: https://photos.ewatkins.dev
             description: Photo and video library.
@@ -294,6 +288,12 @@ data:
             icon: outline
             namespace: default
             app: outline
+        - Open WebUI:
+            href: https://chat.ewatkins.dev
+            description: AI chat
+            icon: open-webui
+            namespace: ai
+            app: open-webui
         - Goldilocks:
             href: https://goldilocks.ewatkins.dev
             description: Resource recommendations
