@@ -11,6 +11,7 @@ data:
     color: slate
     headerStyle: clean
     hideVersion: true
+    useEqualHeights: true
     background:
       image: https://images.unsplash.com/photo-1542810444-515316abdc7a?w=1920&q=85&fit=crop
       blur: md
@@ -22,6 +23,7 @@ data:
       searchDescriptions: true
       hideInternetSearch: false
     layout:
+      # Overview — at-a-glance health
       Hypervisors:
         style: row
         columns: 3
@@ -34,29 +36,37 @@ data:
         style: row
         columns: 2
         header: false
-      Streaming:
-        style: row
-        columns: 3
-        header: false
-      Requests:
-        style: row
-        columns: 3
-        header: false
-      Pipeline:
-        style: row
-        columns: 3
-        header: false
       Monitoring:
         style: row
         columns: 2
         header: false
-      Workspace:
-        style: row
-        columns: 2
-        header: false
-      Services:
+      # Media — what you watch, plus the *arr chain behind it
+      Media:
         style: row
         columns: 3
+        header: false
+      Automation:
+        style: row
+        columns: 3
+        header: false
+      # Apps — productivity + dev
+      Productivity:
+        style: row
+        columns: 3
+        header: false
+      Development:
+        style: row
+        columns: 3
+        header: false
+      # Platform — cluster plumbing
+      Platform:
+        style: row
+        columns: 3
+        header: false
+      # Media Tools — media-stack backends, parked at the bottom
+      Media Tools:
+        style: row
+        columns: 4
         header: false
   kubernetes.yaml: |
     mode: cluster
@@ -144,7 +154,28 @@ data:
               url: https://pbs.ewatkins.dev
               username: "{{HOMEPAGE_VAR_PBS_USER}}"
               password: "{{HOMEPAGE_VAR_PBS_PASS}}"
-    - Streaming:
+    - Monitoring:
+        - Grafana:
+            href: https://grafana.ewatkins.dev
+            description: Metrics dashboards.
+            icon: grafana
+            namespace: observability
+            app: grafana
+            widget:
+              type: grafana
+              url: https://grafana.ewatkins.dev
+              username: "{{HOMEPAGE_VAR_GRAFANA_USER}}"
+              password: "{{HOMEPAGE_VAR_GRAFANA_PASS}}"
+        - Gatus:
+            href: https://status.ewatkins.dev
+            description: Uptime monitoring.
+            icon: gatus
+            namespace: observability
+            app: gatus
+            widget:
+              type: gatus
+              url: https://status.ewatkins.dev
+    - Media:
         - Jellyfin:
             href: https://jellyfin.ewatkins.dev
             description: Watch movies and TV shows.
@@ -167,27 +198,18 @@ data:
               type: jellyseerr
               url: https://requests.ewatkins.dev
               key: "{{HOMEPAGE_VAR_JELLYSEERR_KEY}}"
-        - Recommendarr:
-            href: https://recommend.ewatkins.dev
-            description: Media recommendations
-            icon: mdi-movie-search
+        - Immich:
+            href: https://photos.ewatkins.dev
+            description: Photo and video library.
+            icon: immich
             namespace: media
-            app: recommendarr
-        - Notifiarr:
-            href: https://notifiarr.ewatkins.dev
-            description: Notifications
-            icon: notifiarr
-            namespace: media
-            app: notifiarr
-    - Requests:
-        - SABnzbd:
-            href: https://sab.ewatkins.dev
-            description: Usenet downloader.
-            icon: sabnzbd
+            app: immich
             widget:
-              type: sabnzbd
-              url: https://sab.ewatkins.dev
-              key: "{{HOMEPAGE_VAR_SABNZBD_KEY}}"
+              type: immich
+              url: https://photos.ewatkins.dev
+              key: "{{HOMEPAGE_VAR_IMMICH_KEY}}"
+              version: 2
+    - Automation:
         - Radarr:
             href: https://radarr.ewatkins.dev
             description: Request and manage movies.
@@ -208,7 +230,100 @@ data:
               type: sonarr
               url: https://sonarr.ewatkins.dev
               key: "{{HOMEPAGE_VAR_SONARR_KEY}}"
-    - Pipeline:
+        - SABnzbd:
+            href: https://sab.ewatkins.dev
+            description: Usenet downloader.
+            icon: sabnzbd
+            widget:
+              type: sabnzbd
+              url: https://sab.ewatkins.dev
+              key: "{{HOMEPAGE_VAR_SABNZBD_KEY}}"
+    - Productivity:
+        - Outline:
+            href: https://notes.ewatkins.dev
+            description: Wiki & notes
+            icon: outline
+            namespace: default
+            app: outline
+        - Open WebUI:
+            href: https://chat.ewatkins.dev
+            description: AI chat
+            icon: open-webui
+            namespace: ai
+            app: open-webui
+        - Paperless:
+            href: https://paperless.ewatkins.dev
+            description: Document management.
+            icon: paperless-ngx
+            namespace: media
+            app: paperless
+            widget:
+              type: paperlessngx
+              url: https://paperless.ewatkins.dev
+              key: "{{HOMEPAGE_VAR_PAPERLESS_KEY}}"
+        - Trek:
+            href: https://trek.ewatkins.dev
+            description: Travel & trip planner
+            icon: https://cdn.jsdelivr.net/gh/mauriceboe/TREK@main/client/public/icons/icon.svg
+            namespace: default
+            app: trek
+        - Homelable:
+            href: https://homelab.ewatkins.dev
+            description: Homelab inventory
+            icon: homelable
+            namespace: default
+            app: homelable
+    - Development:
+        - Forgejo:
+            href: https://git.ewatkins.dev
+            description: Git hosting
+            icon: forgejo
+            namespace: development
+            app: forgejo
+        - Web IDE:
+            href: https://code.ewatkins.dev
+            icon: code-server
+            namespace: development
+            app: code-server
+        - Cluster Repo:
+            href: https://github.com/ewatkins/talos-cluster
+            description: GitOps source
+            icon: github-light
+    - Platform:
+        - Keycloak:
+            href: https://keycloak.ewatkins.dev
+            description: Identity & SSO
+            icon: keycloak
+            namespace: security
+            app: keycloak
+        - NGINX Proxy Manager:
+            href: https://proxy.ewatkins.dev
+            description: Reverse proxy
+            icon: nginx-proxy-manager
+            widget:
+              type: npm
+              url: https://proxy.ewatkins.dev
+              username: "{{HOMEPAGE_VAR_NPM_USER}}"
+              password: "{{HOMEPAGE_VAR_NPM_PASS}}"
+        - Garage:
+            href: https://garage.ewatkins.dev
+            description: Object storage
+            icon: garage
+            namespace: storage
+            app: garage-webui
+        - RedisInsight:
+            href: https://redis.ewatkins.dev
+            description: Redis GUI
+            icon: redis
+            namespace: database
+            app: redisinsight
+        - Goldilocks:
+            href: https://goldilocks.ewatkins.dev
+            description: Resource recommendations
+            icon: goldilocks
+            namespace: observability
+            app: goldilocks
+    - Media Tools:
         - Prowlarr:
             href: https://prowlarr.ewatkins.dev
             description: Tracker and indexer manager.
@@ -238,122 +353,11 @@ data:
             widget:
               type: tdarr
               url: https://tdarr.ewatkins.dev
-    - Monitoring:
-        - Grafana:
-            href: https://grafana.ewatkins.dev
-            description: Metrics dashboards.
-            icon: grafana
-            namespace: observability
-            app: grafana
-            widget:
-              type: grafana
-              url: https://grafana.ewatkins.dev
-              username: "{{HOMEPAGE_VAR_GRAFANA_USER}}"
-              password: "{{HOMEPAGE_VAR_GRAFANA_PASS}}"
-        - Gatus:
-            href: https://status.ewatkins.dev
-            description: Uptime monitoring.
-            icon: gatus
-            namespace: observability
-            app: gatus
-            widget:
-              type: gatus
-              url: https://status.ewatkins.dev
-    - Workspace:
-        - Paperless:
-            href: https://paperless.ewatkins.dev
-            description: Document management.
-            icon: paperless-ngx
+        - Notifiarr:
+            href: https://notifiarr.ewatkins.dev
+            description: Notifications
+            icon: notifiarr
             namespace: media
-            app: paperless
-            widget:
-              type: paperlessngx
-              url: https://paperless.ewatkins.dev
-              key: "{{HOMEPAGE_VAR_PAPERLESS_KEY}}"
-        - Immich:
-            href: https://photos.ewatkins.dev
-            description: Photo and video library.
-            icon: immich
-            namespace: media
-            app: immich
-            widget:
-              type: immich
-              url: https://photos.ewatkins.dev
-              key: "{{HOMEPAGE_VAR_IMMICH_KEY}}"
-              version: 2
-    - Services:
-        - Outline:
-            href: https://notes.ewatkins.dev
-            description: Wiki & notes
-            icon: outline
-            namespace: default
-            app: outline
-        - Open WebUI:
-            href: https://chat.ewatkins.dev
-            description: AI chat
-            icon: open-webui
-            namespace: ai
-            app: open-webui
-        - Goldilocks:
-            href: https://goldilocks.ewatkins.dev
-            description: Resource recommendations
-            icon: goldilocks
-            namespace: observability
-            app: goldilocks
-        - NGINX Proxy Manager:
-            href: https://proxy.ewatkins.dev
-            description: Reverse proxy
-            icon: nginx-proxy-manager
-            widget:
-              type: npm
-              url: https://proxy.ewatkins.dev
-              username: "{{HOMEPAGE_VAR_NPM_USER}}"
-              password: "{{HOMEPAGE_VAR_NPM_PASS}}"
-        - Keycloak:
-            href: https://keycloak.ewatkins.dev
-            description: Identity & SSO
-            icon: keycloak
-            namespace: security
-            app: keycloak
-        - Forgejo:
-            href: https://git.ewatkins.dev
-            description: Git hosting
-            icon: forgejo
-            namespace: development
-            app: forgejo
-        - code-server:
-            href: https://code.ewatkins.dev
-            description: Web IDE
-            icon: code-server
-            namespace: development
-            app: code-server
-        - Garage:
-            href: https://garage.ewatkins.dev
-            description: Object storage
-            icon: garage
-            namespace: storage
-            app: garage-webui
-        - RedisInsight:
-            href: https://redis.ewatkins.dev
-            description: Redis GUI
-            icon: redis
-            namespace: database
-            app: redisinsight
-        - Trek:
-            href: https://trek.ewatkins.dev
-            description: Travel & trip planner
-            icon: https://cdn.jsdelivr.net/gh/mauriceboe/TREK@main/client/public/icons/icon.svg
-            namespace: default
-            app: trek
-        - Homelable:
-            href: https://homelab.ewatkins.dev
-            description: Homelab inventory
-            icon: homelable
-            namespace: default
-            app: homelable
-        - Cluster Repo:
-            href: https://github.com/ewatkins/talos-cluster
-            description: GitOps source
-            icon: github-light
+            app: notifiarr
   bookmarks.yaml: ""
   docker.yaml: ""
