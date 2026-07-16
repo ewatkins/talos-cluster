@@ -55,3 +55,13 @@ spec:
         memory: 512Mi
     ingress:
       enabled: false
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: Deployment
+              name: trek
+            patch: |
+              - op: add
+                path: /spec/template/metadata/labels/app.kubernetes.io~1name
+                value: trek

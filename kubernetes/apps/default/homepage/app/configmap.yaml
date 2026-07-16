@@ -342,15 +342,9 @@ data:
         - Trek:
             href: https://trek.ewatkins.dev
             description: Travel & trip planner
-            # No dashboard-icons entry for TREK; use upstream's own branded logo
-            # (icon.svg carries its own background, so it works on any theme).
             icon: https://cdn.jsdelivr.net/gh/mauriceboe/TREK@main/client/public/icons/icon.svg
             namespace: default
             app: trek
-            # trek's upstream chart labels pods `app: trek`, not the
-            # `app.kubernetes.io/name` that homepage's `app:` field selects on,
-            # so override the selector. The field is podSelector, not pod_selector.
-            podSelector: app=trek
         - Homelable:
             href: https://homelab.ewatkins.dev
             description: Homelab inventory
@@ -360,8 +354,6 @@ data:
         - Cluster Repo:
             href: https://github.com/ewatkins/talos-cluster
             description: GitOps source
-            # -light is the white fill (#fff); plain `github` is #1b1f23 and
-            # reads grey on the dark theme.
             icon: github-light
   bookmarks.yaml: ""
   docker.yaml: ""
