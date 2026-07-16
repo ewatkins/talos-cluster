@@ -6,11 +6,9 @@ metadata:
   namespace: default
   annotations:
     external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
-    gethomepage.dev/enabled: "true"
-    gethomepage.dev/name: "Homelable"
-    gethomepage.dev/description: "Network visualization"
-    gethomepage.dev/group: "Apps"
-    gethomepage.dev/icon: "mdi-lan"
+    # No gethomepage.dev/* annotations: the Homelable tile is defined
+    # explicitly in the homepage ConfigMap's Services group. Auto-discovery
+    # here produced a duplicate under a separate "Apps" section.
 spec:
   parentRefs:
     - name: internal
