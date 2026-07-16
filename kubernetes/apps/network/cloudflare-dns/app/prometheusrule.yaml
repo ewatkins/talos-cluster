@@ -8,42 +8,46 @@ spec:
   groups:
     - name: external-dns.rules
       rules:
+        # These are counters: comparing them to 0 directly latches the alert on
+        # forever after a single error, since the counter only resets on restart.
+        # increase() over a short window lets the alert clear once errors stop,
+        # and the 15m `for` rides out provider reboots without firing.
         - alert: ExternalDNSRegistryError
           expr: |
-            external_dns_registry_errors_total > 0
-          for: 5m
+            increase(external_dns_registry_errors_total[5m]) > 0
+          for: 15m
           annotations:
             summary: >-
-              {{ $labels.job }} has registry errors for more than 5 minutes
+              {{ $labels.job }} has registry errors for more than 15 minutes
           labels:
             severity: critical
 
         - alert: ExternalDNSSourceError
           expr: |
-            external_dns_source_errors_total > 0
-          for: 5m
+            increase(external_dns_source_errors_total[5m]) > 0
+          for: 15m
           annotations:
             summary: >-
-              {{ $labels.job }} has source errors for more than 5 minutes
+              {{ $labels.job }} has source errors for more than 15 minutes
           labels:
             severity: critical
 
         - alert: ExternalDNSApplyChangesError
           expr: |
-            external_dns_webhook_provider_applychanges_errors_total > 0
-          for: 5m
+            increase(external_dns_webhook_provider_applychanges_errors_total[5m]) > 0
+          for: 15m
           annotations:
             summary: >-
-              {{ $labels.job }} has failed to apply changes for more than 5 minutes
+              {{ $labels.job }} has failed to apply changes for more than 15 minutes
           labels:
             severity: critical
 
         - alert: ExternalDNSRecordsError
           expr: |
-            external_dns_webhook_provider_records_errors_total > 0
-          for: 5m
+            increase(external_dns_webhook_provider_records_errors_total[5m]) > 0
+          for: 15m
           annotations:
             summary: >-
-              {{ $labels.job }} has failed to gather records for more than 5 minutes
+              {{ $labels.job }} has failed to gather records for more than 15 minutes
           labels:
             severity: critical
