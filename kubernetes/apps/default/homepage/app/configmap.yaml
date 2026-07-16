@@ -360,6 +360,8 @@ data:
         - Cluster Repo:
             href: https://github.com/ewatkins/talos-cluster
             description: GitOps source
-            icon: github
+            # -light is the white fill (#fff); plain `github` is #1b1f23 and
+            # reads grey on the dark theme.
+            icon: github-light
   bookmarks.yaml: ""
   docker.yaml: ""
