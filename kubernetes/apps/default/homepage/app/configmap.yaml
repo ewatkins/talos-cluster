@@ -34,7 +34,7 @@ data:
         header: false
       Infrastructure:
         style: row
-        columns: 3
+        columns: 2
         header: false
       # Web IDE + Outline in a row directly above Monitoring
       Workspace:
@@ -155,15 +155,6 @@ data:
               url: https://pbs.ewatkins.dev
               username: "{{HOMEPAGE_VAR_PBS_USER}}"
               password: "{{HOMEPAGE_VAR_PBS_PASS}}"
-        - UniFi:
-            href: https://10.0.0.1
-            description: Network controller.
-            icon: unifi
-            widget:
-              type: unifi
-              url: https://10.0.0.1
-              key: "{{HOMEPAGE_VAR_UNIFI_KEY}}"
-              fields: ["uptime", "wan", "lan_users", "wlan_users"]
     - Workspace:
         - Web IDE:
             href: https://code.ewatkins.dev
@@ -196,12 +187,15 @@ data:
             widget:
               type: gatus
               url: https://status.ewatkins.dev
-        - Pulse:
-            href: https://pulse.ewatkins.dev
-            description: Proxmox monitoring.
-            icon: pulse
-            namespace: observability
-            app: pulse
+        - UniFi:
+            href: https://10.0.0.1
+            description: Network controller.
+            icon: unifi
+            widget:
+              type: unifi
+              url: https://10.0.0.1
+              key: "{{HOMEPAGE_VAR_UNIFI_KEY}}"
+              fields: ["uptime", "wan", "lan_users", "wlan_users"]
     - Media:
         - Jellyfin:
             href: https://jellyfin.ewatkins.dev
