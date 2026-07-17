@@ -14,6 +14,21 @@ spec:
   hostnames:
     - "git.ewatkins.dev"
   rules:
+    # Forgejo has no setting to skip its login page, which only offers the
+    # single Keycloak button; send browsers straight into the OIDC flow.
+    # GET only, so other verbs and paths under /user/login are unaffected.
+    - matches:
+        - path:
+            type: Exact
+            value: /user/login
+          method: GET
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /user/oauth2/Keycloak
+            statusCode: 302
     - matches:
         - path:
             type: PathPrefix
