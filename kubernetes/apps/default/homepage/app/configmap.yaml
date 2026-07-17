@@ -347,7 +347,7 @@ data:
             widget:
               type: paperlessngx
               url: https://paperless.ewatkins.dev
-              key: "{{HOMEPAGE_VAR_PAPERLESS_TOKEN}}"
+              key: "{{HOMEPAGE_VAR_PAPERLESS_KEY}}"
     - Media Tools:
         - Prowlarr:
             href: https://prowlarr.ewatkins.dev
