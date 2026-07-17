@@ -196,6 +196,16 @@ data:
               url: https://10.0.0.1
               key: "{{HOMEPAGE_VAR_UNIFI_KEY}}"
               fields: ["uptime", "wan", "lan_users", "wlan_users"]
+        - MySpeed:
+            href: https://myspeed.ewatkins.dev
+            description: Internet speed history.
+            icon: myspeed
+            namespace: observability
+            app: myspeed
+            widget:
+              type: myspeed
+              url: https://myspeed.ewatkins.dev
+              password: "{{HOMEPAGE_VAR_MYSPEED_PASSWORD}}"
     - Media:
         - Jellyfin:
             href: https://jellyfin.ewatkins.dev
