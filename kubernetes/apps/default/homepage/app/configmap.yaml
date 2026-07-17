@@ -43,7 +43,7 @@ data:
         header: false
       Monitoring:
         style: row
-        columns: 4
+        columns: 3
         header: false
       # Media — what you watch, plus the *arr chain behind it
       Media:
@@ -53,6 +53,10 @@ data:
       Automation:
         style: row
         columns: 3
+        header: false
+      Misc:
+        style: row
+        columns: 2
         header: false
       # Apps — productivity + dev
       Apps:
@@ -200,15 +204,6 @@ data:
               type: myspeed
               url: https://myspeed.ewatkins.dev
               password: "{{HOMEPAGE_VAR_MYSPEED_PASSWORD}}"
-        - Scrutiny:
-            href: https://scrutiny.ewatkins.dev
-            description: Disk SMART health.
-            icon: scrutiny
-            namespace: observability
-            app: scrutiny
-            widget:
-              type: scrutiny
-              url: https://scrutiny.ewatkins.dev
     - Media:
         - Jellyfin:
             href: https://jellyfin.ewatkins.dev
@@ -274,6 +269,27 @@ data:
               type: sabnzbd
               url: https://sab.ewatkins.dev
               key: "{{HOMEPAGE_VAR_SABNZBD_KEY}}"
+    - Misc:
+        - Git:
+            href: https://git.ewatkins.dev
+            icon: forgejo
+            namespace: development
+            app: forgejo
+            # Forgejo is API-compatible with Gitea, so homepage's gitea widget
+            # works against it. Needs a read-scoped API token.
+            widget:
+              type: gitea
+              url: https://git.ewatkins.dev
+              key: "{{HOMEPAGE_VAR_GITEA_KEY}}"
+        - Scrutiny:
+            href: https://scrutiny.ewatkins.dev
+            description: Disk SMART health.
+            icon: scrutiny
+            namespace: observability
+            app: scrutiny
+            widget:
+              type: scrutiny
+              url: https://scrutiny.ewatkins.dev
     - Apps:
         - Open WebUI:
             href: https://chat.ewatkins.dev
@@ -290,17 +306,6 @@ data:
             icon: homelable
             namespace: default
             app: homelable
-        - Git:
-            href: https://git.ewatkins.dev
-            icon: forgejo
-            namespace: development
-            app: forgejo
-            # Forgejo is API-compatible with Gitea, so homepage's gitea widget
-            # works against it. Needs a read-scoped API token.
-            widget:
-              type: gitea
-              url: https://git.ewatkins.dev
-              key: "{{HOMEPAGE_VAR_GITEA_KEY}}"
         - Keycloak:
             href: https://keycloak.ewatkins.dev
             icon: keycloak
