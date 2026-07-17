@@ -34,7 +34,7 @@ data:
         header: false
       Infrastructure:
         style: row
-        columns: 2
+        columns: 3
         header: false
       # Web IDE + Outline in a row directly above Monitoring
       Workspace:
@@ -155,6 +155,15 @@ data:
               url: https://pbs.ewatkins.dev
               username: "{{HOMEPAGE_VAR_PBS_USER}}"
               password: "{{HOMEPAGE_VAR_PBS_PASS}}"
+        - UniFi:
+            href: https://10.0.0.1
+            description: Network controller.
+            icon: unifi
+            widget:
+              type: unifi
+              url: https://10.0.0.1
+              key: "{{HOMEPAGE_VAR_UNIFI_KEY}}"
+              fields: ["uptime", "wan", "lan_users", "wlan_users"]
     - Workspace:
         - Web IDE:
             href: https://code.ewatkins.dev
