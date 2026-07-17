@@ -87,19 +87,6 @@ data:
         timezone: America/Chicago
         units: imperial
         cache: 5
-    # Cluster + per-node CPU/memory. Info widgets render in the top header.
-    - kubernetes:
-        cluster:
-          show: true
-          cpu: true
-          memory: true
-          showLabel: true
-          label: cluster
-        nodes:
-          show: true
-          cpu: true
-          memory: true
-          showLabel: true
     # Cluster Repo as a header link; custom.css floats it right, beside the weather
     - logo:
         icon: github-light
@@ -311,7 +298,7 @@ data:
             app: open-webui
         - Trek:
             href: https://trek.ewatkins.dev
-            icon: https://cdn.jsdelivr.net/gh/mauriceboe/TREK@main/client/public/icons/icon.svg
+            icon: sh-trek
             namespace: default
             app: trek
         - Homelab:
