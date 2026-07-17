@@ -10,7 +10,7 @@ is pushed to the hub by collectors running on the machines that own drives.
 | Setting | Value | Notes |
 | --- | --- | --- |
 | URL | `https://scrutiny.ewatkins.dev` | Internal gateway only |
-| Image | `ghcr.io/analogj/scrutiny` (`omnibus`) | Web + API + embedded InfluxDB |
+| Image | `ghcr.io/starosdev/scrutiny` (`1.9.0-omnibus`) | Web + API + embedded InfluxDB. **Fork**, not analogj — adds MegaRAID/HBA detection and uses a different device-registration schema, so the hub and every collector must run the **same fork+version**. |
 | Storage | `scrutiny-data` PVC (openebs-hostpath, 5Gi) | `/opt/scrutiny/config` + `/opt/scrutiny/influxdb` |
 | API auth | None | LAN-only exposure; collectors POST unauthenticated |
 
@@ -21,20 +21,20 @@ Each collector runs `smartctl` locally and POSTs results to
 
 ### caspian (Unraid NAS)
 
-Docker container (or the Community Applications "Scrutiny" collector template):
+Runs via the Unraid Docker template. Key settings:
 
-```bash
-docker run -d --name scrutiny-collector \
-  --cap-add SYS_RAWIO --cap-add SYS_ADMIN \
-  --volume /run/udev:/run/udev:ro \
-  $(ls /dev/sd? /dev/nvme? 2>/dev/null | sed 's/^/--device=/') \
-  -e COLLECTOR_API_ENDPOINT=https://scrutiny.ewatkins.dev \
-  -e COLLECTOR_HOST_ID=caspian \
-  -e COLLECTOR_CRON_SCHEDULE="0 * * * *" \
-  ghcr.io/analogj/scrutiny:master-collector
-```
-
-`SYS_ADMIN` is only needed for NVMe devices.
+- **Image**: `ghcr.io/starosdev/scrutiny:1.9.0-collector` — must match the hub's
+  fork+version exactly, or device registration fails with a 400/500 (schema
+  mismatch: `smart_support` object vs bool).
+- **Privileged**: ON (or pass each `/dev/sdX` device + `SYS_RAWIO`) so
+  `smartctl` can reach the drives, including MegaRAID/HBA disks.
+- **Udev**: `/run/udev` mounted read-only for device-model detection.
+- `COLLECTOR_API_ENDPOINT=https://scrutiny.ewatkins.dev`, `COLLECTOR_HOST_ID=caspian`.
+- **`COLLECTOR_CRON_SCHEDULE`**: this fork runs its **own internal scheduler**,
+  so `run` blocks and only collects on this schedule (default `0 0 * * *` =
+  midnight). Set it to `0 * * * *` for hourly. To force an immediate one-off
+  from the container console, clear the var for that invocation:
+  `COLLECTOR_CRON_SCHEDULE= scrutiny-collector-metrics run`.
 
 ### pve01 / pve02 / pve03 (Proxmox hosts)
 
