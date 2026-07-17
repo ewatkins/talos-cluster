@@ -7,4 +7,5 @@ resources:
   - ./cloudflare-tunnel/ks.yaml
   - ./cloudflare-dns/ks.yaml
   - ./envoy-gateway/ks.yaml
+  - ./infra-proxies/ks.yaml
   - ./unifi-dns/ks.yaml
