@@ -52,7 +52,7 @@ spec:
       admin:
         existingSecret: forgejo-admin-secret
       oauth:
-        - name: keycloak
+        - name: Keycloak
           provider: openidConnect
           existingSecret: forgejo-oauth-secret
           autoDiscoverUrl: https://keycloak.ewatkins.dev/realms/master/.well-known/openid-configuration
@@ -70,9 +70,10 @@ spec:
         service:
           ALLOW_ONLY_EXTERNAL_REGISTRATION: true
           DISABLE_REGISTRATION: false
-          # Hide the local username/password form; login via Keycloak only.
+          # Disable local username/password login; web sign-in via Keycloak only.
           # Passwords still work for git-over-HTTPS and API basic auth.
-          ENABLE_PASSWORD_SIGNIN_FORM: false
+          # (Forgejo's name for Gitea's ENABLE_PASSWORD_SIGNIN_FORM)
+          ENABLE_INTERNAL_SIGNIN: false
         database:
           DB_TYPE: postgres
         repository:
