@@ -284,6 +284,12 @@ data:
             icon: forgejo
             namespace: development
             app: forgejo
+            # Forgejo is API-compatible with Gitea, so homepage's gitea widget
+            # works against it. Needs a read-scoped API token.
+            widget:
+              type: gitea
+              url: https://git.ewatkins.dev
+              key: "{{HOMEPAGE_VAR_GITEA_KEY}}"
         - Keycloak:
             href: https://keycloak.ewatkins.dev
             icon: keycloak
