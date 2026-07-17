@@ -25,7 +25,7 @@ spec:
   values:
     deployment:
       annotations:
-        secret.reloader.stakater.com/reload: forgejo-admin-secret,forgejo-mailer,forgejo-security,forgejo-db-init
+        secret.reloader.stakater.com/reload: forgejo-admin-secret,forgejo-mailer,forgejo-security,forgejo-db-init,forgejo-oauth-secret
     strategy:
       type: Recreate
     service:
@@ -51,6 +51,12 @@ spec:
     gitea:
       admin:
         existingSecret: forgejo-admin-secret
+      oauth:
+        - name: keycloak
+          provider: openidConnect
+          existingSecret: forgejo-oauth-secret
+          autoDiscoverUrl: https://keycloak.ewatkins.dev/realms/master/.well-known/openid-configuration
+          scopes: openid profile email
       # See https://docs.gitea.io/en-us/config-cheat-sheet/
       config:
         APP_NAME: Forgejo
@@ -77,6 +83,11 @@ spec:
         openid:
           ENABLE_OPENID_SIGNIN: false
           ENABLE_OPENID_SIGNUP: false
+        oauth2_client:
+          USERNAME: preferred_username
+          # Auto-link OAuth logins to existing accounts by matching email;
+          # new-account creation still requires admin provisioning.
+          ACCOUNT_LINKING: auto
         mailer:
           ENABLED: true
           SMTP_ADDR: "${SECRET_SMTP_HOST}"

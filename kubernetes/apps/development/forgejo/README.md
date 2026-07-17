@@ -7,8 +7,8 @@ Forgejo is the self-hosted Git service for this cluster. It provides repository 
 | Setting | Value | Notes |
 | --- | --- | --- |
 | URL | `https://git.ewatkins.dev` | Publicly accessible via Cloudflare tunnel |
-| Authentication | GitHub OAuth2 | Users log in via GitHub; configured as an external auth source in the Forgejo admin panel |
-| Registration | Admin-provisioned only | `ALLOW_ONLY_EXTERNAL_REGISTRATION: true` disables the local sign-up form; new account creation via OAuth is also disabled, so accounts must be created by an admin before a user can log in with GitHub |
+| Authentication | Keycloak OIDC (`keycloak` auth source) | Declared via `gitea.oauth` in the HelmRelease; discovery URL `https://keycloak.ewatkins.dev/realms/master/.well-known/openid-configuration`, client credentials from `forgejo-oauth-secret` (Bitwarden). `ACCOUNT_LINKING: auto` links OIDC logins to existing accounts by email. A legacy GitHub OAuth2 source configured manually in the admin panel may still exist |
+| Registration | Admin-provisioned only | `ALLOW_ONLY_EXTERNAL_REGISTRATION: true` disables the local sign-up form; new account creation via OAuth is also disabled, so accounts must be created by an admin before a user can log in with Keycloak |
 | OpenID | Disabled | `ENABLE_OPENID_SIGNIN` and `ENABLE_OPENID_SIGNUP` are both `false` |
 | Database | PostgreSQL via `forgejo-db` secret | Stores repositories, issues, users, and settings |
 | Cache / Queue | Dragonfly (Redis-compatible) | Used for session storage, task queues, and caching |
