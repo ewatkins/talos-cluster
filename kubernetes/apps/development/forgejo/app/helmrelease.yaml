@@ -70,6 +70,9 @@ spec:
         service:
           ALLOW_ONLY_EXTERNAL_REGISTRATION: true
           DISABLE_REGISTRATION: false
+          # Hide the local username/password form; login via Keycloak only.
+          # Passwords still work for git-over-HTTPS and API basic auth.
+          ENABLE_PASSWORD_SIGNIN_FORM: false
         database:
           DB_TYPE: postgres
         repository:
