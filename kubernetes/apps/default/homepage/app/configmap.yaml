@@ -298,7 +298,7 @@ data:
             app: open-webui
         - Trek:
             href: https://trek.ewatkins.dev
-            icon: sh-trek
+            icon: sh-trek-light
             namespace: default
             app: trek
         - Homelab:
