@@ -36,9 +36,14 @@ data:
         style: row
         columns: 2
         header: false
-      Monitoring:
+      # Web IDE + Outline in a row directly above Monitoring
+      Workspace:
         style: row
         columns: 2
+        header: false
+      Monitoring:
+        style: row
+        columns: 3
         header: false
       # Media — what you watch, plus the *arr chain behind it
       Media:
@@ -73,6 +78,11 @@ data:
         timezone: America/Chicago
         units: imperial
         cache: 5
+    # Cluster Repo as a header link; custom.css floats it right, beside the weather
+    - logo:
+        icon: github-light
+        href: https://github.com/ewatkins/talos-cluster
+        target: _blank
   services.yaml: |
     - Hypervisors:
         - pve01:
@@ -145,6 +155,17 @@ data:
               url: https://pbs.ewatkins.dev
               username: "{{HOMEPAGE_VAR_PBS_USER}}"
               password: "{{HOMEPAGE_VAR_PBS_PASS}}"
+    - Workspace:
+        - Web IDE:
+            href: https://code.ewatkins.dev
+            icon: vscode
+            namespace: development
+            app: code-server
+        - Outline:
+            href: https://notes.ewatkins.dev
+            icon: outline
+            namespace: default
+            app: outline
     - Monitoring:
         - Grafana:
             href: https://grafana.ewatkins.dev
@@ -166,6 +187,12 @@ data:
             widget:
               type: gatus
               url: https://status.ewatkins.dev
+        - Pulse:
+            href: https://pulse.ewatkins.dev
+            description: Proxmox monitoring.
+            icon: pulse
+            namespace: observability
+            app: pulse
     - Media:
         - Jellyfin:
             href: https://jellyfin.ewatkins.dev
@@ -225,16 +252,13 @@ data:
             href: https://sab.ewatkins.dev
             description: Usenet downloader.
             icon: sabnzbd
+            server: caspian
+            container: sabnzbd
             widget:
               type: sabnzbd
               url: https://sab.ewatkins.dev
               key: "{{HOMEPAGE_VAR_SABNZBD_KEY}}"
     - Apps:
-        - Outline:
-            href: https://notes.ewatkins.dev
-            icon: outline
-            namespace: default
-            app: outline
         - Open WebUI:
             href: https://chat.ewatkins.dev
             icon: open-webui
@@ -260,14 +284,6 @@ data:
             icon: forgejo
             namespace: development
             app: forgejo
-        - Web IDE:
-            href: https://code.ewatkins.dev
-            icon: code-server
-            namespace: development
-            app: code-server
-        - Cluster Repo:
-            href: https://github.com/ewatkins/talos-cluster
-            icon: github-light
         - Keycloak:
             href: https://keycloak.ewatkins.dev
             icon: keycloak
@@ -276,6 +292,12 @@ data:
         - NGINX Proxy Manager:
             href: https://proxy.ewatkins.dev
             icon: nginx-proxy-manager
+            # Proxmox LXC (no container/pod to read a real status from). siteMonitor
+            # gives a reachability badge; statusStyle:basic renders it as UP/DOWN
+            # text, and custom.css relabels the up state to RUNNING to match the
+            # Docker/k8s tiles.
+            siteMonitor: https://proxy.ewatkins.dev
+            statusStyle: basic
         - Garage:
             href: https://garage.ewatkins.dev
             icon: garage
@@ -327,4 +349,9 @@ data:
               type: tdarr
               url: https://tdarr.ewatkins.dev
   bookmarks.yaml: ""
-  docker.yaml: ""
+  docker.yaml: |
+    # LinuxServer socket-proxy on the NAS (read-only; CONTAINERS=1). The pod
+    # reaches the NAS by IP — caspian.ewatkins.dev resolves to the reverse proxy.
+    caspian:
+      host: 10.35.10.10
+      port: 2375

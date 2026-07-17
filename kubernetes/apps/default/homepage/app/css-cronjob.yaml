@@ -39,23 +39,6 @@ data:
       left: 3.5rem;
     }
 
-    /* Streaming group: Recommendarr + Notifiarr stack in the third column,
-       Jellyfin and Requests span both rows at full height */
-    :is(li[data-name="Jellyfin"], li[data-name="Requests"]) {
-      grid-row: span 2;
-    }
-    li[data-name="Recommendarr"] {
-      grid-column: 3;
-      grid-row: 1;
-    }
-    li[data-name="Notifiarr"] {
-      grid-column: 3;
-      grid-row: 2;
-    }
-    :is(li[data-name="Jellyfin"], li[data-name="Requests"]) .service-card {
-      height: calc(100% - 0.5rem); /* fill the spanned rows (minus mb-2) */
-    }
-
     /* Make service cards stand out against the background */
     .service-card {
       background-color: rgb(15 23 42 / 0.45) !important; /* slate-900, up from default 20% */
@@ -99,6 +82,30 @@ data:
     :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .service-container.chart,
     :is(li[data-name="pve01"], li[data-name="pve02"], li[data-name="pve03"]) .service-container.chart > div:last-child {
       height: 24px; /* tighten now that the chart area is empty */
+    }
+
+    /* Cluster Repo (github logo info-widget): the header renders it in the left
+       group, so order it past #information-widgets-right to sit at the top-right,
+       just beyond the weather. */
+    #widgets-wrap > .information-widget-logo {
+      order: 10;
+      align-self: center;
+      margin-left: 0.75rem;
+    }
+    #widgets-wrap > .information-widget-logo .resolved > * {
+      width: 2rem !important;
+      height: 2rem !important;
+    }
+
+    /* NGINX Proxy Manager is a Proxmox LXC, so its status comes from siteMonitor
+       (statusStyle: basic). Relabel the "up" (emerald) badge to RUNNING so it
+       matches the Docker/k8s tiles; the down (rose) badge keeps its DOWN text. */
+    li[data-name="NGINX Proxy Manager"] .ping-status div[class*="emerald"] {
+      font-size: 0;
+    }
+    li[data-name="NGINX Proxy Manager"] .ping-status div[class*="emerald"]::after {
+      content: "RUNNING";
+      font-size: 8px;
     }
   render.sh: |
     #!/bin/sh
