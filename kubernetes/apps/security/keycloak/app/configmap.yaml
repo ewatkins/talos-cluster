@@ -249,8 +249,9 @@ data:
       display: none !important;
     }
 
-    /* ── Submit button (white) ── */
-    input#kc-login {
+    /* ── Submit button (white) — sign-in and logout-confirm ── */
+    input#kc-login,
+    input#kc-logout {
       width: 100% !important;
       margin-top: 0.5rem !important;
       padding: 0.7rem 1.5rem !important;
@@ -265,14 +266,36 @@ data:
       transition: background 0.15s, box-shadow 0.15s !important;
     }
 
-    input#kc-login:hover {
+    input#kc-login:hover,
+    input#kc-logout:hover {
       background: rgba(255,255,255,0.26) !important;
       border-color: rgba(255,255,255,0.35) !important;
       box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
     }
 
-    input#kc-login:active {
+    input#kc-login:active,
+    input#kc-logout:active {
       background: rgba(255,255,255,0.22) !important;
+    }
+
+    /* ── Logout confirmation page ── */
+    /* Swap the header subtitle; the global ::after says 'sign in to continue' */
+    .login-pf-page:has(input#kc-logout) .login-pf-header::after {
+      content: 'confirm sign out';
+    }
+
+    /* "Do you want to log out?" prompt */
+    .login-pf-page:has(input#kc-logout) .instruction {
+      color: rgba(255,255,255,0.7) !important;
+      font-size: 0.88rem !important;
+      text-align: center !important;
+      margin: 0 0 1.25rem !important;
+    }
+
+    /* "Back to application" link */
+    .login-pf-page:has(input#kc-logout) #kc-info-message {
+      text-align: center !important;
+      margin-top: 1.25rem !important;
     }
 
     /* ── Hide username/password form ── */
