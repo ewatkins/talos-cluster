@@ -73,3 +73,10 @@ spec:
         existingClaim: myspeed-data
         globalMounts:
           - path: /myspeed/data
+      # MySpeed's createFolders.js also makes a top-level ./bin dir (for the
+      # downloaded speedtest binary) under the root-owned WORKDIR, which the
+      # non-root user can't write. Back it with a writable emptyDir.
+      bin:
+        type: emptyDir
+        globalMounts:
+          - path: /myspeed/bin
