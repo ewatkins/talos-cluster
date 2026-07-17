@@ -36,6 +36,30 @@ Runs via the Unraid Docker template. Key settings:
   from the container console, clear the var for that invocation:
   `COLLECTOR_CRON_SCHEDULE= scrutiny-collector-metrics run`.
 
+Because the caspian drives sit behind a MegaRAID/HBA, the fork auto-detects
+each disk twice — once as `/dev/sdX`, once via `--device megaraid,N /dev/bus/11`
+— which duplicates them in the UI. Auto-detection can't be disabled, but an
+`allow_listed_devices` allow-list restricts collection to only the listed
+paths. Mount a `collector.yaml` at `/opt/scrutiny/config/collector.yaml`:
+
+```yaml
+version: 1
+host:
+  id: caspian
+allow_listed_devices:
+  - /dev/sdb   # Parity
+  - /dev/sdc   # Disk 4
+  - /dev/sdd   # Disk 1
+  - /dev/sde   # Disk 5
+  - /dev/sdf   # Disk 2
+  - /dev/sdg   # Disk 3
+  - /dev/sdh   # Cache
+  - /dev/sdi   # Cache 2
+```
+
+The megaraid `/dev/bus/11` entries don't match the allow-list, so they're
+dropped and only the eight array/cache disks register.
+
 ### pve01 / pve02 / pve03 (Proxmox hosts)
 
 Collector binary + cron on each host:
