@@ -43,7 +43,7 @@ data:
         header: false
       Monitoring:
         style: row
-        columns: 3
+        columns: 4
         header: false
       # Media — what you watch, plus the *arr chain behind it
       Media:
@@ -200,6 +200,15 @@ data:
               type: myspeed
               url: https://myspeed.ewatkins.dev
               password: "{{HOMEPAGE_VAR_MYSPEED_PASSWORD}}"
+        - Scrutiny:
+            href: https://scrutiny.ewatkins.dev
+            description: Disk SMART health.
+            icon: scrutiny
+            namespace: observability
+            app: scrutiny
+            widget:
+              type: scrutiny
+              url: https://scrutiny.ewatkins.dev
     - Media:
         - Jellyfin:
             href: https://jellyfin.ewatkins.dev
