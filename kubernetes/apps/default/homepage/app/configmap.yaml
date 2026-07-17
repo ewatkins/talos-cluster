@@ -50,11 +50,14 @@ data:
         style: row
         columns: 3
         header: false
-      # Upcoming + Automation — side-by-side columns: release calendar on
-      # the left, the *arr chain stacked beside it
+      # Upcoming — release calendar fed by Sonarr/Radarr
       Upcoming:
+        style: row
+        columns: 2
         header: false
       Automation:
+        style: row
+        columns: 3
         header: false
       # Apps — productivity + dev
       Apps:
@@ -243,7 +246,20 @@ data:
             widget:
               type: calendar
               view: monthly
-              firstDayInWeek: monday
+              firstDayInWeek: sunday
+              integrations:
+                - type: sonarr
+                  service_group: Automation
+                  service_name: Sonarr
+                - type: radarr
+                  service_group: Automation
+                  service_name: Radarr
+        - Up Next:
+            widget:
+              type: calendar
+              view: agenda
+              maxEvents: 8
+              showTime: true
               integrations:
                 - type: sonarr
                   service_group: Automation
