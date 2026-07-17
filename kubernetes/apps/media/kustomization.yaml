@@ -19,4 +19,4 @@ resources:
   - ./radarr/ks.yaml
   - ./recommendarr/ks.yaml
   - ./sonarr/ks.yaml
-  - ./tdarr/ks.yaml
+  - ./unmanic/ks.yaml
