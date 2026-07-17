@@ -1,0 +1,30 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: forgejo-custom-templates
+  namespace: development
+data:
+  # Official Forgejo customization hook, rendered at the end of <body> on
+  # every page. Intercepts the Sign Out button so logout also ends the
+  # Keycloak SSO session; otherwise the next sign-in silently re-auths.
+  # Requires https://git.ewatkins.dev/* in the forgejo client's
+  # "Valid post logout redirect URIs" in Keycloak.
+  footer.tmpl: |
+    <script>
+    (function () {
+      const kcLogout = 'https://keycloak.ewatkins.dev/realms/master/protocol/openid-connect/logout'
+        + '?client_id=forgejo&post_logout_redirect_uri='
+        + encodeURIComponent('https://git.ewatkins.dev/');
+      document.addEventListener('click', function (e) {
+        const link = e.target.closest('a[data-url$="/user/logout"]');
+        if (!link) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        fetch(link.getAttribute('data-url'), {
+          method: 'POST',
+          headers: {'X-Csrf-Token': window.config.csrfToken},
+        }).finally(function () { window.location.href = kcLogout; });
+      }, true);
+    })();
+    </script>
