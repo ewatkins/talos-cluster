@@ -40,8 +40,13 @@ spec:
                 enabled: true
               readiness:
                 enabled: true
+              # Embedded InfluxDB first-run init takes a while; without a
+              # startup grace the liveness probe kills the pod mid-init.
               startup:
-                enabled: false
+                enabled: true
+                spec:
+                  periodSeconds: 5
+                  failureThreshold: 60
             resources:
               requests:
                 cpu: 15m
