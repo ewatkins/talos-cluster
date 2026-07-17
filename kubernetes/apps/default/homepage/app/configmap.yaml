@@ -311,21 +311,24 @@ data:
             icon: keycloak
             namespace: security
             app: keycloak
-        - Garage:
-            href: https://garage.ewatkins.dev
-            icon: garage
-            namespace: storage
-            app: garage-webui
-        - Goldilocks:
-            href: https://goldilocks.ewatkins.dev
-            icon: goldilocks
-            namespace: observability
-            app: goldilocks
         - Notifiarr:
             href: https://notifiarr.ewatkins.dev
             icon: notifiarr
             namespace: media
             app: notifiarr
+        - Goldilocks:
+            href: https://goldilocks.ewatkins.dev
+            icon: goldilocks
+            namespace: observability
+            app: goldilocks
+        - Garage:
+            href: https://garage.ewatkins.dev
+            icon: garage
+            namespace: storage
+            app: garage-webui
+        - iDrive:
+            href: https://console.idrivee2.com
+            icon: idrive
     - Reports:
         - Grafana:
             href: https://grafana.ewatkins.dev
