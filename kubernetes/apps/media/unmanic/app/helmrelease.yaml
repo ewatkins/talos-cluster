@@ -23,19 +23,6 @@ spec:
   values:
     controllers:
       unmanic:
-        initContainers:
-          # The GPU node exposes the iGPU as renderD129; VAAPI/QSV in ffmpeg
-          # defaults to renderD128, so symlink it (same fix Tdarr used).
-          fix-dri:
-            image:
-              repository: busybox
-              tag: latest
-            command:
-              - sh
-              - -c
-              - ln -sf /dev/dri/renderD129 /dev/dri/renderD128
-            securityContext:
-              privileged: true
         containers:
           app:
             image:
@@ -59,12 +46,18 @@ spec:
                   failureThreshold: 5
               readiness: *probes
             resources:
+              # DRA-injected Intel GPU (gpu.intel.com) for QSV/VAAPI encode
+              claims:
+                - name: gpu
               requests:
                 cpu: 100m
                 memory: 512Mi
               limits:
                 memory: 4Gi
         pod:
+          resourceClaims:
+            - name: gpu
+              resourceClaimTemplateName: unmanic
           securityContext:
             runAsUser: 0
             runAsGroup: 0
@@ -72,6 +65,7 @@ spec:
             supplementalGroups:
               - 44
               - 105
+              - 10000
     service:
       app:
         controller: unmanic
@@ -98,12 +92,3 @@ spec:
           - path: /tmp/unmanic
       tmp:
         type: emptyDir
-      dri:
-        type: hostPath
-        hostPath: /dev/dri
-        advancedMounts:
-          unmanic:
-            fix-dri:
-              - path: /dev/dri
-            app:
-              - path: /dev/dri
