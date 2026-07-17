@@ -50,6 +50,11 @@ data:
         style: row
         columns: 3
         header: false
+      # Upcoming — release calendar fed by Sonarr/Radarr
+      Upcoming:
+        style: row
+        columns: 2
+        header: false
       Automation:
         style: row
         columns: 3
@@ -234,6 +239,34 @@ data:
               url: https://photos.ewatkins.dev
               key: "{{HOMEPAGE_VAR_IMMICH_KEY}}"
               version: 2
+    - Upcoming:
+        # Calendar integrations reuse the url/key from the named service
+        # entries below — no separate credentials needed.
+        - Calendar:
+            widget:
+              type: calendar
+              view: monthly
+              firstDayInWeek: sunday
+              integrations:
+                - type: sonarr
+                  service_group: Automation
+                  service_name: Sonarr
+                - type: radarr
+                  service_group: Automation
+                  service_name: Radarr
+        - Up Next:
+            widget:
+              type: calendar
+              view: agenda
+              maxEvents: 8
+              showTime: true
+              integrations:
+                - type: sonarr
+                  service_group: Automation
+                  service_name: Sonarr
+                - type: radarr
+                  service_group: Automation
+                  service_name: Radarr
     - Automation:
         - Radarr:
             href: https://radarr.ewatkins.dev
