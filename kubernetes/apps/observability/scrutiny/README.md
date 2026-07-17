@@ -62,19 +62,24 @@ dropped and only the eight array/cache disks register.
 
 ### pve01 / pve02 / pve03 (Proxmox hosts)
 
-Collector binary + cron on each host:
+Collector binary + cron on each host. Use the **starosdev fork** binary, not
+AnalogJ's — the fork hub's device-registration schema differs, so an analogj
+collector would fail with a 400/500. The fork tags its binary releases with the
+collector's internal version (`v1.67.0`), matching the `1.9.0` hub image.
 
 ```bash
 apt-get install -y smartmontools
-curl -L -o /usr/local/bin/scrutiny-collector-metrics \
-  https://github.com/AnalogJ/scrutiny/releases/latest/download/scrutiny-collector-metrics-linux-amd64
+curl -fsSL -o /usr/local/bin/scrutiny-collector-metrics \
+  https://github.com/Starosdev/scrutiny/releases/download/v1.67.0/scrutiny-collector-metrics-linux-amd64
 chmod +x /usr/local/bin/scrutiny-collector-metrics
 
-# one-off test run
+# one-off test run (root, so smartctl can reach the disks incl. any HBA)
 /usr/local/bin/scrutiny-collector-metrics run \
   --api-endpoint https://scrutiny.ewatkins.dev --host-id "$(hostname)"
 
-# hourly via cron
+# hourly via cron. COLLECTOR_CRON_SCHEDULE must stay UNSET here: with it set,
+# the fork's `run` starts its own blocking scheduler instead of a one-shot,
+# which would pile up under OS cron.
 cat > /etc/cron.d/scrutiny <<'EOF'
 0 * * * * root /usr/local/bin/scrutiny-collector-metrics run --api-endpoint https://scrutiny.ewatkins.dev --host-id "$(hostname)" >/dev/null 2>&1
 EOF
@@ -82,5 +87,6 @@ EOF
 
 ## Links
 
-- [Documentation](https://github.com/AnalogJ/scrutiny#readme)
+- [starosdev fork (hub + collectors in use here)](https://github.com/Starosdev/scrutiny)
+- [Upstream documentation](https://github.com/AnalogJ/scrutiny#readme)
 - [Collector docs](https://github.com/AnalogJ/scrutiny/blob/master/docs/INSTALL_HUB_SPOKE.md)
