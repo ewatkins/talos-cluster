@@ -3,7 +3,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: tdarr
+  name: unmanic
   namespace: media
 spec:
   interval: 1h
@@ -22,8 +22,10 @@ spec:
       retries: 3
   values:
     controllers:
-      tdarr:
+      unmanic:
         initContainers:
+          # The GPU node exposes the iGPU as renderD129; VAAPI/QSV in ffmpeg
+          # defaults to renderD128, so symlink it (same fix Tdarr used).
           fix-dri:
             image:
               repository: busybox
@@ -35,18 +37,14 @@ spec:
             securityContext:
               privileged: true
         containers:
-          server:
+          app:
             image:
-              repository: ghcr.io/haveagitgat/tdarr
-              tag: 2.83.01
+              repository: docker.io/josh5/unmanic
+              tag: 0.4.0.post23@sha256:3751881e8129e412c64453e6d11ff3fb1469121eeb271c73ad63f925a9f5c910
             env:
               TZ: ${TIMEZONE}
               PUID: "1000"
               PGID: "1000"
-              inContainer: "true"
-              webUIPort: &webPort 8265
-              serverPort: &serverPort 8266
-              serverIP: "0.0.0.0"
             probes:
               liveness: &probes
                 enabled: true
@@ -54,7 +52,7 @@ spec:
                 spec:
                   httpGet:
                     path: /
-                    port: *webPort
+                    port: 8888
                   initialDelaySeconds: 30
                   periodSeconds: 10
                   timeoutSeconds: 10
@@ -64,33 +62,6 @@ spec:
               requests:
                 cpu: 100m
                 memory: 512Mi
-              limits:
-                memory: 2Gi
-          node:
-            image:
-              repository: ghcr.io/haveagitgat/tdarr_node
-              tag: 2.83.01
-            env:
-              TZ: ${TIMEZONE}
-              PUID: "1000"
-              PGID: "1000"
-              inContainer: "true"
-              ffmpegVersion: "6"
-              nodeIP: "0.0.0.0"
-              nodePort: "8267"
-              serverIP: "127.0.0.1"
-              serverPort: *serverPort
-              LD_LIBRARY_PATH: ""
-              LIBVA_DRIVER_NAME: iHD
-              LIBVA_DRIVERS_PATH: /usr/lib/jellyfin-ffmpeg/lib/dri
-              nodeID:
-                valueFrom:
-                  fieldRef:
-                    fieldPath: spec.nodeName
-            resources:
-              requests:
-                cpu: 500m
-                memory: 1Gi
               limits:
                 memory: 4Gi
         pod:
@@ -103,46 +74,36 @@ spec:
               - 105
     service:
       app:
-        controller: tdarr
+        controller: unmanic
         ports:
           http:
-            port: *webPort
-          server:
-            port: *serverPort
+            port: 8888
     ingress:
       app:
         enabled: false
     persistence:
       config:
-        existingClaim: tdarr-config
-        advancedMounts:
-          tdarr:
-            server:
-              - path: /app/server
-                subPath: server
-            node:
-              - path: /app/configs
-                subPath: config
-              - path: /app/logs
-                subPath: logs
+        existingClaim: unmanic-config
+        globalMounts:
+          - path: /config
       media:
         type: nfs
         server: storage.ewatkins.dev
         path: /mnt/user/arrdata
         globalMounts:
-          - path: /mnt/arrdata
+          - path: /library
       cache:
         type: emptyDir
         globalMounts:
-          - path: /cache
+          - path: /tmp/unmanic
       tmp:
         type: emptyDir
       dri:
         type: hostPath
         hostPath: /dev/dri
         advancedMounts:
-          tdarr:
+          unmanic:
             fix-dri:
               - path: /dev/dri
-            node:
+            app:
               - path: /dev/dri

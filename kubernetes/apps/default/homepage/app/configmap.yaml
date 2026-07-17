@@ -372,15 +372,15 @@ data:
               type: bazarr
               url: https://bazarr.ewatkins.dev
               key: "{{HOMEPAGE_VAR_BAZARR_KEY}}"
-        - Tdarr:
-            href: https://tdarr.ewatkins.dev
-            description: Distributed transcoding.
-            icon: tdarr
+        - Unmanic:
+            href: https://unmanic.ewatkins.dev
+            description: Library file optimizer.
+            icon: unmanic
             namespace: media
-            app: tdarr
+            app: unmanic
             widget:
-              type: tdarr
-              url: https://tdarr.ewatkins.dev
+              type: unmanic
+              url: https://unmanic.ewatkins.dev
   bookmarks.yaml: ""
   docker.yaml: |
     # LinuxServer socket-proxy on the NAS (read-only; CONTAINERS=1). The pod
