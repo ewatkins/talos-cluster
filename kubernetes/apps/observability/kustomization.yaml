@@ -14,6 +14,7 @@ resources:
   - ./kromgo/ks.yaml
   - ./kube-prometheus-stack/ks.yaml
   - ./loki/ks.yaml
+  - ./myspeed/ks.yaml
   - ./promtail/ks.yaml
   - ./pulse/ks.yaml
   - ./thanos/ks.yaml
