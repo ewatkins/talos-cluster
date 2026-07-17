@@ -59,6 +59,11 @@ data:
         style: row
         columns: 2
         header: false
+      # Grafana + Paperless, just above Media Tools
+      Reports:
+        style: row
+        columns: 2
+        header: false
       # Media Tools — media-stack backends, parked at the bottom
       Media Tools:
         style: row
@@ -167,17 +172,6 @@ data:
             namespace: default
             app: outline
     - Monitoring:
-        - Grafana:
-            href: https://grafana.ewatkins.dev
-            description: Metrics dashboards.
-            icon: grafana
-            namespace: observability
-            app: grafana
-            widget:
-              type: grafana
-              url: https://grafana.ewatkins.dev
-              username: "{{HOMEPAGE_VAR_GRAFANA_USER}}"
-              password: "{{HOMEPAGE_VAR_GRAFANA_PASS}}"
         - Gatus:
             href: https://status.ewatkins.dev
             description: Uptime monitoring.
@@ -277,11 +271,6 @@ data:
             icon: open-webui
             namespace: ai
             app: open-webui
-        - Paperless:
-            href: https://paperless.ewatkins.dev
-            icon: paperless-ngx
-            namespace: media
-            app: paperless
         - Trek:
             href: https://trek.ewatkins.dev
             icon: https://cdn.jsdelivr.net/gh/mauriceboe/TREK@main/client/public/icons/icon.svg
@@ -337,6 +326,28 @@ data:
             icon: notifiarr
             namespace: media
             app: notifiarr
+    - Reports:
+        - Grafana:
+            href: https://grafana.ewatkins.dev
+            description: Metrics dashboards.
+            icon: grafana
+            namespace: observability
+            app: grafana
+            widget:
+              type: grafana
+              url: https://grafana.ewatkins.dev
+              username: "{{HOMEPAGE_VAR_GRAFANA_USER}}"
+              password: "{{HOMEPAGE_VAR_GRAFANA_PASS}}"
+        - Paperless:
+            href: https://paperless.ewatkins.dev
+            description: Document archive.
+            icon: paperless-ngx
+            namespace: media
+            app: paperless
+            widget:
+              type: paperlessngx
+              url: https://paperless.ewatkins.dev
+              key: "{{HOMEPAGE_VAR_PAPERLESS_TOKEN}}"
     - Media Tools:
         - Prowlarr:
             href: https://prowlarr.ewatkins.dev
