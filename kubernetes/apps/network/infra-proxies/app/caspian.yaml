@@ -56,7 +56,9 @@ spec:
       - group: ""
         kind: ConfigMap
         name: caspian-ca
-    hostname: Caspian.local
+    # Lowercased to satisfy the schema's RFC-1123 check; TLS SAN matching is
+    # case-insensitive, so it still matches the cert's CN/SAN "Caspian.local".
+    hostname: caspian.local
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
