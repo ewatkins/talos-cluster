@@ -1,0 +1,75 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app myspeed
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      myspeed:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        # openebs-hostpath is RWO/node-local, so avoid a second pod racing for
+        # the volume during rollouts.
+        strategy: Recreate
+        containers:
+          app:
+            image:
+              repository: docker.io/germannewsmaker/myspeed
+              tag: 1.0.9@sha256:3a3e774b3f78d930a5a962d625b99bcb3d71730bfeb4a6b93e04fd38cfe7d9a9
+            env:
+              TZ: America/Chicago
+              # bun writes its cache under $HOME; point it at the writable PVC
+              HOME: /myspeed/data
+            probes:
+              liveness:
+                enabled: true
+              readiness:
+                enabled: true
+              startup:
+                enabled: false
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: false
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 10m
+                memory: 128Mi
+              limits:
+                memory: 512Mi
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+    service:
+      app:
+        controller: myspeed
+        ports:
+          http:
+            port: 5216
+    ingress:
+      app:
+        enabled: false
+    persistence:
+      data:
+        enabled: true
+        existingClaim: myspeed-data
+        globalMounts:
+          - path: /myspeed/data
