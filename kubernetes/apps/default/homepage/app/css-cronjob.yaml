@@ -96,17 +96,6 @@ data:
       width: 2rem !important;
       height: 2rem !important;
     }
-
-    /* NGINX Proxy Manager is a Proxmox LXC, so its status comes from siteMonitor
-       (statusStyle: basic). Relabel the "up" (emerald) badge to RUNNING so it
-       matches the Docker/k8s tiles; the down (rose) badge keeps its DOWN text. */
-    li[data-name="NGINX Proxy Manager"] .ping-status div[class*="emerald"] {
-      font-size: 0;
-    }
-    li[data-name="NGINX Proxy Manager"] .ping-status div[class*="emerald"]::after {
-      content: "RUNNING";
-      font-size: 8px;
-    }
   render.sh: |
     #!/bin/sh
     set -eu

@@ -297,25 +297,11 @@ data:
             icon: keycloak
             namespace: security
             app: keycloak
-        - NGINX Proxy Manager:
-            href: https://proxy.ewatkins.dev
-            icon: nginx-proxy-manager
-            # Proxmox LXC (no container/pod to read a real status from). siteMonitor
-            # gives a reachability badge; statusStyle:basic renders it as UP/DOWN
-            # text, and custom.css relabels the up state to RUNNING to match the
-            # Docker/k8s tiles.
-            siteMonitor: https://proxy.ewatkins.dev
-            statusStyle: basic
         - Garage:
             href: https://garage.ewatkins.dev
             icon: garage
             namespace: storage
             app: garage-webui
-        - RedisInsight:
-            href: https://redis.ewatkins.dev
-            icon: redis
-            namespace: database
-            app: redisinsight
         - Goldilocks:
             href: https://goldilocks.ewatkins.dev
             icon: goldilocks
