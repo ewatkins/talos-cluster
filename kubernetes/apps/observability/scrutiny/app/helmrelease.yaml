@@ -31,11 +31,14 @@ spec:
             # k8s nodes are VMs with no real disks — SMART data comes from
             # external collectors on the NAS and PVE hosts pushing to the API.
             image:
-              repository: ghcr.io/analogj/scrutiny
-              # Versioned *-omnibus tags (e.g. v0.8.3-omnibus) are mis-built
-              # upstream and contain only the collector; master-omnibus is the
-              # real web+influxdb bundle. Renovate tracks the digest.
-              tag: master-omnibus@sha256:18689773150d6b8b53c94a435f40f7b6e946fd4a6d40b44c64fa2154a5b38941
+              # starosdev fork (not analogj/scrutiny): it adds MegaRAID/HBA
+              # auto-detection the NAS drives need, and its device-registration
+              # schema (smart_support as an object) differs from analogj's, so
+              # hub and collector MUST be the same fork+version. The NAS
+              # collector template must track ghcr.io/starosdev/scrutiny at the
+              # matching -collector tag.
+              repository: ghcr.io/starosdev/scrutiny
+              tag: 1.9.0-omnibus@sha256:0eb55a85a0a6fc8a421aee6c20f0aced71084f4076ece48803473831b38aab74
             env:
               TZ: America/Chicago
             probes:
