@@ -31,14 +31,16 @@ spec:
             # k8s nodes are VMs with no real disks — SMART data comes from
             # external collectors on the NAS and PVE hosts pushing to the API.
             image:
-              # starosdev fork (not analogj/scrutiny): it adds MegaRAID/HBA
-              # auto-detection the NAS drives need, and its device-registration
-              # schema (smart_support as an object) differs from analogj's, so
-              # hub and collector MUST be the same fork+version. The NAS
-              # collector template must track ghcr.io/starosdev/scrutiny at the
-              # matching -collector tag.
+              # starosdev fork (not analogj/scrutiny): adds MegaRAID/HBA
+              # auto-detection the NAS drives need. Must be the fork, not
+              # analogj, or device registration 400s on a schema mismatch.
+              # Pinned to latest-omnibus (master build): the tagged 1.9.0
+              # release types smart_support as a bool and rejects NVMe drives,
+              # whose collector sends it as an object. master's SmartSupport
+              # has a flexible UnmarshalJSON that accepts both bool and object,
+              # so NVMe (PVE) and SATA (NAS) both register.
               repository: ghcr.io/starosdev/scrutiny
-              tag: 1.9.0-omnibus@sha256:0eb55a85a0a6fc8a421aee6c20f0aced71084f4076ece48803473831b38aab74
+              tag: latest-omnibus@sha256:23bbc9ff906a5fb6ad2a4430fbdb53bde730d5c7f327be6941b41176c81e7a60
             env:
               TZ: America/Chicago
             probes:

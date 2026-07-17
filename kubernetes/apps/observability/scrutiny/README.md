@@ -10,7 +10,7 @@ is pushed to the hub by collectors running on the machines that own drives.
 | Setting | Value | Notes |
 | --- | --- | --- |
 | URL | `https://scrutiny.ewatkins.dev` | Internal gateway only |
-| Image | `ghcr.io/starosdev/scrutiny` (`1.9.0-omnibus`) | Web + API + embedded InfluxDB. **Fork**, not analogj — adds MegaRAID/HBA detection and uses a different device-registration schema, so the hub and every collector must run the **same fork+version**. |
+| Image | `ghcr.io/starosdev/scrutiny` (`latest-omnibus`, digest-pinned) | Web + API + embedded InfluxDB. **Fork**, not analogj — adds MegaRAID/HBA detection. On `latest`/master (not the tagged 1.9.0) because only master's `SmartSupport` type parses both bool (SATA) and object (NVMe) `smart_support`, so NVMe drives can register. |
 | Storage | `scrutiny-data` PVC (openebs-hostpath, 5Gi) | `/opt/scrutiny/config` + `/opt/scrutiny/influxdb` |
 | API auth | None | LAN-only exposure; collectors POST unauthenticated |
 
