@@ -1,0 +1,64 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app scrutiny
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      scrutiny:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        # openebs-hostpath is RWO/node-local, so avoid a second pod racing for
+        # the volume during rollouts.
+        strategy: Recreate
+        containers:
+          app:
+            # Omnibus bundles the web UI/API and an embedded InfluxDB. The
+            # k8s nodes are VMs with no real disks — SMART data comes from
+            # external collectors on the NAS and PVE hosts pushing to the API.
+            image:
+              repository: ghcr.io/analogj/scrutiny
+              tag: v0.8.3-omnibus@sha256:f7f153ad78241f32906da4f317a75fb2de6ed79bf3d9411cdee65d27d6b40745
+            env:
+              TZ: America/Chicago
+            probes:
+              liveness:
+                enabled: true
+              readiness:
+                enabled: true
+              startup:
+                enabled: false
+            resources:
+              requests:
+                cpu: 15m
+                memory: 256Mi
+              limits:
+                memory: 1Gi
+    service:
+      app:
+        controller: scrutiny
+        ports:
+          http:
+            port: 8080
+    persistence:
+      data:
+        existingClaim: scrutiny-data
+        globalMounts:
+          - path: /opt/scrutiny/config
+            subPath: config
+          - path: /opt/scrutiny/influxdb
+            subPath: influxdb

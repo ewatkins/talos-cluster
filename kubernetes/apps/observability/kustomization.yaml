@@ -16,5 +16,6 @@ resources:
   - ./loki/ks.yaml
   - ./myspeed/ks.yaml
   - ./promtail/ks.yaml
+  - ./scrutiny/ks.yaml
   - ./pulse/ks.yaml
   - ./thanos/ks.yaml
