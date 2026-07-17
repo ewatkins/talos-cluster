@@ -5,6 +5,10 @@ metadata:
   name: envoy-proxy-internal
   namespace: network
 spec:
+  # caspian's nginx only accepts P-384 for ECDHE; Envoy's default curve list
+  # (X25519, P-256) has no overlap, so backend TLS handshakes fail without it.
+  backendTLS:
+    ecdhCurves: ["X25519", "P-256", "P-384"]
   provider:
     type: Kubernetes
     kubernetes:

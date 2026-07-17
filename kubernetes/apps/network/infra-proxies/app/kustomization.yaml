@@ -4,7 +4,4 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ./http-hosts.yaml
-  # caspian (Unraid NAS) intentionally omitted: it forces HTTPS but rejects
-  # all SNI on :443, and Envoy Gateway's BackendTLSPolicy always sends SNI, so
-  # the backend TLS handshake fails. Re-add once the NAS accepts an SNI (or
-  # disable its strict-SSL/ssl_reject_handshake).
+  - ./caspian.yaml
