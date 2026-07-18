@@ -68,7 +68,7 @@ spec:
           frontend:
             image:
               repository: ghcr.io/pouzor/homelable-frontend
-              tag: 3.0.0@sha256:f5c95156488fda791ac1e84fdc5d18a831609893877087eb250947cc3a165bdc
+              tag: 3.1.0@sha256:96e550a635a36d3beee6694a657317c517db0c5cde30f51115ecf624cef290ab
             securityContext:
               allowPrivilegeEscalation: false
             resources:
