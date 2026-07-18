@@ -79,7 +79,7 @@ spec:
           mcp:
             image:
               repository: ghcr.io/pouzor/homelable-mcp
-              tag: 3.0.0@sha256:5af23b975fab4ae1d8035c2f30ff8a271beea759705e3b48631554c2257e8a10
+              tag: 3.1.0@sha256:625ce64559a8921d189406bef3f5b37b9ce45e4f6b8514373bf015786f0a370a
             env:
               TZ: ${TIMEZONE}
               BACKEND_URL: http://127.0.0.1:8000
