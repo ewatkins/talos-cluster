@@ -29,7 +29,7 @@ spec:
           app:
             image:
               repository: ghcr.io/pouzor/homelable-backend
-              tag: 3.0.0@sha256:bf0ba5e8dfb63df42d4dbb0d80c21cadb4debf26ef2b2490052e3fece2bee755
+              tag: 3.1.0@sha256:4c22c1160923dfdb4013f9121fc66717d82db626105ea596d8bbf790d3b236e3
             env:
               TZ: ${TIMEZONE}
               SQLITE_PATH: /app/data/homelab.db
