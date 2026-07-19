@@ -9,7 +9,7 @@ spec:
   chart:
     spec:
       chart: trek
-      version: 3.3.0
+      version: 3.4.0
       sourceRef:
         kind: HelmRepository
         name: trek
@@ -25,7 +25,7 @@ spec:
   values:
     image:
       repository: mauriceboe/trek
-      tag: 3.3.0
+      tag: 3.4.0
     service:
       type: ClusterIP
       port: 3000
