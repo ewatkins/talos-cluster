@@ -65,6 +65,15 @@
     //   },
     // },
     {
+      description: "Homelable Group",
+      groupName: "Homelable",
+      matchDatasources: ["docker"],
+      matchPackageNames: ["/homelable/"],
+      group: {
+        commitMessageTopic: "{{{groupName}}} group",
+      },
+    },
+    {
       description: "Spegel Group",
       groupName: "Spegel",
       matchDatasources: ["docker"],
