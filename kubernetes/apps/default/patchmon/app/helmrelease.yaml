@@ -27,15 +27,12 @@ spec:
               repository: ghcr.io/patchmon/patchmon-server
               tag: 2.0.2
             env:
-              # Server
               PORT: &port 3000
               APP_ENV: production
               TZ: America/Chicago
               CORS_ORIGIN: "https://patchmon.ewatkins.dev"
-              # Behind the internal NGINX/Gateway
               TRUST_PROXY: "true"
               ENABLE_HSTS: "false"
-              # Redis (shared Dragonfly, no auth)
               REDIS_HOST: dragonfly.database.svc.cluster.local
               REDIS_PORT: "6379"
               REDIS_DB: "0"
