@@ -61,11 +61,24 @@ spec:
         seccompProfile:
           type: RuntimeDefault
 
+    # LoadBalancer so Zoraxy owns a dedicated IP and can bind 80/443 for
+    # proxying. One Service (not several sharing the IP): Cilium L2-announces
+    # per Service, so splitting ports across Services would announce them from
+    # different nodes. Management (8000) rides the same IP and is also reachable
+    # via the gateway HTTPRoute.
     service:
       app:
         controller: *app
+        type: LoadBalancer
+        annotations:
+          io.cilium/lb-ipam-ips: "${ZORAXY}"
+        externalTrafficPolicy: Cluster
         ports:
           http:
+            port: 80
+          https:
+            port: 443
+          management:
             port: 8000
 
     persistence:

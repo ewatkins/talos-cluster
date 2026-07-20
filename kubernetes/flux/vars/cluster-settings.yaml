@@ -41,3 +41,6 @@ data:
 
   # CODE-SERVER (http + ssh services share the IP via lb-ipam-sharing-key)
   CODE_SERVER: "10.40.0.145"
+
+  # ZORAXY (reverse-proxy listener: 80/443 + management 8000 on one IP)
+  ZORAXY: "10.40.0.150"
