@@ -43,4 +43,5 @@ data:
   CODE_SERVER: "10.40.0.145"
 
   # ZORAXY (reverse-proxy listener: 80/443 + management 8000 on one IP)
-  ZORAXY: "10.40.0.150"
+  # .150 is taken by crunchy pgbouncer (auto-assigned), so use .155.
+  ZORAXY: "10.40.0.155"
