@@ -1,6 +1,10 @@
 ---
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+components:
+  # Tailscale's subnet-router / exit-node proxy pods need NET_ADMIN +
+  # /dev/net/tun, which Talos's default baseline PodSecurity blocks.
+  - ../../components/privileged-namespace
 resources:
   - ./namespace.yaml
   - ./certificates/ks.yaml

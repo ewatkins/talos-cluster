@@ -17,7 +17,7 @@ spec:
     kind: GitRepository
     name: talos-cluster
     namespace: flux-system
-  targetNamespace: tailscale
+  targetNamespace: network
   timeout: 5m
   wait: true # Connector CRD must exist before the connector Kustomization applies
 ---
@@ -41,6 +41,6 @@ spec:
     kind: GitRepository
     name: talos-cluster
     namespace: flux-system
-  targetNamespace: tailscale
+  targetNamespace: network
   timeout: 5m
   wait: false
