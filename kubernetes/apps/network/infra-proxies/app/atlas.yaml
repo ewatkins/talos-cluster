@@ -1,0 +1,30 @@
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: atlas
+  namespace: network
+spec:
+  endpoints:
+    - ip:
+        address: 10.50.1.101
+        port: 8100
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: atlas
+  namespace: network
+  annotations:
+    external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
+spec:
+  parentRefs:
+    - name: internal
+      namespace: network
+      sectionName: https
+  hostnames: ["atlas.ewatkins.dev"]
+  rules:
+    - backendRefs:
+        - group: gateway.envoyproxy.io
+          kind: Backend
+          name: atlas

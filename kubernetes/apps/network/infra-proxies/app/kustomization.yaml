@@ -1,7 +1,18 @@
 ---
+# Reverse proxies for non-cluster homelab services that used to live on the
+# NPMplus LXC. Each file is one service: an Envoy Gateway Backend (off-cluster
+# IP) exposed via an HTTPRoute on the internal gateway. TLS is terminated by
+# the gateway's *.ewatkins.dev wildcard cert; external-dns publishes the DNS
+# record. caspian additionally carries a BackendTLSPolicy for its self-signed
+# HTTPS backend.
 # yaml-language-server: $schema=https://json.schemastore.org/kustomization
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ./http-hosts.yaml
+  - ./atlas.yaml
   - ./caspian.yaml
+  - ./duplicacy.yaml
+  - ./patchmon.yaml
+  - ./pterodactyl.yaml
+  - ./sab.yaml
+  - ./scanopy.yaml
