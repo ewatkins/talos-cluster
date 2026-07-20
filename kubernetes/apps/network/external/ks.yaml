@@ -3,14 +3,14 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app infra-proxies
+  name: &app external
   namespace: flux-system
 spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
   interval: 1h
-  path: ./kubernetes/apps/network/infra-proxies/app
+  path: ./kubernetes/apps/network/external/app
   prune: true
   retryInterval: 2m
   sourceRef:
