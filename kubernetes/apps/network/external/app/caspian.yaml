@@ -1,34 +1,3 @@
-# Caspian (Unraid NAS) speaks HTTPS on :443 with a self-signed cert
-# (CN/SAN Caspian.local), so Envoy needs that cert as the trust anchor and
-# must use Caspian.local as the SNI/validation hostname when connecting.
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: caspian-ca
-  namespace: network
-data:
-  ca.crt: |
-    -----BEGIN CERTIFICATE-----
-    MIIDRzCCAi+gAwIBAgIUD8n75KtR7GBoqYXerXmWq8dqhVIwDQYJKoZIhvcNAQEN
-    BQAwPzEUMBIGA1UECgwLU2VsZi1zaWduZWQxDzANBgNVBAsMBlVucmFpZDEWMBQG
-    A1UEAwwNQ2FzcGlhbi5sb2NhbDAeFw0yNTAzMjMwMzI1MDZaFw0zNTAzMjEwMzI1
-    MDZaMD8xFDASBgNVBAoMC1NlbGYtc2lnbmVkMQ8wDQYDVQQLDAZVbnJhaWQxFjAU
-    BgNVBAMMDUNhc3BpYW4ubG9jYWwwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
-    AoIBAQCtOyWIhd7wXbIXtpvf1KXyOLZIM9Kt3VKsb31JQhSE1YOVPNbl5/l7kc3q
-    P8gECJckLnpHn79oEl2fbObYyQZ5CY4oZgpQAbg+I2vNAP60mLnuIol6hmCDh61a
-    djPQflCKLmpN92gDuHa7P59FFWWzh/B8U1j60bU3WDjPdsP3VtXPGfqWZ5HGTv2z
-    GSCuC7gur4WktHitw/l50lj9x4RDIPYt38ot4+1h0M2IVCfuZsv5AJL5O/haFD+4
-    3IlVEglFDe2xeBnwCzLwuTGGfPGQIx/bqXTa4s2/X7MkhNxeioyR40yMrj+UX6/g
-    cxumNNZptwM06Njf7A9eUYXFVANvAgMBAAGjOzA5MBgGA1UdEQQRMA+CDUNhc3Bp
-    YW4ubG9jYWwwHQYDVR0OBBYEFIiHPUmG83qMPzsZlLcJYbfptUQ3MA0GCSqGSIb3
-    DQEBDQUAA4IBAQCHdD6MSJw/rJKnP4ei5f1nrsaxfc5X5LI7XqR2JG5quffs5amP
-    UtCabGEcBqRLQBvkOHaUArr0p7HktBWm81eMvH9bH9iM129jIjfJjjSWVvRz/xoO
-    MrHnyYewAibc9hrxUwvgZk61hn4zf43jPWjFCeUIVrf0+XUjeSYhJVQu1Qe/8B3q
-    fk0clYsx9yJTP4StIg7LmEEblerj/l+9wbeecUyZvbq963bwVCTNSO4FOPW19+QY
-    9drM9U/0RKGa57Od87UYTUk+EumDeKROjQxpNG4YJQJ6f22HRRS7Yw2ae9iJWgON
-    LMwdF5GiRJoEkmLGuNh5miIdoyJ8Lasbk2t1
-    -----END CERTIFICATE-----
 ---
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: Backend
@@ -39,26 +8,7 @@ spec:
   endpoints:
     - ip:
         address: 10.35.10.10
-        port: 443
----
-apiVersion: gateway.networking.k8s.io/v1alpha3
-kind: BackendTLSPolicy
-metadata:
-  name: caspian
-  namespace: network
-spec:
-  targetRefs:
-    - group: gateway.envoyproxy.io
-      kind: Backend
-      name: caspian
-  validation:
-    caCertificateRefs:
-      - group: ""
-        kind: ConfigMap
-        name: caspian-ca
-    # Lowercased to satisfy the schema's RFC-1123 check; TLS SAN matching is
-    # case-insensitive, so it still matches the cert's CN/SAN "Caspian.local".
-    hostname: caspian.local
+        port: 80
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
