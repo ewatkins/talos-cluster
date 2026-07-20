@@ -41,7 +41,3 @@ data:
 
   # CODE-SERVER (http + ssh services share the IP via lb-ipam-sharing-key)
   CODE_SERVER: "10.40.0.145"
-
-  # NPMPLUS (reverse-proxy listener: 80/443 proxy + admin UI 81 on one IP)
-  # .150 is taken by crunchy pgbouncer (auto-assigned), so use .155.
-  NPMPLUS: "10.40.0.155"

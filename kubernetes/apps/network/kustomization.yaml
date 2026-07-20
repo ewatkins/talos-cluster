@@ -9,4 +9,3 @@ resources:
   - ./envoy-gateway/ks.yaml
   - ./infra-proxies/ks.yaml
   - ./unifi-dns/ks.yaml
-  - ./npmplus/ks.yaml
