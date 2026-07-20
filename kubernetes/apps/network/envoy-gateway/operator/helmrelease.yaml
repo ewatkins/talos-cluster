@@ -21,7 +21,7 @@ spec:
       retries: 3
   values:
     # Enable the Backend API so HTTPRoutes can target off-cluster IPs
-    # (used by infra-proxies to reverse-proxy non-cluster homelab services).
+    # (used by the external app to reverse-proxy non-cluster homelab services).
     config:
       envoyGateway:
         extensionApis:
