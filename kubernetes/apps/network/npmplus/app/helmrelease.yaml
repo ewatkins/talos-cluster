@@ -1,0 +1,98 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app npmplus
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  maxHistory: 2
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    controllers:
+      npmplus:
+        annotations:
+          reloader.stakater.com/search: "true"
+        # Single writer to the /data PVC (SQLite + certs); never run two at once.
+        strategy: Recreate
+        containers:
+          app:
+            image:
+              repository: docker.io/zoeyvid/npmplus
+              tag: 2026-07-15-r1
+            env:
+              TZ: America/New_York
+              # Keep the listeners TCP-only; QUIC would need UDP/443 on the LB.
+              DISABLE_H3_QUIC: "true"
+            probes:
+              # Admin UI is HTTPS-on-81 with a self-signed cert, so probe the
+              # socket rather than fight TLS/redirects. Generous startup: first
+              # boot initializes the SQLite DB and generates certs.
+              liveness: &probe
+                enabled: true
+                custom: true
+                spec:
+                  tcpSocket:
+                    port: 81
+                  initialDelaySeconds: 30
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              readiness: *probe
+            securityContext:
+              # Mirrors the upstream compose: runs as root but drops all caps
+              # except the two it needs to bind low ports and drop to its
+              # worker gid. no-new-privileges via allowPrivilegeEscalation.
+              runAsUser: 0
+              runAsGroup: 0
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop: ["ALL"]
+                add: ["NET_BIND_SERVICE", "SETGID"]
+            resources:
+              requests:
+                cpu: 25m
+                memory: 128Mi
+              limits:
+                memory: 512Mi
+
+    defaultPodOptions:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+
+    # One LoadBalancer Service owns the dedicated IP for all three ports
+    # (Cilium L2-announces per Service). Admin UI reached directly at
+    # https://npmplus.ewatkins.dev:81 — external-dns publishes the record.
+    service:
+      app:
+        controller: *app
+        type: LoadBalancer
+        annotations:
+          io.cilium/lb-ipam-ips: "${NPMPLUS}"
+          external-dns.alpha.kubernetes.io/hostname: npmplus.ewatkins.dev
+        externalTrafficPolicy: Cluster
+        ports:
+          http:
+            port: 80
+          https:
+            port: 443
+          admin:
+            port: 81
+
+    persistence:
+      data:
+        existingClaim: npmplus-data
+        globalMounts:
+          - path: /data
