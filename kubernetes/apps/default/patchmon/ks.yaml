@@ -14,7 +14,7 @@ spec:
     - ../../../../components/gatus/internal
   dependsOn:
     - name: crunchy-postgres-operator-cluster
-  path: ./kubernetes/apps/security/patchmon/app
+  path: ./kubernetes/apps/default/patchmon/app
   prune: true
   sourceRef:
     kind: GitRepository
