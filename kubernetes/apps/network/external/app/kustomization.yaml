@@ -11,7 +11,6 @@ resources:
   - ./atlas.yaml
   - ./caspian.yaml
   - ./duplicacy.yaml
-  - ./patchmon.yaml
   - ./pterodactyl.yaml
   - ./sab.yaml
   - ./scanopy.yaml
