@@ -86,6 +86,9 @@ spec:
     - name: "outline-admin"
       databases: ["outline"]
       password: *password
+    - name: "patchmon-admin"
+      databases: ["patchmon"]
+      password: *password
   backups:
     pgbackrest:
       configuration: &backupConfig

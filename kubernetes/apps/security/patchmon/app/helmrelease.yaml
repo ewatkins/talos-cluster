@@ -1,0 +1,85 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app patchmon
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      patchmon:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: ghcr.io/patchmon/patchmon-server
+              tag: 2.0.2
+            env:
+              # Server
+              PORT: &port 3000
+              APP_ENV: production
+              TZ: America/Chicago
+              CORS_ORIGIN: "https://patchmon.ewatkins.dev"
+              # Behind the internal NGINX/Gateway
+              TRUST_PROXY: "true"
+              ENABLE_HSTS: "false"
+              # Redis (shared Dragonfly, no auth)
+              REDIS_HOST: dragonfly.database.svc.cluster.local
+              REDIS_PORT: "6379"
+              REDIS_DB: "0"
+              # Windows RDP (guacd sidecar in this pod)
+              GUACD_ADDRESS: "localhost:4822"
+            envFrom:
+              - secretRef:
+                  name: patchmon-db-secret
+              - secretRef:
+                  name: patchmon-secret
+            resources:
+              requests:
+                cpu: 25m
+                memory: 256Mi
+              limits:
+                memory: 1Gi
+          guacd:
+            image:
+              repository: guacamole/guacd
+              tag: "1.6.0"
+            securityContext:
+              readOnlyRootFilesystem: true
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop: ["ALL"]
+            resources:
+              requests:
+                cpu: 10m
+                memory: 64Mi
+              limits:
+                memory: 256Mi
+    service:
+      app:
+        controller: *app
+        ports:
+          http:
+            port: *port
+    persistence:
+      guacd-tmp:
+        type: emptyDir
+        advancedMounts:
+          patchmon:
+            guacd:
+              - path: /tmp
+    ingress:
+      app:
+        enabled: false
