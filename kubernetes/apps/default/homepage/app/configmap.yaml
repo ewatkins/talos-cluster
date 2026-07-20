@@ -63,6 +63,10 @@ data:
         style: row
         columns: 2
         header: false
+      Storage:
+        style: row
+        columns: 2
+        header: false
       # Grafana + Paperless, just above Media Tools
       Reports:
         style: row
@@ -326,6 +330,7 @@ data:
             icon: goldilocks
             namespace: observability
             app: goldilocks
+    - Storage:
         - Garage:
             href: https://garage.ewatkins.dev
             icon: garage
