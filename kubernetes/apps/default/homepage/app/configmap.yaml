@@ -316,6 +316,11 @@ data:
             icon: notifiarr
             namespace: media
             app: notifiarr
+        - PatchMon:
+            href: https://patchmon.ewatkins.dev
+            icon: patchmon
+            namespace: default
+            app: patchmon
         - Goldilocks:
             href: https://goldilocks.ewatkins.dev
             icon: goldilocks
