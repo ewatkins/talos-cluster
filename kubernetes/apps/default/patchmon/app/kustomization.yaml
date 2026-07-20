@@ -1,0 +1,11 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - externalsecret.yaml
+  - helmrelease.yaml
+  # Enable at cutover (see README): claims patchmon.ewatkins.dev on the internal
+  # gateway. Until then the network/external/app/patchmon.yaml route serves the
+  # LXC. Enabling both at once conflicts on the hostname — swap them atomically.
+  # - httproute.yaml
