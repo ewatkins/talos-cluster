@@ -1,0 +1,47 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/source.toolkit.fluxcd.io/ocirepository_v1.json
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: tailscale-operator
+spec:
+  interval: 5m
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy
+  ref:
+    tag: 1.98.9
+  url: oci://ghcr.io/home-operations/charts-mirror/tailscale-operator
+  verify:
+    provider: cosign
+    matchOIDCIdentity:
+      - issuer: "^https://token.actions.githubusercontent.com$"
+        subject: "^https://github.com/home-operations/charts-mirror.*$"
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app tailscale-operator
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: tailscale-operator
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    # OAuth credentials are supplied by the pre-created operator-oauth Secret
+    # (see externalsecret.yaml); leaving oauth unset makes the chart reference
+    # that existing Secret instead of templating its own.
+    operatorConfig:
+      hostname: tailscale-operator
+    # No in-cluster API server proxy; this deployment is for subnet routing /
+    # exit-node duty via the Connector.
+    apiServerProxyConfig:
+      mode: "false"

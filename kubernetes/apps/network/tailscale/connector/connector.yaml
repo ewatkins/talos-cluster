@@ -1,0 +1,16 @@
+---
+# Replaces the standalone Tailscale VM: advertises the home subnets onto the
+# tailnet and serves as an exit node. Routes and exit-node status must be
+# approved in the Tailscale admin console (or auto-approved via ACL tag rules).
+apiVersion: tailscale.com/v1alpha1
+kind: Connector
+metadata:
+  name: home-network
+spec:
+  hostname: talos-subnet-router
+  subnetRouter:
+    advertiseRoutes:
+      - 10.35.0.0/16 # infra / hypervisor + NAS network
+      - 10.40.0.0/16 # cluster / services network
+      - 10.0.0.1/32 # UniFi controller
+  exitNode: true
