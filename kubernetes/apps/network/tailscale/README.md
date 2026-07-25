@@ -19,11 +19,13 @@ the home subnets onto the tailnet.
 
 Defined in [`connector/connector.yaml`](connector/connector.yaml):
 
-| Route          | Purpose                              |
-| -------------- | ------------------------------------ |
-| `10.35.0.0/16` | infra / hypervisor + NAS network     |
-| `10.40.0.0/16` | cluster / services network           |
-| `10.0.0.1/32`  | UniFi controller                     |
+| Route               | Purpose                          |
+| ------------------- | -------------------------------- |
+| `10.0.0.1/32`       | UniFi controller                 |
+| `10.35.0.0/16`      | infra / hypervisor + NAS network |
+| `10.40.0.0/16`      | cluster / services network       |
+| `10.45.0.0/16`      | additional home network          |
+| `10.50.0.0/16`      | additional home network          |
 
 Exit-node duty is enabled (`exitNode: true`).
 
