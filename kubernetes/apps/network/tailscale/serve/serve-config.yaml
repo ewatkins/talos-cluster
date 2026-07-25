@@ -1,0 +1,22 @@
+---
+# ipn.ServeConfig applied by containerboot (TS_SERVE_CONFIG). Raw TCP forward
+# (no TerminateTLS) so the client's TLS/SNI passes straight through to the
+# internal Envoy gateway, which matches the *.ewatkins.dev vhost and terminates
+# TLS itself. tailscaled ACCEPTS the tailnet connection on its own socket and
+# DIALS the backend — that dial is socket-originated, so Cilium load-balances it
+# correctly (the pod-veth *forward* path used by the Connector/expose-proxy does
+# not). Backend is the internal gateway's pinned LB VIP (${INTERNAL}).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tailscale-serve-config
+  namespace: network
+data:
+  serve.json: |
+    {
+      "TCP": {
+        "443": {
+          "TCPForward": "${INTERNAL}:443"
+        }
+      }
+    }
