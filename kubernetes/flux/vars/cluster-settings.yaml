@@ -13,11 +13,7 @@ data:
   ERIE: "10.40.1.4"
   ONTARIO: "10.40.1.5"
 
-  # Off the node subnet (10.40.0.0/16) on purpose: that range overlaps remote
-  # clients' local networks, so Tailscale refuses to route it and tailnet
-  # traffic never reaches the cluster. This subnet is reached via a route on
-  # the UniFi gateway pointing at the nodes.
-  INTERNAL: "192.168.69.10"
+  INTERNAL: "10.40.0.10"
   EXTERNAL: "10.40.0.30"
 
   KUBE_VIP: "10.40.1.0"
