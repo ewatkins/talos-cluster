@@ -1,0 +1,15 @@
+---
+# TCP passthrough so client TLS/SNI reaches the internal Envoy gateway intact.
+# tailscaled accepts the tailnet connection and DIALS the backend from its own
+# socket, which Cilium load-balances correctly — unlike traffic *forwarded*
+# through the Connector (that leaks past Cilium's service translation). The
+# tailnet 100.x IP this pod gets is also overlap-proof, so clients on networks
+# that collide with 10.40.0.0/16 can still reach it.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tailscale-serve-config
+  namespace: network
+data:
+  serve.json: |
+    { "TCP": { "443": { "TCPForward": "${INTERNAL}:443" } } }
