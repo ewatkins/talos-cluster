@@ -41,7 +41,7 @@ spec:
     # that existing Secret instead of templating its own.
     operatorConfig:
       hostname: tailscale-operator
-    # No in-cluster API server proxy; this deployment is for subnet routing /
-    # exit-node duty via the Connector.
+    # API server proxy: reach the Kubernetes API (kubectl) over the tailnet.
+    # Authorization is granted by the ClusterRoleBinding in rbac.yaml.
     apiServerProxyConfig:
-      mode: "false"
+      mode: "true"

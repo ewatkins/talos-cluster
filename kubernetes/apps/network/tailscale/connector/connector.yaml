@@ -15,4 +15,6 @@ spec:
       - 10.40.0.0/16
       - 10.45.0.0/16
       - 10.50.0.0/16
+      - 10.69.0.0/16 # pod CIDR — direct pod access over the tailnet
+      - 10.96.0.0/16 # service CIDR — reach services by ClusterIP (solanyn model)
   exitNode: true
