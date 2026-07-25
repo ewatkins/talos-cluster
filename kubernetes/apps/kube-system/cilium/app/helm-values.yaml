@@ -3,6 +3,7 @@ autoDirectNodeRoutes: true
 bgpControlPlane:
   enabled: true
 bpf:
+  datapathMode: netkit
   masquerade: true
 cgroup:
   automount:
@@ -30,8 +31,10 @@ l2announcements:
   enabled: true
 loadBalancer:
   algorithm: maglev
-  mode: snat
+  mode: dsr
 localRedirectPolicy: true
+socketLB:
+  enabled: true
 operator:
   replicas: 2
   rollOutPods: true
