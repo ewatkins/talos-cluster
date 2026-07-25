@@ -1,0 +1,16 @@
+---
+# Grants kubectl-over-tailnet (via the operator's API server proxy) to a tailnet
+# user, identified by their Tailscale login. cluster-admin mirrors solanyn's
+# setup — scope this down to a narrower ClusterRole if you prefer least-privilege.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: tailscale-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: User
+    name: "${SECRET_TAILSCALE_USER}"
