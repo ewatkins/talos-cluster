@@ -35,6 +35,13 @@ loadBalancer:
 localRedirectPolicy: true
 socketLB:
   enabled: true
+  # Pods must NOT use socket-level LB: traffic *forwarded* through a pod (the
+  # Tailscale Connector subnet router) has no local socket, so socketLB never
+  # translates it and the packets leak out to the node's default gateway as
+  # "world" traffic. Restricting socketLB to the host namespace makes pod
+  # traffic fall back to per-packet bpf_lxc translation, which handles the
+  # forwarded case — this is what lets tailnet clients reach service VIPs.
+  hostNamespaceOnly: true
 operator:
   replicas: 2
   rollOutPods: true
