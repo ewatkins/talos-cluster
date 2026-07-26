@@ -77,3 +77,227 @@ spec:
   postBuild:
     substitute:
       APP: *app
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app streamflow
+  namespace: flux-system
+spec:
+  targetNamespace: media
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  components:
+    - ../../../../../components/gatus/media
+  dependsOn:
+    - name: dispatcharr
+  wait: false
+  path: ./kubernetes/apps/media/dispatcharr/tools/streamflow
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: talos-cluster
+  interval: 30m
+  timeout: 5m
+  postBuild:
+    substitute:
+      APP: *app
+      GATUS_SUBDOMAIN: streamflow
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app kptv-fast
+  namespace: flux-system
+spec:
+  targetNamespace: media
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  components:
+    - ../../../../../components/gatus/media
+  dependsOn:
+    - name: dispatcharr
+  wait: false
+  path: ./kubernetes/apps/media/dispatcharr/tools/kptv-fast
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: talos-cluster
+  interval: 30m
+  timeout: 5m
+  postBuild:
+    substitute:
+      APP: *app
+      GATUS_SUBDOMAIN: kptv-fast
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app swaparr
+  namespace: flux-system
+spec:
+  targetNamespace: media
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  components:
+    - ../../../../../components/gatus/media
+  dependsOn:
+    - name: dispatcharr
+  wait: false
+  path: ./kubernetes/apps/media/dispatcharr/tools/swaparr
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: talos-cluster
+  interval: 30m
+  timeout: 5m
+  postBuild:
+    substitute:
+      APP: *app
+      GATUS_SUBDOMAIN: swaparr
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app channel-identifiarr
+  namespace: flux-system
+spec:
+  targetNamespace: media
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  components:
+    - ../../../../../components/gatus/media
+  dependsOn:
+    - name: dispatcharr
+  wait: false
+  path: ./kubernetes/apps/media/dispatcharr/tools/channel-identifiarr
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: talos-cluster
+  interval: 30m
+  timeout: 5m
+  postBuild:
+    substitute:
+      APP: *app
+      GATUS_SUBDOMAIN: channel-identifiarr
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app teamarr
+  namespace: flux-system
+spec:
+  targetNamespace: media
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  components:
+    - ../../../../../components/gatus/media
+  dependsOn:
+    - name: dispatcharr
+  wait: false
+  path: ./kubernetes/apps/media/dispatcharr/tools/teamarr
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: talos-cluster
+  interval: 30m
+  timeout: 5m
+  postBuild:
+    substitute:
+      APP: *app
+      GATUS_SUBDOMAIN: teamarr
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app game-thumbs
+  namespace: flux-system
+spec:
+  targetNamespace: media
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  components:
+    - ../../../../../components/gatus/media
+  dependsOn:
+    - name: dispatcharr
+  wait: false
+  path: ./kubernetes/apps/media/dispatcharr/tools/game-thumbs
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: talos-cluster
+  interval: 30m
+  timeout: 5m
+  postBuild:
+    substitute:
+      APP: *app
+      GATUS_SUBDOMAIN: game-thumbs
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app webpage-hls
+  namespace: flux-system
+spec:
+  targetNamespace: media
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  components:
+    - ../../../../../components/gatus/media
+  dependsOn:
+    - name: dispatcharr
+  wait: false
+  path: ./kubernetes/apps/media/dispatcharr/tools/webpage-hls
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: talos-cluster
+  interval: 30m
+  timeout: 5m
+  postBuild:
+    substitute:
+      APP: *app
+      GATUS_SUBDOMAIN: webpage-hls
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app enhanced-channel-manager
+  namespace: flux-system
+spec:
+  targetNamespace: media
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  components:
+    - ../../../../../components/gatus/media
+  dependsOn:
+    - name: dispatcharr
+  wait: false
+  path: ./kubernetes/apps/media/dispatcharr/tools/enhanced-channel-manager
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: talos-cluster
+  interval: 30m
+  timeout: 5m
+  postBuild:
+    substitute:
+      APP: *app
+      GATUS_SUBDOMAIN: ecm

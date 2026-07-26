@@ -1,0 +1,77 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app enhanced-channel-manager
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      enhanced-channel-manager:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: ghcr.io/motwakorb/enhancedchannelmanager
+              tag: 0.17.6-0159-dev@sha256:755d60b82ac8e53c05243395c84e3201a91a850dec605b503b4046b1bbf7d591
+            env:
+              TZ: "${TIMEZONE}"
+              ECM_LIMIT_CONCURRENCY: "25"
+              ECM_TIMEOUT_KEEP_ALIVE: "15"
+              # Sidecar in the same pod, so localhost rather than the Service.
+              MCP_HOST: http://localhost:6101
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/health
+                    port: &port 6100
+                  initialDelaySeconds: 60
+                  periodSeconds: 30
+                  timeoutSeconds: 10
+                  failureThreshold: 6
+              readiness: *probes
+            resources:
+              requests:
+                cpu: 50m
+                memory: 512Mi
+              limits:
+                memory: 1Gi
+          # MCP server exposing ECM's operations as tools.
+          mcp:
+            image:
+              repository: ghcr.io/motwakorb/enhancedchannelmanager-mcp
+              tag: 0.17.6-0159-dev@sha256:094ee14925004271f7402786ce08fad93d896d125e767e8676b3e5a889b20f1f
+            env:
+              TZ: "${TIMEZONE}"
+              ECM_URL: http://localhost:6100
+              MCP_PORT: &mcp_port "6101"
+            resources:
+              requests:
+                cpu: 10m
+                memory: 100Mi
+              limits:
+                memory: 256Mi
+    service:
+      app:
+        controller: enhanced-channel-manager
+        ports:
+          http:
+            port: *port
+          mcp:
+            port: 6101
