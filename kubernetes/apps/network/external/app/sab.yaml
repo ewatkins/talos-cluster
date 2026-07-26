@@ -6,8 +6,12 @@ metadata:
   namespace: network
 spec:
   endpoints:
+    # Server VLAN (MTU 1500), not the storage VLAN. On 10.45.x this container
+    # inherited bond1's MTU 9000 and replied with segments too large for the
+    # 1500-capped router hop, so responses black-holed: headers arrived, the
+    # body never did.
     - ip:
-        address: 10.45.10.14
+        address: 10.35.10.14
         port: 8080
 ---
 apiVersion: gateway.networking.k8s.io/v1
