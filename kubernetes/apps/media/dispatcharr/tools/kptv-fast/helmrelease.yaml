@@ -51,11 +51,15 @@ spec:
                   failureThreshold: 6
               readiness: *probes
             resources:
+              # Building the combined EPG pulls >230MB of XML (lg 71MB, pluto
+              # 60MB, plex 37MB, roku 36MB, ...) and parses it all in memory,
+              # which OOMKilled the container at 1Gi. Trim ENABLED_PROVIDERS
+              # if this ceiling ever becomes a problem.
               requests:
                 cpu: 25m
-                memory: 256Mi
+                memory: 512Mi
               limits:
-                memory: 1Gi
+                memory: 6Gi
     service:
       app:
         controller: kptv-fast
