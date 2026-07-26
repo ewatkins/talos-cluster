@@ -1,0 +1,99 @@
+---
+# yaml-language-server: $schema=https://kube-schemas.pages.dev/postgres-operator.crunchydata.com/postgrescluster_v1beta1.json
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: &name crunchy-postgres-dispatcharr
+spec:
+  # Dispatcharr version-checks the server at startup and refuses anything
+  # below 17, which is why it gets its own cluster instead of joining the
+  # shared PG16 one.
+  postgresVersion: 17
+  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-17.10-2621
+
+  monitoring:
+    pgmonitor:
+      exporter:
+        resources:
+          requests:
+            cpu: 10m
+            memory: 64M
+          limits:
+            memory: 512M
+
+  patroni:
+    dynamicConfiguration:
+      postgresql:
+        parameters:
+          wal_keep_size: 1024  # keep 1GB of WAL locally so replicas can stream it even if archiver lags
+          archive_timeout: 300  # force WAL archiving every 5 min to prevent gaps during rapid timeline switches
+        pg_hba:
+          - hostnossl all all 10.96.0.0/16 md5
+          - hostnossl all all 10.69.0.0/16 md5
+          - hostnossl all all 10.40.0.0/16 md5
+          - hostssl all all all md5
+
+  instances:
+    - name: instance
+      replicas: 2
+      dataVolumeClaimSpec:
+        storageClassName: openebs-hostpath
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 5Gi
+      walVolumeClaimSpec:
+        storageClassName: openebs-hostpath
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 5Gi
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: "kubernetes.io/hostname"
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              postgres-operator.crunchydata.com/cluster: *name
+              postgres-operator.crunchydata.com/data: postgres
+
+  users:
+    - name: dispatcharr
+      databases: ["dispatcharr"]
+
+  backups:
+    pgbackrest:
+      configuration:
+        - secret:
+            name: crunchy-postgres-dispatcharr-secret
+      global:
+        compress-type: "zst"
+        # Garage, sharing the crunchy-pgo bucket under a distinct prefix so it
+        # cannot collide with the shared cluster's repo2 backups.
+        repo1-block: "y"
+        repo1-bundle: "y"
+        repo1-path: /crunchy-dispatcharr
+        repo1-retention-full: "14"
+        repo1-retention-full-type: time
+        repo1-s3-uri-style: path
+        archive-push-queue-max: 4GiB
+      jobs:
+        ttlSecondsAfterFinished: 300
+      repoHost:
+        # See the shared cluster: BestEffort repo hosts get starved of CPU and
+        # miss the 1s "pgbackrest server-ping" liveness timeout.
+        resources:
+          requests:
+            cpu: 250m
+            memory: 256Mi
+          limits:
+            memory: 1Gi
+      repos:
+        - name: repo1
+          s3:
+            bucket: crunchy-pgo
+            endpoint: s3-garage.ewatkins.dev
+            region: us-east-1
+          schedules:
+            full: "0 3 * * 0"
+            incremental: "0 3 * * 1-6"
