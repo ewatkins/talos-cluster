@@ -1,0 +1,10 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# Monitoring shared by every PostgresCluster below. The individual clusters
+# live in ./pg16, ./pg17 and ./vector, each with its own Kustomization.
+resources:
+  - ./gatus.yaml
+  - ./podmonitor.yaml
+  - ./prometheusrule.yaml
