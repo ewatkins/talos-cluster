@@ -26,7 +26,7 @@ spec:
           app:
             image:
               repository: ghcr.io/dispatcharr/dispatcharr
-              tag: v0.28.2
+              tag: 0.28.2
             env: &env
               # Modular mode: Postgres and Redis are external, and Celery runs
               # as its own container rather than being bundled by the AIO image.
@@ -63,7 +63,7 @@ spec:
           celery:
             image:
               repository: ghcr.io/dispatcharr/dispatcharr
-              tag: v0.28.2
+              tag: 0.28.2
             command: ["/app/docker/entrypoint.celery.sh"]
             env:
               DISPATCHARR_ENV: modular
