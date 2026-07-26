@@ -50,14 +50,27 @@ spec:
               claims:
                 - name: gpu
               requests:
-                cpu: 100m
+                # Software x265 encodes sustain multiple cores. A 100m request
+                # let unmanic oversubscribe the node ~30x and starve BestEffort
+                # neighbours (it crashlooped the pgbackrest repo host).
+                cpu: 500m
                 memory: 512Mi
               limits:
+                cpu: 2000m
                 memory: 4Gi
         pod:
           resourceClaims:
             - name: gpu
               resourceClaimTemplateName: unmanic
+          affinity:
+            # Transcoding is CPU-heavy and bursty; keep it off Jellyfin's node
+            # so playback and on-the-fly transcodes aren't starved.
+            podAntiAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchLabels:
+                      app.kubernetes.io/name: jellyfin
+                  topologyKey: kubernetes.io/hostname
           securityContext:
             runAsUser: 0
             runAsGroup: 0
