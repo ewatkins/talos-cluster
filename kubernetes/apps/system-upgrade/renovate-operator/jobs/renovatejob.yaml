@@ -1,0 +1,30 @@
+---
+apiVersion: renovate-operator.mogenius.com/v1alpha1
+kind: RenovateJob
+metadata:
+  name: talos-cluster
+  namespace: system-upgrade
+spec:
+  # Renovate still reads .renovaterc.json5 and the .renovate/ presets from the
+  # repo itself, so behaviour matches what the GitHub Action produced.
+  discoveryFilters:
+    - ewatkins/talos-cluster
+  provider:
+    name: github
+  # renovate: datasource=docker depName=ghcr.io/renovatebot/renovate
+  image: ghcr.io/renovatebot/renovate:43.280.5
+  parallelism: 1
+  # Same window the GitHub Action used: midnight to 5am UTC.
+  schedule: "0 0-5 * * *"
+  secretRef: renovate-secret
+  extraEnv:
+    - name: LOG_LEVEL
+      value: info
+    - name: RENOVATE_PLATFORM
+      value: github
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      memory: 2Gi
