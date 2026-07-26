@@ -1,0 +1,71 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app webpage-hls
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      webpage-hls:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: ghcr.io/sethwv/ws4kp-to-hls
+              tag: latest@sha256:a4347e3168696e4419cd6bc1e6525139b6d48217a3a5fa10fa2e4ac8ce13048b
+            # Renders a webpage with a headless browser, hence the larger memory
+            # limit and the writable cache dirs.
+            env:
+              TZ: "${TIMEZONE}"
+              PORT: "3000"
+              DEFAULT_FPS: "30"
+              SCREENSHOT_FORMAT: jpeg
+              SCREENSHOT_QUALITY: "95"
+              XDG_CONFIG_HOME: /tmp
+              XDG_CACHE_HOME: /tmp
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: &port 3000
+                  initialDelaySeconds: 30
+                  periodSeconds: 30
+                  timeoutSeconds: 10
+                  failureThreshold: 6
+              readiness: *probes
+            resources:
+              requests:
+                cpu: 25m
+                memory: 512Mi
+              limits:
+                memory: 2Gi
+    service:
+      app:
+        controller: webpage-hls
+        ports:
+          http:
+            port: *port
+    persistence:
+      cache:
+        type: emptyDir
+        globalMounts:
+          - path: /tmp
+          - path: /streaming-app/cache
+          - path: /home/node/.cache
