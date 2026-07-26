@@ -1,0 +1,78 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app iptv-epg
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      iptv-epg:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        # The grab writes guide.xml in place, so never run two at once.
+        strategy: Recreate
+        containers:
+          app:
+            image:
+              # Upstream publishes no version tags, only a rolling "master",
+              # so this is pinned by digest and Renovate updates the digest.
+              repository: ghcr.io/iptv-org/epg
+              tag: master@sha256:747a9f6ea2d9a1c633d08ba3e5edaef72f71b12af8a34b39c19500a3e3970b37
+            env:
+              # Sources to scrape. See github.com/iptv-org/epg/tree/master/sites
+              # for the full list; comma-separated.
+              SITES: tvtv.us
+              CLANG: en
+              # Evaluated in TZ below, so this is 03:00 Central.
+              CRON_SCHEDULE: "0 3 * * *"
+              # Grab once on boot so a fresh pod is not left serving nothing
+              # until the next scheduled run.
+              RUN_AT_STARTUP: "true"
+              # Default is 1, which makes a full grab painfully slow. Keep it
+              # modest to stay polite to the upstream site.
+              MAX_CONNECTIONS: "5"
+              TZ: "${TIMEZONE}"
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: &port 3000
+                  initialDelaySeconds: 30
+                  periodSeconds: 30
+                  timeoutSeconds: 10
+                  failureThreshold: 5
+              readiness: *probes
+            resources:
+              requests:
+                cpu: 25m
+                memory: 256Mi
+              limits:
+                memory: 1Gi
+    service:
+      app:
+        controller: iptv-epg
+        ports:
+          http:
+            port: *port
+    persistence:
+      public:
+        existingClaim: iptv-epg-public
+        globalMounts:
+          # pm2 serves this directory and the grab writes guide.xml into it.
+          - path: /epg/public
