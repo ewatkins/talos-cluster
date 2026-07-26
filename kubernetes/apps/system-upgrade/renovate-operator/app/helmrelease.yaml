@@ -18,6 +18,8 @@ spec:
       strategy: rollback
       retries: 3
   values:
+    # Without this the chart names everything renovate-operator-renovate-operator.
+    fullnameOverride: renovate-operator
     replicaCount: 1
 
     crd:
