@@ -5,10 +5,10 @@ metadata:
   name: dispatcharr-timeout
   namespace: media
 spec:
-  targetRef:
-    group: gateway.networking.k8s.io
-    kind: HTTPRoute
-    name: dispatcharr
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: dispatcharr
   timeout:
     http:
       # A channel is one continuous MPEG-TS response held open for as long as
