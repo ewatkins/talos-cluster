@@ -116,6 +116,16 @@ spec:
         repo3-s3-uri-style: path
       jobs:
         ttlSecondsAfterFinished: 300
+      repoHost:
+        # Without requests the repo host is BestEffort and gets the minimum CPU
+        # weight. Under node contention "pgbackrest server-ping" misses its
+        # hardcoded 1s liveness timeout and the container is killed mid-backup.
+        resources:
+          requests:
+            cpu: 500m
+            memory: 256Mi
+          limits:
+            memory: 2Gi
       manual:
         repoName: repo1
         options:
