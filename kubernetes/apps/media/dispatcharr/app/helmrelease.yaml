@@ -36,6 +36,10 @@ spec:
               REDIS_HOST: dragonfly.database.svc.cluster.local
               REDIS_PORT: "6379"
               TZ: "${TIMEZONE}"
+              # The nfs-slow mount presents as 99:100, and the container cannot
+              # chown it. Run as that owner instead of the image default 1000.
+              PUID: "99"
+              PGID: "100"
             envFrom: &envFrom
               - secretRef:
                   name: dispatcharr-db-secret
@@ -72,6 +76,8 @@ spec:
               REDIS_HOST: dragonfly.database.svc.cluster.local
               REDIS_PORT: "6379"
               TZ: "${TIMEZONE}"
+              PUID: "99"
+              PGID: "100"
               DJANGO_SETTINGS_MODULE: dispatcharr.settings
               PYTHONUNBUFFERED: "1"
             envFrom: *envFrom
@@ -83,7 +89,7 @@ spec:
                 memory: 2Gi
         pod:
           securityContext:
-            fsGroup: 1000
+            fsGroup: 100
             fsGroupChangePolicy: OnRootMismatch
     service:
       app:

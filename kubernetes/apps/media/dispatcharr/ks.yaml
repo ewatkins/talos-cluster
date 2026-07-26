@@ -13,8 +13,8 @@ spec:
   components:
     - ../../../../components/gatus/media
   dependsOn:
-    - name: crunchy-postgres-operator-cluster
-    - name: external-secrets-stores
+    - name: crunchy-postgres-dispatcharr
+    - name: crunchy-postgres-operator-secretstore
   wait: false
   path: ./kubernetes/apps/media/dispatcharr/app
   prune: true
