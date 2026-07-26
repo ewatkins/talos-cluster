@@ -89,6 +89,9 @@ spec:
     - name: "patchmon-admin"
       databases: ["patchmon"]
       password: *password
+    - name: "dispatcharr-admin"
+      databases: ["dispatcharr"]
+      password: *password
   backups:
     pgbackrest:
       configuration: &backupConfig
