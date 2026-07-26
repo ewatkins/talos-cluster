@@ -34,10 +34,9 @@ spec:
               # at Jellyfin rather than an Emby server.
               EMBY_SERVER_URL: http://jellyfin.media.svc.cluster.local:8096
               MODE: copy
-              # Left on for the first run so it reports what it would change
-              # without touching any artwork. Flip to "false" once the output
-              # looks right.
-              DRY_RUN: "true"
+              # Dry run confirmed the intended changes (LogoLight and
+              # LogoLightColor per channel), so this now performs real uploads.
+              DRY_RUN: "false"
               FIRST_ONLY: "false"
               FORCE: "false"
               # Empty processes everything. Set LIST_TAGS=true for one run to

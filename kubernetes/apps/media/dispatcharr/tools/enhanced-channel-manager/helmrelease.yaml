@@ -75,3 +75,11 @@ spec:
             port: *port
           mcp:
             port: 6101
+    persistence:
+      # The image defaults CONFIG_DIR=/config and keeps everything there:
+      # settings.json (including the Dispatcharr connection), auth_settings.json,
+      # journal.db and uploads. Without this it is all lost on every restart.
+      config:
+        existingClaim: enhanced-channel-manager-config
+        globalMounts:
+          - path: /config
