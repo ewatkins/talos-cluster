@@ -1,0 +1,18 @@
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: dispatcharr-timeout
+  namespace: media
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: dispatcharr
+  timeout:
+    http:
+      # A channel is one continuous MPEG-TS response held open for as long as
+      # the client watches, so Envoy's 15s default request timeout cut every
+      # stream mid-playback. Disabled rather than merely raised, since a
+      # viewer can legitimately stay on a channel for hours.
+      requestTimeout: "0s"
