@@ -7,3 +7,4 @@ resources:
   - ./pvc.yaml
   - ./resourceclaimtemplate.yaml
   - ./httproute.yaml
+  - ./guide-cache-cronjob.yaml
