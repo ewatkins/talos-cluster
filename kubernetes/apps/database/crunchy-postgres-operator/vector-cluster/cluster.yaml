@@ -83,6 +83,15 @@ spec:
         repo1-retention-full: "14"
         repo1-retention-full-type: time
         archive-push-queue-max: 4GiB
+      repoHost:
+        # See main cluster: BestEffort repo hosts get starved of CPU and miss
+        # the 1s "pgbackrest server-ping" liveness timeout.
+        resources:
+          requests:
+            cpu: 250m
+            memory: 256Mi
+          limits:
+            memory: 1Gi
       repos:
         - name: repo1
           schedules:
