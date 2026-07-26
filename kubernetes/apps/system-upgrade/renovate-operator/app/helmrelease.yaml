@@ -32,6 +32,14 @@ spec:
       jobTTLSecondsAfterFinished: 86400
       defaultJobActiveDeadlineSeconds: 1800
 
+    # The scheduler uses time.Local, so RenovateJob cron expressions are
+    # evaluated in this zone. The binary is built with -tags timetzdata, so the
+    # tz database is embedded and this resolves even on the scratch image.
+    # Without it schedules would run in UTC and drift an hour across DST.
+    extraEnv:
+      - name: TZ
+        value: "${TIMEZONE}"
+
     logging:
       level: info
       format: json

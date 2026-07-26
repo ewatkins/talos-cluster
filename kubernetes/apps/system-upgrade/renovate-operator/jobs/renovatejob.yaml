@@ -14,8 +14,9 @@ spec:
   # renovate: datasource=docker depName=ghcr.io/renovatebot/renovate
   image: ghcr.io/renovatebot/renovate:43.280.5
   parallelism: 1
-  # Same window the GitHub Action used: midnight to 5am UTC.
-  schedule: "0 0-5 * * *"
+  # 8pm America/Chicago daily. The operator evaluates this in its TZ (set on the
+  # deployment), so it stays at 8pm local across DST rather than drifting.
+  schedule: "0 20 * * *"
   secretRef: renovate-secret
   extraEnv:
     - name: LOG_LEVEL
