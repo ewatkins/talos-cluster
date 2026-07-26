@@ -32,7 +32,7 @@ spec:
       app.kubernetes.io/name: *app
   interval: 30m
   timeout: 5m
-  path: ./kubernetes/apps/database/crunchy-postgres-operator/cluster
+  path: ./kubernetes/apps/database/crunchy-postgres-operator/cluster/pg16
   prune: true
   sourceRef:
     kind: GitRepository
@@ -109,7 +109,7 @@ spec:
       app.kubernetes.io/name: *app
   interval: 30m
   timeout: 5m
-  path: ./kubernetes/apps/database/crunchy-postgres-operator/vector-cluster
+  path: ./kubernetes/apps/database/crunchy-postgres-operator/cluster/vector
   prune: true
   sourceRef:
     kind: GitRepository
@@ -144,7 +144,7 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app crunchy-postgres-dispatcharr
+  name: &app crunchy-postgres-17
   namespace: flux-system
 spec:
   targetNamespace: database
@@ -153,7 +153,7 @@ spec:
       app.kubernetes.io/name: *app
   interval: 30m
   timeout: 15m
-  path: ./kubernetes/apps/database/crunchy-postgres-operator/dispatcharr-cluster
+  path: ./kubernetes/apps/database/crunchy-postgres-operator/cluster/pg17
   prune: true
   sourceRef:
     kind: GitRepository
