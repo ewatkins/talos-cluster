@@ -1,0 +1,47 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: renovate-operator
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: renovate-operator
+  interval: 1h
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    replicaCount: 1
+
+    crd:
+      install: true
+      mode: hook
+
+    config:
+      # Keep failed jobs around for debugging, reap successful ones after a day.
+      deleteSuccessfulJobs: false
+      jobTTLSecondsAfterFinished: 86400
+      defaultJobActiveDeadlineSeconds: 1800
+
+    logging:
+      level: info
+      format: json
+
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+
+    resources:
+      requests:
+        cpu: 25m
+        memory: 128Mi
+      limits:
+        memory: 512Mi
