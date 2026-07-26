@@ -126,6 +126,15 @@ spec:
         type: emptyDir
         globalMounts:
           - path: /transcode
+      # readOnlyRootFilesystem is on, and Jellyfin's Dynamic Image Provider
+      # writes to /tmp/jellyfin while building channel/media images. Without a
+      # writable /tmp it throws "Read-only file system: '/tmp/jellyfin'" and
+      # Live TV channel logos never render.
+      tmp:
+        enabled: true
+        type: emptyDir
+        globalMounts:
+          - path: /tmp
       cache:
         enabled: true
         existingClaim: jellyfin-cache
