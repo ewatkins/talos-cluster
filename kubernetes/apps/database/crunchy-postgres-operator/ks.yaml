@@ -162,3 +162,26 @@ spec:
   dependsOn:
     - name: crunchy-postgres-operator
     - name: external-secrets-stores
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app crunchy-postgres-monitoring
+  namespace: flux-system
+spec:
+  targetNamespace: database
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  interval: 30m
+  timeout: 5m
+  # Gatus endpoints, PodMonitor and PrometheusRule shared by every cluster.
+  path: ./kubernetes/apps/database/crunchy-postgres-operator/cluster
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: talos-cluster
+  wait: true
+  dependsOn:
+    - name: crunchy-postgres-operator

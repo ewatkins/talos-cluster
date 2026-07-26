@@ -5,6 +5,3 @@ kind: Kustomization
 resources:
   - ./cluster.yaml
   - ./externalsecret.yaml
-  - ./gatus.yaml
-  - ./podmonitor.yaml
-  - ./prometheusrule.yaml

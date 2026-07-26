@@ -8,9 +8,30 @@ metadata:
 data:
   config.yaml: |
     endpoints:
+      # Connectivity, one per cluster. pg16 and pg17 are reached through
+      # pgBouncer; the vector cluster has no proxy so it is checked directly
+      # against its primary service.
       - name: crunchy-pgo
         group: Infrastructure
         url: tcp://crunchy-postgres-pgbouncer.database.svc.cluster.local:5432
+        interval: 1m
+        conditions: ["[CONNECTED] == true"]
+        ui:
+          hide-url: true
+          hide-hostname: true
+
+      - name: crunchy-pgo-17
+        group: Infrastructure
+        url: tcp://crunchy-postgres-17-pgbouncer.database.svc.cluster.local:5432
+        interval: 1m
+        conditions: ["[CONNECTED] == true"]
+        ui:
+          hide-url: true
+          hide-hostname: true
+
+      - name: crunchy-pgo-vector
+        group: Infrastructure
+        url: tcp://crunchy-postgres-vector-primary.database.svc.cluster.local:5432
         interval: 1m
         conditions: ["[CONNECTED] == true"]
         ui:
