@@ -62,8 +62,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  components:
-    - ../../../../../components/gatus/media
+  # No gatus check: the Dispatcharr tools are deliberately unmonitored.
   dependsOn:
     - name: dispatcharr
   wait: false
@@ -89,8 +88,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  components:
-    - ../../../../../components/gatus/media
+  # No gatus check: the Dispatcharr tools are deliberately unmonitored.
   dependsOn:
     - name: dispatcharr
   wait: false
@@ -104,7 +102,6 @@ spec:
   postBuild:
     substitute:
       APP: *app
-      GATUS_SUBDOMAIN: streamflow
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -117,8 +114,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  components:
-    - ../../../../../components/gatus/media
+  # No gatus check: the Dispatcharr tools are deliberately unmonitored.
   dependsOn:
     - name: dispatcharr
   wait: false
@@ -132,7 +128,6 @@ spec:
   postBuild:
     substitute:
       APP: *app
-      GATUS_SUBDOMAIN: kptv-fast
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -145,8 +140,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  components:
-    - ../../../../../components/gatus/media
+  # No gatus check: the Dispatcharr tools are deliberately unmonitored.
   dependsOn:
     - name: dispatcharr
   wait: false
@@ -160,7 +154,6 @@ spec:
   postBuild:
     substitute:
       APP: *app
-      GATUS_SUBDOMAIN: swaparr
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -173,8 +166,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  components:
-    - ../../../../../components/gatus/media
+  # No gatus check: the Dispatcharr tools are deliberately unmonitored.
   dependsOn:
     - name: dispatcharr
   wait: false
@@ -188,7 +180,6 @@ spec:
   postBuild:
     substitute:
       APP: *app
-      GATUS_SUBDOMAIN: channel-identifiarr
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -201,8 +192,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  components:
-    - ../../../../../components/gatus/media
+  # No gatus check: the Dispatcharr tools are deliberately unmonitored.
   dependsOn:
     - name: dispatcharr
   wait: false
@@ -216,7 +206,6 @@ spec:
   postBuild:
     substitute:
       APP: *app
-      GATUS_SUBDOMAIN: teamarr
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -229,8 +218,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  components:
-    - ../../../../../components/gatus/media
+  # No gatus check: the Dispatcharr tools are deliberately unmonitored.
   dependsOn:
     - name: dispatcharr
   wait: false
@@ -244,10 +232,6 @@ spec:
   postBuild:
     substitute:
       APP: *app
-      GATUS_SUBDOMAIN: game-thumbs
-      # This app answers 444 on every path, so 444 is the healthy response —
-      # a connection failure is what indicates it is actually down.
-      GATUS_STATUS: "444"
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -260,8 +244,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  components:
-    - ../../../../../components/gatus/media
+  # No gatus check: the Dispatcharr tools are deliberately unmonitored.
   dependsOn:
     - name: dispatcharr
   wait: false
@@ -275,9 +258,6 @@ spec:
   postBuild:
     substitute:
       APP: *app
-      GATUS_SUBDOMAIN: webpage-hls
-      # / returns 404 by design; /health is the real endpoint.
-      GATUS_PATH: /health
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -290,8 +270,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  components:
-    - ../../../../../components/gatus/media
+  # No gatus check: the Dispatcharr tools are deliberately unmonitored.
   dependsOn:
     - name: dispatcharr
   wait: false
@@ -305,7 +284,6 @@ spec:
   postBuild:
     substitute:
       APP: *app
-      GATUS_SUBDOMAIN: ecm
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
