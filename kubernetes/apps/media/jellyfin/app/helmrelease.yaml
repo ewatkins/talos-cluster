@@ -68,6 +68,16 @@ spec:
           resourceClaims:
             - name: gpu
               resourceClaimTemplateName: jellyfin
+          affinity:
+            # Reciprocal of unmanic's rule. Anti-affinity is only evaluated at
+            # scheduling time, so both sides need it — otherwise Jellyfin could
+            # restart onto the node unmanic is already transcoding on.
+            podAntiAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchLabels:
+                      app.kubernetes.io/name: unmanic
+                  topologyKey: kubernetes.io/hostname
           securityContext:
             seccompProfile:
               type: RuntimeDefault
