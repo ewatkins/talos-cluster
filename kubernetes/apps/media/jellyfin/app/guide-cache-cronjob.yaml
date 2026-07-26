@@ -65,11 +65,14 @@ spec:
             runAsNonRoot: true
             runAsUser: 65534
             runAsGroup: 65534
+            fsGroup: 65534
             seccompProfile:
               type: RuntimeDefault
           containers:
             - name: kubectl
-              image: registry.k8s.io/kubectl:v1.36.3
+              # registry.k8s.io/kubectl is distroless and has no shell, which
+              # this needs to look up the pod name before exec'ing.
+              image: docker.io/alpine/kubectl:1.36.3
               command: ["/bin/sh", "-c"]
               args:
                 - |
