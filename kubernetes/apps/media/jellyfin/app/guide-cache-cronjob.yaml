@@ -1,0 +1,98 @@
+---
+# Jellyfin caches the downloaded XMLTV per listing provider under
+# /var/cache/jellyfin/xmltv/<provider-id>.xml and will not re-download it just
+# because "Refresh Guide" was clicked - it re-parses the cached copy. So any
+# change to channels or EPG mappings in Dispatcharr stays invisible until the
+# cache is removed. This clears it shortly before Jellyfin's own guide refresh
+# (a DailyTrigger at 03:00 local) so the nightly run always fetches fresh data.
+#
+# The cache PVC is ReadWriteOnce, so mounting it from a second pod would pin
+# this to Jellyfin's node and break whenever Jellyfin moved. Exec'ing into the
+# running pod avoids that entirely.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jellyfin-cache-cleaner
+  namespace: media
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: jellyfin-cache-cleaner
+  namespace: media
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jellyfin-cache-cleaner
+  namespace: media
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: jellyfin-cache-cleaner
+subjects:
+  - kind: ServiceAccount
+    name: jellyfin-cache-cleaner
+    namespace: media
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: jellyfin-guide-cache-clear
+  namespace: media
+spec:
+  schedule: "50 2 * * *"
+  timeZone: America/Chicago
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 3600
+      backoffLimit: 2
+      template:
+        spec:
+          serviceAccountName: jellyfin-cache-cleaner
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: kubectl
+              image: registry.k8s.io/kubectl:v1.36.3
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -eu
+                  POD=$(kubectl -n media get pods \
+                    -l app.kubernetes.io/name=jellyfin \
+                    --field-selector status.phase=Running \
+                    -o jsonpath='{.items[0].metadata.name}')
+                  if [ -z "$POD" ]; then
+                    echo "no running jellyfin pod found"
+                    exit 1
+                  fi
+                  echo "clearing XMLTV guide cache in $POD"
+                  kubectl -n media exec "$POD" -- \
+                    sh -c 'rm -f /var/cache/jellyfin/xmltv/*.xml'
+                  echo "cleared; Jellyfin will re-download on its 03:00 refresh"
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities: { drop: ["ALL"] }
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 64Mi
+                limits:
+                  memory: 128Mi
