@@ -34,8 +34,9 @@ spec:
                 enabled: true
                 custom: true
                 spec:
-                  httpGet:
-                    path: /
+                  # This app answers 444 on every path including /, so there is
+                  # no usable HTTP health endpoint. Check the socket instead.
+                  tcpSocket:
                     port: &port 3000
                   initialDelaySeconds: 30
                   periodSeconds: 30
