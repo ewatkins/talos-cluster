@@ -12,7 +12,6 @@ resources:
   - ./bazarr/ks.yaml
   - ./dispatcharr/ks.yaml
   - ./immich/ks.yaml
-  - ./iptv-epg/ks.yaml
   - ./jellyfin/ks.yaml
   - ./seerr/ks.yaml
   - ./notifiarr/ks.yaml
