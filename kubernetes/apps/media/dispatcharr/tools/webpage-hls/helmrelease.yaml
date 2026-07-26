@@ -43,9 +43,10 @@ spec:
                 custom: true
                 spec:
                   httpGet:
-                    path: /
+                    # / returns 404 by design; /health is the real endpoint.
+                    path: /health
                     port: &port 3000
-                  initialDelaySeconds: 30
+                  initialDelaySeconds: 60
                   periodSeconds: 30
                   timeoutSeconds: 10
                   failureThreshold: 6
