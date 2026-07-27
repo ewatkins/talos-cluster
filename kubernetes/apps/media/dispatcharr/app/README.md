@@ -103,8 +103,8 @@ in the pool, roughly one cycle in six lands you back on the one you just left.
 > `https://gluetun.ewatkins.dev/oauth2/callback`, secret in the Bitwarden item
 > `gluetun-secret` under `CLIENT_SECRET`.
 
-`FIREWALL_INPUT_PORTS` is `9191,3000,3001,3002,3003,8080,9195` — Dispatcharr, the VPN
-UI and the five co-located tools. Gluetun's control server on `:8000` is deliberately left
+`FIREWALL_INPUT_PORTS` is `9191,3000,3001,3002,8080,9195` — Dispatcharr, the VPN
+UI and the four co-located tools. Gluetun's control server on `:8000` is deliberately left
 out, so it is reachable only from inside the pod; that is why it runs with
 `{"auth":"none"}`. If you ever expose `:8000`, switch it to
 `{"auth":"apikey","apikey":"..."}` (generate with `docker run --rm qmcgaw/gluetun genkey`)
@@ -184,7 +184,6 @@ that fetches from the public internet — therefore run here as ordinary contain
 | `teamarr` | 9195 | `teamarr` | 9195 |
 | `webpage-hls` | **3001** (+ **8081** internal) | `webpage-hls` | 3000 |
 | `game-thumbs` | **3002** | `game-thumbs` | 3000 |
-| `iptv-epg` | **3003** | `iptv-epg` | 3000 |
 
 The four that stayed independent — `enhanced-channel-manager`, `epg-matcharr`,
 `streamflow`, `swaparr` — only talk to Dispatcharr in-cluster, so a tunnel would add latency
@@ -194,8 +193,8 @@ and gain nothing.
 
 One network namespace means one port space. Four containers wanted `:3000`, and Dispatcharr
 itself already binds `5656`, `8001` and `9999` internally while gluetun holds `53` (its DNS
-resolver) and `8000` (its control server). The three losing tools were moved with their own
-`PORT` env var — `serve` reads it for `iptv-epg`, and both Node apps read `process.env.PORT`.
+resolver) and `8000` (its control server). The two losing tools were moved with their own
+`PORT` env var, which both Node apps read as `process.env.PORT`.
 
 Their **Services still publish 3000** and simply retarget the new container port, so nothing
 downstream changed: the HTTPRoutes are untouched, and the M3U/EPG URLs stored in
@@ -226,11 +225,11 @@ Kustomization. The claims deliberately did **not** move into this directory: `nf
 reclaims `Delete`, and handing a PVC from one Flux Kustomization to another risks the old
 one pruning it before the new one adopts it.
 
-So in [`../ks.yaml`](../ks.yaml) the dependency runs `dispatcharr` → all five co-located
-tools, the reverse of the remaining four. That direction is required for the two that own
+So in [`../ks.yaml`](../ks.yaml) the dependency runs `dispatcharr` → all four co-located
+tools, the reverse of the remaining four. That direction is required for `teamarr`, which owns
 a PVC, and it also orders the cutover: those Kustomizations prune the old per-tool
 HelmReleases, and **Helm will not adopt a Service owned by another release** — it fails with
-`invalid ownership metadata`. The old `kptv-fast`, `iptv-epg`, `teamarr`, `webpage-hls`
+`invalid ownership metadata`. The old `kptv-fast`, `teamarr`, `webpage-hls`
 and `game-thumbs` releases must be uninstalled before this one upgrades.
 
 `wait: false` means Flux does not block on those uninstalls actually finishing, so the race
@@ -244,14 +243,14 @@ flux -n flux-system reconcile ks dispatcharr --with-source
 
 ### Consequences
 
-- **Any of these six updating restarts Dispatcharr** and drops in-flight streams. Renovate
-  bumps them independently, and three (`kptv-fast`, `iptv-epg`, `webpage-hls`) track rolling
+- **Any of these four updating restarts Dispatcharr** and drops in-flight streams. Renovate
+  bumps them independently, and two (`kptv-fast`, `webpage-hls`) track rolling
   tags by digest. This was accepted knowingly; pin those tags if it becomes disruptive.
-- **`kptv-fast` and `iptv-epg` pull from US sources through a UK exit.** kptv-fast is pinned
-  `us,ca` and aggregates Plex/Pluto/Tubi/Xumo; iptv-epg scrapes `zap2it.com` and
-  `tvguide.com`. If a playlist comes back empty or a grab returns no programmes, suspect
-  geoblocking before the scraper.
+- **`kptv-fast` pulls from US sources through a UK exit.** It is pinned `us,ca` and
+  aggregates Plex/Pluto/Tubi/Xumo. If a playlist comes back empty, suspect geoblocking
+  before the aggregator.
 - `strategy: Recreate` is now spelled out on the controller. It is app-template's default,
-  but iptv-epg genuinely requires it — two overlapping grabs would write `guide.xml` at once.
+  and still required — `dispatcharr-data` and `teamarr-data` are ReadWriteOnce, so a second
+  pod could never mount them alongside the first.
 - Memory limits are per-container, so one tool OOMing kills only itself. Requests total
   ~2.8 Gi and ~240m CPU for the pod.

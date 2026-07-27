@@ -1,9 +1,9 @@
 # Dispatcharr Tools
 
-Nine companion services around [Dispatcharr](../app/), the IPTV channel manager. Each is
+Eight companion services around [Dispatcharr](../app/), the IPTV channel manager. Each is
 its own Flux `Kustomization` in [`../ks.yaml`](../ks.yaml).
 
-> **Five of them do not run in their own pod.** `kptv-fast`, `iptv-epg`, `teamarr`,
+> **Four of them do not run in their own pod.** `kptv-fast`, `teamarr`,
 > `webpage-hls` and `game-thumbs` all fetch from the public internet,
 > so they run as containers inside the **Dispatcharr pod** to share its gluetun VPN tunnel.
 > Their images, env, probes and resources live in
@@ -11,9 +11,9 @@ its own Flux `Kustomization` in [`../ks.yaml`](../ks.yaml).
 > PVC and HTTPRoute. Full rationale in [`../app/README.md`](../app/README.md#co-located-tools).
 >
 > Every Service name and published port was preserved, so nothing below changes address.
-> The other four keep their own Deployments and declare `dependsOn: dispatcharr`; the two
-> co-located tools that own a PVC have that dependency reversed, since the Dispatcharr pod
-> mounts their claims.
+> The other four keep their own Deployments and declare `dependsOn: dispatcharr`; `teamarr`,
+> the one co-located tool that owns a PVC, has that dependency reversed, since the Dispatcharr
+> pod mounts its claim.
 
 > **On the URLs below:** which M3U accounts and EPG sources Dispatcharr actually has
 > registered lives in Dispatcharr's own Postgres database, not in Git. The URLs given here are
@@ -24,7 +24,7 @@ They fall into three roles (★ = runs inside the Dispatcharr pod, on the VPN):
 
 | Role | Tools |
 |---|---|
-| **Feed content in** — Dispatcharr pulls M3U/XMLTV from them | `kptv-fast`★, `iptv-epg`★, `teamarr`★, `webpage-hls`★ |
+| **Feed content in** — Dispatcharr pulls M3U/XMLTV from them | `kptv-fast`★, `teamarr`★, `webpage-hls`★ |
 | **Curate what's there** — they call the Dispatcharr API | `enhanced-channel-manager`, `epg-matcharr`, `streamflow`, `swaparr` |
 | **Artwork** | `game-thumbs`★ |
 
@@ -32,7 +32,6 @@ They fall into three roles (★ = runs inside the Dispatcharr pod, on the VPN):
 flowchart LR
     subgraph SRC["Content sources"]
         KPTV["kptv-fast<br/>M3U + XMLTV"]
-        IPTV["iptv-epg<br/>XMLTV"]
         TEAM["teamarr<br/>sports XMLTV"]
         HLS["webpage-hls<br/>HLS stream"]
     end
@@ -52,7 +51,7 @@ flowchart LR
 
     JELLY(["Jellyfin<br/>:8096"])
 
-    KPTV & IPTV & TEAM & HLS -->|pulled by| DISP
+    KPTV & TEAM & HLS -->|pulled by| DISP
     DISP <-->|read + write| ECM & MATCH & FLOW & SWAP
     THUMB -.->|thumbnail URLs| TEAM
     DISP -->|channels + logos| JELLY
@@ -84,23 +83,6 @@ combined EPG parses >230 MB of XML in memory and OOMKilled at 1 Gi.
 
 > The `stirr` provider currently 404s upstream (`i.mjh.nz/Stirr/all.xml` is gone). Harmless;
 > the other providers still build.
-
-### `iptv-epg` — scraped XMLTV guide
-
-Runs [`iptv-org/epg`](https://github.com/iptv-org/epg) to scrape `zap2it.com` and
-`tvguide.com` into `/epg/public/guide.xml`, then serves that directory over pm2. Currently
-**152 channels / 8,814 programmes**.
-
-Dispatcharr points at `http://iptv-epg.media.svc.cluster.local:3000/guide.xml` as an XMLTV
-source — unchanged, though the container now listens on **:3003** because `vpn-ui` holds
-`:3000` in the shared namespace. pm2 runs `npx serve -- public`, and `serve` reads `PORT`.
-Grabs run at **03:00** (`CRON_SCHEDULE`) plus once at boot (`RUN_AT_STARTUP`), and the
-Dispatcharr pod's `strategy: Recreate` prevents two grabs writing `guide.xml` concurrently.
-
-This is the only tool with **no HTTPRoute** — it's cluster-internal, since nothing but
-Dispatcharr needs it. `tvtv.us` is unusable from this network (Cloudflare 1020 on every
-request), which is why only two sites are enabled. Both remaining sites are US-hosted and
-now reached through the UK exit; an empty grab is a geoblocking suspect.
 
 ### `teamarr` — dynamic sports EPG
 
@@ -207,7 +189,7 @@ The cron schedules are staggered so each stage runs after its inputs are ready:
 
 | Time | What runs |
 |---|---|
-| 03:00 | `iptv-epg` grabs guide data; Jellyfin refreshes its XMLTV guide |
+| 03:00 | Jellyfin refreshes its XMLTV guide |
 | 04:00 | `streamflow` pipeline |
 
 `kptv-fast` is independent, refreshing on its own `CACHE_DURATION` (7200 s) and warming both
@@ -234,8 +216,7 @@ than pod-wide, because they share a pod with Dispatcharr's image, which starts a
 drops to `PUID`/`PGID` itself.
 
 **Port uniqueness.** Only inside the Dispatcharr pod, where one network namespace is shared:
-`iptv-epg`, `webpage-hls` and `game-thumbs` were moved off `:3000` to `:3003`, `:3001` and
-`:3002`. Their Services still publish `:3000` and retarget, so no consumer — including the
+`webpage-hls` and `game-thumbs` were moved off `:3000` to `:3001` and `:3002`. Their Services still publish `:3000` and retarget, so no consumer — including the
 URLs stored in Dispatcharr's database — sees a change. Also unavailable in that pod: `53`,
 `5656`, `8000`, `8001`, `9191`, `9999`, and `8081` (webpage-hls's embedded WeatherStar).
 
@@ -251,8 +232,8 @@ listeners with `grep " 0A " /proc/net/tcp` before adding a container.
 check. `game-thumbs` (444 on `/`) and `webpage-hls` (404 on `/`) would each have needed a
 custom path or status anyway.
 
-**Image pinning.** Everything is pinned by tag *and* digest for Renovate. `iptv-epg`,
-`kptv-fast` and `webpage-hls` publish no version tags, so they track a rolling
-tag by digest. For the six co-located tools, that means a Renovate bump **restarts
+**Image pinning.** Everything is pinned by tag *and* digest for Renovate. `kptv-fast` and
+`webpage-hls` publish no version tags, so they track a rolling tag by digest. For the four
+co-located tools, that means a Renovate bump **restarts
 Dispatcharr** and drops in-flight streams — accepted deliberately, but it is the reason to
 pin those rolling tags if the churn ever gets annoying.
