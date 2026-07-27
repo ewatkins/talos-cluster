@@ -10,31 +10,35 @@ spec:
       app.kubernetes.io/name: nodecast-tv
   # Egress only. Ingress is left untouched so the gateway can still reach :3000.
   policyTypes: ["Egress"]
-  # This app has no VPN of its own, and everything it should ever fetch lives
-  # inside the cluster or on the LAN. Without a rule here nothing stops a
-  # content source added through the UI — which is stored in content.db, not in
-  # Git — from egressing straight to the internet on the real ISP address,
-  # bypassing Dispatcharr's tunnel entirely. Verified before adding this:
-  # Dispatcharr exits at a UK Privado address, nodecast-tv exited on the house
-  # IP.
+  # This app has no VPN of its own and relies on Dispatcharr's. Everything it
+  # should ever fetch lives inside the cluster or on the LAN, so denying the
+  # public internet is what makes "all streams go through the VPN" an enforced
+  # property rather than a convention: the only route out is Dispatcharr, and
+  # Dispatcharr is behind gluetun.
   #
-  # Denying the public internet is what makes "all streams go through the VPN"
-  # an enforced property rather than a convention: the only route out is
-  # Dispatcharr, and Dispatcharr is behind gluetun. A misconfigured source now
-  # fails to connect instead of silently leaking.
+  # It is not theoretical. Content sources are stored in content.db and set
+  # through the UI, so nothing in Git constrains them. Before this policy,
+  # ifconfig.co from this pod returned the house ISP address while Dispatcharr
+  # returned a UK Privado one. A source pointed at a third-party provider would
+  # have leaked straight out; now it simply fails to connect.
   #
-  # These are the same three subnets gluetun keeps off its own tunnel via
-  # FIREWALL_OUTBOUND_SUBNETS, for the same reason.
+  # There is no rule matching 0.0.0.0/0, and that omission is the whole policy —
+  # the two rules below are the only permitted destinations.
   egress:
+    # Anything inside the cluster: CoreDNS and Dispatcharr, whichever address
+    # is used to reach them.
+    #
+    # Deliberately a namespaceSelector and not an ipBlock on the pod and service
+    # CIDRs. Cilium resolves cluster-internal destinations by identity, and CIDR
+    # rules only ever match entities *outside* the cluster — an earlier version
+    # of this file used ipBlock for 10.69.0.0/16 and 10.96.0.0/16 and silently
+    # blackholed DNS, which surfaced as EAI_AGAIN on every lookup.
     - to:
-        # LAN — Keycloak, reached at 10.40.0.30 through the internal gateway.
+        - namespaceSelector: {}
+    # The LAN, which genuinely is outside the cluster and so does match a CIDR:
+    # Keycloak at 10.40.0.30 for the OIDC backchannel, and the internal gateway
+    # at 10.40.0.10 serving dispatcharr.ewatkins.dev. Same subnet gluetun keeps
+    # off its own tunnel via FIREWALL_OUTBOUND_SUBNETS.
+    - to:
         - ipBlock:
             cidr: 10.40.0.0/16
-        # Pods — Dispatcharr and CoreDNS.
-        - ipBlock:
-            cidr: 10.69.0.0/16
-        # Services — dispatcharr 10.96.7.214, kube-dns 10.96.0.10. Ports are
-        # left open rather than enumerated so DNS on 53/udp and 53/tcp is
-        # covered without a second rule.
-        - ipBlock:
-            cidr: 10.96.0.0/16
