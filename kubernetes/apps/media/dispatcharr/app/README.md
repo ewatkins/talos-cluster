@@ -42,11 +42,35 @@ these endpoints as GB:
 So [`configmap.yaml`](configmap.yaml) pins `SERVER_HOSTNAMES` to those eight endpoints.
 Gluetun picks one at random per connect.
 
-**The VPN UI will report the wrong country, and that is expected.** It shows gluetun's own
-ipinfo lookup, so a connected Manchester exit displays as *Netherlands / Lelystad*. Verified
-live on `91.148.228.152`: ipinfo says Netherlands, while ip-api.com returns
-`United Kingdom / Manchester`, org `PRI Man`. Trust the second one — it is the kind of
-database streaming services use.
+**ipinfo is the reason gluetun mislabels these servers**, and it is also gluetun's default
+public-IP API — which is why the UI used to report *Netherlands / Lelystad* for a UK exit.
+`PUBLICIP_API: ifconfigco,ip2location,cloudflare` drops it: the same address then resolves to
+*United Kingdom, England, Covent Garden*, matching what ip-api.com and ipwho.is say.
+
+### The exit IP in the UI can lag the real one
+
+Gluetun looks up its public IP **only when the tunnel connects**, and the UI just renders
+that cached value. If the lookup fails the old value stays on screen — or it blanks to `""`
+— while traffic is already leaving through the new exit. Reconnecting several times in a row
+is enough to trip it, since every provider in the list rate-limits:
+
+```
+ERROR [vpn] getting public IP address information: fetching information: all fetchers failed
+```
+
+Measured during one such window: the control server reported `{"public_ip":""}` while the
+`app` container's own request came back `81.171.74.32`. **Believe the container, not the
+UI**, and check it directly:
+
+```bash
+kubectl -n media exec deploy/dispatcharr -c app -- \
+  python3 -c "import urllib.request;print(urllib.request.urlopen('http://ip-api.com/json/').read().decode())"
+```
+
+Each pinned endpoint does have its own distinct exit address — `lhr-060` → `81.171.74.32`,
+`lhr-061` → `.41`, `lhr-065` → `.67`, `man-010` → `91.148.228.152` — so stop/start really
+does move you. With eight servers in the pool, roughly one cycle in eight lands you back on
+the one you just left.
 
 > **On upgrades:** `SERVER_HOSTNAMES` is validated against the list baked into the image, so
 > if a Renovate bump of gluetun drops or renames one of these hostnames, the sidecar will

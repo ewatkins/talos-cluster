@@ -17,7 +17,7 @@ spec:
       issuer: https://keycloak.ewatkins.dev/realms/master
     clientID: gluetun-webui
     clientSecret:
-      name: gluetun-oidc-secret
+      name: gluetun-secret
       namespace: media
     redirectURL: "https://gluetun.ewatkins.dev/oauth2/callback"
     scopes: ["openid", "profile", "email"]
