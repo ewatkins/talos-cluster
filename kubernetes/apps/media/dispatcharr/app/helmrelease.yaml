@@ -52,7 +52,7 @@ spec:
               # the six co-located tools. The control server on :8000 is
               # deliberately not listed, so it is reachable only from inside
               # this pod.
-              FIREWALL_INPUT_PORTS: "9191,3000,3001,3002,3003,8080,9192,9195"
+              FIREWALL_INPUT_PORTS: "9191,3000,3001,3002,3003,8080,9195"
               # Pod-local only (see FIREWALL_INPUT_PORTS), so the control
               # server is left unauthenticated for the UI sidecar to use.
               HTTP_CONTROL_SERVER_AUTH_DEFAULT_ROLE: '{"auth":"none"}'
@@ -383,37 +383,6 @@ spec:
                 memory: 512Mi
               limits:
                 memory: 2Gi
-          channel-identifiarr:
-            image:
-              repository: ghcr.io/egyptiangio/channelidentifiarr
-              tag: 0.6.5@sha256:d883c0eb43e369fd78d59f11aaf1dcef8783ae663d92a088c7c07050b48adc23
-            # EMBY_URL is deliberately unset - the Emby logo features do not apply
-            # here. The Gracenote station IDs it populates are Emby-independent.
-            env:
-              TZ: "${TIMEZONE}"
-              DATABASE_PATH: /data/channelidentifiarr.db
-              # Same pod now, so this skips the Service round trip entirely.
-              DISPATCHARR_URL: http://localhost:9191
-            probes:
-              liveness: &identifiarrProbes
-                enabled: true
-                custom: true
-                spec:
-                  httpGet:
-                    path: /
-                    port: &identifiarrPort 9192
-                  initialDelaySeconds: 30
-                  periodSeconds: 30
-                  timeoutSeconds: 10
-                  failureThreshold: 6
-              readiness: *identifiarrProbes
-            securityContext: *nfsUser
-            resources:
-              requests:
-                cpu: 10m
-                memory: 256Mi
-              limits:
-                memory: 1Gi
           game-thumbs:
             image:
               repository: ghcr.io/sethwv/game-thumbs
@@ -488,12 +457,6 @@ spec:
           http:
             port: 3000
             targetPort: *hlsPort
-      channel-identifiarr:
-        controller: dispatcharr
-        forceRename: channel-identifiarr
-        ports:
-          http:
-            port: *identifiarrPort
       game-thumbs:
         controller: dispatcharr
         forceRename: game-thumbs
@@ -527,12 +490,6 @@ spec:
           dispatcharr:
             teamarr:
               - path: /app/data
-      channel-identifiarr-data:
-        existingClaim: channel-identifiarr-data
-        advancedMounts:
-          dispatcharr:
-            channel-identifiarr:
-              - path: /data
       webpage-hls-cache:
         type: emptyDir
         advancedMounts:

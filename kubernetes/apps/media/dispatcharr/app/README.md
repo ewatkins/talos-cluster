@@ -103,8 +103,8 @@ in the pool, roughly one cycle in six lands you back on the one you just left.
 > `https://gluetun.ewatkins.dev/oauth2/callback`, secret in the Bitwarden item
 > `gluetun-secret` under `CLIENT_SECRET`.
 
-`FIREWALL_INPUT_PORTS` is `9191,3000,3001,3002,3003,8080,9192,9195` — Dispatcharr, the VPN
-UI and the six co-located tools. Gluetun's control server on `:8000` is deliberately left
+`FIREWALL_INPUT_PORTS` is `9191,3000,3001,3002,3003,8080,9195` — Dispatcharr, the VPN
+UI and the five co-located tools. Gluetun's control server on `:8000` is deliberately left
 out, so it is reachable only from inside the pod; that is why it runs with
 `{"auth":"none"}`. If you ever expose `:8000`, switch it to
 `{"auth":"apikey","apikey":"..."}` (generate with `docker run --rm qmcgaw/gluetun genkey`)
@@ -182,14 +182,13 @@ that fetches from the public internet — therefore run here as ordinary contain
 | `vpn-ui` | 3000 | `dispatcharr` | 3000 |
 | `kptv-fast` | 8080 | `kptv-fast` | 8080 |
 | `teamarr` | 9195 | `teamarr` | 9195 |
-| `channel-identifiarr` | 9192 | `channel-identifiarr` | 9192 |
 | `webpage-hls` | **3001** (+ **8081** internal) | `webpage-hls` | 3000 |
 | `game-thumbs` | **3002** | `game-thumbs` | 3000 |
 | `iptv-epg` | **3003** | `iptv-epg` | 3000 |
 
-The five that stayed independent — `enhanced-channel-manager`, `epg-matcharr`,
-`streamflow`, `swaparr`, `emby-logos` — only talk to Dispatcharr or Jellyfin in-cluster, so
-a tunnel would add latency and gain nothing.
+The four that stayed independent — `enhanced-channel-manager`, `epg-matcharr`,
+`streamflow`, `swaparr` — only talk to Dispatcharr in-cluster, so a tunnel would add latency
+and gain nothing.
 
 ### Ports had to move, Services did not
 
@@ -227,13 +226,12 @@ Kustomization. The claims deliberately did **not** move into this directory: `nf
 reclaims `Delete`, and handing a PVC from one Flux Kustomization to another risks the old
 one pruning it before the new one adopts it.
 
-So in [`../ks.yaml`](../ks.yaml) the dependency runs `dispatcharr` → all six co-located
-tools, the reverse of the remaining five. That direction is required for the three that own
+So in [`../ks.yaml`](../ks.yaml) the dependency runs `dispatcharr` → all five co-located
+tools, the reverse of the remaining four. That direction is required for the two that own
 a PVC, and it also orders the cutover: those Kustomizations prune the old per-tool
 HelmReleases, and **Helm will not adopt a Service owned by another release** — it fails with
-`invalid ownership metadata`. The old `kptv-fast`, `iptv-epg`, `teamarr`, `webpage-hls`,
-`channel-identifiarr` and `game-thumbs` releases must be uninstalled before this one
-upgrades.
+`invalid ownership metadata`. The old `kptv-fast`, `iptv-epg`, `teamarr`, `webpage-hls`
+and `game-thumbs` releases must be uninstalled before this one upgrades.
 
 `wait: false` means Flux does not block on those uninstalls actually finishing, so the race
 is narrowed rather than eliminated. If the HelmRelease lands on `invalid ownership
