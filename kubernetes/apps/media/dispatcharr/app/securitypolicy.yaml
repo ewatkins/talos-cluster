@@ -15,7 +15,7 @@ spec:
   oidc:
     provider:
       issuer: https://keycloak.ewatkins.dev/realms/master
-    clientID: gluetun-webui
+    clientID: gluetun
     clientSecret:
       name: gluetun-secret
       namespace: media
