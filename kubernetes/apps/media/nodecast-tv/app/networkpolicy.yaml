@@ -1,0 +1,40 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: nodecast-tv-egress
+  namespace: media
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: nodecast-tv
+  # Egress only. Ingress is left untouched so the gateway can still reach :3000.
+  policyTypes: ["Egress"]
+  # This app has no VPN of its own, and everything it should ever fetch lives
+  # inside the cluster or on the LAN. Without a rule here nothing stops a
+  # content source added through the UI — which is stored in content.db, not in
+  # Git — from egressing straight to the internet on the real ISP address,
+  # bypassing Dispatcharr's tunnel entirely. Verified before adding this:
+  # Dispatcharr exits at a UK Privado address, nodecast-tv exited on the house
+  # IP.
+  #
+  # Denying the public internet is what makes "all streams go through the VPN"
+  # an enforced property rather than a convention: the only route out is
+  # Dispatcharr, and Dispatcharr is behind gluetun. A misconfigured source now
+  # fails to connect instead of silently leaking.
+  #
+  # These are the same three subnets gluetun keeps off its own tunnel via
+  # FIREWALL_OUTBOUND_SUBNETS, for the same reason.
+  egress:
+    - to:
+        # LAN — Keycloak, reached at 10.40.0.30 through the internal gateway.
+        - ipBlock:
+            cidr: 10.40.0.0/16
+        # Pods — Dispatcharr and CoreDNS.
+        - ipBlock:
+            cidr: 10.69.0.0/16
+        # Services — dispatcharr 10.96.7.214, kube-dns 10.96.0.10. Ports are
+        # left open rather than enumerated so DNS on 53/udp and 53/tcp is
+        # covered without a second rule.
+        - ipBlock:
+            cidr: 10.96.0.0/16
