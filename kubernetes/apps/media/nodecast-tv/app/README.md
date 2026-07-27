@@ -79,8 +79,19 @@ pinned to whichever node binds the volume.
 **Two databases.** `content.db` (SQLite, the channel/VOD catalogue) and `db.json` (users,
 settings, favourites) both live in `/app/data`.
 
-**Hardware transcoding is not wired up.** The image ships VAAPI and QSV drivers and would use
-`/dev/dri`, but nothing here mounts it. All remuxing is CPU-only.
+**The GPU is insurance, not the hot path.** An Intel GPU is claimed over DRA
+([`resourceclaimtemplate.yaml`](resourceclaimtemplate.yaml)), the same way
+[Jellyfin](../../jellyfin/app/resourceclaimtemplate.yaml) and unmanic do — `deviceClassName:
+gpu.intel.com` plus `supplementalGroups: [44, 105, 10000]`, no `/dev/dri` hostPath. But normal
+playback never touches it: `/api/remux` runs ffmpeg with `-c copy`, a pure container swap from
+MPEG-TS to fragmented MP4 with no decode or encode. Only the opt-in `/api/transcode` path
+re-encodes, and it picks up VAAPI via `hwDetect.js` — that is the case this claim exists for,
+HEVC channels no browser will play.
+
+Each of erie, ontario and tahoe exposes exactly one device, and Jellyfin and unmanic hold two of
+them, so **this claim is effectively what schedules the pod** — onto tahoe, the remaining one.
+That interacts with the node-pinned PVC above: the volume binds wherever the pod first lands, so
+changing GPU allocation later means recreating the PVC and losing the database.
 
 ## Keycloak SSO
 
