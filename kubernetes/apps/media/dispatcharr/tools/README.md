@@ -1,6 +1,6 @@
 # Dispatcharr Tools
 
-Eight companion services around [Dispatcharr](../app/), the IPTV channel manager. Each is
+Six companion services around [Dispatcharr](../app/), the IPTV channel manager. Each is
 its own Flux `Kustomization` in [`../ks.yaml`](../ks.yaml).
 
 > **Four of them do not run in their own pod.** `kptv-fast`, `teamarr`,
@@ -11,7 +11,7 @@ its own Flux `Kustomization` in [`../ks.yaml`](../ks.yaml).
 > PVC and HTTPRoute. Full rationale in [`../app/README.md`](../app/README.md#co-located-tools).
 >
 > Every Service name and published port was preserved, so nothing below changes address.
-> The other four keep their own Deployments and declare `dependsOn: dispatcharr`; `teamarr`,
+> The other two keep their own Deployments and declare `dependsOn: dispatcharr`; `teamarr`,
 > the one co-located tool that owns a PVC, has that dependency reversed, since the Dispatcharr
 > pod mounts its claim.
 
@@ -25,7 +25,7 @@ They fall into three roles (★ = runs inside the Dispatcharr pod, on the VPN):
 | Role | Tools |
 |---|---|
 | **Feed content in** — Dispatcharr pulls M3U/XMLTV from them | `kptv-fast`★, `teamarr`★, `webpage-hls`★ |
-| **Curate what's there** — they call the Dispatcharr API | `enhanced-channel-manager`, `epg-matcharr`, `streamflow`, `swaparr` |
+| **Curate what's there** — they call the Dispatcharr API | `enhanced-channel-manager`, `epg-matcharr` |
 | **Artwork** | `game-thumbs`★ |
 
 ```mermaid
@@ -41,8 +41,6 @@ flowchart LR
     subgraph CUR["Curation via Dispatcharr API"]
         ECM["enhanced-channel-manager"]
         MATCH["epg-matcharr"]
-        FLOW["streamflow"]
-        SWAP["swaparr"]
     end
 
     subgraph ART["Artwork"]
@@ -52,7 +50,7 @@ flowchart LR
     JELLY(["Jellyfin<br/>:8096"])
 
     KPTV & TEAM & HLS -->|pulled by| DISP
-    DISP <-->|read + write| ECM & MATCH & FLOW & SWAP
+    DISP <-->|read + write| ECM & MATCH
     THUMB -.->|thumbnail URLs| TEAM
     DISP -->|channels + logos| JELLY
 ```
@@ -144,32 +142,6 @@ channel. Reads `DISPATCHARR_URL` from env; the API token is set **through its UI
 run**. `DISPATCHARR_TOKEN` is deliberately left unset rather than pinned empty, because env
 vars take priority over UI settings there.
 
-### `streamflow` — stream quality checking and auto-assignment
-
-Probes every stream behind a channel with ffmpeg, then reorders or reassigns them by measured
-quality. Maintains a "UDI" index of Dispatcharr's channels and streams (last seen: 8
-channels, 21,346 streams) and runs an automated stream manager that keeps per-channel
-patterns.
-
-Because a single quality-check request runs ffmpeg against many sources, it needs both real
-memory (4 Gi limit) and [`backendtrafficpolicy.yaml`](streamflow/backendtrafficpolicy.yaml),
-which raises the Envoy request timeout from the 15 s default to **1800 s**.
-
-> Its stored Dispatcharr base URL currently points at the *external* hostname, so it
-> authenticates through the gateway and gets rate-limited (`429`, leaving stream-ID fetches
-> `401`). `DISPATCHARR_BASE_URL` in the HelmRelease already points at the in-cluster Service —
-> the UI-stored value overrides it, so the fix belongs in the StreamFlow UI.
-
-### `swaparr` — live stream override control
-
-A lightweight nginx-served UI titled "Swaparr — Stream Override Control", with a *Live
-Streams* view and an *All Channels Browser*. Use it to override, by hand, which stream a
-channel is currently serving — the manual counterpart to StreamFlow's automation. Stateless;
-all reads and writes go straight to `DISPATCHARR_URL`.
-
-The root filesystem is left writable because nginx-alpine writes to `/etc/nginx/conf.d`,
-`/var/cache/nginx` and `/var/run` at startup.
-
 ## Artwork
 
 ### `game-thumbs` — per-event thumbnail generation
@@ -190,22 +162,20 @@ The cron schedules are staggered so each stage runs after its inputs are ready:
 | Time | What runs |
 |---|---|
 | 03:00 | Jellyfin refreshes its XMLTV guide |
-| 04:00 | `streamflow` pipeline |
 
 `kptv-fast` is independent, refreshing on its own `CACHE_DURATION` (7200 s) and warming both
 cache and EPG at startup. `teamarr` runs its own hourly cron.
 
 ## Conventions across these tools
 
-**Where config actually lives.** Only `streamflow`, `swaparr` and
-`epg-matcharr` get their Dispatcharr URL from env. `teamarr` and `enhanced-channel-manager`
+**Where config actually lives.** Only `epg-matcharr` gets its Dispatcharr URL from env. `teamarr` and `enhanced-channel-manager`
 store the whole connection — credentials included — in their own database, set through their
 UI. Nothing in Git will reproduce that; it's why ECM needs a PVC.
 
 **Cluster-internal addressing.** Tools should reach Dispatcharr at
 `http://dispatcharr.media.svc.cluster.local:9191`, never the external hostname — the gateway
-applies rate limits that will throttle a busy tool (see the StreamFlow note above). The
-co-located tools can use `http://localhost:9191` instead.
+applies rate limits that will throttle a busy tool. The co-located tools can use
+`http://localhost:9191` instead.
 
 **NFS ownership.** The `nfs-slow` storage class presents as `99:100` and can't be chowned
 from a container, so every tool with a PVC on it runs with `runAsUser: 99`, `runAsGroup: 100`,
