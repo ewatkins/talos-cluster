@@ -31,21 +31,24 @@ UK endpoints sit in Leaseweb/Eweka netblocks, so gluetun files all of them under
 Netherlands and United States — a country filter would be rejected at startup, and an
 unfiltered setup would land in the UK roughly 5% of the time.
 
-Gluetun is the outlier. The geo-IP databases streaming services actually use both report
-these endpoints as GB:
+Gluetun is the outlier — but only for London. Checking every exit address against several
+databases splits Privado's UK estate in two:
 
-| Endpoint | IP | ipwho.is | ip-api.com |
-| --- | --- | --- | --- |
-| `lhr-060…065.vpn.privado.io` | `81.171.74.30`, … | GB / London | GB / London |
-| `man-009,010.vpn.privado.io` | `91.148.228.128`, … | GB / Manchester | GB / Manchester |
+| Exit block | Endpoints | ipwho.is | ip-api.com | ip2location / cloudflare / ifconfig.co |
+| --- | --- | --- | --- | --- |
+| `81.171.74.0/24` | `lhr-060…065` | GB / London | GB / London | **UK** |
+| `91.148.228.0/24` | `man-009,010` | GB / Manchester | GB / Manchester | **Netherlands** |
 
-So [`configmap.yaml`](configmap.yaml) pins `SERVER_HOSTNAMES` to those eight endpoints.
-Gluetun picks one at random per connect.
+So [`configmap.yaml`](configmap.yaml) pins `SERVER_HOSTNAMES` to the **six London endpoints
+only**. Manchester is excluded on purpose: two databases call it GB and three call it NL, and
+a streaming service using one of the latter would geoblock exactly the same way it would
+without a VPN. London reads GB everywhere. Gluetun picks one of the six at random per
+connect.
 
 **ipinfo is the reason gluetun mislabels these servers**, and it is also gluetun's default
-public-IP API — which is why the UI used to report *Netherlands / Lelystad* for a UK exit.
-`PUBLICIP_API: ifconfigco,ip2location,cloudflare` drops it: the same address then resolves to
-*United Kingdom, England, Covent Garden*, matching what ip-api.com and ipwho.is say.
+public-IP API — which is why the UI reported *Netherlands / Lelystad* for a UK exit.
+`PUBLICIP_API: ifconfigco,ip2location,cloudflare` drops it, and with the pool restricted to
+London the UI now agrees with everything else: *United Kingdom, England, Covent Garden*.
 
 ### The exit IP in the UI can lag the real one
 
@@ -68,9 +71,8 @@ kubectl -n media exec deploy/dispatcharr -c app -- \
 ```
 
 Each pinned endpoint does have its own distinct exit address — `lhr-060` → `81.171.74.32`,
-`lhr-061` → `.41`, `lhr-065` → `.67`, `man-010` → `91.148.228.152` — so stop/start really
-does move you. With eight servers in the pool, roughly one cycle in eight lands you back on
-the one you just left.
+`lhr-061` → `.41`, `lhr-065` → `.67` — so stop/start really does move you. With six servers
+in the pool, roughly one cycle in six lands you back on the one you just left.
 
 > **On upgrades:** `SERVER_HOSTNAMES` is validated against the list baked into the image, so
 > if a Renovate bump of gluetun drops or renames one of these hostnames, the sidecar will
@@ -94,9 +96,9 @@ the one you just left.
 > gluetun-webui re-serves that verbatim on its own `/api/health`. Left open, anything on the
 > LAN could read them, so [`securitypolicy.yaml`](securitypolicy.yaml) puts the route behind
 > OIDC — same pattern as [garage-webui](../../../storage/garage/webui/securitypolicy.yaml).
-> Keycloak client `gluetun-webui` in the `master` realm, redirect URI
+> Keycloak client `gluetun` in the `master` realm, redirect URI
 > `https://gluetun.ewatkins.dev/oauth2/callback`, secret in the Bitwarden item
-> `gluetun-oidc-secret` under `CLIENT_SECRET`.
+> `gluetun-secret` under `CLIENT_SECRET`.
 
 `FIREWALL_INPUT_PORTS` is `9191,3000` — Dispatcharr and the VPN UI. Gluetun's control
 server on `:8000` is deliberately left out, so it is reachable only from inside the pod;

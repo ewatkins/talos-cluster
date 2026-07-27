@@ -29,6 +29,12 @@ data:
   # with gluetun and report these as GB (ipwho.is and ip-api.com both say
   # London / Manchester), which is what matters for geo-unblocking.
   #
+  # London only. Privado's Manchester endpoints (man-009, man-010, in
+  # 91.148.228.0/24) are deliberately excluded: ipwho.is and ip-api.com call
+  # them GB, but ip2location, cloudflare and ifconfig.co all place that block in
+  # the Netherlands, so a service using one of those would geoblock anyway. The
+  # 81.171.74.0/24 London block reads GB in every database checked.
+  #
   # Gluetun picks one at random per connect, so stop/start in the VPN UI rolls
-  # onto a different UK exit.
-  SERVER_HOSTNAMES: lhr-060.vpn.privado.io,lhr-061.vpn.privado.io,lhr-062.vpn.privado.io,lhr-063.vpn.privado.io,lhr-064.vpn.privado.io,lhr-065.vpn.privado.io,man-009.vpn.privado.io,man-010.vpn.privado.io
+  # onto a different London exit.
+  SERVER_HOSTNAMES: lhr-060.vpn.privado.io,lhr-061.vpn.privado.io,lhr-062.vpn.privado.io,lhr-063.vpn.privado.io,lhr-064.vpn.privado.io,lhr-065.vpn.privado.io
