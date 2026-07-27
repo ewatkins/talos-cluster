@@ -130,7 +130,10 @@ channel. Built for [WeatherStar 4000+](https://github.com/netbymatt/ws4kp).
 - `/health` — liveness (`/` returns 404 **by design**)
 
 The container listens on **:3001** (`PORT`) to stay clear of `vpn-ui`; its Service still
-publishes `:3000`.
+publishes `:3000`. It also runs a **second** server — the embedded WeatherStar it
+screenshots — on `WS4KP_PORT`, moved to **:8081** because the image defaults it to `:8080`
+and that is `kptv-fast`'s port. Purely pod-internal; the app builds its own
+`http://localhost:8081` URL from the same variable.
 
 It also validates a background music library at startup (66 audio files → a 1,320-track
 shared playlist). Dispatcharr ingests the resulting HLS URL as a custom stream. The 2 Gi
@@ -263,7 +266,11 @@ drops to `PUID`/`PGID` itself.
 `iptv-epg`, `webpage-hls` and `game-thumbs` were moved off `:3000` to `:3003`, `:3001` and
 `:3002`. Their Services still publish `:3000` and retarget, so no consumer — including the
 URLs stored in Dispatcharr's database — sees a change. Also unavailable in that pod: `53`,
-`5656`, `8000`, `8001`, `9191`, `9999`.
+`5656`, `8000`, `8001`, `9191`, `9999`, and `8081` (webpage-hls's embedded WeatherStar).
+
+A container may bind ports it does not advertise — that is what collided `webpage-hls` with
+`kptv-fast` on the first deploy. Comparing Service ports is not enough; check the pod's real
+listeners with `grep " 0A " /proc/net/tcp` before adding a container.
 
 > A stale NFS handle on one of these volumes surfaces as `unable to open database file` or
 > `Stale file handle` while the PVC still reports `Bound`. A pod restart remounts it; the data

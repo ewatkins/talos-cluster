@@ -183,7 +183,7 @@ that fetches from the public internet — therefore run here as ordinary contain
 | `kptv-fast` | 8080 | `kptv-fast` | 8080 |
 | `teamarr` | 9195 | `teamarr` | 9195 |
 | `channel-identifiarr` | 9192 | `channel-identifiarr` | 9192 |
-| `webpage-hls` | **3001** | `webpage-hls` | 3000 |
+| `webpage-hls` | **3001** (+ **8081** internal) | `webpage-hls` | 3000 |
 | `game-thumbs` | **3002** | `game-thumbs` | 3000 |
 | `iptv-epg` | **3003** | `iptv-epg` | 3000 |
 
@@ -201,6 +201,20 @@ resolver) and `8000` (its control server). The three losing tools were moved wit
 Their **Services still publish 3000** and simply retarget the new container port, so nothing
 downstream changed: the HTTPRoutes are untouched, and the M3U/EPG URLs stored in
 Dispatcharr's Postgres database — which are not in Git — keep resolving.
+
+> **A container can bind more than the port it serves.** `webpage-hls` also runs an embedded
+> WeatherStar 4000+ — the page it screenshots — on `WS4KP_PORT`, which the image bakes to
+> **8080**. That is kptv-fast's port, and it crashlooped kptv-fast with
+> `[Errno 98] Address in use` on the first deploy while every other container came up fine.
+> `WS4KP_PORT: 8081` fixes it; `index.js` uses that value both to listen and to build the
+> `http://localhost:<port>` URL it renders, so nothing external cares.
+>
+> Comparing declared Service ports is not enough. After adding a container here, check what
+> the pod is really listening on:
+>
+> ```bash
+> kubectl -n media exec deploy/dispatcharr -c app -- grep " 0A " /proc/net/tcp /proc/net/tcp6
+> ```
 
 That preservation is also why every service in `helmrelease.yaml` carries `forceRename`.
 With more than one service defined, app-template names them `dispatcharr-<identifier>`,
