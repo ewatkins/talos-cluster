@@ -1,0 +1,30 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gluetun-server
+  namespace: media
+  annotations:
+    # Flux creates this ConfigMap once and then never overwrites it, so live
+    # edits (`kubectl -n media edit cm gluetun-server`) survive the next
+    # reconcile. That is what makes the exit changeable without a commit —
+    # Reloader rolls the pod when the contents change. See ../README.md.
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+data:
+  OPENVPN_PROTOCOL: udp
+  OPENVPN_ENDPOINT_PORT: "1194"
+  # Privado's London and Manchester endpoints, pinned by hostname on purpose.
+  # SERVER_COUNTRIES: United Kingdom does NOT work on gluetun v3.41.1: it builds
+  # its baked-in Privado list by geolocating each endpoint's IP, and these all
+  # sit in Leaseweb/Eweka netblocks, so gluetun files them under
+  # "Netherlands / Amsterdam". The only countries it will accept for Privado are
+  # Estonia, Netherlands and United States — a country filter would either be
+  # rejected at startup or land somewhere that is not the UK.
+  #
+  # The public geo-IP databases that streaming services actually use disagree
+  # with gluetun and report these as GB (ipwho.is and ip-api.com both say
+  # London / Manchester), which is what matters for geo-unblocking.
+  #
+  # Gluetun picks one at random per connect, so stop/start in the UI rolls onto
+  # a different UK exit.
+  SERVER_HOSTNAMES: lhr-060.vpn.privado.io,lhr-061.vpn.privado.io,lhr-062.vpn.privado.io,lhr-063.vpn.privado.io,lhr-064.vpn.privado.io,lhr-065.vpn.privado.io,man-009.vpn.privado.io,man-010.vpn.privado.io
