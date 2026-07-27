@@ -103,7 +103,7 @@ in the pool, roughly one cycle in six lands you back on the one you just left.
 > `https://gluetun.ewatkins.dev/oauth2/callback`, secret in the Bitwarden item
 > `gluetun-secret` under `CLIENT_SECRET`.
 
-`FIREWALL_INPUT_PORTS` is `9191,3000,3001,9195` — Dispatcharr, the VPN
+`FIREWALL_INPUT_PORTS` is `9191,3000,3001,3002,9195` — Dispatcharr, the VPN
 UI and the three co-located tools. Gluetun's control server on `:8000` is deliberately left
 out, so it is reachable only from inside the pod; that is why it runs with
 `{"auth":"none"}`. If you ever expose `:8000`, switch it to
