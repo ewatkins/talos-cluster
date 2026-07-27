@@ -12,7 +12,7 @@ spec:
       namespace: network
       sectionName: https
   hostnames:
-    - "nodecast.ewatkins.dev"
+    - "tv.ewatkins.dev"
   rules:
     - matches:
         - path:
