@@ -42,6 +42,12 @@ these endpoints as GB:
 So [`configmap.yaml`](configmap.yaml) pins `SERVER_HOSTNAMES` to those eight endpoints.
 Gluetun picks one at random per connect.
 
+**The VPN UI will report the wrong country, and that is expected.** It shows gluetun's own
+ipinfo lookup, so a connected Manchester exit displays as *Netherlands / Lelystad*. Verified
+live on `91.148.228.152`: ipinfo says Netherlands, while ip-api.com returns
+`United Kingdom / Manchester`, org `PRI Man`. Trust the second one — it is the kind of
+database streaming services use.
+
 > **On upgrades:** `SERVER_HOSTNAMES` is validated against the list baked into the image, so
 > if a Renovate bump of gluetun drops or renames one of these hostnames, the sidecar will
 > refuse to start and Dispatcharr stays down with it. Newer gluetun builds read Privado's
@@ -58,6 +64,13 @@ Gluetun picks one at random per connect.
 | `10.40.0.0/16` | LAN: the NAS, the nodes, and kubelet probe replies |
 | `10.69.0.0/16` | Pod CIDR: the Envoy gateway, the Dispatcharr tools |
 | `10.96.0.0/16` | Service CIDR: CoreDNS, pgBouncer, Dragonfly |
+
+> **The VPN UI leaks the Privado credentials.** Gluetun's `/v1/vpn/settings` returns
+> `openvpn.user` and `openvpn.password` in clear text, and gluetun-webui re-serves that
+> verbatim on its own unauthenticated `/api/health`. Anything that can reach
+> `gluetun.ewatkins.dev` — LAN-only, but that is still the whole LAN — can read them. Fix it
+> with an OIDC `SecurityPolicy` like [garage-webui](../../../storage/garage/webui/securitypolicy.yaml),
+> or drop the HTTPRoute and reach the UI by `kubectl port-forward` instead.
 
 `FIREWALL_INPUT_PORTS` is `9191,3000` — Dispatcharr and the VPN UI. Gluetun's control
 server on `:8000` is deliberately left out, so it is reachable only from inside the pod;
