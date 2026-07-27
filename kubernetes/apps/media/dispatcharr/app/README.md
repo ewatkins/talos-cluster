@@ -86,7 +86,10 @@ kubectl -n media edit configmap dispatcharr-vpn-server
 
 `configmap.yaml` carries `kustomize.toolkit.fluxcd.io/ssa: IfNotPresent`, so Flux creates it
 once and never overwrites it — the edit sticks, and Reloader rolls the pod onto the new
-exit. Note that this restarts Dispatcharr and drops any in-flight streams; the UI's
+exit. The flip side is that fixing a bad value in Git is not enough: delete the live
+ConfigMap and let Flux recreate it. Two settings gluetun rejects for Privado, both of which
+fail the sidecar at startup: `OPENVPN_PROTOCOL: tcp`, and any `OPENVPN_ENDPOINT_PORT` at
+all. Note that this restarts Dispatcharr and drops any in-flight streams; the UI's
 stop/start does not. Confirm what the world sees with:
 
 ```bash

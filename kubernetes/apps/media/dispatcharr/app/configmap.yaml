@@ -11,8 +11,12 @@ metadata:
     # Reloader rolls the pod when the contents change. See ./README.md.
     kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
 data:
+  # udp is the only option here: gluetun rejects TCP for Privado outright, and
+  # so is any OPENVPN_ENDPOINT_PORT — Privado is on the "no custom port allowed"
+  # list, and setting one fails startup with "custom endpoint port is not
+  # allowed". The gluetun wiki's Privado page documents ports 443/1194/8080/8443
+  # anyway; it is wrong for v3.41.1.
   OPENVPN_PROTOCOL: udp
-  OPENVPN_ENDPOINT_PORT: "1194"
   # Privado's London and Manchester endpoints, pinned by hostname on purpose.
   # SERVER_COUNTRIES: United Kingdom does NOT work on gluetun v3.41.1: it builds
   # its baked-in Privado list by geolocating each endpoint's IP, and these all
