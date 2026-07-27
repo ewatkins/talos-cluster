@@ -212,6 +212,13 @@ spec:
           # 9191 (Dispatcharr). Three tools defaulted to :3000 and were moved
           # via their PORT env; their Services keep port 3000 and retarget, so
           # every URL stored in Dispatcharr's database still resolves.
+          #
+          # Mind the ports a container binds beyond the one it serves: this bit
+          # once. webpage-hls also runs an embedded WeatherStar on WS4KP_PORT,
+          # which defaults to kptv-fast's 8080 and crashlooped it. Check the
+          # live listeners after adding anything here, not just the Service:
+          #   kubectl -n media exec deploy/dispatcharr -c app -- \
+          #     grep " 0A " /proc/net/tcp /proc/net/tcp6
           # ---------------------------------------------------------------
           kptv-fast:
             image:
@@ -344,6 +351,13 @@ spec:
             env:
               TZ: "${TIMEZONE}"
               PORT: &hlsPort 3001
+              # This image runs a *second* server: an embedded WeatherStar
+              # 4000+ on WS4KP_PORT, which is the page it screenshots. The
+              # image bakes that to 8080 — kptv-fast's port — so it moves.
+              # index.js uses this both to listen and to build the
+              # http://localhost:<port> URL it renders, so nothing external
+              # references it.
+              WS4KP_PORT: 8081
               DEFAULT_FPS: "30"
               SCREENSHOT_FORMAT: jpeg
               SCREENSHOT_QUALITY: "95"
