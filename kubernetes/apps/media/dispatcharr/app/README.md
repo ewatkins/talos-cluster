@@ -65,12 +65,14 @@ database streaming services use.
 | `10.69.0.0/16` | Pod CIDR: the Envoy gateway, the Dispatcharr tools |
 | `10.96.0.0/16` | Service CIDR: CoreDNS, pgBouncer, Dragonfly |
 
-> **The VPN UI leaks the Privado credentials.** Gluetun's `/v1/vpn/settings` returns
-> `openvpn.user` and `openvpn.password` in clear text, and gluetun-webui re-serves that
-> verbatim on its own unauthenticated `/api/health`. Anything that can reach
-> `gluetun.ewatkins.dev` — LAN-only, but that is still the whole LAN — can read them. Fix it
-> with an OIDC `SecurityPolicy` like [garage-webui](../../../storage/garage/webui/securitypolicy.yaml),
-> or drop the HTTPRoute and reach the UI by `kubectl port-forward` instead.
+> **The VPN UI leaks the Privado credentials, so it is behind Keycloak.** Gluetun's
+> `/v1/vpn/settings` returns `openvpn.user` and `openvpn.password` in clear text, and
+> gluetun-webui re-serves that verbatim on its own `/api/health`. Left open, anything on the
+> LAN could read them, so [`securitypolicy.yaml`](securitypolicy.yaml) puts the route behind
+> OIDC — same pattern as [garage-webui](../../../storage/garage/webui/securitypolicy.yaml).
+> Keycloak client `gluetun-webui` in the `master` realm, redirect URI
+> `https://gluetun.ewatkins.dev/oauth2/callback`, secret in the Bitwarden item
+> `gluetun-oidc-secret` under `CLIENT_SECRET`.
 
 `FIREWALL_INPUT_PORTS` is `9191,3000` — Dispatcharr and the VPN UI. Gluetun's control
 server on `:8000` is deliberately left out, so it is reachable only from inside the pod;
