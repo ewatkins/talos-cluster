@@ -185,9 +185,8 @@ that fetches from the public internet — therefore run here as ordinary contain
 | `webpage-hls` | **3001** (+ **8081** internal) | `webpage-hls` | 3000 |
 | `game-thumbs` | **3002** | `game-thumbs` | 3000 |
 
-The four that stayed independent — `enhanced-channel-manager`, `epg-matcharr`,
-`streamflow`, `swaparr` — only talk to Dispatcharr in-cluster, so a tunnel would add latency
-and gain nothing.
+The two that stayed independent — `enhanced-channel-manager` and `epg-matcharr` — only talk
+to Dispatcharr in-cluster, so a tunnel would add latency and gain nothing.
 
 ### Ports had to move, Services did not
 
@@ -226,7 +225,7 @@ reclaims `Delete`, and handing a PVC from one Flux Kustomization to another risk
 one pruning it before the new one adopts it.
 
 So in [`../ks.yaml`](../ks.yaml) the dependency runs `dispatcharr` → all four co-located
-tools, the reverse of the remaining four. That direction is required for `teamarr`, which owns
+tools, the reverse of the remaining two. That direction is required for `teamarr`, which owns
 a PVC, and it also orders the cutover: those Kustomizations prune the old per-tool
 HelmReleases, and **Helm will not adopt a Service owned by another release** — it fails with
 `invalid ownership metadata`. The old `kptv-fast`, `teamarr`, `webpage-hls`

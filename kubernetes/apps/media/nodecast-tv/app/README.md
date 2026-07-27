@@ -65,8 +65,8 @@ independent reason that setting must stay on.
    | EPG | `http://dispatcharr.media.svc.cluster.local:9191/output/epg` |
 
    Then *Refresh Sources*. Both endpoints are unauthenticated. Use the in-cluster Service, not
-   `dispatcharr.ewatkins.dev` — the gateway rate-limits, which is what throttled StreamFlow
-   (see [../../dispatcharr/tools/README.md](../../dispatcharr/tools/README.md)).
+   `dispatcharr.ewatkins.dev` — the gateway applies rate limits that will throttle a busy
+   consumer.
 
    Xtream Codes works too (`/player_api.php`, with a Dispatcharr username and password) and is
    what enables the Movies and Series sections. Plain M3U gives Live TV only.
