@@ -22,6 +22,10 @@ spec:
       dispatcharr:
         annotations:
           reloader.stakater.com/auto: "true"
+        # iptv-epg's grab writes guide.xml in place, so two of them must never
+        # overlap. Recreate is app-template's default for a Deployment; it is
+        # spelled out here so it does not get switched to RollingUpdate.
+        strategy: Recreate
         initContainers:
           # Native sidecar (restartPolicy: Always): starts before the app
           # containers and keeps running alongside them. Every container in the
@@ -44,10 +48,11 @@ spec:
               # Postgres, Dragonfly, CoreDNS, the NAS and kubelet probes keep
               # working while the VPN is up (or while it is reconnecting).
               FIREWALL_OUTBOUND_SUBNETS: 10.40.0.0/16,10.69.0.0/16,10.96.0.0/16
-              # Ports the pod accepts from outside: Dispatcharr and the VPN UI.
-              # The control server on :8000 is deliberately not listed, so it
-              # is reachable only from inside this pod.
-              FIREWALL_INPUT_PORTS: "9191,3000"
+              # Ports the pod accepts from outside: Dispatcharr, the VPN UI and
+              # the six co-located tools. The control server on :8000 is
+              # deliberately not listed, so it is reachable only from inside
+              # this pod.
+              FIREWALL_INPUT_PORTS: "9191,3000,3001,3002,3003,8080,9192,9195"
               # Pod-local only (see FIREWALL_INPUT_PORTS), so the control
               # server is left unauthenticated for the UI sidecar to use.
               HTTP_CONTROL_SERVER_AUTH_DEFAULT_ROLE: '{"auth":"none"}'
@@ -196,18 +201,292 @@ spec:
                 memory: 32Mi
               limits:
                 memory: 128Mi
+          # ---------------------------------------------------------------
+          # Co-located tools. These six all fetch from the public internet,
+          # so they live here to share gluetun's network namespace and leave
+          # through the same UK exit. See ../tools/README.md.
+          #
+          # Every container below shares one network namespace, so ports must
+          # be unique pod-wide. Already taken: 53 (gluetun DNS), 3000 (vpn-ui),
+          # 5656 + 8001 + 9999 (Dispatcharr internals), 8000 (gluetun control),
+          # 9191 (Dispatcharr). Three tools defaulted to :3000 and were moved
+          # via their PORT env; their Services keep port 3000 and retarget, so
+          # every URL stored in Dispatcharr's database still resolves.
+          # ---------------------------------------------------------------
+          kptv-fast:
+            image:
+              repository: ghcr.io/kpirnie/kptv-fast
+              tag: latest@sha256:1366e6ebaab8ed1a74fad471f2744743fa47fee7d43c0bb1a88ea8c4166ff2c5
+            env:
+              TZ: "${TIMEZONE}"
+              DEBUG: "false"
+              CACHE_DURATION: "7200"
+              WARM_CACHE_ON_STARTUP: "true"
+              WARM_EPG_ON_STARTUP: "true"
+              ENABLED_PROVIDERS: all
+              # The FAST providers behind these are US-geolocked, and this
+              # container now egresses through the UK exit. If providers start
+              # returning empty playlists, that is the first thing to check.
+              GIT_COUNTRY: "us,ca"
+              LG_COUNTRY: "us,ca"
+              WHALE_COUNTRY: "us,ca"
+            probes:
+              liveness: &kptvProbes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: &kptvPort 8080
+                  initialDelaySeconds: 30
+                  periodSeconds: 30
+                  timeoutSeconds: 10
+                  failureThreshold: 6
+              readiness: *kptvProbes
+            resources:
+              # Building the combined EPG pulls >230MB of XML (lg 71MB, pluto
+              # 60MB, plex 37MB, roku 36MB, ...) and parses it all in memory,
+              # which OOMKilled the container at 1Gi. Trim ENABLED_PROVIDERS
+              # if this ceiling ever becomes a problem.
+              requests:
+                cpu: 25m
+                memory: 512Mi
+              limits:
+                memory: 6Gi
+          iptv-epg:
+            image:
+              # Upstream publishes no version tags, only a rolling "master",
+              # so this is pinned by digest and Renovate updates the digest.
+              repository: ghcr.io/iptv-org/epg
+              tag: master@sha256:747a9f6ea2d9a1c633d08ba3e5edaef72f71b12af8a34b39c19500a3e3970b37
+            env:
+              # Sources to scrape. See github.com/iptv-org/epg/tree/master/sites
+              # for the full list; comma-separated.
+              # tvtv.us is blocked at the Cloudflare edge from this network
+              # (error 1020 on every request, including the homepage), so it
+              # is unusable here regardless of settings. These two were
+              # verified to return real programs. Both are US sites reached
+              # through the UK exit now — if a grab starts coming back empty,
+              # suspect geoblocking before the scraper.
+              SITES: zap2it.com,tvguide.com
+              CLANG: en
+              # Evaluated in TZ below, so this is 03:00 Central.
+              CRON_SCHEDULE: "0 3 * * *"
+              # Grab once on boot so a fresh pod is not left serving nothing
+              # until the next scheduled run.
+              RUN_AT_STARTUP: "true"
+              # Default is 1, which makes a full grab painfully slow. Keep it
+              # modest to stay polite to the upstream sites.
+              MAX_CONNECTIONS: "3"
+              # pm2 runs `npx serve -- public`, and serve reads PORT (default
+              # 3000, which vpn-ui already holds).
+              PORT: &iptvPort 3003
+              TZ: "${TIMEZONE}"
+            probes:
+              liveness: &iptvProbes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: *iptvPort
+                  initialDelaySeconds: 30
+                  periodSeconds: 30
+                  timeoutSeconds: 10
+                  failureThreshold: 5
+              readiness: *iptvProbes
+            resources:
+              requests:
+                cpu: 25m
+                memory: 256Mi
+              limits:
+                memory: 1Gi
+          teamarr:
+            image:
+              repository: ghcr.io/pharaoh-labs/teamarr
+              tag: 2.12.2@sha256:fac09176392078dc5b1298a855cc805bf6a445cb4af702438c7ca739e51c6515
+            env:
+              TZ: "${TIMEZONE}"
+              PORT: &teamarrPort 9195
+              LOG_LEVEL: INFO
+            probes:
+              liveness: &teamarrProbes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: *teamarrPort
+                  initialDelaySeconds: 30
+                  periodSeconds: 30
+                  timeoutSeconds: 10
+                  failureThreshold: 6
+              readiness: *teamarrProbes
+            securityContext: &nfsUser
+              # nfs-slow presents as 99:100 and cannot be chowned from the
+              # container. Set per-container rather than pod-wide, because
+              # Dispatcharr's own image starts as root and drops to PUID/PGID
+              # itself.
+              runAsUser: 99
+              runAsGroup: 100
+            resources:
+              requests:
+                cpu: 10m
+                memory: 256Mi
+              limits:
+                memory: 1Gi
+          webpage-hls:
+            image:
+              repository: ghcr.io/sethwv/ws4kp-to-hls
+              tag: latest@sha256:a4347e3168696e4419cd6bc1e6525139b6d48217a3a5fa10fa2e4ac8ce13048b
+            # Renders a webpage with a headless browser, hence the larger memory
+            # limit and the writable cache dirs.
+            env:
+              TZ: "${TIMEZONE}"
+              PORT: &hlsPort 3001
+              DEFAULT_FPS: "30"
+              SCREENSHOT_FORMAT: jpeg
+              SCREENSHOT_QUALITY: "95"
+              XDG_CONFIG_HOME: /tmp
+              XDG_CACHE_HOME: /tmp
+            probes:
+              liveness: &hlsProbes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    # / returns 404 by design; /health is the real endpoint.
+                    path: /health
+                    port: *hlsPort
+                  initialDelaySeconds: 60
+                  periodSeconds: 30
+                  timeoutSeconds: 10
+                  failureThreshold: 6
+              readiness: *hlsProbes
+            resources:
+              requests:
+                cpu: 25m
+                memory: 512Mi
+              limits:
+                memory: 2Gi
+          channel-identifiarr:
+            image:
+              repository: ghcr.io/egyptiangio/channelidentifiarr
+              tag: 0.6.5@sha256:d883c0eb43e369fd78d59f11aaf1dcef8783ae663d92a088c7c07050b48adc23
+            # EMBY_URL is deliberately unset - the Emby logo features do not apply
+            # here. The Gracenote station IDs it populates are Emby-independent.
+            env:
+              TZ: "${TIMEZONE}"
+              DATABASE_PATH: /data/channelidentifiarr.db
+              # Same pod now, so this skips the Service round trip entirely.
+              DISPATCHARR_URL: http://localhost:9191
+            probes:
+              liveness: &identifiarrProbes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: &identifiarrPort 9192
+                  initialDelaySeconds: 30
+                  periodSeconds: 30
+                  timeoutSeconds: 10
+                  failureThreshold: 6
+              readiness: *identifiarrProbes
+            securityContext: *nfsUser
+            resources:
+              requests:
+                cpu: 10m
+                memory: 256Mi
+              limits:
+                memory: 1Gi
+          game-thumbs:
+            image:
+              repository: ghcr.io/sethwv/game-thumbs
+              tag: v2.1.0@sha256:7ce33617db7979ed6d54b802fadbba7309d93ec2571b4149cbf560c97befd724
+            env:
+              TZ: "${TIMEZONE}"
+              # Image ships PORT=3000; src/index.js reads process.env.PORT.
+              PORT: &thumbsPort 3002
+            probes:
+              liveness: &thumbsProbes
+                enabled: true
+                custom: true
+                spec:
+                  # This app answers 444 on every path except /health, so a
+                  # socket check is the conservative option.
+                  tcpSocket:
+                    port: *thumbsPort
+                  initialDelaySeconds: 30
+                  periodSeconds: 30
+                  timeoutSeconds: 10
+                  failureThreshold: 6
+              readiness: *thumbsProbes
+            resources:
+              requests:
+                cpu: 10m
+                memory: 128Mi
+              limits:
+                memory: 512Mi
         pod:
           securityContext:
             fsGroup: 100
             fsGroupChangePolicy: OnRootMismatch
+    # One Service per tool, all selecting this single pod. Every one carries
+    # forceRename: with more than one service defined, app-template would
+    # otherwise name them dispatcharr-<identifier> and break both the
+    # HTTPRoutes and the M3U/EPG URLs stored in Dispatcharr's database.
+    #
+    # The three tools whose container ports moved keep their published port at
+    # 3000 and retarget it, so no consumer sees a change.
     service:
       app:
         controller: dispatcharr
+        forceRename: dispatcharr
         ports:
           http:
             port: *port
           vpn-ui:
             port: *vpnUiPort
+      kptv-fast:
+        controller: dispatcharr
+        forceRename: kptv-fast
+        ports:
+          http:
+            port: *kptvPort
+      iptv-epg:
+        controller: dispatcharr
+        forceRename: iptv-epg
+        ports:
+          http:
+            port: 3000
+            targetPort: *iptvPort
+      teamarr:
+        controller: dispatcharr
+        forceRename: teamarr
+        ports:
+          http:
+            port: *teamarrPort
+      webpage-hls:
+        controller: dispatcharr
+        forceRename: webpage-hls
+        ports:
+          http:
+            port: 3000
+            targetPort: *hlsPort
+      channel-identifiarr:
+        controller: dispatcharr
+        forceRename: channel-identifiarr
+        ports:
+          http:
+            port: *identifiarrPort
+      game-thumbs:
+        controller: dispatcharr
+        forceRename: game-thumbs
+        ports:
+          http:
+            port: 3000
+            targetPort: *thumbsPort
     persistence:
       data:
         existingClaim: dispatcharr-data
@@ -217,3 +496,40 @@ spec:
               - path: /data
             celery:
               - path: /data
+      # The tool claims stay defined in their own directories under ../tools/,
+      # so they remain owned by their original Flux Kustomization. nfs-slow
+      # reclaims Delete, and moving a PVC between Kustomizations risks the old
+      # one pruning it before the new one adopts it.
+      iptv-epg-public:
+        existingClaim: iptv-epg-public
+        advancedMounts:
+          dispatcharr:
+            iptv-epg:
+              # pm2 serves this directory and the grab writes guide.xml into it.
+              - path: /epg/public
+      teamarr-data:
+        existingClaim: teamarr-data
+        advancedMounts:
+          dispatcharr:
+            teamarr:
+              - path: /app/data
+      channel-identifiarr-data:
+        existingClaim: channel-identifiarr-data
+        advancedMounts:
+          dispatcharr:
+            channel-identifiarr:
+              - path: /data
+      webpage-hls-cache:
+        type: emptyDir
+        advancedMounts:
+          dispatcharr:
+            webpage-hls:
+              - path: /tmp
+              - path: /streaming-app/cache
+              - path: /home/node/.cache
+      game-thumbs-cache:
+        type: emptyDir
+        advancedMounts:
+          dispatcharr:
+            game-thumbs:
+              - path: /app/.cache

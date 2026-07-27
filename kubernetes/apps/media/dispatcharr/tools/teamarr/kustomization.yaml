@@ -2,7 +2,10 @@
 # yaml-language-server: $schema=https://json.schemastore.org/kustomization
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+# The container runs in the Dispatcharr pod so it shares the VPN tunnel; its
+# Service is declared there too. The claim stays here on purpose: it keeps the
+# same Flux Kustomization as its owner, so a hand-off can never prune it.
+# See ../../app/helmrelease.yaml.
 resources:
   - ./pvc.yaml
-  - ./helmrelease.yaml
   - ./httproute.yaml

@@ -15,6 +15,17 @@ spec:
   dependsOn:
     - name: crunchy-postgres-17
     - name: crunchy-postgres-operator-secretstore
+    # The six co-located tools. They ship the PVCs this pod mounts, so the
+    # dependency runs this way round for them; reversing it would be a cycle.
+    # It also fixes the cutover order — these Kustomizations prune the old
+    # per-tool HelmReleases, and Helm will not adopt a Service still owned by
+    # another release. See ./tools/README.md.
+    - name: iptv-epg
+    - name: teamarr
+    - name: channel-identifiarr
+    - name: kptv-fast
+    - name: webpage-hls
+    - name: game-thumbs
   wait: false
   path: ./kubernetes/apps/media/dispatcharr/app
   prune: true
@@ -39,6 +50,8 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   # No gatus check: this is internal-only with no HTTPRoute.
+  # Carries only the PVC; the container runs in the Dispatcharr pod, which
+  # depends on this Kustomization rather than the other way round.
   wait: false
   path: ./kubernetes/apps/media/dispatcharr/tools/iptv-epg
   prune: true
@@ -115,8 +128,8 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   # No gatus check: the Dispatcharr tools are deliberately unmonitored.
-  dependsOn:
-    - name: dispatcharr
+  # Carries only the HTTPRoute; the container runs in the Dispatcharr pod,
+  # which depends on this Kustomization rather than the other way round.
   wait: false
   path: ./kubernetes/apps/media/dispatcharr/tools/kptv-fast
   prune: true
@@ -167,8 +180,8 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   # No gatus check: the Dispatcharr tools are deliberately unmonitored.
-  dependsOn:
-    - name: dispatcharr
+  # Carries the PVC and HTTPRoute; the container runs in the Dispatcharr pod,
+  # which depends on this Kustomization rather than the other way round.
   wait: false
   path: ./kubernetes/apps/media/dispatcharr/tools/channel-identifiarr
   prune: true
@@ -193,8 +206,8 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   # No gatus check: the Dispatcharr tools are deliberately unmonitored.
-  dependsOn:
-    - name: dispatcharr
+  # Carries the PVC and HTTPRoute; the container runs in the Dispatcharr pod,
+  # which depends on this Kustomization rather than the other way round.
   wait: false
   path: ./kubernetes/apps/media/dispatcharr/tools/teamarr
   prune: true
@@ -219,8 +232,8 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   # No gatus check: the Dispatcharr tools are deliberately unmonitored.
-  dependsOn:
-    - name: dispatcharr
+  # Carries only the HTTPRoute; the container runs in the Dispatcharr pod,
+  # which depends on this Kustomization rather than the other way round.
   wait: false
   path: ./kubernetes/apps/media/dispatcharr/tools/game-thumbs
   prune: true
@@ -245,8 +258,8 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   # No gatus check: the Dispatcharr tools are deliberately unmonitored.
-  dependsOn:
-    - name: dispatcharr
+  # Carries only the HTTPRoute; the container runs in the Dispatcharr pod,
+  # which depends on this Kustomization rather than the other way round.
   wait: false
   path: ./kubernetes/apps/media/dispatcharr/tools/webpage-hls
   prune: true
