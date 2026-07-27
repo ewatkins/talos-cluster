@@ -98,11 +98,26 @@ aac_adtstoasc` would convert. `remux.js` omits that filter **on purpose** — it
 and MP3 — and the code comment directs you to `/api/transcode` instead. So this is upstream's
 intended behaviour, not a misconfiguration, and no version bump will change it.
 
-Enabling *Settings → Playback → Force Audio Transcode* routes playback through an HLS session
-with `videoMode: 'copy'`: video is still stream-copied, only audio is re-encoded to AAC in a
-container that accepts it. Cheap — audio-only encoding, no GPU involved. Verified against a live
-channel in-pod: the remux command exits 255 on the muxer error, the transcode command exits 0 and
-writes valid segments.
+The fix is **two settings, not one**:
+
+| Setting | Value |
+|---|---|
+| Auto Transcode (Smart) | **off** |
+| Force Audio Transcode | **on** |
+
+Turning on *Force Audio Transcode* alone does nothing, and this is the single most confusing thing
+about this app. `VideoPlayer.js` checks `autoTranscode` first (line 783); when the probe reports
+`needsRemux` — which it always does for MPEG-TS — that branch calls `/api/remux` and **returns**.
+The `forceTranscode` check lives at line 912 and is never reached. Auto Transcode has to be off
+before Force Audio Transcode is consulted at all.
+
+With both set, playback runs through an HLS session with `videoMode: 'copy'`: video is still
+stream-copied, only audio is re-encoded to AAC in a container that accepts it. Cheap — audio-only
+encoding, no GPU involved. Verified in-pod against a live channel: the remux command exits 255 on
+the muxer error, while the transcode session returns a valid playlist and ~900 KB segments.
+
+These live in `db.json`, not Git, so a rebuild of the PVC loses them. They are also read once at
+page load — after changing them, hard-reload the browser.
 
 **Local storage, not NFS.** [`pvc.yaml`](pvc.yaml) uses `openebs-hostpath` rather than the
 `nfs-slow` every Dispatcharr tool uses, because `content.db` is opened in SQLite WAL mode and
