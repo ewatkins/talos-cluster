@@ -67,8 +67,6 @@ spec:
             # concurrent streams; CPU is deliberately unlimited so a remux is
             # never throttled into stuttering.
             resources:
-              claims:
-                - name: gpu
               requests:
                 cpu: 100m
                 memory: 512Mi
@@ -76,18 +74,11 @@ spec:
                 memory: 4Gi
     defaultPodOptions:
       enableServiceLinks: false
-      # Intel GPU over DRA, same mechanism as Jellyfin and unmanic. Only the
-      # opt-in /api/transcode path uses it — normal playback is `-c copy` and
-      # touches no encoder. It is here so HEVC channels the browser cannot
-      # decode have somewhere to go other than a software encode.
+      # Deliberately no GPU claim — see ./README.md. transcodeSession.js
+      # hardcodes /dev/dri/renderD128 and DRA presents the device as renderD129,
+      # so VAAPI cannot work here however the claim is written. Claiming a GPU
+      # anyway would only make hwDetect recommend an encoder that fails.
       #
-      # Every GPU node exposes exactly one device, so this claim is also what
-      # schedules the pod: erie and ontario are already taken, which lands it on
-      # tahoe. No nodeSelector — DRA allocates exclusively, so the scheduler
-      # will find whichever GPU is free rather than a node hardcoded here.
-      resourceClaims:
-        - name: gpu
-          resourceClaimTemplateName: nodecast-tv
       # The image declares no USER and would run as root. Drop to the same
       # 99:100 the rest of media uses — /app is read-only, and the only writable
       # paths are the volumes below, which fsGroup covers.
@@ -96,8 +87,6 @@ spec:
         runAsGroup: 100
         fsGroup: 100
         fsGroupChangePolicy: OnRootMismatch
-        # Required for /dev/dri access, copied from Jellyfin.
-        supplementalGroups: [44, 105, 10000]
     service:
       app:
         controller: *app
