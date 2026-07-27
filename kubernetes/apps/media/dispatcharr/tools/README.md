@@ -1,17 +1,17 @@
 # Dispatcharr Tools
 
-Eleven companion services around [Dispatcharr](../app/), the IPTV channel manager. Each is
+Nine companion services around [Dispatcharr](../app/), the IPTV channel manager. Each is
 its own Flux `Kustomization` in [`../ks.yaml`](../ks.yaml).
 
-> **Six of them do not run in their own pod.** `kptv-fast`, `iptv-epg`, `teamarr`,
-> `webpage-hls`, `channel-identifiarr` and `game-thumbs` all fetch from the public internet,
+> **Five of them do not run in their own pod.** `kptv-fast`, `iptv-epg`, `teamarr`,
+> `webpage-hls` and `game-thumbs` all fetch from the public internet,
 > so they run as containers inside the **Dispatcharr pod** to share its gluetun VPN tunnel.
 > Their images, env, probes and resources live in
 > [`../app/helmrelease.yaml`](../app/helmrelease.yaml); the directories here keep only their
 > PVC and HTTPRoute. Full rationale in [`../app/README.md`](../app/README.md#co-located-tools).
 >
 > Every Service name and published port was preserved, so nothing below changes address.
-> The other five keep their own Deployments and declare `dependsOn: dispatcharr`; the three
+> The other four keep their own Deployments and declare `dependsOn: dispatcharr`; the two
 > co-located tools that own a PVC have that dependency reversed, since the Dispatcharr pod
 > mounts their claims.
 
@@ -20,14 +20,13 @@ its own Flux `Kustomization` in [`../ks.yaml`](../ks.yaml).
 > the integration points each tool exposes — verify the live wiring in the Dispatcharr UI
 > under *M3U Accounts* and *EPG Sources*.
 
-They fall into four roles (★ = runs inside the Dispatcharr pod, on the VPN):
+They fall into three roles (★ = runs inside the Dispatcharr pod, on the VPN):
 
 | Role | Tools |
 |---|---|
 | **Feed content in** — Dispatcharr pulls M3U/XMLTV from them | `kptv-fast`★, `iptv-epg`★, `teamarr`★, `webpage-hls`★ |
-| **Curate what's there** — they call the Dispatcharr API | `enhanced-channel-manager`, `epg-matcharr`, `channel-identifiarr`★, `streamflow`, `swaparr` |
-| **Artwork** | `game-thumbs`★, `emby-logos` |
-| **Push downstream** | `emby-logos` → Jellyfin |
+| **Curate what's there** — they call the Dispatcharr API | `enhanced-channel-manager`, `epg-matcharr`, `streamflow`, `swaparr` |
+| **Artwork** | `game-thumbs`★ |
 
 ```mermaid
 flowchart LR
@@ -43,23 +42,20 @@ flowchart LR
     subgraph CUR["Curation via Dispatcharr API"]
         ECM["enhanced-channel-manager"]
         MATCH["epg-matcharr"]
-        IDENT["channel-identifiarr"]
         FLOW["streamflow"]
         SWAP["swaparr"]
     end
 
     subgraph ART["Artwork"]
         THUMB["game-thumbs"]
-        LOGOS["emby-logos"]
     end
 
     JELLY(["Jellyfin<br/>:8096"])
 
     KPTV & IPTV & TEAM & HLS -->|pulled by| DISP
-    DISP <-->|read + write| ECM & MATCH & IDENT & FLOW & SWAP
+    DISP <-->|read + write| ECM & MATCH & FLOW & SWAP
     THUMB -.->|thumbnail URLs| TEAM
     DISP -->|channels + logos| JELLY
-    LOGOS -->|uploads logo artwork| JELLY
 ```
 
 ## Feeding content into Dispatcharr
@@ -166,16 +162,6 @@ channel. Reads `DISPATCHARR_URL` from env; the API token is set **through its UI
 run**. `DISPATCHARR_TOKEN` is deliberately left unset rather than pinned empty, because env
 vars take priority over UI settings there.
 
-### `channel-identifiarr` — Gracenote station IDs
-
-Populates Gracenote station IDs (TVG IDs) on Dispatcharr channels — the identifiers most
-guide providers key off. `EMBY_URL` is intentionally unset: its Emby logo features don't
-apply here, and the station IDs it writes are Emby-independent. SQLite DB at
-`/data/channelidentifiarr.db` on the `channel-identifiarr-data` PVC.
-
-Sharing Dispatcharr's pod, its `DISPATCHARR_URL` is now `http://localhost:9191` — same
-container-to-container shortcut ECM already uses internally.
-
 ### `streamflow` — stream quality checking and auto-assignment
 
 Probes every stream behind a channel with ffmpeg, then reorders or reassigns them by measured
@@ -215,19 +201,6 @@ JSON 200, so the `tcpSocket` probe is more conservative than necessary; a `/heal
 would work. The container listens on **:3002** (`PORT`) to stay clear of `vpn-ui`; its
 Service still publishes `:3000`.
 
-### `emby-logos` — push channel logos into Jellyfin
-
-Runs [`emby-logo-tools`](https://github.com/sethwv/emby-logo-tools) on a cron, uploading
-`LogoLight` and `LogoLightColor` artwork for Live TV channels so they render properly in
-clients. Jellyfin forked from Emby and kept the same API surface, so the tool works unchanged
-against `http://jellyfin.media.svc.cluster.local:8096`.
-
-This is the only tool that reaches **Jellyfin instead of Dispatcharr**, and the only one
-needing a secret: `JELLYFIN_API_KEY`, pulled from Bitwarden by
-[`externalsecret.yaml`](emby-logos/externalsecret.yaml). Jellyfin issues long-lived API keys
-(Dashboard → API Keys), so it doesn't expire. Runs as root because upstream writes into the
-image at runtime, and has no HTTPRoute — it's a scheduled job with no HTTP endpoint.
-
 ## Daily pipeline order
 
 The cron schedules are staggered so each stage runs after its inputs are ready:
@@ -236,14 +209,13 @@ The cron schedules are staggered so each stage runs after its inputs are ready:
 |---|---|
 | 03:00 | `iptv-epg` grabs guide data; Jellyfin refreshes its XMLTV guide |
 | 04:00 | `streamflow` pipeline |
-| 05:00 | `emby-logos` uploads channel artwork |
 
 `kptv-fast` is independent, refreshing on its own `CACHE_DURATION` (7200 s) and warming both
 cache and EPG at startup. `teamarr` runs its own hourly cron.
 
 ## Conventions across these tools
 
-**Where config actually lives.** Only `channel-identifiarr`, `streamflow`, `swaparr` and
+**Where config actually lives.** Only `streamflow`, `swaparr` and
 `epg-matcharr` get their Dispatcharr URL from env. `teamarr` and `enhanced-channel-manager`
 store the whole connection — credentials included — in their own database, set through their
 UI. Nothing in Git will reproduce that; it's why ECM needs a PVC.
@@ -251,14 +223,13 @@ UI. Nothing in Git will reproduce that; it's why ECM needs a PVC.
 **Cluster-internal addressing.** Tools should reach Dispatcharr at
 `http://dispatcharr.media.svc.cluster.local:9191`, never the external hostname — the gateway
 applies rate limits that will throttle a busy tool (see the StreamFlow note above). The
-co-located tools can use `http://localhost:9191` instead; only `channel-identifiarr` takes
-its URL from env and so actually does.
+co-located tools can use `http://localhost:9191` instead.
 
 **NFS ownership.** The `nfs-slow` storage class presents as `99:100` and can't be chowned
 from a container, so every tool with a PVC on it runs with `runAsUser: 99`, `runAsGroup: 100`,
 `fsGroup: 100` and `fsGroupChangePolicy: OnRootMismatch` — matching Dispatcharr itself. ECM is
 the exception: it runs as root, since its image expects to write files owned by its own
-`appuser`. For `teamarr` and `channel-identifiarr` this is now set **per container** rather
+`appuser`. For `teamarr` this is now set **per container** rather
 than pod-wide, because they share a pod with Dispatcharr's image, which starts as root and
 drops to `PUID`/`PGID` itself.
 
@@ -281,7 +252,7 @@ check. `game-thumbs` (444 on `/`) and `webpage-hls` (404 on `/`) would each have
 custom path or status anyway.
 
 **Image pinning.** Everything is pinned by tag *and* digest for Renovate. `iptv-epg`,
-`kptv-fast`, `webpage-hls` and `emby-logos` publish no version tags, so they track a rolling
+`kptv-fast` and `webpage-hls` publish no version tags, so they track a rolling
 tag by digest. For the six co-located tools, that means a Renovate bump **restarts
 Dispatcharr** and drops in-flight streams — accepted deliberately, but it is the reason to
 pin those rolling tags if the churn ever gets annoying.
