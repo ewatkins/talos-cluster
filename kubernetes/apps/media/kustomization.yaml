@@ -11,7 +11,6 @@ resources:
   # Flux-Kustomizations\
   - ./bazarr/ks.yaml
   - ./dispatcharr/ks.yaml
-  - ./gluetun/ks.yaml
   - ./immich/ks.yaml
   - ./jellyfin/ks.yaml
   - ./seerr/ks.yaml
