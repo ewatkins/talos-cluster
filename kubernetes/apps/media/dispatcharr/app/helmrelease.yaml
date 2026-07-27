@@ -22,9 +22,10 @@ spec:
       dispatcharr:
         annotations:
           reloader.stakater.com/auto: "true"
-        # iptv-epg's grab writes guide.xml in place, so two of them must never
-        # overlap. Recreate is app-template's default for a Deployment; it is
-        # spelled out here so it does not get switched to RollingUpdate.
+        # dispatcharr-data and teamarr-data are both ReadWriteOnce, so a second
+        # pod could never mount them alongside the first. Recreate is
+        # app-template's default for a Deployment; it is spelled out here so it
+        # does not get switched to RollingUpdate.
         strategy: Recreate
         initContainers:
           # Native sidecar (restartPolicy: Always): starts before the app
@@ -52,7 +53,7 @@ spec:
               # the six co-located tools. The control server on :8000 is
               # deliberately not listed, so it is reachable only from inside
               # this pod.
-              FIREWALL_INPUT_PORTS: "9191,3000,3001,3002,3003,8080,9195"
+              FIREWALL_INPUT_PORTS: "9191,3000,3001,3002,8080,9195"
               # Pod-local only (see FIREWALL_INPUT_PORTS), so the control
               # server is left unauthenticated for the UI sidecar to use.
               HTTP_CONTROL_SERVER_AUTH_DEFAULT_ROLE: '{"auth":"none"}'
@@ -260,54 +261,6 @@ spec:
                 memory: 512Mi
               limits:
                 memory: 6Gi
-          iptv-epg:
-            image:
-              # Upstream publishes no version tags, only a rolling "master",
-              # so this is pinned by digest and Renovate updates the digest.
-              repository: ghcr.io/iptv-org/epg
-              tag: master@sha256:747a9f6ea2d9a1c633d08ba3e5edaef72f71b12af8a34b39c19500a3e3970b37
-            env:
-              # Sources to scrape. See github.com/iptv-org/epg/tree/master/sites
-              # for the full list; comma-separated.
-              # tvtv.us is blocked at the Cloudflare edge from this network
-              # (error 1020 on every request, including the homepage), so it
-              # is unusable here regardless of settings. These two were
-              # verified to return real programs. Both are US sites reached
-              # through the UK exit now — if a grab starts coming back empty,
-              # suspect geoblocking before the scraper.
-              SITES: zap2it.com,tvguide.com
-              CLANG: en
-              # Evaluated in TZ below, so this is 03:00 Central.
-              CRON_SCHEDULE: "0 3 * * *"
-              # Grab once on boot so a fresh pod is not left serving nothing
-              # until the next scheduled run.
-              RUN_AT_STARTUP: "true"
-              # Default is 1, which makes a full grab painfully slow. Keep it
-              # modest to stay polite to the upstream sites.
-              MAX_CONNECTIONS: "3"
-              # pm2 runs `npx serve -- public`, and serve reads PORT (default
-              # 3000, which vpn-ui already holds).
-              PORT: &iptvPort 3003
-              TZ: "${TIMEZONE}"
-            probes:
-              liveness: &iptvProbes
-                enabled: true
-                custom: true
-                spec:
-                  httpGet:
-                    path: /
-                    port: *iptvPort
-                  initialDelaySeconds: 30
-                  periodSeconds: 30
-                  timeoutSeconds: 10
-                  failureThreshold: 5
-              readiness: *iptvProbes
-            resources:
-              requests:
-                cpu: 25m
-                memory: 256Mi
-              limits:
-                memory: 1Gi
           teamarr:
             image:
               repository: ghcr.io/pharaoh-labs/teamarr
@@ -437,13 +390,6 @@ spec:
         ports:
           http:
             port: *kptvPort
-      iptv-epg:
-        controller: dispatcharr
-        forceRename: iptv-epg
-        ports:
-          http:
-            port: 3000
-            targetPort: *iptvPort
       teamarr:
         controller: dispatcharr
         forceRename: teamarr
@@ -477,13 +423,6 @@ spec:
       # so they remain owned by their original Flux Kustomization. nfs-slow
       # reclaims Delete, and moving a PVC between Kustomizations risks the old
       # one pruning it before the new one adopts it.
-      iptv-epg-public:
-        existingClaim: iptv-epg-public
-        advancedMounts:
-          dispatcharr:
-            iptv-epg:
-              # pm2 serves this directory and the grab writes guide.xml into it.
-              - path: /epg/public
       teamarr-data:
         existingClaim: teamarr-data
         advancedMounts:
