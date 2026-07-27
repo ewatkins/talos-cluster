@@ -173,4 +173,4 @@ Two things worth knowing:
   will not survive being scaled out.
 
 **Image pinning.** Upstream publishes real semver tags, so Renovate bumps this normally — no
-rolling-tag digest tracking like `kptv-fast` and friends.
+rolling-tag digest tracking.

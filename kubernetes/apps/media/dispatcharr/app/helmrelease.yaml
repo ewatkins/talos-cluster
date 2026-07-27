@@ -53,7 +53,7 @@ spec:
               # the six co-located tools. The control server on :8000 is
               # deliberately not listed, so it is reachable only from inside
               # this pod.
-              FIREWALL_INPUT_PORTS: "9191,3000,3001,3002,8080,9195"
+              FIREWALL_INPUT_PORTS: "9191,3000,3001,9195"
               # Pod-local only (see FIREWALL_INPUT_PORTS), so the control
               # server is left unauthenticated for the UI sidecar to use.
               HTTP_CONTROL_SERVER_AUTH_DEFAULT_ROLE: '{"auth":"none"}'
@@ -215,52 +215,13 @@ spec:
           # every URL stored in Dispatcharr's database still resolves.
           #
           # Mind the ports a container binds beyond the one it serves: this bit
-          # once. webpage-hls also runs an embedded WeatherStar on WS4KP_PORT,
-          # which defaults to kptv-fast's 8080 and crashlooped it. Check the
-          # live listeners after adding anything here, not just the Service:
+          # once, when webpage-hls's embedded WeatherStar on WS4KP_PORT
+          # defaulted onto a port another container already held and
+          # crashlooped it. Check the live listeners after adding anything
+          # here, not just the Service:
           #   kubectl -n media exec deploy/dispatcharr -c app -- \
           #     grep " 0A " /proc/net/tcp /proc/net/tcp6
           # ---------------------------------------------------------------
-          kptv-fast:
-            image:
-              repository: ghcr.io/kpirnie/kptv-fast
-              tag: latest@sha256:1366e6ebaab8ed1a74fad471f2744743fa47fee7d43c0bb1a88ea8c4166ff2c5
-            env:
-              TZ: "${TIMEZONE}"
-              DEBUG: "false"
-              CACHE_DURATION: "7200"
-              WARM_CACHE_ON_STARTUP: "true"
-              WARM_EPG_ON_STARTUP: "true"
-              ENABLED_PROVIDERS: all
-              # The FAST providers behind these are US-geolocked, and this
-              # container now egresses through the UK exit. If providers start
-              # returning empty playlists, that is the first thing to check.
-              GIT_COUNTRY: "us,ca"
-              LG_COUNTRY: "us,ca"
-              WHALE_COUNTRY: "us,ca"
-            probes:
-              liveness: &kptvProbes
-                enabled: true
-                custom: true
-                spec:
-                  httpGet:
-                    path: /
-                    port: &kptvPort 8080
-                  initialDelaySeconds: 30
-                  periodSeconds: 30
-                  timeoutSeconds: 10
-                  failureThreshold: 6
-              readiness: *kptvProbes
-            resources:
-              # Building the combined EPG pulls >230MB of XML (lg 71MB, pluto
-              # 60MB, plex 37MB, roku 36MB, ...) and parses it all in memory,
-              # which OOMKilled the container at 1Gi. Trim ENABLED_PROVIDERS
-              # if this ceiling ever becomes a problem.
-              requests:
-                cpu: 25m
-                memory: 512Mi
-              limits:
-                memory: 6Gi
           teamarr:
             image:
               repository: ghcr.io/pharaoh-labs/teamarr
@@ -306,10 +267,10 @@ spec:
               PORT: &hlsPort 3001
               # This image runs a *second* server: an embedded WeatherStar
               # 4000+ on WS4KP_PORT, which is the page it screenshots. The
-              # image bakes that to 8080 — kptv-fast's port — so it moves.
-              # index.js uses this both to listen and to build the
-              # http://localhost:<port> URL it renders, so nothing external
-              # references it.
+              # image bakes that to 8080, which collided with another
+              # container when this pod was busier; it stays moved because
+              # nothing external references it. index.js uses this both to
+              # listen and to build the http://localhost:<port> URL it renders.
               WS4KP_PORT: 8081
               DEFAULT_FPS: "30"
               SCREENSHOT_FORMAT: jpeg
@@ -384,12 +345,6 @@ spec:
             port: *port
           vpn-ui:
             port: *vpnUiPort
-      kptv-fast:
-        controller: dispatcharr
-        forceRename: kptv-fast
-        ports:
-          http:
-            port: *kptvPort
       teamarr:
         controller: dispatcharr
         forceRename: teamarr
