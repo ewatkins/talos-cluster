@@ -44,7 +44,7 @@ spec:
           app:
             image:
               repository: redis/redisinsight
-              tag: 3.6.0
+              tag: 3.8.0
             env:
               - name: RI_FILES_LOGGER
                 value: "false"
