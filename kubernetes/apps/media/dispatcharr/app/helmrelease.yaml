@@ -53,7 +53,7 @@ spec:
               # the six co-located tools. The control server on :8000 is
               # deliberately not listed, so it is reachable only from inside
               # this pod.
-              FIREWALL_INPUT_PORTS: "9191,3000,3001,9195"
+              FIREWALL_INPUT_PORTS: "9191,3000,3001,3002,9195"
               # Pod-local only (see FIREWALL_INPUT_PORTS), so the control
               # server is left unauthenticated for the UI sidecar to use.
               HTTP_CONTROL_SERVER_AUTH_DEFAULT_ROLE: '{"auth":"none"}'
