@@ -9,3 +9,4 @@ resources:
   - ./helmrelease.yaml
   - ./httproute.yaml
   - ./backendtrafficpolicy.yaml
+  - ./securitypolicy.yaml
