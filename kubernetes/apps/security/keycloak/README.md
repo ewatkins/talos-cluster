@@ -48,7 +48,7 @@ The theme inherits from the default `keycloak` parent, hides the username/passwo
 | [Paperless-ngx](../../media/paperless/README.md) | OIDC | `allauth.socialaccount.providers.openid_connect` |
 | [Forgejo](../../development/forgejo/README.md) | OIDC | External authentication only |
 | [Garage Web UI](../../storage/garage/README.md) | OIDC (Envoy SecurityPolicy) | Client ID `garage-webui`, issuer `https://keycloak.ewatkins.dev/realms/master` |
-| [Dispatcharr VPN UI](../../media/dispatcharr/app/README.md) | OIDC (Envoy SecurityPolicy) | Client ID `gluetun-webui`, redirect `https://gluetun.ewatkins.dev/oauth2/callback`; guards credentials the UI would otherwise expose |
+| [Dispatcharr VPN UI](../../media/dispatcharr/app/README.md) | OIDC (Envoy SecurityPolicy) | Client ID `gluetun`, redirect `https://gluetun.ewatkins.dev/oauth2/callback`; guards credentials the UI would otherwise expose |
 
 ## Flux Dependencies
 
