@@ -79,19 +79,29 @@ pinned to whichever node binds the volume.
 **Two databases.** `content.db` (SQLite, the channel/VOD catalogue) and `db.json` (users,
 settings, favourites) both live in `/app/data`.
 
-**The GPU is insurance, not the hot path.** An Intel GPU is claimed over DRA
-([`resourceclaimtemplate.yaml`](resourceclaimtemplate.yaml)), the same way
-[Jellyfin](../../jellyfin/app/resourceclaimtemplate.yaml) and unmanic do — `deviceClassName:
-gpu.intel.com` plus `supplementalGroups: [44, 105, 10000]`, no `/dev/dri` hostPath. But normal
-playback never touches it: `/api/remux` runs ffmpeg with `-c copy`, a pure container swap from
-MPEG-TS to fragmented MP4 with no decode or encode. Only the opt-in `/api/transcode` path
-re-encodes, and it picks up VAAPI via `hwDetect.js` — that is the case this claim exists for,
-HEVC channels no browser will play.
+**No GPU, and it cannot usefully have one.** Unlike
+[Jellyfin](../../jellyfin/app/resourceclaimtemplate.yaml) and unmanic, which claim an Intel GPU
+over DRA, this app is pinned to a device path it will never find here:
+`server/services/transcodeSession.js` hardcodes `-hwaccel_device /dev/dri/renderD128`, while DRA
+presents the device as **`renderD129`** on all three GPU nodes. Verified in-container — `ffmpeg
+-hwaccel vaapi -hwaccel_device /dev/dri/renderD128` fails with *"No VA display found"*, and the
+same command against `renderD129` encodes fine. `addVaapiEncoderArgs` sets no separate
+`-vaapi_device`, so decode and encode fail together. Still hardcoded on upstream `main`, so a
+version bump will not fix it.
 
-Each of erie, ontario and tahoe exposes exactly one device, and Jellyfin and unmanic hold two of
-them, so **this claim is effectively what schedules the pod** — onto tahoe, the remaining one.
-That interacts with the node-pinned PVC above: the volume binds wherever the pod first lands, so
-changing GPU allocation later means recreating the PVC and losing the database.
+Claiming a GPU anyway would be actively worse: `hwDetect.js` would then report `Recommended
+encoder: vaapi`, so choosing **auto** in the transcode settings would select an encoder that
+fails, where today it correctly resolves to software.
+
+Little is lost. Normal playback is `/api/remux` running ffmpeg with `-c copy` — a pure container
+swap from MPEG-TS to fragmented MP4, no decode, no encode, nothing a GPU accelerates. Only the
+opt-in `/api/transcode` path re-encodes, and it falls back to software. If upstream ever makes
+the device path configurable, adding a claim is a `ResourceClaimTemplate` plus
+`supplementalGroups: [44, 105, 10000]`, copied from Jellyfin.
+
+**The pod runs on tahoe** because that is where the PVC bound, not because anything pins it
+there. Since the volume follows first scheduling, moving nodes later means recreating the PVC
+and losing the database.
 
 ## Keycloak SSO
 
