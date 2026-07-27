@@ -1,21 +1,32 @@
 # Dispatcharr Tools
 
 Eleven companion services around [Dispatcharr](../app/), the IPTV channel manager. Each is
-its own Flux `Kustomization` in [`../ks.yaml`](../ks.yaml) and every one of them except
-`iptv-epg` declares `dependsOn: dispatcharr`.
+its own Flux `Kustomization` in [`../ks.yaml`](../ks.yaml).
+
+> **Six of them do not run in their own pod.** `kptv-fast`, `iptv-epg`, `teamarr`,
+> `webpage-hls`, `channel-identifiarr` and `game-thumbs` all fetch from the public internet,
+> so they run as containers inside the **Dispatcharr pod** to share its gluetun VPN tunnel.
+> Their images, env, probes and resources live in
+> [`../app/helmrelease.yaml`](../app/helmrelease.yaml); the directories here keep only their
+> PVC and HTTPRoute. Full rationale in [`../app/README.md`](../app/README.md#co-located-tools).
+>
+> Every Service name and published port was preserved, so nothing below changes address.
+> The other five keep their own Deployments and declare `dependsOn: dispatcharr`; the three
+> co-located tools that own a PVC have that dependency reversed, since the Dispatcharr pod
+> mounts their claims.
 
 > **On the URLs below:** which M3U accounts and EPG sources Dispatcharr actually has
 > registered lives in Dispatcharr's own Postgres database, not in Git. The URLs given here are
 > the integration points each tool exposes — verify the live wiring in the Dispatcharr UI
 > under *M3U Accounts* and *EPG Sources*.
 
-They fall into four roles:
+They fall into four roles (★ = runs inside the Dispatcharr pod, on the VPN):
 
 | Role | Tools |
 |---|---|
-| **Feed content in** — Dispatcharr pulls M3U/XMLTV from them | `kptv-fast`, `iptv-epg`, `teamarr`, `webpage-hls` |
-| **Curate what's there** — they call the Dispatcharr API | `enhanced-channel-manager`, `epg-matcharr`, `channel-identifiarr`, `streamflow`, `swaparr` |
-| **Artwork** | `game-thumbs`, `emby-logos` |
+| **Feed content in** — Dispatcharr pulls M3U/XMLTV from them | `kptv-fast`★, `iptv-epg`★, `teamarr`★, `webpage-hls`★ |
+| **Curate what's there** — they call the Dispatcharr API | `enhanced-channel-manager`, `epg-matcharr`, `channel-identifiarr`★, `streamflow`, `swaparr` |
+| **Artwork** | `game-thumbs`★, `emby-logos` |
 | **Push downstream** | `emby-logos` → Jellyfin |
 
 ```mermaid
@@ -71,22 +82,29 @@ Dispatcharr points at `http://kptv-fast.media.svc.cluster.local:8080/playlist` a
 account and `/epg` as an EPG source. The 6 Gi memory limit is deliberate — building the
 combined EPG parses >230 MB of XML in memory and OOMKilled at 1 Gi.
 
+> **These providers are US-geolocked and this container now egresses through the UK exit.**
+> If a provider starts returning an empty playlist, check that before blaming the
+> aggregator.
+
 > The `stirr` provider currently 404s upstream (`i.mjh.nz/Stirr/all.xml` is gone). Harmless;
 > the other providers still build.
 
 ### `iptv-epg` — scraped XMLTV guide
 
 Runs [`iptv-org/epg`](https://github.com/iptv-org/epg) to scrape `zap2it.com` and
-`tvguide.com` into `/epg/public/guide.xml`, then serves that directory over pm2 on `:3000`.
-Currently **152 channels / 8,814 programmes**.
+`tvguide.com` into `/epg/public/guide.xml`, then serves that directory over pm2. Currently
+**152 channels / 8,814 programmes**.
 
 Dispatcharr points at `http://iptv-epg.media.svc.cluster.local:3000/guide.xml` as an XMLTV
-source. Grabs run at **03:00** (`CRON_SCHEDULE`) plus once at boot (`RUN_AT_STARTUP`), and
-`strategy: Recreate` prevents two grabs writing `guide.xml` concurrently.
+source — unchanged, though the container now listens on **:3003** because `vpn-ui` holds
+`:3000` in the shared namespace. pm2 runs `npx serve -- public`, and `serve` reads `PORT`.
+Grabs run at **03:00** (`CRON_SCHEDULE`) plus once at boot (`RUN_AT_STARTUP`), and the
+Dispatcharr pod's `strategy: Recreate` prevents two grabs writing `guide.xml` concurrently.
 
 This is the only tool with **no HTTPRoute** — it's cluster-internal, since nothing but
 Dispatcharr needs it. `tvtv.us` is unusable from this network (Cloudflare 1020 on every
-request), which is why only two sites are enabled.
+request), which is why only two sites are enabled. Both remaining sites are US-hosted and
+now reached through the UK exit; an empty grab is a geoblocking suspect.
 
 ### `teamarr` — dynamic sports EPG
 
@@ -110,6 +128,9 @@ channel. Built for [WeatherStar 4000+](https://github.com/netbymatt/ws4kp).
 - `/weather?city=…` — the packaged weather channel
 - `/stream?url=…` — any arbitrary page (400 without `url`)
 - `/health` — liveness (`/` returns 404 **by design**)
+
+The container listens on **:3001** (`PORT`) to stay clear of `vpn-ui`; its Service still
+publishes `:3000`.
 
 It also validates a background music library at startup (66 audio files → a 1,320-track
 shared playlist). Dispatcharr ingests the resulting HLS URL as a custom stream. The 2 Gi
@@ -149,6 +170,9 @@ guide providers key off. `EMBY_URL` is intentionally unset: its Emby logo featur
 apply here, and the station IDs it writes are Emby-independent. SQLite DB at
 `/data/channelidentifiarr.db` on the `channel-identifiarr-data` PVC.
 
+Sharing Dispatcharr's pod, its `DISPATCHARR_URL` is now `http://localhost:9191` — same
+container-to-container shortcut ECM already uses internally.
+
 ### `streamflow` — stream quality checking and auto-assignment
 
 Probes every stream behind a channel with ffmpeg, then reorders or reassigns them by measured
@@ -184,9 +208,9 @@ Generates thumbnail artwork for sports events, consumed by URL. Pairs naturally 
 Rate-limited to 90 requests/minute, with an in-pod `emptyDir` at `/app/.cache`.
 
 Its HTTP surface is unusual — most paths return **444**, but `/health` returns a normal
-JSON 200. The HelmRelease comment claiming "444 on every path including /" and the resulting
-`tcpSocket` probe are therefore more conservative than necessary; a `/health` httpGet would
-work.
+JSON 200, so the `tcpSocket` probe is more conservative than necessary; a `/health` httpGet
+would work. The container listens on **:3002** (`PORT`) to stay clear of `vpn-ui`; its
+Service still publishes `:3000`.
 
 ### `emby-logos` — push channel logos into Jellyfin
 
@@ -223,13 +247,23 @@ UI. Nothing in Git will reproduce that; it's why ECM needs a PVC.
 
 **Cluster-internal addressing.** Tools should reach Dispatcharr at
 `http://dispatcharr.media.svc.cluster.local:9191`, never the external hostname — the gateway
-applies rate limits that will throttle a busy tool (see the StreamFlow note above).
+applies rate limits that will throttle a busy tool (see the StreamFlow note above). The
+co-located tools can use `http://localhost:9191` instead; only `channel-identifiarr` takes
+its URL from env and so actually does.
 
 **NFS ownership.** The `nfs-slow` storage class presents as `99:100` and can't be chowned
 from a container, so every tool with a PVC on it runs with `runAsUser: 99`, `runAsGroup: 100`,
 `fsGroup: 100` and `fsGroupChangePolicy: OnRootMismatch` — matching Dispatcharr itself. ECM is
 the exception: it runs as root, since its image expects to write files owned by its own
-`appuser`.
+`appuser`. For `teamarr` and `channel-identifiarr` this is now set **per container** rather
+than pod-wide, because they share a pod with Dispatcharr's image, which starts as root and
+drops to `PUID`/`PGID` itself.
+
+**Port uniqueness.** Only inside the Dispatcharr pod, where one network namespace is shared:
+`iptv-epg`, `webpage-hls` and `game-thumbs` were moved off `:3000` to `:3003`, `:3001` and
+`:3002`. Their Services still publish `:3000` and retarget, so no consumer — including the
+URLs stored in Dispatcharr's database — sees a change. Also unavailable in that pod: `53`,
+`5656`, `8000`, `8001`, `9191`, `9999`.
 
 > A stale NFS handle on one of these volumes surfaces as `unable to open database file` or
 > `Stale file handle` while the PVC still reports `Bound`. A pod restart remounts it; the data
@@ -241,4 +275,6 @@ custom path or status anyway.
 
 **Image pinning.** Everything is pinned by tag *and* digest for Renovate. `iptv-epg`,
 `kptv-fast`, `webpage-hls` and `emby-logos` publish no version tags, so they track a rolling
-tag by digest.
+tag by digest. For the six co-located tools, that means a Renovate bump **restarts
+Dispatcharr** and drops in-flight streams — accepted deliberately, but it is the reason to
+pin those rolling tags if the churn ever gets annoying.
