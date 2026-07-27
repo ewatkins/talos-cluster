@@ -1,0 +1,99 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app nodecast-tv
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      nodecast-tv:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: ghcr.io/technomancer702/nodecast-tv
+              tag: 1.4.3@sha256:9d15ab732e74c51731538f5881fb04e2c2e65c178db896162661f66b1f378c1d
+            env:
+              TZ: "${TIMEZONE}"
+              NODE_ENV: production
+              PORT: &port 3000
+            envFrom:
+              - secretRef:
+                  name: nodecast-tv-secret
+            probes:
+              # `/` is the SPA shell and always answers 200, even before a
+              # content source is configured. Every /api route below it needs a
+              # JWT, so there is nothing more meaningful to probe.
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: *port
+                  initialDelaySeconds: 30
+                  periodSeconds: 30
+                  timeoutSeconds: 10
+                  failureThreshold: 6
+              readiness: *probes
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            # Dispatcharr hands out raw MPEG-TS, which no browser plays, so
+            # every viewer costs one ffmpeg remux. Sized for a couple of
+            # concurrent streams; CPU is deliberately unlimited so a remux is
+            # never throttled into stuttering.
+            resources:
+              requests:
+                cpu: 100m
+                memory: 512Mi
+              limits:
+                memory: 4Gi
+    defaultPodOptions:
+      enableServiceLinks: false
+      # The image declares no USER and would run as root. Drop to the same
+      # 99:100 the rest of media uses — /app is read-only, and the only writable
+      # paths are the volumes below, which fsGroup covers.
+      securityContext:
+        runAsUser: 99
+        runAsGroup: 100
+        fsGroup: 100
+        fsGroupChangePolicy: OnRootMismatch
+    service:
+      app:
+        controller: *app
+        ports:
+          http:
+            port: *port
+    persistence:
+      data:
+        existingClaim: nodecast-tv-data
+        globalMounts:
+          - path: /app/data
+      # server/services/transcodeSession.js hardcodes this to
+      # `process.cwd()/transcode-cache`, so the path is not negotiable. HLS
+      # segments only, discarded when the session ends — no reason to persist.
+      transcode-cache:
+        type: emptyDir
+        globalMounts:
+          - path: /app/transcode-cache
+      # ffmpeg scratch, needed because the root filesystem is read-only.
+      tmp:
+        type: emptyDir
+        globalMounts:
+          - path: /tmp

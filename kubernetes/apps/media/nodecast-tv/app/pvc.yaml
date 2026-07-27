@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nodecast-tv-data
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 10Gi
+  # Not nfs-slow, unlike the Dispatcharr tools. server/db/sqlite.js opens
+  # content.db with `journal_mode = WAL`, and WAL needs a shared-memory (-shm)
+  # mapping that NFS cannot provide — SQLite fails or corrupts on a network
+  # mount. Keep this on local disk. It also means the pod is pinned to whichever
+  # node first schedules it.
+  storageClassName: openebs-hostpath
