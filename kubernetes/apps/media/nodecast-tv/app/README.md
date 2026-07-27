@@ -18,13 +18,22 @@ every stream segment — comes from `dispatcharr.media.svc.cluster.local`, which
 cluster-internal traffic that never leaves the node. Dispatcharr's own gluetun tunnel already
 covers the only hop that touches the public internet.
 
-> This holds **only while every content source points at Dispatcharr**. If you ever add a
-> third-party Xtream/M3U provider directly to nodecast-tv, it starts egressing to the internet
-> itself and belongs behind a tunnel like everything else in this namespace.
+That is enforced rather than assumed. [`networkpolicy.yaml`](networkpolicy.yaml) restricts egress
+to `10.40.0.0/16`, `10.69.0.0/16` and `10.96.0.0/16` — the same three subnets gluetun keeps off
+its own tunnel — so the public internet is unreachable from this pod. The only route out is
+Dispatcharr, and Dispatcharr is behind the tunnel.
 
-Note that a VPN would not cover browser traffic in any case. With *Force Backend Proxy* off,
-the browser fetches streams directly from whatever URL the playlist contains, and no
-server-side tunnel touches that.
+This matters because content sources live in `content.db`, configured through the UI, and nothing
+in Git constrains them. Before the policy existed, `ifconfig.co` from inside this pod returned the
+house ISP address while Dispatcharr returned a UK Privado one; a source pointed at a third-party
+provider would have leaked straight out. It now fails to connect instead.
+
+> If you ever *want* a direct third-party provider here, the fix is a gluetun sidecar of its own,
+> not a hole in this policy.
+
+Note that no server-side tunnel covers browser traffic. With *Force Backend Proxy* off, the
+browser fetches streams directly from whatever URL the playlist contains — which is a second,
+independent reason that setting must stay on.
 
 ## First-run setup
 
