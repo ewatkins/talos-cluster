@@ -28,12 +28,21 @@ server-side tunnel touches that.
 
 ## First-run setup
 
-1. **Create the Bitwarden item** `nodecast-tv-secret` with one field, `JWT_SECRET`, set to any
-   long random string (`openssl rand -hex 32`). [`externalsecret.yaml`](externalsecret.yaml)
-   syncs it in, and the pod will not start until it exists. Without it the app falls back to a
-   hardcoded constant that is public in the upstream repo — see the comment in that file.
+1. **Create the Bitwarden Secrets Manager secret** named `nodecast-tv-secret`, in the same
+   project as every other secret here. Its *value* is a JSON object, because
+   [`externalsecret.yaml`](externalsecret.yaml) uses `dataFrom.extract` — a plain string will
+   sync but resolve both fields to empty:
+
+   ```json
+   {
+     "JWT_SECRET": "<openssl rand -hex 32>",
+     "OIDC_CLIENT_SECRET": "<Keycloak client secret for `nodecast`>"
+   }
+   ```
+
+   The pod will not start until this exists.
 2. **Create the admin user.** First visit shows a setup wizard; auth is mandatory and there is
-   no default account.
+   no default account. Do this even if you only intend to use SSO — see below.
 3. **Add Dispatcharr as a content source** under *Settings → Content Sources*:
 
    | Type | URL |
@@ -73,10 +82,26 @@ settings, favourites) both live in `/app/data`.
 **Hardware transcoding is not wired up.** The image ships VAAPI and QSV drivers and would use
 `/dev/dri`, but nothing here mounts it. All remuxing is CPU-only.
 
-**OIDC is available but unused.** The app reads `OIDC_ISSUER_URL`, `OIDC_CLIENT_ID`,
-`OIDC_CLIENT_SECRET` and `OIDC_CALLBACK_URL`, so it could be pointed at Keycloak the way the
-[VPN UI](../../dispatcharr/app/securitypolicy.yaml) is. Its built-in local auth is used instead,
-so no Keycloak client is needed.
+## Keycloak SSO
+
+Wired to the `nodecast` client in the `master` realm — the app's own OIDC support, not an Envoy
+`SecurityPolicy` like the [VPN UI](../../dispatcharr/app/securitypolicy.yaml) uses. It has to be
+in-app, because the JWT it mints is what the player uses for every subsequent `/api` call.
+
+The client needs redirect URI `https://nodecast.ewatkins.dev/api/auth/oidc/callback` and must be
+confidential (client authentication on) — the secret is required, and SSO stays silently
+disabled without it. Only `OIDC_ISSUER_URL` is set: `server/auth.js` builds the auth, token and
+userinfo endpoints from it using Keycloak's `/protocol/openid-connect/*` layout, which is
+exactly what Keycloak serves, so the three explicit URL overrides it also accepts are redundant.
+
+Two things worth knowing:
+
+- **SSO users are provisioned as `viewer`, not `admin`** (`role: 'viewer'` in `configureOidcStrategy`).
+  There is no group or role mapping. So keep the local admin account from the setup wizard —
+  it's the only way to reach settings and promote anyone.
+- **OIDC state lives in an in-memory session store** seeded from `JWT_SECRET`. A pod restart
+  mid-login fails that login; retrying works. Harmless at one replica, but it does mean this
+  will not survive being scaled out.
 
 **Image pinning.** Upstream publishes real semver tags, so Renovate bumps this normally — no
 rolling-tag digest tracking like `kptv-fast` and friends.
