@@ -79,14 +79,29 @@ jobs:
             --sources "talos-cluster"
             --output-file diff.patch
 
-      - name: Generate Diff
+      - name: Prepare Diff
         id: diff
+        env:
+          # GitHub rejects comment bodies over 65536 characters; leave headroom
+          # for the code fence and the truncation notice.
+          MAX_BYTES: "60000"
         run: |
-          echo 'diff<<EOF' >> $GITHUB_OUTPUT
-          cat diff.patch >> $GITHUB_OUTPUT
-          echo 'EOF' >> $GITHUB_OUTPUT
+          if [[ ! -s diff.patch ]]; then
+            echo "has-diff=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
 
-      - if: ${{ steps.diff.outputs.diff != '' }}
+          echo "has-diff=true" >> "$GITHUB_OUTPUT"
+
+          size=$(wc -c < diff.patch)
+          if (( size > MAX_BYTES )); then
+            # Trim on a line boundary so the fenced block stays readable.
+            head -c "$MAX_BYTES" diff.patch | sed '$d' > diff.trimmed
+            printf '\n... truncated, %s of %s bytes shown ...\n' "$MAX_BYTES" "$size" >> diff.trimmed
+            mv diff.trimmed diff.patch
+          fi
+
+      - if: ${{ steps.diff.outputs.has-diff == 'true' }}
         name: Generate Token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         id: app-token
@@ -94,15 +109,18 @@ jobs:
           app-id: ${{ secrets.BOT_APP_ID }}
           private-key: ${{ secrets.BOT_APP_PRIVATE_KEY }}
 
-      - if: ${{ steps.diff.outputs.diff != '' }}
+      - if: ${{ steps.diff.outputs.has-diff == 'true' }}
         name: Add Comment
         uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
         with:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           header: ${{ github.event.pull_request.number }}/kubernetes/${{ matrix.resource }}
+          # Read the body from disk: interpolating it into `message` passed the
+          # whole diff as an env var and blew the exec argument limit.
+          path: diff.patch
           message: |
             ```diff
-            ${{ steps.diff.outputs.diff }}
+            {{{content}}}
             ```
 
   success:
