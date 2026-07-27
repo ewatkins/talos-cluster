@@ -18,10 +18,15 @@ every stream segment — comes from `dispatcharr.media.svc.cluster.local`, which
 cluster-internal traffic that never leaves the node. Dispatcharr's own gluetun tunnel already
 covers the only hop that touches the public internet.
 
-That is enforced rather than assumed. [`networkpolicy.yaml`](networkpolicy.yaml) restricts egress
-to `10.40.0.0/16`, `10.69.0.0/16` and `10.96.0.0/16` — the same three subnets gluetun keeps off
-its own tunnel — so the public internet is unreachable from this pod. The only route out is
-Dispatcharr, and Dispatcharr is behind the tunnel.
+That is enforced rather than assumed. [`networkpolicy.yaml`](networkpolicy.yaml) permits egress
+only to the cluster and to `10.40.0.0/16`, with no rule matching `0.0.0.0/0`, so the public
+internet is unreachable from this pod. The only route out is Dispatcharr, and Dispatcharr is
+behind the tunnel.
+
+> Cluster destinations are matched with a `namespaceSelector`, not an `ipBlock` on the pod and
+> service CIDRs. Cilium resolves in-cluster destinations by identity and applies CIDR rules only
+> to entities outside the cluster, so the CIDR form silently blackholes DNS — `EAI_AGAIN` on
+> every lookup. The LAN rule stays a CIDR because `10.40.0.0/16` genuinely is external.
 
 This matters because content sources live in `content.db`, configured through the UI, and nothing
 in Git constrains them. Before the policy existed, `ifconfig.co` from inside this pod returned the
@@ -79,6 +84,25 @@ browser plays natively, so each viewer costs one ffmpeg process piping into the 
 (`server/routes/remux.js`). That is why the memory limit is 4 Gi and CPU is left unlimited, and
 why [`backendtrafficpolicy.yaml`](backendtrafficpolicy.yaml) disables the request timeout — the
 whole viewing session is a single HTTP request.
+
+**"Force Audio Transcode" must be on for AAC channels.** Dispatcharr's streams are h264 + AAC in
+MPEG-TS, and the default remux path fails on them:
+
+```
+Malformed AAC bitstream detected: use the audio bitstream filter 'aac_adtstoasc' to fix it
+Error submitting a packet to the muxer: Operation not permitted
+```
+
+MPEG-TS carries AAC in ADTS framing and MP4 needs it as a raw ASC header, which `-bsf:a
+aac_adtstoasc` would convert. `remux.js` omits that filter **on purpose** — it breaks AC3, EAC3
+and MP3 — and the code comment directs you to `/api/transcode` instead. So this is upstream's
+intended behaviour, not a misconfiguration, and no version bump will change it.
+
+Enabling *Settings → Playback → Force Audio Transcode* routes playback through an HLS session
+with `videoMode: 'copy'`: video is still stream-copied, only audio is re-encoded to AAC in a
+container that accepts it. Cheap — audio-only encoding, no GPU involved. Verified against a live
+channel in-pod: the remux command exits 255 on the muxer error, the transcode command exits 0 and
+writes valid segments.
 
 **Local storage, not NFS.** [`pvc.yaml`](pvc.yaml) uses `openebs-hostpath` rather than the
 `nfs-slow` every Dispatcharr tool uses, because `content.db` is opened in SQLite WAL mode and
