@@ -31,6 +31,14 @@ spec:
               TZ: "${TIMEZONE}"
               NODE_ENV: production
               PORT: &port 3000
+              # Keycloak SSO. server/auth.js derives the auth, token and
+              # userinfo endpoints from the issuer using Keycloak's own
+              # /protocol/openid-connect/* layout, so OIDC_AUTH_URL,
+              # OIDC_TOKEN_URL and OIDC_USERINFO_URL are all unnecessary here.
+              # OIDC_CLIENT_SECRET comes from the secret below.
+              OIDC_ISSUER_URL: https://keycloak.ewatkins.dev/realms/master
+              OIDC_CLIENT_ID: nodecast
+              OIDC_CALLBACK_URL: https://nodecast.ewatkins.dev/api/auth/oidc/callback
             envFrom:
               - secretRef:
                   name: nodecast-tv-secret
