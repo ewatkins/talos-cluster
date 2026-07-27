@@ -103,8 +103,8 @@ in the pool, roughly one cycle in six lands you back on the one you just left.
 > `https://gluetun.ewatkins.dev/oauth2/callback`, secret in the Bitwarden item
 > `gluetun-secret` under `CLIENT_SECRET`.
 
-`FIREWALL_INPUT_PORTS` is `9191,3000,3001,3002,8080,9195` — Dispatcharr, the VPN
-UI and the four co-located tools. Gluetun's control server on `:8000` is deliberately left
+`FIREWALL_INPUT_PORTS` is `9191,3000,3001,9195` — Dispatcharr, the VPN
+UI and the three co-located tools. Gluetun's control server on `:8000` is deliberately left
 out, so it is reachable only from inside the pod; that is why it runs with
 `{"auth":"none"}`. If you ever expose `:8000`, switch it to
 `{"auth":"apikey","apikey":"..."}` (generate with `docker run --rm qmcgaw/gluetun genkey`)
@@ -180,7 +180,6 @@ that fetches from the public internet — therefore run here as ordinary contain
 | --- | --- | --- | --- |
 | `app` (Dispatcharr) | 9191 | `dispatcharr` | 9191 |
 | `vpn-ui` | 3000 | `dispatcharr` | 3000 |
-| `kptv-fast` | 8080 | `kptv-fast` | 8080 |
 | `teamarr` | 9195 | `teamarr` | 9195 |
 | `webpage-hls` | **3001** (+ **8081** internal) | `webpage-hls` | 3000 |
 | `game-thumbs` | **3002** | `game-thumbs` | 3000 |
@@ -201,8 +200,8 @@ Dispatcharr's Postgres database — which are not in Git — keep resolving.
 
 > **A container can bind more than the port it serves.** `webpage-hls` also runs an embedded
 > WeatherStar 4000+ — the page it screenshots — on `WS4KP_PORT`, which the image bakes to
-> **8080**. That is kptv-fast's port, and it crashlooped kptv-fast with
-> `[Errno 98] Address in use` on the first deploy while every other container came up fine.
+> **8080**. That collided with another container then in this pod and crashlooped it with
+> `[Errno 98] Address in use` on the first deploy while everything else came up fine.
 > `WS4KP_PORT: 8081` fixes it; `index.js` uses that value both to listen and to build the
 > `http://localhost:<port>` URL it renders, so nothing external cares.
 >
@@ -228,8 +227,8 @@ So in [`../ks.yaml`](../ks.yaml) the dependency runs `dispatcharr` → all four 
 tools, the reverse of the remaining two. That direction is required for `teamarr`, which owns
 a PVC, and it also orders the cutover: those Kustomizations prune the old per-tool
 HelmReleases, and **Helm will not adopt a Service owned by another release** — it fails with
-`invalid ownership metadata`. The old `kptv-fast`, `teamarr`, `webpage-hls`
-and `game-thumbs` releases must be uninstalled before this one upgrades.
+`invalid ownership metadata`. The old `teamarr`, `webpage-hls` and
+`game-thumbs` releases must be uninstalled before this one upgrades.
 
 `wait: false` means Flux does not block on those uninstalls actually finishing, so the race
 is narrowed rather than eliminated. If the HelmRelease lands on `invalid ownership
@@ -242,12 +241,8 @@ flux -n flux-system reconcile ks dispatcharr --with-source
 
 ### Consequences
 
-- **Any of these four updating restarts Dispatcharr** and drops in-flight streams. Renovate
-  bumps them independently, and two (`kptv-fast`, `webpage-hls`) track rolling
-  tags by digest. This was accepted knowingly; pin those tags if it becomes disruptive.
-- **`kptv-fast` pulls from US sources through a UK exit.** It is pinned `us,ca` and
-  aggregates Plex/Pluto/Tubi/Xumo. If a playlist comes back empty, suspect geoblocking
-  before the aggregator.
+- **Any of these three updating restarts Dispatcharr** and drops in-flight streams. Renovate
+  bumps them independently, and `webpage-hls` tracks a rolling tag by digest. This was accepted knowingly; pin those tags if it becomes disruptive.
 - `strategy: Recreate` is now spelled out on the controller. It is app-template's default,
   and still required — `dispatcharr-data` and `teamarr-data` are ReadWriteOnce, so a second
   pod could never mount them alongside the first.

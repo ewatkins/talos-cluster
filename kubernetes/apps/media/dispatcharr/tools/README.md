@@ -1,10 +1,10 @@
 # Dispatcharr Tools
 
-Six companion services around [Dispatcharr](../app/), the IPTV channel manager. Each is
+Five companion services around [Dispatcharr](../app/), the IPTV channel manager. Each is
 its own Flux `Kustomization` in [`../ks.yaml`](../ks.yaml).
 
-> **Four of them do not run in their own pod.** `kptv-fast`, `teamarr`,
-> `webpage-hls` and `game-thumbs` all fetch from the public internet,
+> **Three of them do not run in their own pod.** `teamarr`, `webpage-hls` and `game-thumbs`
+> all fetch from the public internet,
 > so they run as containers inside the **Dispatcharr pod** to share its gluetun VPN tunnel.
 > Their images, env, probes and resources live in
 > [`../app/helmrelease.yaml`](../app/helmrelease.yaml); the directories here keep only their
@@ -24,14 +24,13 @@ They fall into three roles (★ = runs inside the Dispatcharr pod, on the VPN):
 
 | Role | Tools |
 |---|---|
-| **Feed content in** — Dispatcharr pulls M3U/XMLTV from them | `kptv-fast`★, `teamarr`★, `webpage-hls`★ |
+| **Feed content in** — Dispatcharr pulls M3U/XMLTV from them | `teamarr`★, `webpage-hls`★ |
 | **Curate what's there** — they call the Dispatcharr API | `enhanced-channel-manager`, `epg-matcharr` |
 | **Artwork** | `game-thumbs`★ |
 
 ```mermaid
 flowchart LR
     subgraph SRC["Content sources"]
-        KPTV["kptv-fast<br/>M3U + XMLTV"]
         TEAM["teamarr<br/>sports XMLTV"]
         HLS["webpage-hls<br/>HLS stream"]
     end
@@ -49,38 +48,13 @@ flowchart LR
 
     JELLY(["Jellyfin<br/>:8096"])
 
-    KPTV & TEAM & HLS -->|pulled by| DISP
+    TEAM & HLS -->|pulled by| DISP
     DISP <-->|read + write| ECM & MATCH
     THUMB -.->|thumbnail URLs| TEAM
     DISP -->|channels + logos| JELLY
 ```
 
 ## Feeding content into Dispatcharr
-
-### `kptv-fast` — free ad-supported (FAST) channel aggregator
-
-Aggregates public FAST providers into one playlist and one guide. Its UI ("KPTV FAST
-Streams") exposes:
-
-- `/playlist` — combined M3U, plus `?provider=` for a single source
-- `/epg` and `/epg-gz` — combined XMLTV, likewise filterable
-- `/channels`, `/clear_cache`, `/debug`
-
-Providers enabled via `ENABLED_PROVIDERS: all`: plex, pluto, samsung, lg, distrotv, tubi,
-xumo, roku, localnow, firetv, git_freetv, git_iptv. A recent build produced **10,466
-channels / 408,229 programmes**. `GIT_COUNTRY`/`LG_COUNTRY`/`WHALE_COUNTRY` are pinned to
-`us,ca`.
-
-Dispatcharr points at `http://kptv-fast.media.svc.cluster.local:8080/playlist` as an M3U
-account and `/epg` as an EPG source. The 6 Gi memory limit is deliberate — building the
-combined EPG parses >230 MB of XML in memory and OOMKilled at 1 Gi.
-
-> **These providers are US-geolocked and this container now egresses through the UK exit.**
-> If a provider starts returning an empty playlist, check that before blaming the
-> aggregator.
-
-> The `stirr` provider currently 404s upstream (`i.mjh.nz/Stirr/all.xml` is gone). Harmless;
-> the other providers still build.
 
 ### `teamarr` — dynamic sports EPG
 
@@ -107,8 +81,8 @@ channel. Built for [WeatherStar 4000+](https://github.com/netbymatt/ws4kp).
 
 The container listens on **:3001** (`PORT`) to stay clear of `vpn-ui`; its Service still
 publishes `:3000`. It also runs a **second** server — the embedded WeatherStar it
-screenshots — on `WS4KP_PORT`, moved to **:8081** because the image defaults it to `:8080`
-and that is `kptv-fast`'s port. Purely pod-internal; the app builds its own
+screenshots — on `WS4KP_PORT`, moved to **:8081** because the image defaults it to `:8080`,
+which collided with another container when this pod was busier. Purely pod-internal; the app builds its own
 `http://localhost:8081` URL from the same variable.
 
 It also validates a background music library at startup (66 audio files → a 1,320-track
@@ -163,8 +137,7 @@ The cron schedules are staggered so each stage runs after its inputs are ready:
 |---|---|
 | 03:00 | Jellyfin refreshes its XMLTV guide |
 
-`kptv-fast` is independent, refreshing on its own `CACHE_DURATION` (7200 s) and warming both
-cache and EPG at startup. `teamarr` runs its own hourly cron.
+`teamarr` runs its own hourly cron.
 
 ## Conventions across these tools
 
@@ -191,7 +164,7 @@ URLs stored in Dispatcharr's database — sees a change. Also unavailable in tha
 `5656`, `8000`, `8001`, `9191`, `9999`, and `8081` (webpage-hls's embedded WeatherStar).
 
 A container may bind ports it does not advertise — that is what collided `webpage-hls` with
-`kptv-fast` on the first deploy. Comparing Service ports is not enough; check the pod's real
+another container on the first deploy. Comparing Service ports is not enough; check the pod's real
 listeners with `grep " 0A " /proc/net/tcp` before adding a container.
 
 > A stale NFS handle on one of these volumes surfaces as `unable to open database file` or
@@ -202,8 +175,8 @@ listeners with `grep " 0A " /proc/net/tcp` before adding a container.
 check. `game-thumbs` (444 on `/`) and `webpage-hls` (404 on `/`) would each have needed a
 custom path or status anyway.
 
-**Image pinning.** Everything is pinned by tag *and* digest for Renovate. `kptv-fast` and
-`webpage-hls` publish no version tags, so they track a rolling tag by digest. For the four
+**Image pinning.** Everything is pinned by tag *and* digest for Renovate. `webpage-hls`
+publishes no version tags, so it tracks a rolling tag by digest. For the three
 co-located tools, that means a Renovate bump **restarts
 Dispatcharr** and drops in-flight streams — accepted deliberately, but it is the reason to
 pin those rolling tags if the churn ever gets annoying.
