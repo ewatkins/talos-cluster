@@ -5,7 +5,7 @@ Live TV, Movies and Series from an Xtream Codes or M3U provider. Here it is a **
 [Dispatcharr](../../dispatcharr/)** — Dispatcharr aggregates and proxies the streams,
 nodecast-tv just plays them.
 
-Reachable at `https://nodecast.ewatkins.dev` on the internal gateway.
+Reachable at `https://tv.ewatkins.dev` on the internal gateway.
 
 ## Why there is no VPN here
 
@@ -157,9 +157,12 @@ Wired to the `nodecast` client in the `master` realm — the app's own OIDC supp
 `SecurityPolicy` like the [VPN UI](../../dispatcharr/app/securitypolicy.yaml) uses. It has to be
 in-app, because the JWT it mints is what the player uses for every subsequent `/api` call.
 
-The client needs redirect URI `https://nodecast.ewatkins.dev/api/auth/oidc/callback` and must be
+The client needs redirect URI `https://tv.ewatkins.dev/api/auth/oidc/callback` and must be
 confidential (client authentication on) — the secret is required, and SSO stays silently
-disabled without it. Only `OIDC_ISSUER_URL` is set: `server/auth.js` builds the auth, token and
+disabled without it. `OIDC_CALLBACK_URL`, the HTTPRoute hostname and the Keycloak client's
+*Valid redirect URIs* all have to name the same host — the app sends `OIDC_CALLBACK_URL`
+verbatim as `redirect_uri`, so if it drifts from the client's list Keycloak answers
+**"Invalid parameter: redirect_uri"** on the login page and never reaches the app. Only `OIDC_ISSUER_URL` is set: `server/auth.js` builds the auth, token and
 userinfo endpoints from it using Keycloak's `/protocol/openid-connect/*` layout, which is
 exactly what Keycloak serves, so the three explicit URL overrides it also accepts are redundant.
 

@@ -38,7 +38,7 @@ spec:
               # OIDC_CLIENT_SECRET comes from the secret below.
               OIDC_ISSUER_URL: https://keycloak.ewatkins.dev/realms/master
               OIDC_CLIENT_ID: nodecast
-              OIDC_CALLBACK_URL: https://nodecast.ewatkins.dev/api/auth/oidc/callback
+              OIDC_CALLBACK_URL: https://tv.ewatkins.dev/api/auth/oidc/callback
             envFrom:
               - secretRef:
                   name: nodecast-tv-secret
