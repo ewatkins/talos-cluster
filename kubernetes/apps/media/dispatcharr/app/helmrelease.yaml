@@ -350,6 +350,32 @@ spec:
             port: *port
           vpn-ui:
             port: *vpnUiPort
+      # Dedicated LAN address for XC clients that cannot use the gateway.
+      # dispatcharr.ewatkins.dev exists only in internal DNS, and set-top boxes
+      # routinely ignore DHCP-supplied resolvers or force DoH, which leaves them
+      # unable to find it at all; a literal IP sidesteps name resolution.
+      #
+      # Only 9191 is published. The vpn-ui on 3000 is deliberately left off:
+      # gluetun's /v1/vpn/settings returns the Privado credentials in clear text
+      # and the UI re-serves it, which is why securitypolicy.yaml puts that route
+      # behind Keycloak. A LoadBalancer here would hand it to the whole LAN.
+      #
+      # Plain HTTP, so XC credentials cross the LAN in the query string. That is
+      # the trade for clients with no working DNS or TLS trust store.
+      #
+      # 9191 is already in FIREWALL_INPUT_PORTS, so gluetun accepts this on eth0
+      # without further change, and reply routing for inbound connections does
+      # not go through the tunnel.
+      lan:
+        controller: dispatcharr
+        forceRename: dispatcharr-lan
+        type: LoadBalancer
+        externalTrafficPolicy: Cluster
+        annotations:
+          io.cilium/lb-ipam-ips: 10.40.0.101
+        ports:
+          http:
+            port: *port
       teamarr:
         controller: dispatcharr
         forceRename: teamarr
