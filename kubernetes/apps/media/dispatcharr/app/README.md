@@ -86,11 +86,10 @@ in the pool, roughly one cycle in six lands you back on the one you just left.
 
 ### What stays off the tunnel
 
-`FIREWALL_OUTBOUND_SUBNETS` keeps four CIDRs on `eth0`:
+`FIREWALL_OUTBOUND_SUBNETS` keeps three CIDRs on `eth0`:
 
 | Subnet | Why |
 | --- | --- |
-| `10.0.0.0/16` | Client VLAN: TVs and players |
 | `10.40.0.0/16` | LAN: the NAS, the nodes, and kubelet probe replies |
 | `10.69.0.0/16` | Pod CIDR: the Envoy gateway, the Dispatcharr tools |
 | `10.96.0.0/16` | Service CIDR: CoreDNS, pgBouncer, Dragonfly |
@@ -106,11 +105,15 @@ in the pool, roughly one cycle in six lands you back on the one you just left.
 
 Anything **not** listed routes into `tun0` and is blackholed at the Privado exit — that is
 the kill switch working as intended, but it also means a forgotten LAN segment looks like a
-dead host. `10.0.0.0/16` was added for exactly that reason: `ping 10.0.100.221` succeeded
-from any other pod and failed from this one. Note that nothing in this pod actually dials
-out to the client VLAN — XC clients connect *inbound* through the gateway, which runs
-`externalTrafficPolicy: Cluster` and SNATs every request to a pod IP, so Dispatcharr only
-ever sees `10.69.x.x`. Do not reach for this setting to explain a client-side auth failure.
+dead host: `ping 10.0.100.221` succeeds from any other pod and fails from this one.
+
+**That asymmetry is not a bug, and it is not an ingress path.** The client VLAN
+(`10.0.0.0/16`) was added here once while chasing an XC client that could not log in, then
+removed again, because this list only governs connections the pod *initiates*. Clients
+connect **inbound** through the gateway, which runs `externalTrafficPolicy: Cluster` and
+SNATs every request to a pod IP — Dispatcharr only ever sees `10.69.x.x` — and reply
+routing for an inbound connection does not consult this list at all. Widening it cannot fix
+a client-side auth or connectivity failure; it only enlarges what bypasses the tunnel.
 
 > **The VPN UI leaks the Privado credentials, so it is behind Keycloak.** Gluetun's
 > `/v1/vpn/settings` returns `openvpn.user` and `openvpn.password` in clear text, and
