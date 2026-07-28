@@ -48,12 +48,12 @@ spec:
               # Keeping the LAN, pod and service CIDRs on eth0 is what lets
               # Postgres, Dragonfly, CoreDNS, the NAS and kubelet probes keep
               # working while the VPN is up (or while it is reconnecting).
-              # 10.0.0.0/16 is the client VLAN (TVs, players). Nothing here
-              # dials out to it — clients always connect inbound through the
-              # gateway, which SNATs them to a pod IP — but without it the pod
-              # cannot reach that VLAN at all, since anything unlisted routes
-              # into tun0 and is blackholed at the Privado exit.
-              FIREWALL_OUTBOUND_SUBNETS: 10.0.0.0/16,10.40.0.0/16,10.69.0.0/16,10.96.0.0/16
+              # The client VLAN (10.0.0.0/16) is deliberately absent: nothing
+              # here dials out to it. XC clients connect inbound through the
+              # gateway, and reply routing for inbound connections does not use
+              # this list, so adding it buys nothing and only widens what
+              # bypasses the tunnel.
+              FIREWALL_OUTBOUND_SUBNETS: 10.40.0.0/16,10.69.0.0/16,10.96.0.0/16
               # Ports the pod accepts from outside: Dispatcharr, the VPN UI and
               # the six co-located tools. The control server on :8000 is
               # deliberately not listed, so it is reachable only from inside
