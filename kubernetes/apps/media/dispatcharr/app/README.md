@@ -95,6 +95,15 @@ in the pool, roughly one cycle in six lands you back on the one you just left.
 | `10.69.0.0/16` | Pod CIDR: the Envoy gateway, the Dispatcharr tools |
 | `10.96.0.0/16` | Service CIDR: CoreDNS, pgBouncer, Dragonfly |
 
+> **Give DNS ~2 minutes after a pod roll before diagnosing anything.** Gluetun's forwarder
+> logs `[dns] ready` while its DoT upstream is still warming up, so public names fail with
+> `Temporary failure in name resolution` for a window after startup — cluster names keep
+> resolving the whole time, which makes it look like a split-DNS bug. Worse, gluetun's own
+> healthcheck resolves `github.com`/`cloudflare.com` through that same forwarder, so if the
+> window is long enough it fails, restarts the VPN, and loops. One clean `rollout restart`
+> cleared it. Confirm with `kubectl -n media exec deploy/dispatcharr -c gluetun -- nslookup
+> github.com 127.0.0.1` before concluding the tunnel or the firewall is at fault.
+
 Anything **not** listed routes into `tun0` and is blackholed at the Privado exit — that is
 the kill switch working as intended, but it also means a forgotten LAN segment looks like a
 dead host. `10.0.0.0/16` was added for exactly that reason: `ping 10.0.100.221` succeeded
