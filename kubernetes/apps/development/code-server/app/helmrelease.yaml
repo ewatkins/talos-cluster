@@ -119,6 +119,42 @@ spec:
                 cpu: 50m
               limits:
                 memory: 512Mi
+          # Bring the repo up to date with origin/main on every pod start, so a
+          # fresh IDE session doesn't open onto a checkout that Renovate has
+          # since moved past. Runs after `tools` (app-template orders init
+          # containers by key, and z- sorts last) because that container is what
+          # makes $HOME uid-1000-owned on a fresh PVC.
+          #
+          # Same image as the app container on purpose: it is already on the node
+          # and already has git + ssh, so this adds no pull and no Renovate entry.
+          # Best-effort by construction — every failure path exits 0. GitHub being
+          # unreachable, a dirty tree that will not stash, a rebase conflict, or a
+          # missing clone must never be the reason the IDE will not start.
+          z-git-pull:
+            image:
+              repository: ghcr.io/coder/code-server
+              tag: 4.131.0
+            command:
+              - /bin/sh
+              - -c
+              - |
+                REPO=/home/ewatkins/projects/talos-cluster
+                cd "$${REPO}" 2>/dev/null || { echo "no clone at $${REPO}, skipping"; exit 0; }
+                # --autostash so uncommitted work is restored afterwards, --rebase
+                # so local commits replay on top instead of spawning merge commits.
+                timeout 60 git pull --rebase --autostash origin main 2>&1 || {
+                  echo "pull failed, leaving the checkout as-is"
+                  # A conflicted rebase would otherwise leave the tree mid-rebase.
+                  git rebase --abort 2>/dev/null || true
+                }
+                exit 0
+            env:
+              HOME: /home/ewatkins
+            resources:
+              requests:
+                cpu: 10m
+              limits:
+                memory: 256Mi
         containers:
           app:
             image:

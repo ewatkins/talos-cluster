@@ -104,6 +104,16 @@ talhelper genconfig
 
 Both files are gitignored, and both live on the PVC, so this survives pod restarts.
 
+### Auto-pull on pod start
+
+The `z-git-pull` init container runs `git pull --rebase --autostash origin main` in `~/projects/talos-cluster` before the IDE comes up, so a new session never opens onto a checkout that Renovate has since moved past. `--autostash` restores uncommitted work afterwards and `--rebase` replays local commits on top instead of creating merge commits.
+
+It reuses the code-server image (already on the node, already has git and ssh) rather than pulling a second image, and it is **best-effort by construction** — a missing clone, an unreachable GitHub, or a rebase conflict all `exit 0`, and a conflict additionally triggers `git rebase --abort` so the tree is never left mid-rebase. None of those may be the reason the IDE won't start.
+
+The push side of that pull needs `~/.ssh/id_ed25519` at mode `0600` — see the `fsGroup` note below for why that used to reset on every restart.
+
+A matching Claude Code `SessionStart` hook in `.claude/settings.json` runs the same pull, so a Claude session started against a long-running pod is current too. That file is covered by the repo's `.claude/` gitignore, so it lives on the PVC only.
+
 ## SSH
 
 A `linuxserver/openssh-server` sidecar shares the pod and the home PVC. https (443) and ssh (22) are two ports on **one** LoadBalancer Service at `${CODE_SERVER}` (10.40.0.145) — deliberately one Service, not two sharing the IP: Cilium L2-announces per service, and split services get announced from different nodes, so two MACs answer ARP for the same address and established connections reset when the client's ARP cache flips. unifi-dns publishes the A record from the service annotation. (The internal gateway couldn't host this: its port 22 belongs to forgejo.)
