@@ -140,9 +140,14 @@ data:
       # SetEnv covers non-interactive commands (ssh host cmd, Remote-SSH);
       # the profile.d file below covers interactive logins, where Alpine's
       # /etc/profile hard-resets PATH and would clobber SetEnv.
-      grep -q '^SetEnv ' "$SSHD_CONF" || cat >> "$SSHD_CONF" <<'SSHEOF'
-    SetEnv PATH=/home/ewatkins/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin TALOSCONFIG=/home/ewatkins/talos-cluster/talos/clusterconfig/talosconfig
-    SSHEOF
+      # Rewritten in place rather than appended-if-absent: sshd_config lives on
+      # the PVC, so an existing volume already has a SetEnv line and a bare
+      # grep guard would pin it to whatever paths were right when it was first
+      # written -- which is exactly how TALOSCONFIG stayed on the pre-move
+      # ~/talos-cluster path after the clone went to ~/projects/talos-cluster.
+      SSHD_SETENV='SetEnv PATH=/home/ewatkins/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin TALOSCONFIG=/home/ewatkins/projects/talos-cluster/talos/clusterconfig/talosconfig'
+      sed -i -E "s#^SetEnv[[:space:]].*#$SSHD_SETENV#" "$SSHD_CONF"
+      grep -q '^SetEnv ' "$SSHD_CONF" || echo "$SSHD_SETENV" >> "$SSHD_CONF"
     fi
 
     # Sync authorized_keys from GitHub on every pod start via ssh-import-id
