@@ -1,0 +1,117 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app unifi-network-mcp
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+    controllers:
+      unifi-network-mcp:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: ghcr.io/sirkirby/unifi-network-mcp
+              tag: 0.24.1@sha256:4d15874fa5ec0c028bd2557d8725d22a831dadfa28d87987c49be91bb20245ee
+            env:
+              TZ: America/Chicago
+              HOME: /tmp
+              # UniFi controller (UDM at the LAN gateway); credentials come from the secret
+              UNIFI_HOST: 10.0.0.1
+              UNIFI_PORT: "443"
+              UNIFI_SITE: default
+              UNIFI_VERIFY_SSL: "false"
+              # HTTP transport — the container runs as PID 1, so stdio is skipped
+              # and only the streamable-http listener is bound.
+              UNIFI_MCP_HOST: 0.0.0.0
+              UNIFI_MCP_PORT: &port 3000
+              UNIFI_MCP_HTTP_ENABLED: "true"
+              UNIFI_MCP_HTTP_TRANSPORT: streamable-http
+              # DNS-rebinding protection checks the Host header, so every name a
+              # client may use has to be listed here.
+              UNIFI_MCP_ALLOWED_HOSTS: >-
+                unifi-mcp.ewatkins.dev,
+                unifi-network-mcp,
+                unifi-network-mcp:3000,
+                unifi-network-mcp.mcp.svc.cluster.local,
+                unifi-network-mcp.mcp.svc.cluster.local:3000,
+                localhost,
+                localhost:3000,
+                127.0.0.1,
+                127.0.0.1:3000
+              # Register meta-tools and load the rest on demand — keeps agent context small
+              UNIFI_TOOL_REGISTRATION_MODE: lazy
+              # Mutations return a preview and only apply when re-called with confirm=true
+              UNIFI_TOOL_PERMISSION_MODE: confirm
+            envFrom:
+              - secretRef:
+                  name: unifi-network-mcp-secret
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  tcpSocket:
+                    port: *port
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 5
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  tcpSocket:
+                    port: *port
+                  periodSeconds: 10
+                  timeoutSeconds: 5
+                  failureThreshold: 5
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  tcpSocket:
+                    port: *port
+                  periodSeconds: 10
+                  failureThreshold: 30
+            resources:
+              requests:
+                cpu: 10m
+                memory: 128Mi
+              limits:
+                memory: 512Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: [ALL] }
+    service:
+      app:
+        controller: *app
+        ports:
+          http:
+            port: *port
+    persistence:
+      tmp:
+        type: emptyDir
+        globalMounts:
+          - path: /tmp
