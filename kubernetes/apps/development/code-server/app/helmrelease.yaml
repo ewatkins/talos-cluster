@@ -181,7 +181,7 @@ spec:
               PATH: /home/ewatkins/.local/bin:/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
               SOPS_AGE_KEY_FILE: /var/run/secrets/sops/age.key
               # Written by `talhelper genconfig`; not stored as a secret
-              TALOSCONFIG: /home/ewatkins/talos-cluster/talos/clusterconfig/talosconfig
+              TALOSCONFIG: /home/ewatkins/projects/talos-cluster/talos/clusterconfig/talosconfig
             probes:
               # exec, not httpGet: the kubelet probes the pod IP, but
               # code-server binds loopback only.

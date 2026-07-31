@@ -82,10 +82,10 @@ curl -fsSL https://claude.ai/install.sh | bash
 
 ## Working on this repo from code-server
 
-The repo's root `Taskfile.yaml` pins `SOPS_AGE_KEY_FILE` and `KUBECONFIG` to repo-root paths, which override the pod's environment. After cloning to `~/talos-cluster`, run once:
+The repo's root `Taskfile.yaml` pins `SOPS_AGE_KEY_FILE` and `KUBECONFIG` to repo-root paths, which override the pod's environment. After cloning to `~/projects/talos-cluster`, run once:
 
 ```bash
-cd ~/talos-cluster
+cd ~/projects/talos-cluster
 
 # Taskfile expects ./age.key
 ln -s /var/run/secrets/sops/age.key age.key
