@@ -75,7 +75,12 @@ spec:
                 # doesn't make it root-owned.
                 mkdir -p "$${BIN}" /home/ewatkins/.config /home/ewatkins/.linuxbrew-home
                 chown 1000:1000 /home/ewatkins /home/ewatkins/.local /home/ewatkins/.config /home/ewatkins/.linuxbrew-home "$${BIN}"
-                # sshd StrictModes rejects a group/world-writable home
+                # sshd StrictModes rejects a group/world-writable home. This is
+                # also why the pod sets no fsGroup: kubelet's fsGroup pass wants
+                # setgid+group-write on the volume root, never gets it because of
+                # this chmod, and so re-ran its recursive `mode |= 0660` over the
+                # whole PVC on every start — which reset ~/.ssh private keys from
+                # 0600 to 0660 and made ssh reject them.
                 chmod 0755 /home/ewatkins
 
                 if [ -f "$${MARKER}" ] && [ "$$(cat "$${MARKER}")" = "$${STAMP}" ]; then
@@ -252,8 +257,9 @@ spec:
       securityContext:
         runAsUser: 1000
         runAsGroup: 1000
-        fsGroup: 1000
-        fsGroupChangePolicy: OnRootMismatch
+        # No fsGroup on purpose — see the init container's chmod comment. The
+        # home PVC is owned by the init container instead, and secret/configMap
+        # volumes carry modes that uid 1000 can read without a group grant.
         seccompProfile:
           type: RuntimeDefault
 
@@ -362,7 +368,9 @@ spec:
       secret:
         type: secret
         name: code-server-secret
-        defaultMode: 0400
+        # 0444, not 0400: with no fsGroup the file is root:root, and the age key
+        # is read by uid 1000. Only this pod's containers can see the mount.
+        defaultMode: 0444
         # Mounted outside $HOME on purpose: a mount inside the home PVC makes the
         # kubelet create its parent dirs as root, and code-server (uid 1000) then
         # cannot create /home/ewatkins/.config/code-server.

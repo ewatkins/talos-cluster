@@ -111,7 +111,17 @@ A `linuxserver/openssh-server` sidecar shares the pod and the home PVC. https (4
 - **Key auth only** (`PASSWORD_ACCESS=false`). `~/.ssh/authorized_keys` is **imported with `ssh-import-id gh:ewatkins gh:mmu-ewatkins` on every pod start** by the `ssh-home.sh` custom-cont-init script (which also moves the sidecar user's home from the image default `/config` to `/home/ewatkins`). Manage keys on either GitHub account; the import is atomic and authoritative — revoking a key on GitHub removes it here, manual edits to the file are overwritten, and if GitHub is unreachable the previous file is kept, so an outage cannot cause lockout.
 - Host keys persist in `~/.ssh-server/` (the sidecar's `/config`, a subdirectory of the home PVC), so clients don't see host-key warnings after pod restarts.
 - An SSH session is nearly as privileged as the IDE terminal: the pod's ServiceAccount token (cluster-admin) automounts into every container, and the shared toolchain's `kubectl` works against it. Only the age key mount (`/var/run/secrets/sops/age.key`) is app-container-only. `scp`, `rsync`, `sftp`, and VS Code Remote-SSH all work.
-- No first-time key setup needed — the GitHub sync provides the initial `authorized_keys` too. sshd `StrictModes` requires the home not be group/world-writable; the init container enforces `0755`. The same script also re-tightens host keys to `0600`: kubelet's `fsGroup` handling loosens them to `0660` at mount time, which sshd refuses ("no hostkeys available").
+- No first-time key setup needed — the GitHub sync provides the initial `authorized_keys` too. sshd `StrictModes` requires the home not be group/world-writable; the init container enforces `0755`.
+
+### Why the pod sets no `fsGroup`
+
+The init container's `chmod 0755 /home/ewatkins` and `fsGroup` are mutually exclusive, and `fsGroup` lost.
+
+`fsGroupChangePolicy: OnRootMismatch` skips the recursive ownership pass only when the volume root already carries the setgid bit and group-write. `0755` has neither, so the root mismatched on every start, kubelet walked the whole PVC, and OR'd `0660` onto every regular file. Anything created `0600` came back `0660` — host keys (sshd: "no hostkeys available") and, less visibly, `~/.ssh` **private keys**, which `ssh` refuses outright with "UNPROTECTED PRIVATE KEY FILE", breaking `git push` after every restart.
+
+With `fsGroup` gone the PVC is owned entirely by the init container's `chown 1000:1000`, and file modes are left alone. The one thing `fsGroup` was still buying was group-readability on the mounted age key, so `code-server-secret` is mounted `0444` instead of `0400` — the mount is visible only to this pod's containers, whose only non-root uid is the intended reader.
+
+`ssh-home.sh` still re-tightens host keys to `0600`; it's now a no-op safety net rather than load-bearing.
 
 ## Health Monitoring
 
