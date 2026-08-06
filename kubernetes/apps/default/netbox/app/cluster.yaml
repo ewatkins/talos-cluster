@@ -1,0 +1,35 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.ok8.sh/dragonflydb.io/dragonfly_v1alpha1.json
+apiVersion: dragonflydb.io/v1alpha1
+kind: Dragonfly
+metadata:
+  name: netbox-dragonfly
+spec:
+  image: ghcr.io/dragonflydb/dragonfly:v1.39.0
+  replicas: 2
+  env:
+    - name: MAX_MEMORY
+      valueFrom:
+        resourceFieldRef:
+          resource: limits.memory
+          divisor: 1Mi
+  args:
+    # No --cluster_mode: NetBox needs two separate logical databases (RQ tasks
+    # on 0, cache on 1) and emulated cluster mode only exposes database 0.
+    - --maxmemory=$(MAX_MEMORY)Mi
+    - --proactor_threads=2
+    - --default_lua_flags=allow-undeclared-keys
+  networkPolicyEnabled: false
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      memory: 512Mi
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: DoNotSchedule
+      labelSelector:
+        matchLabels:
+          app: netbox-dragonfly
