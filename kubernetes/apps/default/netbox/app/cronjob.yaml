@@ -1,0 +1,60 @@
+---
+# NetBox expects `manage.py housekeeping` to run once a day: it clears expired
+# sessions, trims changelog/job history past their retention, and checks for
+# new releases. Nothing else invokes it, so it has to be scheduled here.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: netbox-housekeeping
+  namespace: default
+spec:
+  schedule: "15 4 * * *" # daily at 04:15
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      ttlSecondsAfterFinished: 3600
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: housekeeping
+              image: docker.io/netboxcommunity/netbox:v4.6-5.0.2
+              # Bypass the image entrypoint: it would re-run migrations and the
+              # superuser bootstrap on every scheduled tick.
+              command:
+                - /opt/netbox/venv/bin/python
+                - /opt/netbox/netbox/manage.py
+                - housekeeping
+              env:
+                - name: SKIP_SUPERUSER
+                  value: "true"
+                - name: REDIS_HOST
+                  value: &redis netbox-dragonfly.default.svc.cluster.local
+                - name: REDIS_PORT
+                  value: &redisPort "6379"
+                - name: REDIS_DATABASE
+                  value: "0"
+                - name: REDIS_SSL
+                  value: "false"
+                - name: REDIS_CACHE_HOST
+                  value: *redis
+                - name: REDIS_CACHE_PORT
+                  value: *redisPort
+                - name: REDIS_CACHE_DATABASE
+                  value: "1"
+                - name: REDIS_CACHE_SSL
+                  value: "false"
+              envFrom:
+                - secretRef:
+                    name: netbox-db-secret
+                - secretRef:
+                    name: netbox-secret
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 256Mi
+                limits:
+                  memory: 1Gi

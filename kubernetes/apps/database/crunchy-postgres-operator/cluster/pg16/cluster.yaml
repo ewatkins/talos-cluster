@@ -89,6 +89,9 @@ spec:
     - name: "patchmon-admin"
       databases: ["patchmon"]
       password: *password
+    - name: "netbox-admin"
+      databases: ["netbox"]
+      password: *password
   backups:
     pgbackrest:
       configuration: &backupConfig

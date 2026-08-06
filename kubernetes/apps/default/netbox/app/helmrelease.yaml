@@ -1,0 +1,172 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: netbox
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    controllers:
+      netbox:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: docker.io/netboxcommunity/netbox
+              tag: v4.6-5.0.2
+            env: &env
+              TZ: America/Chicago
+              ALLOWED_HOSTS: "*"
+              CSRF_TRUSTED_ORIGINS: https://ipam.ewatkins.dev
+              # pgbouncer terminates TLS optionally; the pg_hba allows hostnossl
+              # from the pod CIDR, so plain is what actually gets negotiated
+              DB_SSLMODE: prefer
+              DB_WAIT_TIMEOUT: "5"
+              MAX_DB_WAIT_TIME: "120"
+              REDIS_HOST: &redis netbox-dragonfly.default.svc.cluster.local
+              REDIS_PORT: &redisPort "6379"
+              REDIS_DATABASE: "0"
+              REDIS_SSL: "false"
+              REDIS_CACHE_HOST: *redis
+              REDIS_CACHE_PORT: *redisPort
+              REDIS_CACHE_DATABASE: "1"
+              REDIS_CACHE_SSL: "false"
+              METRICS_ENABLED: "true"
+              SUPERUSER_NAME: admin
+              SUPERUSER_EMAIL: admin@ewatkins.dev
+            envFrom: &envFrom
+              - secretRef:
+                  name: netbox-db-secret
+              - secretRef:
+                  name: netbox-secret
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /login/
+                    port: &port 8080
+                  periodSeconds: 30
+                  failureThreshold: 3
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /login/
+                    port: *port
+                  periodSeconds: 10
+                  failureThreshold: 3
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /login/
+                    port: *port
+                  failureThreshold: 30
+                  periodSeconds: 10
+            resources:
+              requests:
+                cpu: 100m
+                memory: 512Mi
+              limits:
+                memory: 2Gi
+      worker:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        initContainers:
+          # The image entrypoint applies migrations on every start. Wait for the
+          # web pod to finish that first so two pods never migrate concurrently.
+          wait-for-netbox:
+            image:
+              repository: docker.io/netboxcommunity/netbox
+              tag: v4.6-5.0.2
+            command:
+              - /bin/bash
+              - -c
+              - |
+                until curl -sf -o /dev/null http://netbox.default.svc.cluster.local:8080/login/; do
+                  echo "waiting for netbox to finish migrations..."
+                  sleep 5
+                done
+            resources:
+              requests:
+                cpu: 10m
+                memory: 32Mi
+              limits:
+                memory: 128Mi
+        containers:
+          app:
+            image:
+              repository: docker.io/netboxcommunity/netbox
+              tag: v4.6-5.0.2
+            command:
+              - /opt/netbox/venv/bin/python
+              - /opt/netbox/netbox/manage.py
+              - rqworker
+            env:
+              <<: *env
+              SKIP_SUPERUSER: "true"
+            envFrom: *envFrom
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: ["/bin/bash", "-c", "ps -aux | grep -v grep | grep -q rqworker"]
+                  periodSeconds: 30
+                  failureThreshold: 3
+            resources:
+              requests:
+                cpu: 50m
+                memory: 256Mi
+              limits:
+                memory: 1Gi
+    service:
+      app:
+        controller: netbox
+        ports:
+          http:
+            port: *port
+    persistence:
+      media:
+        existingClaim: netbox-media
+        advancedMounts:
+          netbox:
+            app: &mediaMount
+              - path: /opt/netbox/netbox/media
+          worker:
+            app: *mediaMount
+      scripts:
+        existingClaim: netbox-scripts
+        advancedMounts:
+          netbox:
+            app: &scriptsMount
+              - path: /opt/netbox/netbox/scripts
+          worker:
+            app: *scriptsMount
+      reports:
+        existingClaim: netbox-reports
+        advancedMounts:
+          netbox:
+            app: &reportsMount
+              - path: /opt/netbox/netbox/reports
+          worker:
+            app: *reportsMount
