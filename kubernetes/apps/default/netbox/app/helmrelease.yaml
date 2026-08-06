@@ -6,13 +6,17 @@ metadata:
   name: netbox
 spec:
   interval: 1h
+  # First boot applies the full NetBox migration set, which runs well past the
+  # 5m Flux default. Without this, Helm times out and the install remediation
+  # uninstalls the release mid-migration, looping forever.
+  timeout: 20m
   chartRef:
     kind: OCIRepository
     name: app-template
     namespace: flux-system
   install:
     remediation:
-      retries: 3
+      retries: 0
   upgrade:
     cleanupOnFail: true
     remediation:
@@ -79,7 +83,8 @@ spec:
                   httpGet:
                     path: /login/
                     port: *port
-                  failureThreshold: 30
+                  # 15m: gunicorn only binds after migrations finish
+                  failureThreshold: 90
                   periodSeconds: 10
             resources:
               requests:
