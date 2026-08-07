@@ -29,6 +29,10 @@ scripts/
 !scripts/kubeconform.sh
 # Claude Code
 .claude/
+# Database dumps
+*.dump
+*.sql
+*.sql.gz
 # Miscellaneous
 requirements.txt
 .envrc
