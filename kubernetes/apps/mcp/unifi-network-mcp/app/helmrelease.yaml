@@ -33,7 +33,7 @@ spec:
           app:
             image:
               repository: ghcr.io/sirkirby/unifi-network-mcp
-              tag: 0.24.1@sha256:4d15874fa5ec0c028bd2557d8725d22a831dadfa28d87987c49be91bb20245ee
+              tag: 0.25.2@sha256:7619097afee1571c4d391ba34f058bd2b83c8a0dcf2f5ab779a6d1e12c21a4a9
             env:
               TZ: America/Chicago
               HOME: /tmp
