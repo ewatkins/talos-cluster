@@ -98,9 +98,12 @@ in the pool, roughly one cycle in six lands you back on the one you just left.
 > logs `[dns] ready` while its DoT upstream is still warming up, so public names fail with
 > `Temporary failure in name resolution` for a window after startup — cluster names keep
 > resolving the whole time, which makes it look like a split-DNS bug. Worse, gluetun's own
-> healthcheck resolves `github.com`/`cloudflare.com` through that same forwarder, so if the
-> window is long enough it fails, restarts the VPN, and loops. One clean `rollout restart`
-> cleared it. Confirm with `kubectl -n media exec deploy/dispatcharr -c gluetun -- nslookup
+> healthcheck used to resolve `github.com`/`cloudflare.com` through that same forwarder, so if
+> the window is long enough it fails, restarts the VPN, and loops. One clean `rollout restart`
+> cleared it. `HEALTH_TARGET_ADDRESSES: 1.1.1.1:443,8.8.8.8:443` now takes DNS out of that
+> path so a stalled forwarder can no longer escalate into a restart storm — but the forwarder
+> itself can still wedge, and a roll is still the way out. Confirm with
+> `kubectl -n media exec deploy/dispatcharr -c gluetun -- nslookup
 > github.com 127.0.0.1` before concluding the tunnel or the firewall is at fault.
 
 Anything **not** listed routes into `tun0` and is blackholed at the Privado exit — that is
