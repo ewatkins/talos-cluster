@@ -69,6 +69,18 @@ spec:
               # line also makes ipinfo the first to rate-limit us, which is
               # what leaves the UI showing a stale IP after a reconnect.
               PUBLICIP_API: ifconfigco,ip2location,cloudflare
+              # Literal IPs, not hostnames. The default targets are
+              # cloudflare.com:443/github.com:443, which gluetun resolves
+              # through its own DoT forwarder — the one thing in this pod that
+              # can wedge. When it does, the healthcheck it feeds fails, gluetun
+              # restarts the VPN, and the restart tears down the forwarder
+              # again: a loop that cannot self-heal (71 reconnects in 8s
+              # intervals on 2026-08-17, streams dead throughout, cleared only
+              # by a pod roll). Resolving nothing here breaks that circle, so a
+              # DNS stall stays a DNS stall instead of escalating into a VPN
+              # restart storm. Two targets keeps the redundancy the hostname
+              # pair had. The small ICMP check already used raw IPs.
+              HEALTH_TARGET_ADDRESSES: 1.1.1.1:443,8.8.8.8:443
             envFrom:
               - secretRef:
                   name: gluetun-secret
