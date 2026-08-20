@@ -190,6 +190,9 @@ spec:
       port: 5432
       service:
         type: LoadBalancer
+        metadata:
+          annotations:
+            lbipam.cilium.io/ips: ${CRUNCHY_POSTGRES_PGBOUNCER}
       replicas: *replicas
       metadata:
         labels:
