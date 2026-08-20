@@ -41,6 +41,4 @@ spec:
     # off its own tunnel via FIREWALL_OUTBOUND_SUBNETS.
     - to:
         - ipBlock:
-            cidr: 10.40.0.0/16
-        - ipBlock:
             cidr: 192.168.40.0/24

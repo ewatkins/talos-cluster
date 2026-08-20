@@ -90,7 +90,7 @@ in the pool, roughly one cycle in six lands you back on the one you just left.
 
 | Subnet | Why |
 | --- | --- |
-| `10.40.0.0/16` | LAN: the NAS, the nodes, and kubelet probe replies |
+| `192.168.40.0/24` | LAN: the NAS, the nodes, and kubelet probe replies |
 | `10.69.0.0/16` | Pod CIDR: the Envoy gateway, the Dispatcharr tools |
 | `10.96.0.0/16` | Service CIDR: CoreDNS, pgBouncer, Dragonfly |
 

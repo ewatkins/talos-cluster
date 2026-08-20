@@ -56,11 +56,10 @@ nodes:
         dhcp: false
         mtu: 9000
         addresses:
-          - 10.40.1.1/16
           - 192.168.40.11/24
         routes:
           - network: 0.0.0.0/0
-            gateway: 10.40.0.1
+            gateway: 192.168.40.1
         vip:
           ip: 192.168.40.10
   - hostname: huron
@@ -73,11 +72,10 @@ nodes:
         dhcp: false
         mtu: 9000
         addresses:
-          - 10.40.1.2/16
           - 192.168.40.12/24
         routes:
           - network: 0.0.0.0/0
-            gateway: 10.40.0.1
+            gateway: 192.168.40.1
         vip:
           ip: 192.168.40.10
   - hostname: michigan
@@ -90,11 +88,10 @@ nodes:
         dhcp: false
         mtu: 9000
         addresses:
-          - 10.40.1.3/16
           - 192.168.40.13/24
         routes:
           - network: 0.0.0.0/0
-            gateway: 10.40.0.1
+            gateway: 192.168.40.1
         vip:
           ip: 192.168.40.10
   - hostname: erie
@@ -107,11 +104,10 @@ nodes:
         dhcp: false
         mtu: 9000
         addresses:
-          - 10.40.1.4/16
           - 192.168.40.14/24
         routes:
           - network: 0.0.0.0/0
-            gateway: 10.40.0.1
+            gateway: 192.168.40.1
   - hostname: ontario
     ipAddress: 192.168.40.15
     controlPlane: false
@@ -122,11 +118,10 @@ nodes:
         dhcp: false
         mtu: 9000
         addresses:
-          - 10.40.1.5/16
           - 192.168.40.15/24
         routes:
           - network: 0.0.0.0/0
-            gateway: 10.40.0.1
+            gateway: 192.168.40.1
   - hostname: tahoe
     ipAddress: 192.168.40.16
     controlPlane: false
@@ -137,11 +132,10 @@ nodes:
         dhcp: false
         mtu: 9000
         addresses:
-          - 10.40.1.6/16
           - 192.168.40.16/24
         routes:
           - network: 0.0.0.0/0
-            gateway: 10.40.0.1
+            gateway: 192.168.40.1
 controlPlane:
   schematic:
     customization:
@@ -154,14 +148,10 @@ controlPlane:
     - 10.0.0.1
   certSANs:
     # Node IPs
-    - 10.40.1.1
-    - 10.40.1.2
-    - 10.40.1.3
     - 192.168.40.11
     - 192.168.40.12
     - 192.168.40.13
     # Load balancers / VIPs
-    - 10.40.1.100
     - 192.168.40.10
     # Pod/Service Networks
     - 10.69.0.0/16
@@ -231,9 +221,6 @@ worker:
     - 10.0.0.1
   certSANs:
     # Node IPs
-    - 10.40.1.4
-    - 10.40.1.5
-    - 10.40.1.6
     - 192.168.40.14
     - 192.168.40.15
     - 192.168.40.16
