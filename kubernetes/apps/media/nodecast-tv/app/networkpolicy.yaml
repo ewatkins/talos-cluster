@@ -42,3 +42,5 @@ spec:
     - to:
         - ipBlock:
             cidr: 10.40.0.0/16
+        - ipBlock:
+            cidr: 192.168.40.0/24
