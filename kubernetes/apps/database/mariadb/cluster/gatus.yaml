@@ -10,7 +10,7 @@ data:
     endpoints:
       - name: mariadb
         group: Infrastructure
-        url: tcp://10.40.0.120:3306
+        url: tcp://192.168.40.120:3306
         interval: 1m
         conditions: ["[CONNECTED] == true"]
         ui:

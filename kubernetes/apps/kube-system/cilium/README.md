@@ -72,11 +72,10 @@ Two Flux Kustomizations manage Cilium:
 
 `CiliumL2AnnouncementPolicy` `l2-policy` selects all Linux nodes and announces load balancer IPs.
 
-`CiliumLoadBalancerIPPool` `l2-pool` includes four address blocks populated via Flux variable substitution:
+`CiliumLoadBalancerIPPool` `l2-pool` includes three address blocks populated via Flux variable substitution:
 
 | Block | Variable |
 | --- | --- |
-| kube-vip VIP | `${KUBE_VIP}/32` |
 | Internal ingress IP | `${INTERNAL}/32` |
 | External ingress IP | `${EXTERNAL}/32` |
 | Node CIDR range | `${NODE_CIDR_START}` – `${NODE_CIDR_END}` |

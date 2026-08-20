@@ -20,7 +20,6 @@ metadata:
   name: l2-pool
 spec:
   blocks:
-    - cidr: "${KUBE_VIP}/32"
     - cidr: "${INTERNAL}/32"
     - cidr: "${EXTERNAL}/32"
     - start: "${NODE_CIDR_START}"
