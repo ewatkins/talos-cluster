@@ -53,7 +53,7 @@ spec:
               # gateway, and reply routing for inbound connections does not use
               # this list, so adding it buys nothing and only widens what
               # bypasses the tunnel.
-              FIREWALL_OUTBOUND_SUBNETS: 10.40.0.0/16,10.69.0.0/16,10.96.0.0/16
+              FIREWALL_OUTBOUND_SUBNETS: 10.40.0.0/16,192.168.40.0/24,10.69.0.0/16,10.96.0.0/16
               # Ports the pod accepts from outside: Dispatcharr, the VPN UI and
               # the six co-located tools. The control server on :8000 is
               # deliberately not listed, so it is reachable only from inside
