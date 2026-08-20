@@ -51,7 +51,7 @@ Prometheus runs with a Thanos sidecar that exposes a gRPC store endpoint and upl
 
 ## Control Plane Scraping
 
-`kubeControllerManager`, `kubeEtcd`, and `kubeScheduler` are scraped by targeting the three control plane node IPs directly (`10.40.1.1`, `10.40.1.2`, `10.40.1.3` — superior, huron, michigan). `kubeProxy` scraping is disabled (Cilium replaces kube-proxy).
+`kubeControllerManager`, `kubeEtcd`, and `kubeScheduler` are scraped by targeting the three control plane node IPs directly (`192.168.40.11`, `192.168.40.12`, `192.168.40.13` — superior, huron, michigan). `kubeProxy` scraping is disabled — note this is a scrape-config choice, not an architectural one: kube-proxy does run in this cluster.
 
 Etcd metrics are served on port `2381` (non-TLS).
 
@@ -77,7 +77,7 @@ crash-loops (OOM/evicted) and never survives long enough to compact the head int
 a block and truncate the WAL — a self-sustaining loop, since the pod is pinned to
 the node by its local PV.
 
-Diagnose (michigan = `10.40.1.3`):
+Diagnose (michigan = `192.168.40.13`):
 
 ```sh
 talosctl -n <node-ip> usage -H -d 2 /var/openebs/local/<pvc-id>/prometheus-db   # is `wal` huge?
