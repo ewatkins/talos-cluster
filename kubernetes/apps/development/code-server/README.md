@@ -8,7 +8,7 @@ VS Code in the browser, used as the central development environment for this clu
 | --- | --- | --- |
 | Image | `ghcr.io/coder/code-server:4.128.0` | Official upstream image |
 | Chart | `app-template` (OCI) from `flux-system` | |
-| URL | `https://code.ewatkins.dev` | A record to `${CODE_SERVER}` (10.40.0.145); no gateway involved |
+| URL | `https://code.ewatkins.dev` | A record to `${CODE_SERVER}` (192.168.40.145); no gateway involved |
 | Auth | Keycloak OIDC via in-pod oauth2-proxy sidecar | TLS from cert-manager (`code-server-tls`); code-server itself runs `--auth none` on loopback |
 | Home | `/home/ewatkins` (PVC root) | `HOME` env overrides the image's `/home/coder` |
 | Identity | uid/gid 1000 = `ewatkins` | `code-server-identity` ConfigMap overrides `/etc/passwd`, `group`, `shadow`, and `sudoers.d/nopasswd` (all four needed — PAM validates sudo against shadow). Regenerate from the image when bumping its tag |
@@ -116,7 +116,7 @@ A matching Claude Code `SessionStart` hook in `.claude/settings.json` runs the s
 
 ## SSH
 
-A `linuxserver/openssh-server` sidecar shares the pod and the home PVC. https (443) and ssh (22) are two ports on **one** LoadBalancer Service at `${CODE_SERVER}` (10.40.0.145) — deliberately one Service, not two sharing the IP: Cilium L2-announces per service, and split services get announced from different nodes, so two MACs answer ARP for the same address and established connections reset when the client's ARP cache flips. unifi-dns publishes the A record from the service annotation. (The internal gateway couldn't host this: its port 22 belongs to forgejo.)
+A `linuxserver/openssh-server` sidecar shares the pod and the home PVC. https (443) and ssh (22) are two ports on **one** LoadBalancer Service at `${CODE_SERVER}` (192.168.40.145) — deliberately one Service, not two sharing the IP: Cilium L2-announces per service, and split services get announced from different nodes, so two MACs answer ARP for the same address and established connections reset when the client's ARP cache flips. unifi-dns publishes the A record from the service annotation. (The internal gateway couldn't host this: its port 22 belongs to forgejo.)
 
 - **Key auth only** (`PASSWORD_ACCESS=false`). `~/.ssh/authorized_keys` is **imported with `ssh-import-id gh:ewatkins gh:mmu-ewatkins` on every pod start** by the `ssh-home.sh` custom-cont-init script (which also moves the sidecar user's home from the image default `/config` to `/home/ewatkins`). Manage keys on either GitHub account; the import is atomic and authoritative — revoking a key on GitHub removes it here, manual edits to the file are overwritten, and if GitHub is unreachable the previous file is kept, so an outage cannot cause lockout.
 - Host keys persist in `~/.ssh-server/` (the sidecar's `/config`, a subdirectory of the home PVC), so clients don't see host-key warnings after pod restarts.

@@ -11,7 +11,7 @@ Self-hosted homelab infrastructure visualization: interactive network diagrams w
 | MCP image | `ghcr.io/pouzor/homelable-mcp:3.0.0` | Same pod; `BACKEND_URL=http://127.0.0.1:8000` |
 | URL | `https://homelab.ewatkins.dev` | Internal gateway only |
 | MCP URL | `https://homelab-mcp.ewatkins.dev` | Internal gateway only; clients authenticate with `MCP_API_KEY` |
-| Scanner ranges | `10.40.0.0/24`, `10.40.1.0/24` | Adjust `SCANNER_RANGES` in the HelmRelease |
+| Scanner ranges | `192.168.40.0/24` | Adjust `SCANNER_RANGES` in the HelmRelease |
 | Data PVC | `homelable-data`, 2Gi (`openebs-hostpath`) | SQLite DB + uploads at `/app/data`; ⚠️ Talos node upgrades wipe OpenEBS local PVs |
 | Secret | Bitwarden entry `homelable-secret` | Synced via ExternalSecrets into `homelable-secret` |
 

@@ -19,14 +19,14 @@ cluster-internal traffic that never leaves the node. Dispatcharr's own gluetun t
 covers the only hop that touches the public internet.
 
 That is enforced rather than assumed. [`networkpolicy.yaml`](networkpolicy.yaml) permits egress
-only to the cluster and to `10.40.0.0/16`, with no rule matching `0.0.0.0/0`, so the public
+only to the cluster and to `192.168.40.0/24`, with no rule matching `0.0.0.0/0`, so the public
 internet is unreachable from this pod. The only route out is Dispatcharr, and Dispatcharr is
 behind the tunnel.
 
 > Cluster destinations are matched with a `namespaceSelector`, not an `ipBlock` on the pod and
 > service CIDRs. Cilium resolves in-cluster destinations by identity and applies CIDR rules only
 > to entities outside the cluster, so the CIDR form silently blackholes DNS — `EAI_AGAIN` on
-> every lookup. The LAN rule stays a CIDR because `10.40.0.0/16` genuinely is external.
+> every lookup. The LAN rule stays a CIDR because `192.168.40.0/24` genuinely is external.
 
 This matters because content sources live in `content.db`, configured through the UI, and nothing
 in Git constrains them. Before the policy existed, `ifconfig.co` from inside this pod returned the

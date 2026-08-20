@@ -23,7 +23,7 @@ Defined in [`connector/connector.yaml`](connector/connector.yaml):
 | ------------------- | -------------------------------- |
 | `10.0.0.1/32`       | UniFi controller                 |
 | `10.35.0.0/16`      | infra / hypervisor + NAS network |
-| `10.40.0.0/16`      | cluster / services network       |
+| `192.168.40.0/24`   | cluster / services network       |
 | `10.45.0.0/16`      | additional home network          |
 | `10.50.0.0/16`      | additional home network          |
 

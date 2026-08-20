@@ -41,7 +41,7 @@ The MariaDB Operator manages the lifecycle of MariaDB instances on Kubernetes vi
 | Config sync database | `mysql`, interval 5 s, timeout 10 s |
 | Connection secret | `mxs-galera-conn` |
 | Metrics | Enabled |
-| Gatus health check | TCP connect to `10.40.0.120:3306` every 1 minute |
+| Gatus health check | TCP connect to `192.168.40.120:3306` every 1 minute |
 
 ## Databases and Users
 

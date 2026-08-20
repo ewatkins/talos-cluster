@@ -74,10 +74,11 @@ Flux applies post-build variable substitution using two sources:
 Use `${VARIABLE_NAME}` syntax in manifests; variables are defined in those two files.
 
 ### Networking
-- CNI: **Cilium** (eBPF)
-- Load balancer: **kube-vip** (VIP: `10.40.1.100`)
-- Ingress: **NGINX** (internal + external)
-- DNS: **k8s-gateway** (`10.40.0.20`) + CoreDNS for in-cluster
+- CNI: **Cilium** (eBPF), with Cilium L2 announcements for LoadBalancer IPs
+- API VIP: Talos layer-2 VIP (`192.168.40.10`) — kube-vip was removed
+- Ingress: **Envoy Gateway** — internal (`192.168.40.40`) and external (`192.168.40.30`)
+- DNS: **k8s-gateway** (`192.168.40.20`) + CoreDNS for in-cluster
+- LoadBalancer pool: `192.168.40.100`–`192.168.40.245`
 
 ### Storage
 - **OpenEBS** (default local storage)
@@ -91,7 +92,8 @@ Use `${VARIABLE_NAME}` syntax in manifests; variables are defined in those two f
 
 - Cluster name: `great-lakes`
 - Talos version: v1.13.6 | Kubernetes: v1.36.2
-- Node IPs: superior=10.40.1.1, huron=10.40.1.2, michigan=10.40.1.3, erie=10.40.1.4, ontario=10.40.1.5, tahoe=10.40.1.6
+- Node IPs: superior=192.168.40.11, huron=192.168.40.12, michigan=192.168.40.13, erie=192.168.40.14, ontario=192.168.40.15, tahoe=192.168.40.16
+- Node subnet: `192.168.40.0/24` (VLAN 40, gateway `192.168.40.1`); migrated off `10.40.0.0/16` on 2026-08-20
 - Pod CIDR: `10.69.0.0/16` | Service CIDR: `10.96.0.0/16`
 - Generated node configs live in `talos/clusterconfig/` — regenerate with `talhelper genconfig` after editing `talconfig.yaml`
 
