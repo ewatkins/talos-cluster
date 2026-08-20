@@ -36,8 +36,8 @@ spec:
     - to:
         - namespaceSelector: {}
     # The LAN, which genuinely is outside the cluster and so does match a CIDR:
-    # Keycloak at 10.40.0.30 for the OIDC backchannel, and the internal gateway
-    # at 10.40.0.10 serving dispatcharr.ewatkins.dev. Same subnet gluetun keeps
+    # Keycloak at 192.168.40.30 for the OIDC backchannel, and the internal gateway
+    # at 192.168.40.40 serving dispatcharr.ewatkins.dev. Same subnet gluetun keeps
     # off its own tunnel via FIREWALL_OUTBOUND_SUBNETS.
     - to:
         - ipBlock:
