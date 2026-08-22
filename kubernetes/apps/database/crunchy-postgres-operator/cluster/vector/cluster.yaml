@@ -42,6 +42,25 @@ spec:
   instances:
     - name: instance
       replicas: 3
+      # See main cluster: without requests these containers get the minimum CPU
+      # weight and are starved by co-located workloads, flapping the Patroni
+      # probes. Sized below PG16 to match this cluster's lighter load.
+      # No CPU limits on purpose: CFS throttling would worsen the probe timeouts
+      # this is meant to prevent.
+      resources:
+        requests:
+          cpu: 250m
+          memory: 512Mi
+        limits:
+          memory: 2Gi
+      sidecars:
+        replicaCertCopy:
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
       dataVolumeClaimSpec:
         storageClassName: openebs-hostpath
         accessModes:
@@ -83,6 +102,25 @@ spec:
         repo1-retention-full: "14"
         repo1-retention-full-type: time
         archive-push-queue-max: 4GiB
+      # The per-instance pgbackrest sidecar runs the same "server-ping" liveness
+      # probe as the repo host, with the same hardcoded 1s timeout the operator
+      # does not expose. Requests are the only lever. Not scaled down with the
+      # rest of this cluster: the 1s budget is fixed regardless of cluster size.
+      sidecars:
+        pgbackrest:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+        pgbackrestConfig:
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
       repoHost:
         # See main cluster: BestEffort repo hosts get starved of CPU and miss
         # the 1s "pgbackrest server-ping" liveness timeout.
