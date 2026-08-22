@@ -45,6 +45,26 @@ spec:
         labels:
           app.kubernetes.io/name: crunchy-postgres
       replicas: &replicas 3
+      # Without requests these containers get the minimum CPU weight and lose
+      # every scheduling contest to co-located workloads (e.g. unmanic on tahoe,
+      # which is limited to 2 cores). Starving the primary flaps the Patroni
+      # readiness probe and risks an avoidable failover.
+      # No CPU limits on purpose: CFS throttling would make the probe timeouts
+      # it is meant to prevent strictly worse.
+      resources:
+        requests:
+          cpu: 500m
+          memory: 1Gi
+        limits:
+          memory: 4Gi
+      sidecars:
+        replicaCertCopy:
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
       dataVolumeClaimSpec:
         storageClassName: nfs-fast
         accessModes: ["ReadWriteOnce"]
@@ -119,6 +139,25 @@ spec:
         repo3-s3-uri-style: path
       jobs:
         ttlSecondsAfterFinished: 300
+      # The pgbackrest sidecar on each instance runs the same "server-ping"
+      # liveness probe as the repo host, with the same hardcoded 1s timeout that
+      # the operator does not expose for tuning. Requests are the only lever:
+      # give it enough CPU weight that the ping completes under node contention.
+      sidecars:
+        pgbackrest:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+        pgbackrestConfig:
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
       repoHost:
         # Without requests the repo host is BestEffort and gets the minimum CPU
         # weight. Under node contention "pgbackrest server-ping" misses its
