@@ -310,6 +310,23 @@ data:
             icon: homelable
             namespace: default
             app: homelable
+            widget:
+              type: customapi
+              # Cluster-internal: hits the backend container directly rather
+              # than looping back out through the internal gateway.
+              url: http://homelable.default.svc.cluster.local:8000/api/v1/stats/summary
+              method: GET
+              headers:
+                X-API-Key: "{{HOMEPAGE_VAR_HOMELABLE_KEY}}"
+              mappings:
+                - field: nodes
+                  label: Nodes
+                - field: online
+                  label: Online
+                - field: offline
+                  label: Offline
+                - field: pending_devices
+                  label: Pending
         - Keycloak:
             href: https://keycloak.ewatkins.dev
             icon: keycloak
