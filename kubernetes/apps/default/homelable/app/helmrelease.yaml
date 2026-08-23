@@ -48,6 +48,25 @@ spec:
               OIDC_REDIRECT_URI: https://homelab.ewatkins.dev/api/v1/auth/oidc/callback
               OIDC_SCOPES: "openid profile email"
               OIDC_COOKIE_SECURE: "true"
+              # Proxmox VE auto-sync. The importer reads /nodes, which returns
+              # every cluster member, so pointing at pve01 pulls pve02 and
+              # pve03 (and their VMs/LXC) in as well. Keep the FQDN here: the
+              # PVE cert is not valid for the bare 10.35.1.1 address, so the
+              # bare IP would force PROXMOX_VERIFY_TLS off.
+              # PROXMOX_TOKEN_SECRET comes from homelable-secret via envFrom.
+              PROXMOX_HOST: pve01.ewatkins.dev
+              PROXMOX_PORT: "8006"
+              PROXMOX_VERIFY_TLS: "true"
+              # Must match the token created in Proxmox exactly (user@realm!tokenid)
+              PROXMOX_TOKEN_ID: homelable@pve!homelable
+              # Note: these two are also persisted to scan_config.json on the
+              # PVC once auto-sync is touched in the UI, and the file wins at
+              # startup — treat them as first-boot defaults, not binding config.
+              PROXMOX_SYNC_ENABLED: "true"
+              PROXMOX_SYNC_INTERVAL: "3600"
+              # Read-only stats at /api/v1/stats/summary for the homepage
+              # widget, gated on the X-API-Key header. Enabled by the presence
+              # of HOMEPAGE_API_KEY, which arrives via envFrom.
             envFrom:
               - secretRef:
                   name: homelable-secret
