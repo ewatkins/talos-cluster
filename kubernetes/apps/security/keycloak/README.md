@@ -47,6 +47,7 @@ The theme inherits from the default `keycloak` parent, hides the username/passwo
 | [Outline](../../default/outline/README.md) | OIDC | `OIDC_DISPLAY_NAME: Keycloak` |
 | [Paperless-ngx](../../media/paperless/README.md) | OIDC | `allauth.socialaccount.providers.openid_connect` |
 | [Forgejo](../../development/forgejo/README.md) | OIDC | External authentication only |
+| [Homelable](../../default/homelable/README.md) | OIDC | Client ID `homelable`, redirect `https://homelab.ewatkins.dev/api/v1/auth/oidc/callback`; exclusive — replaces local login |
 | [Garage Web UI](../../storage/garage/README.md) | OIDC (Envoy SecurityPolicy) | Client ID `garage-webui`, issuer `https://keycloak.ewatkins.dev/realms/master` |
 | [Dispatcharr VPN UI](../../media/dispatcharr/app/README.md) | OIDC (Envoy SecurityPolicy) | Client ID `gluetun`, redirect `https://gluetun.ewatkins.dev/oauth2/callback`; guards credentials the UI would otherwise expose |
 
