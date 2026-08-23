@@ -35,6 +35,19 @@ spec:
               SQLITE_PATH: /app/data/homelab.db
               CORS_ORIGINS: '["https://homelab.ewatkins.dev"]'
               SCANNER_RANGES: '["192.168.40.0/24"]'
+              # OIDC via Keycloak. This is exclusive: it replaces the local
+              # AUTH_USERNAME / AUTH_PASSWORD_HASH login rather than adding to
+              # it. OIDC_CLIENT_SECRET comes from the homelable-secret
+              # Bitwarden entry through envFrom below. The backend fails to
+              # start if any required value is missing, SECRET_KEY is under 32
+              # bytes, or CORS_ORIGINS contains a wildcard.
+              AUTH_MODE: oidc
+              OIDC_DISCOVERY_URL: https://keycloak.ewatkins.dev/realms/master/.well-known/openid-configuration
+              OIDC_CLIENT_ID: homelable
+              # Must match the Keycloak client's redirect URI exactly, path included
+              OIDC_REDIRECT_URI: https://homelab.ewatkins.dev/api/v1/auth/oidc/callback
+              OIDC_SCOPES: "openid profile email"
+              OIDC_COOKIE_SECURE: "true"
             envFrom:
               - secretRef:
                   name: homelable-secret
