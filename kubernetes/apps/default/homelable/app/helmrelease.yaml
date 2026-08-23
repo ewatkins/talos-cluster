@@ -34,7 +34,10 @@ spec:
               TZ: ${TIMEZONE}
               SQLITE_PATH: /app/data/homelab.db
               CORS_ORIGINS: '["https://homelab.ewatkins.dev"]'
-              SCANNER_RANGES: '["192.168.40.0/24"]'
+              # SCANNER_RANGES is deliberately absent: it is one of the
+              # values persisted to scan_config.json on the PVC, and that file
+              # wins at startup, so declaring it here only ever lied about what
+              # the app scans. Manage the ranges from Settings in the UI.
               # OIDC via Keycloak. This is exclusive: it replaces the local
               # AUTH_USERNAME / AUTH_PASSWORD_HASH login rather than adding to
               # it. OIDC_CLIENT_SECRET comes from the homelable-secret

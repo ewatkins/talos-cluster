@@ -11,7 +11,7 @@ Self-hosted homelab infrastructure visualization: interactive network diagrams w
 | MCP image | `ghcr.io/pouzor/homelable-mcp:3.0.0` | Same pod; `BACKEND_URL=http://127.0.0.1:8000` |
 | URL | `https://homelab.ewatkins.dev` | Internal gateway only |
 | MCP URL | `https://homelab-mcp.ewatkins.dev` | Internal gateway only; clients authenticate with `MCP_API_KEY` |
-| Scanner ranges | `192.168.40.0/24` | Adjust `SCANNER_RANGES` in the HelmRelease |
+| Scanner ranges | `192.168.95.0/24` | UI-managed, persisted to `scan_config.json` on the PVC; **not** in the HelmRelease (see Notes) |
 | Proxmox import | `pve01.ewatkins.dev:8006`, auto-sync hourly | Reads the whole PVE cluster; token `homelable@pve!homelable` |
 | Homepage widget | `/api/v1/stats/summary` | Enabled by `HOMEPAGE_API_KEY`; consumed by the gethomepage `customapi` widget |
 | Data PVC | `homelable-data`, 2Gi (`openebs-hostpath`) | SQLite DB + uploads at `/app/data`; ⚠️ Talos node upgrades wipe OpenEBS local PVs |
@@ -101,7 +101,7 @@ The [homepage](../homepage/) ConfigMap consumes it with a `customapi` widget poi
 ## Notes
 
 - Backend and MCP containers both load `homelable-secret`, so `MCP_SERVICE_KEY` (MCP → backend auth) matches automatically.
-- Several settings are runtime-overridable from the UI and persisted to `scan_config.json` beside the SQLite DB, and that file **wins over the env var** at startup: `SCANNER_RANGES`, `STATUS_CHECKER_INTERVAL`, the `SERVICE_CHECK_*` and `SCANNER_HTTP_*` values, and `PROXMOX_SYNC_ENABLED` / `PROXMOX_SYNC_INTERVAL`. Treat those as first-boot defaults — Git and the running config can diverge silently. Credentials and connection config (`PROXMOX_HOST`, `PROXMOX_TOKEN_*`) are deliberately env-only and never written to disk.
+- Several settings are runtime-overridable from the UI and persisted to `scan_config.json` beside the SQLite DB, and that file **wins over the env var** at startup: `SCANNER_RANGES` (omitted from the HelmRelease for exactly this reason — a value there is inert on an existing PVC and only seeds a fresh one, where the upstream default is `192.168.1.0/24`), `STATUS_CHECKER_INTERVAL`, the `SERVICE_CHECK_*` and `SCANNER_HTTP_*` values, and `PROXMOX_SYNC_ENABLED` / `PROXMOX_SYNC_INTERVAL`. Treat those as first-boot defaults — Git and the running config can diverge silently. Credentials and connection config (`PROXMOX_HOST`, `PROXMOX_TOKEN_*`) are deliberately env-only and never written to disk.
 - `CORS_ORIGINS` must stay pinned to `https://homelab.ewatkins.dev`; a wildcard is rejected outright in OIDC mode and a mismatched origin surfaces as `403 CSRF validation failed`.
 - The backend scans the LAN from the pod network (SNAT to node IP); ARP-based discovery does not cross the L2 boundary, so scans rely on ICMP/TCP probes.
 - If unprivileged scanning proves too limited, the alternative is labeling the namespace `pod-security.kubernetes.io/enforce: privileged` (like `media`) and restoring the `NET_RAW` capability.
