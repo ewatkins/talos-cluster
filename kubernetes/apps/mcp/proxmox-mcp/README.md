@@ -18,6 +18,7 @@ No `config.json` is baked into the image, so the config loader takes its fallbac
 | MCP endpoint | `https://proxmox-mcp.ewatkins.dev/mcp` | FastMCP's default streamable-http path |
 | Transport | `mcp-http` / `STREAMABLE_HTTP` | `PROXMOX_MCP_MODE=mcp-http` |
 | Allowed hosts | ingress hostname + Service DNS + localhost | `MCP_ALLOWED_HOSTS`; DNS-rebinding protection validates the `Host` header, so an unlisted name gets rejected |
+| Tools exposed | 47 | Server reports itself as `ProxmoxMCP` 1.29.0 |
 | Client auth | Bearer token | `MCP_API_KEY`; without it the server serves tools to anyone who can reach the endpoint |
 | Command policy | `deny_all` | `execute_*` shell tools are disabled entirely |
 | High-risk policy | `enforce` + approval token | Deletes, rollbacks and restores require the agent to pass `COMMAND_POLICY_HIGH_RISK_APPROVAL_TOKEN` |
@@ -66,7 +67,7 @@ Three independent layers:
 
 - **Proxmox role** — the hard ceiling. Whatever the `mcp@pve` token cannot do, no tool can do.
 - `COMMAND_POLICY_MODE` — `deny_all` (current), `allowlist` or `audit_only`. Governs the `execute_*` tools that run shell commands through the QEMU guest agent. `deny_all` blocks them outright; `allowlist` also needs `COMMAND_POLICY_ALLOW_PATTERNS`.
-- `COMMAND_POLICY_HIGH_RISK_*` — governs `delete_vm`, `delete_container`, `delete_snapshot`, `rollback_snapshot`, `restore_backup`, `delete_backup`, `delete_iso` and `update_container_ssh_keys`. Mode is `enforce` and an approval token is required, so those tools fail unless the agent supplies it.
+- `COMMAND_POLICY_HIGH_RISK_*` — governs `delete_vm`, `delete_container`, `delete_snapshot`, `rollback_snapshot`, `restore_backup`, `delete_backup`, `delete_iso` and `update_container_ssh_keys`. Mode is `enforce` and an approval token is required, so those tools fail with `requires an approval token` unless the agent passes the matching value as the tool's own `approval_token` argument.
 
 To make the server read-only, set `COMMAND_POLICY_HIGH_RISK_MODE` to `enforce` and simply never hand the approval token to an agent — or tighten the Proxmox role to the `*.Audit` privileges only.
 
