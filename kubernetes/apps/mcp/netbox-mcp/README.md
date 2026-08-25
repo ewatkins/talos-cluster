@@ -1,12 +1,17 @@
 # [NetBox MCP](https://github.com/netboxlabs/netbox-mcp-server)
 
-NetBox Labs' official MCP server, exposing the NetBox IPAM/DCIM database as agent tools. It is **read-only by design** — three tools, all of them GETs — and serves MCP over streamable HTTP so agents attach over the network instead of running a local stdio process.
+NetBox Labs' official MCP server, exposing the NetBox IPAM/DCIM database as agent tools. It is **read-only by design** — four tools, all of them GETs — and serves MCP over streamable HTTP so agents attach over the network instead of running a local stdio process.
 
 | Tool | Purpose |
 | --- | --- |
-| `get_objects` | Retrieve NetBox core objects by type and filters |
-| `get_object_by_id` | Fetch one object by type and numeric ID |
-| `get_changelogs` | Query the change history / audit trail |
+| `netbox_get_objects` | Retrieve NetBox core objects by type and filters |
+| `netbox_get_object_by_id` | Fetch one object by type and numeric ID |
+| `netbox_get_changelogs` | Query the change history / audit trail |
+| `netbox_search_objects` | Global search across object types |
+
+`object_type` is the dotted `app.model` form — `dcim.site`, `ipam.prefix`,
+`virtualization.virtualmachine` — not the plural API path. Passing an invalid
+value returns the full list of accepted types.
 
 ## Configuration
 
