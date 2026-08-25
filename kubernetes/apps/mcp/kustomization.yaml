@@ -6,5 +6,6 @@ resources:
   # Pre Flux-Kustomizations
   - ./namespace.yaml
   # Flux-Kustomizations
+  - ./netbox-mcp/ks.yaml
   - ./proxmox-mcp/ks.yaml
   - ./unifi-network-mcp/ks.yaml
