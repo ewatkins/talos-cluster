@@ -19,7 +19,7 @@
     ':timezone(America/Chicago)',
   ],
   assigneesFromCodeOwners: true,
-  dependencyDashboardTitle: 'Renovate Dashboard 🤖',
+  dependencyDashboardTitle: 'Dependency Dashboard - Renovate 🤖',
   suppressNotifications: [
     'prEditedNotification',
     'prIgnoreNotification',
