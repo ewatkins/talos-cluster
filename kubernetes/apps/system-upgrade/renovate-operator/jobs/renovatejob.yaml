@@ -12,7 +12,7 @@ spec:
   provider:
     name: github
   # renovate: datasource=docker depName=ghcr.io/renovatebot/renovate
-  image: ghcr.io/renovatebot/renovate:44.39.2
+  image: ghcr.io/renovatebot/renovate:44.41.1
   parallelism: 1
   # 8pm America/Chicago daily. The operator evaluates this in its TZ (set on the
   # deployment), so it stays at 8pm local across DST rather than drifting.
