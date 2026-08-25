@@ -1,0 +1,131 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app proxmox-mcp
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+    controllers:
+      proxmox-mcp:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: ghcr.io/rekklesna/proxmoxmcp-plus
+              tag: 0.5.14@sha256:c0dad27d23e2c4eb0598d07a6d1c492ed1160c0c37b594e461f6283d24aa152e
+            env:
+              TZ: America/Chicago
+              HOME: /tmp
+              # No /app/proxmox-config/config.json is baked into the image, so the
+              # loader falls back to reading everything from the environment.
+              PROXMOX_MCP_CONFIG: /app/proxmox-config/config.json
+              # Proxmox VE. Reading /nodes returns every cluster member, so
+              # pointing at pve01 also covers pve02 and pve03. Keep the FQDN:
+              # the PVE cert is not valid for the bare IP, and verify_ssl=false
+              # is rejected outright unless dev_mode is turned on.
+              PROXMOX_HOST: pve01.ewatkins.dev
+              PROXMOX_PORT: "8006"
+              PROXMOX_VERIFY_SSL: "true"
+              PROXMOX_USER: mcp@pve
+              PROXMOX_TOKEN_NAME: mcp
+              # PROXMOX_TOKEN_VALUE comes from proxmox-mcp-secret via envFrom.
+              # Native MCP streamable-http listener instead of the OpenAPI bridge
+              PROXMOX_MCP_MODE: mcp-http
+              MCP_HOST: 0.0.0.0
+              MCP_PORT: &port 8000
+              MCP_TRANSPORT: STREAMABLE_HTTP
+              # DNS-rebinding protection checks the Host header, so every name a
+              # client may use has to be listed here.
+              MCP_DNS_REBINDING_PROTECTION: "true"
+              MCP_ALLOWED_HOSTS: >-
+                proxmox-mcp.ewatkins.dev,
+                proxmox-mcp,
+                proxmox-mcp:8000,
+                proxmox-mcp.mcp.svc.cluster.local,
+                proxmox-mcp.mcp.svc.cluster.local:8000,
+                localhost,
+                localhost:8000,
+                127.0.0.1,
+                127.0.0.1:8000
+              MCP_ALLOWED_ORIGINS: >-
+                https://proxmox-mcp.ewatkins.dev
+              # Job history lands next to the CWD by default (/app, read-only)
+              PROXMOX_JOBS_SQLITE_PATH: /tmp/proxmox-jobs.sqlite3
+              # Shell execution through the guest agent stays off entirely.
+              COMMAND_POLICY_MODE: deny_all
+              # Destructive tools (delete/rollback/restore) only run when the
+              # agent passes the approval token from the secret.
+              COMMAND_POLICY_HIGH_RISK_MODE: enforce
+              COMMAND_POLICY_HIGH_RISK_REQUIRE_APPROVAL_TOKEN: "true"
+            envFrom:
+              - secretRef:
+                  name: proxmox-mcp-secret
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  tcpSocket:
+                    port: *port
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 5
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  tcpSocket:
+                    port: *port
+                  periodSeconds: 10
+                  timeoutSeconds: 5
+                  failureThreshold: 5
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  tcpSocket:
+                    port: *port
+                  periodSeconds: 10
+                  failureThreshold: 30
+            resources:
+              requests:
+                cpu: 10m
+                memory: 128Mi
+              limits:
+                memory: 512Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: [ALL] }
+    service:
+      app:
+        controller: *app
+        ports:
+          http:
+            port: *port
+    persistence:
+      tmp:
+        type: emptyDir
+        globalMounts:
+          - path: /tmp

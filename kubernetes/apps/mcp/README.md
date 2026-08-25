@@ -8,4 +8,5 @@ Flux alerts for this namespace are routed to Alertmanager at `alertmanager-opera
 
 | App | Description |
 | --- | --- |
+| [proxmox-mcp](proxmox-mcp/README.md) | Proxmox VE tools at `proxmox-mcp.ewatkins.dev` |
 | [unifi-network-mcp](unifi-network-mcp/README.md) | UniFi Network controller tools at `unifi-mcp.ewatkins.dev` |
