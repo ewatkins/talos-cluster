@@ -176,6 +176,8 @@ controlPlane:
               - mountpoint: /var/lib/etcd
     - |-
       cluster:
+        proxy:
+          disabled: true
         apiServer:
           extraArgs:
             feature-gates: MutatingAdmissionPolicy=true
