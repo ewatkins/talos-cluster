@@ -34,13 +34,16 @@ spec:
               # starosdev fork (not analogj/scrutiny): adds MegaRAID/HBA
               # auto-detection the NAS drives need. Must be the fork, not
               # analogj, or device registration 400s on a schema mismatch.
-              # Pinned to latest-omnibus (master build): the tagged 1.9.0
-              # release types smart_support as a bool and rejects NVMe drives,
-              # whose collector sends it as an object. master's SmartSupport
-              # has a flexible UnmarshalJSON that accepts both bool and object,
-              # so NVMe (PVE) and SATA (NAS) both register.
+              # Pinned to a versioned fork release (not the floating
+              # latest-omnibus tag) so Renovate proposes real version bumps
+              # instead of silent digest churn. Must stay on the fork's own
+              # 1.x-omnibus line: upstream's tagged 1.9.0 types smart_support
+              # as a bool and rejects NVMe drives, whose collector sends it as
+              # an object. The fork's SmartSupport has a flexible
+              # UnmarshalJSON that accepts bool and object, so NVMe (PVE) and
+              # SATA (NAS) both register.
               repository: ghcr.io/starosdev/scrutiny
-              tag: latest-omnibus@sha256:2d36008942e88af359b4cf762e7ad3b7db200703d17c2fdfb7b70d0da72ec954
+              tag: 1.69.2-omnibus@sha256:f1217e88460a7e1bd6cde8f05ed6f079bcfd7613078fbae22607065c276d5641
             env:
               TZ: America/Chicago
             probes:
