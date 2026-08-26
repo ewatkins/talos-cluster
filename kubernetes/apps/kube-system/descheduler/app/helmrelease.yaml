@@ -56,6 +56,32 @@ spec:
                 - RemovePodsViolatingInterPodAntiAffinity
                 - RemovePodsViolatingNodeAffinity
                 - RemovePodsViolatingNodeTaints
+        - name: Rebalance
+          pluginConfig:
+            - name: DefaultEvictor
+              args:
+                nodeFit: true
+                ignorePvcPods: true
+            - name: LowNodeUtilization
+              args:
+                thresholds:
+                  cpu: 30
+                  memory: 30
+                  pods: 30
+                targetThresholds:
+                  cpu: 70
+                  memory: 75
+                  pods: 70
+          plugins:
+            balance:
+              enabled:
+                - LowNodeUtilization
+    resources:
+      requests:
+        cpu: 25m
+        memory: 128Mi
+      limits:
+        memory: 256Mi
     service:
       enabled: true
     serviceMonitor:
