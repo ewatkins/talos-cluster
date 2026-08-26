@@ -204,9 +204,9 @@ spec:
             resources:
               requests:
                 cpu: 100m
-                memory: 1Gi
+                memory: 256Mi
               limits:
-                memory: 8Gi
+                memory: 4Gi
           # Keycloak OIDC + TLS at the pod edge. code-server has no native
           # OIDC; this sidecar owns port 443 of the shared LB IP and proxies
           # authenticated (websocket-capable) traffic to loopback 8080. The
