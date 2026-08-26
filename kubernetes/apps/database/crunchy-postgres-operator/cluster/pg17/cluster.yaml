@@ -13,7 +13,6 @@ spec:
       crunchy-userinit.ramblurr.github.com/enabled: "true"
       crunchy-userinit.ramblurr.github.com/superuser: &superuser "postgres"
   postgresVersion: 17
-  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-17.10-2621
 
   monitoring:
     pgmonitor:

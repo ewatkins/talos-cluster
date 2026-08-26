@@ -27,7 +27,7 @@ PGO manages the full lifecycle of highly available PostgreSQL clusters on Kubern
 
 | Setting | Value |
 | --- | --- |
-| Image | `registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-16.11-2550` |
+| Image | Unset — inherited from the operator (`RELATED_IMAGE_POSTGRES_16`) |
 | PostgreSQL version | 16 |
 | Replicas | 3 |
 | Data storage | 2 Gi per instance, `nfs-fast` StorageClass |
