@@ -11,6 +11,13 @@ spec:
     size: 5Gi
     storageClassName: openebs-hostpath
 
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      memory: 1Gi
+
   replicas: 3
 
   galera:

@@ -41,6 +41,13 @@ spec:
       clusterLabels:
         app.kubernetes.io/name: *app
     replicas: 2
+    resources:
+      controller:
+        requests:
+          cpu: 25m
+          memory: 192Mi
+        limits:
+          memory: 512Mi
     topologySpreadConstraints:
       - maxSkew: 1
         topologyKey: "topology.kubernetes.io/zone"
