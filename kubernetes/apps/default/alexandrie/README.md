@@ -120,6 +120,38 @@ trialled. Once OIDC is proven, the relevant knobs are `CONFIG_DISABLE_NATIVE_LOG
 `CONFIG_HIDE_NATIVE_LOGIN` and `CONFIG_OIDC_PROVIDER_AUTO_REDIRECT`. Existing accounts link a
 provider from *Settings → Security*.
 
+## Admin role
+
+`ADMIN_ACCOUNTS` is the only source of the administrator role — a comma-separated list of
+user snowflake IDs. Signup does not grant it to anyone, OIDC or native, first account
+included (`createUserFromOIDC` hardcodes `Role: 1`).
+
+It is authoritative in both directions: `LoadAppAdmins()` runs at every startup and demotes
+any existing admin whose ID is absent, so removing someone here revokes their role on the
+next pod restart.
+
+```bash
+kubectl exec -n database -it mariadb-0 -- \
+  mariadb -u alexandrie -p alexandrie -e "SELECT id, username, role FROM users;"
+```
+
+## Usernames cannot be changed in-app
+
+OIDC signup appends a six-digit suffix derived from the user's snowflake
+(`GenerateUniqueUsername` → `<name>-<id % 1000000>`), unconditionally. The profile field is
+`disabled` in the UI, and `UpdateUser` takes no username argument — it re-writes the stored
+value on every save. Renaming means editing the row:
+
+```bash
+kubectl exec -n database -it mariadb-0 -- \
+  mariadb -u alexandrie -p alexandrie \
+  -e "UPDATE users SET username='ewatkins' WHERE id=748635670972596225;"
+```
+
+Safe: `username` carries a plain index, not a unique constraint, and OIDC accounts
+authenticate on `user_oidc_providers.provider_user_id`. It is the login key for *native*
+password auth, though, so it matters if a password is ever set on the account.
+
 ## Secrets
 
 Bitwarden Secrets Manager, two items:

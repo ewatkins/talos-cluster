@@ -40,6 +40,15 @@ spec:
               ALLOW_UNSECURE: "false"
               CONFIG_DISABLE_SIGNUP: "false"
               CONFIG_DISABLE_NATIVE_LOGIN: "false"
+              # The only way to hold the admin role. LoadAppAdmins() runs on
+              # every boot and demotes any admin not listed here, so this is
+              # the authoritative set -- removing an ID revokes on next
+              # restart. OIDC and native signups both land on the regular role
+              # regardless of who registered first.
+              #
+              # Quoted because these are snowflakes: unquoted, YAML reads them
+              # as integers. Split on "," with no trimming, so no spaces.
+              ADMIN_ACCOUNTS: "748635670972596225,748637072314728452"
               # Keycloak. Providers are read from indexed OIDC_<n>_* vars; the
               # backend discovers endpoints and negotiates scopes from
               # CONFIG_URL, so only these four are needed. PROVIDER_NAME is
