@@ -4,8 +4,9 @@ Five companion services around [Dispatcharr](../app/), the IPTV channel manager.
 its own Flux `Kustomization` in [`../ks.yaml`](../ks.yaml).
 
 > **Three of them do not run in their own pod.** `teamarr`, `webpage-hls` and `game-thumbs`
-> all fetch from the public internet,
-> so they run as containers inside the **Dispatcharr pod** to share its gluetun VPN tunnel.
+> run as containers inside the **Dispatcharr pod**. They were put there to share its gluetun
+> VPN tunnel; that tunnel has since been removed, but they stay co-located because their
+> Services and the M3U/EPG URLs stored in Dispatcharr's database are built around it.
 > Their images, env, probes and resources live in
 > [`../app/helmrelease.yaml`](../app/helmrelease.yaml); the directories here keep only their
 > PVC and HTTPRoute. Full rationale in [`../app/README.md`](../app/README.md#co-located-tools).
@@ -20,7 +21,7 @@ its own Flux `Kustomization` in [`../ks.yaml`](../ks.yaml).
 > the integration points each tool exposes — verify the live wiring in the Dispatcharr UI
 > under *M3U Accounts* and *EPG Sources*.
 
-They fall into three roles (★ = runs inside the Dispatcharr pod, on the VPN):
+They fall into three roles (★ = runs inside the Dispatcharr pod):
 
 | Role | Tools |
 |---|---|
@@ -79,8 +80,8 @@ channel. Built for [WeatherStar 4000+](https://github.com/netbymatt/ws4kp).
 - `/stream?url=…` — any arbitrary page (400 without `url`)
 - `/health` — liveness (`/` returns 404 **by design**)
 
-The container listens on **:3001** (`PORT`) to stay clear of `vpn-ui`; its Service still
-publishes `:3000`. It also runs a **second** server — the embedded WeatherStar it
+The container listens on **:3001** (`PORT`) — originally to stay clear of the `vpn-ui`
+container, which is gone; the port stays put because its Service still publishes `:3000`. It also runs a **second** server — the embedded WeatherStar it
 screenshots — on `WS4KP_PORT`, moved to **:8081** because the image defaults it to `:8080`,
 which collided with another container when this pod was busier. Purely pod-internal; the app builds its own
 `http://localhost:8081` URL from the same variable.
@@ -126,8 +127,8 @@ Rate-limited to 90 requests/minute, with an in-pod `emptyDir` at `/app/.cache`.
 
 Its HTTP surface is unusual — most paths return **444**, but `/health` returns a normal
 JSON 200, so the `tcpSocket` probe is more conservative than necessary; a `/health` httpGet
-would work. The container listens on **:3002** (`PORT`) to stay clear of `vpn-ui`; its
-Service still publishes `:3000`.
+would work. The container listens on **:3002** (`PORT`) — originally to stay clear of the `vpn-ui`
+container, which is gone; the port stays put because its Service still publishes `:3000`.
 
 ## Daily pipeline order
 

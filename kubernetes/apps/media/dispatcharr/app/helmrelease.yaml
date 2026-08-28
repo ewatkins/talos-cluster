@@ -27,90 +27,6 @@ spec:
         # app-template's default for a Deployment; it is spelled out here so it
         # does not get switched to RollingUpdate.
         strategy: Recreate
-        initContainers:
-          # Native sidecar (restartPolicy: Always): starts before the app
-          # containers and keeps running alongside them. Every container in the
-          # pod shares this network namespace, so all Dispatcharr and Celery
-          # egress leaves through a UK Privado exit, and the kill switch drops
-          # their traffic whenever the tunnel is down.
-          gluetun:
-            image:
-              repository: docker.io/qmcgaw/gluetun
-              tag: v3.41.3@sha256:fa19cc76b2af13d57a8d3dc3066f2ada061b1c761b8aecf989b3877c0486e027
-            restartPolicy: Always
-            env:
-              # Privado is OpenVPN-only in gluetun; there is no native
-              # WireGuard support for this provider.
-              VPN_SERVICE_PROVIDER: privado
-              VPN_TYPE: openvpn
-              TZ: "${TIMEZONE}"
-              # Everything not in these subnets is forced through the tunnel.
-              # Keeping the LAN, pod and service CIDRs on eth0 is what lets
-              # Postgres, Dragonfly, CoreDNS, the NAS and kubelet probes keep
-              # working while the VPN is up (or while it is reconnecting).
-              # The client VLAN (10.0.0.0/16) is deliberately absent: nothing
-              # here dials out to it. XC clients connect inbound through the
-              # gateway, and reply routing for inbound connections does not use
-              # this list, so adding it buys nothing and only widens what
-              # bypasses the tunnel.
-              FIREWALL_OUTBOUND_SUBNETS: 192.168.40.0/24,10.69.0.0/16,10.96.0.0/16
-              # Ports the pod accepts from outside: Dispatcharr, the VPN UI and
-              # the six co-located tools. The control server on :8000 is
-              # deliberately not listed, so it is reachable only from inside
-              # this pod.
-              FIREWALL_INPUT_PORTS: "9191,3000,3001,3002,9195"
-              # Pod-local only (see FIREWALL_INPUT_PORTS), so the control
-              # server is left unauthenticated for the UI sidecar to use.
-              HTTP_CONTROL_SERVER_AUTH_DEFAULT_ROLE: '{"auth":"none"}'
-              # Drops ipinfo, which is the default base API and the one that
-              # geolocates Privado's UK exits to Lelystad. With these three the
-              # same address resolves to "United Kingdom, England, Covent
-              # Garden", so the UI stops contradicting reality. Being first in
-              # line also makes ipinfo the first to rate-limit us, which is
-              # what leaves the UI showing a stale IP after a reconnect.
-              PUBLICIP_API: ifconfigco,ip2location,cloudflare
-              # Literal IPs, not hostnames. The default targets are
-              # cloudflare.com:443/github.com:443, which gluetun resolves
-              # through its own DoT forwarder — the one thing in this pod that
-              # can wedge. When it does, the healthcheck it feeds fails, gluetun
-              # restarts the VPN, and the restart tears down the forwarder
-              # again: a loop that cannot self-heal (71 reconnects in 8s
-              # intervals on 2026-08-17, streams dead throughout, cleared only
-              # by a pod roll). Resolving nothing here breaks that circle, so a
-              # DNS stall stays a DNS stall instead of escalating into a VPN
-              # restart storm. Two targets keeps the redundancy the hostname
-              # pair had. The small ICMP check already used raw IPs.
-              HEALTH_TARGET_ADDRESSES: 1.1.1.1:443,8.8.8.8:443
-            envFrom:
-              - secretRef:
-                  name: gluetun-secret
-              # Exit selection, deliberately not reconciled by Flux so it can
-              # be changed live. See ./README.md.
-              - configMapRef:
-                  name: dispatcharr-vpn-server
-            probes:
-              # Gates the app containers: Kubernetes does not start them until
-              # this native sidecar reports started, so Dispatcharr never comes
-              # up before the tunnel is established.
-              startup:
-                enabled: true
-                custom: true
-                spec:
-                  exec:
-                    command: ["/gluetun-entrypoint", "healthcheck"]
-                  initialDelaySeconds: 10
-                  periodSeconds: 10
-                  timeoutSeconds: 5
-                  failureThreshold: 30
-            securityContext:
-              capabilities:
-                add: ["NET_ADMIN"]
-            resources:
-              requests:
-                cpu: 50m
-                memory: 128Mi
-              limits:
-                memory: 512Mi
         containers:
           app:
             image:
@@ -186,50 +102,19 @@ spec:
                 memory: 256Mi
               limits:
                 memory: 2Gi
-          # Live view of the tunnel (state, exit IP, city, provider) plus
-          # stop/start buttons, which is how the exit gets rotated. Reaches
-          # gluetun's control server over the shared network namespace.
-          vpn-ui:
-            image:
-              repository: docker.io/scuzza/gluetun-webui
-              # Upstream only publishes 1.0.0 and rolling main-<sha> tags; this
-              # is the head of main and Renovate cannot bump it automatically.
-              tag: main-268a3f3@sha256:a7c2b4c77f26bb690debe6879cd7149d69710578b13e0dcdc08f6b9b6c7a7a14
-            env:
-              TZ: "${TIMEZONE}"
-              PORT: &vpnUiPort 3000
-              TRUST_PROXY: "true"
-              GLUETUN_CONTROL_URL: http://127.0.0.1:8000
-            probes:
-              liveness: &vpnUiProbes
-                enabled: true
-                custom: true
-                spec:
-                  httpGet:
-                    path: /api/health
-                    port: *vpnUiPort
-                  initialDelaySeconds: 10
-                  periodSeconds: 30
-                  timeoutSeconds: 5
-                  failureThreshold: 3
-              readiness: *vpnUiProbes
-            resources:
-              requests:
-                cpu: 10m
-                memory: 32Mi
-              limits:
-                memory: 128Mi
           # ---------------------------------------------------------------
-          # Co-located tools. These six all fetch from the public internet,
-          # so they live here to share gluetun's network namespace and leave
-          # through the same UK exit. See ../tools/README.md.
+          # Co-located tools. These three were pulled into this pod to share
+          # gluetun's network namespace. The tunnel is gone, but they stay
+          # here: their Services and the M3U/EPG URLs stored in Dispatcharr's
+          # database are built around this layout. See ../tools/README.md.
           #
-          # Every container below shares one network namespace, so ports must
-          # be unique pod-wide. Already taken: 53 (gluetun DNS), 3000 (vpn-ui),
-          # 5656 + 8001 + 9999 (Dispatcharr internals), 8000 (gluetun control),
-          # 9191 (Dispatcharr). Three tools defaulted to :3000 and were moved
-          # via their PORT env; their Services keep port 3000 and retarget, so
-          # every URL stored in Dispatcharr's database still resolves.
+          # Every container below still shares one network namespace, so ports
+          # must be unique pod-wide. Already taken: 5656 + 8001 + 9999
+          # (Dispatcharr internals) and 9191 (Dispatcharr). Two tools defaulted
+          # to :3000 and were moved via their PORT env; their Services keep
+          # port 3000 and retarget, so every URL stored in Dispatcharr's
+          # database still resolves. Those moves stay as they are — undoing
+          # them would rewrite URLs that are not in Git.
           #
           # Mind the ports a container binds beyond the one it serves: this bit
           # once, when webpage-hls's embedded WeatherStar on WS4KP_PORT
@@ -351,7 +236,7 @@ spec:
     # otherwise name them dispatcharr-<identifier> and break both the
     # HTTPRoutes and the M3U/EPG URLs stored in Dispatcharr's database.
     #
-    # The three tools whose container ports moved keep their published port at
+    # The two tools whose container ports moved keep their published port at
     # 3000 and retarget it, so no consumer sees a change.
     service:
       app:
@@ -360,24 +245,15 @@ spec:
         ports:
           http:
             port: *port
-          vpn-ui:
-            port: *vpnUiPort
       # Dedicated LAN address for XC clients that cannot use the gateway.
       # dispatcharr.ewatkins.dev exists only in internal DNS, and set-top boxes
       # routinely ignore DHCP-supplied resolvers or force DoH, which leaves them
       # unable to find it at all; a literal IP sidesteps name resolution.
       #
-      # Only 9191 is published. The vpn-ui on 3000 is deliberately left off:
-      # gluetun's /v1/vpn/settings returns the Privado credentials in clear text
-      # and the UI re-serves it, which is why securitypolicy.yaml puts that route
-      # behind Keycloak. A LoadBalancer here would hand it to the whole LAN.
+      # Only 9191 is published; the tools keep their own ClusterIP Services.
       #
       # Plain HTTP, so XC credentials cross the LAN in the query string. That is
       # the trade for clients with no working DNS or TLS trust store.
-      #
-      # 9191 is already in FIREWALL_INPUT_PORTS, so gluetun accepts this on eth0
-      # without further change, and reply routing for inbound connections does
-      # not go through the tunnel.
       lan:
         controller: dispatcharr
         forceRename: dispatcharr-lan
