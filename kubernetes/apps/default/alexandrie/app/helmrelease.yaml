@@ -44,13 +44,22 @@ spec:
               DATABASE_PORT: "3306"
               DATABASE_NAME: alexandrie
               DATABASE_USER: alexandrie
-              # iDrive e2. Buckets `notes` (public-read) and `notes-backups`
-              # (private) are pre-created, since the access key is scoped to
-              # them and cannot create buckets. The -backups suffix is
+              # In-cluster RustFS, not iDrive e2. The backend calls
+              # SetBucketPolicy on boot and os.Exit(1)s if it fails, and e2
+              # refuses that call on a bucket-scoped key (the only kind it
+              # issues) -- so nothing hosted there can satisfy this app.
+              # RustFS is what upstream's compose ships, so the call is known
+              # to work against it. It creates `notes` (public-read) and
+              # `notes-backups` (private) itself; the -backups suffix is
               # hardcoded in the backend, not configurable.
-              MINIO_ENDPOINT: h4d6.ch.idrivee2-28.com
-              MINIO_PUBLIC_URL: "https://h4d6.ch.idrivee2-28.com"
-              MINIO_SECURE: "true"
+              #
+              # Internal traffic is plaintext inside the cluster; the browser
+              # reaches the same store over TLS at MINIO_PUBLIC_URL. The
+              # signing client keys off that URL's scheme independently, so
+              # MINIO_SECURE only governs the internal hop.
+              MINIO_ENDPOINT: alexandrie-rustfs.default.svc.cluster.local:9000
+              MINIO_PUBLIC_URL: "https://s3-notes.ewatkins.dev"
+              MINIO_SECURE: "false"
               MINIO_BUCKET: notes
               SMTP_MAIL_FROM: "alexandrie@ewatkins.dev"
             envFrom:
@@ -104,7 +113,11 @@ spec:
               TZ: America/Chicago
               NUXT_PUBLIC_BASE_URL: "https://wiki.ewatkins.dev"
               NUXT_PUBLIC_BASE_API: "https://wiki.ewatkins.dev"
-              NUXT_PUBLIC_BASE_CDN: "https://h4d6.ch.idrivee2-28.com"
+              # Deliberately a different hostname from the app: the service
+              # worker registers its CDN cache as `url.origin === BASE_CDN`,
+              # so sharing an origin with the frontend would put the whole app
+              # behind a network-first cache strategy.
+              NUXT_PUBLIC_BASE_CDN: "https://s3-notes.ewatkins.dev"
               # Path-style addressing, so this segment is the bucket name and
               # must track MINIO_BUCKET above.
               NUXT_PUBLIC_CDN_ENDPOINT: /notes/
@@ -136,14 +149,90 @@ spec:
                 memory: 192Mi
               limits:
                 memory: 768Mi
+      # S3-compatible object store for wiki media. Its own controller rather
+      # than a container in the pod above: it owns a ReadWriteOnce claim, and
+      # keeping it separate means an app restart does not interrupt asset
+      # serving.
+      rustfs:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: docker.io/rustfs/rustfs
+              tag: 1.0.0-rc.4
+            env:
+              TZ: America/Chicago
+              RUSTFS_VOLUMES: /data
+              RUSTFS_CONSOLE_ENABLE: "false"
+              RUSTFS_LOG_LEVEL: info
+            envFrom:
+              - secretRef:
+                  name: alexandrie-secret
+            probes:
+              liveness: &rustfsProbe
+                enabled: true
+                custom: true
+                spec:
+                  tcpSocket:
+                    port: &rustfsPort 9000
+                  periodSeconds: 30
+                  failureThreshold: 3
+              readiness: *rustfsProbe
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  tcpSocket:
+                    port: *rustfsPort
+                  failureThreshold: 30
+                  periodSeconds: 10
+            resources:
+              requests:
+                cpu: 25m
+                memory: 128Mi
+              limits:
+                memory: 1Gi
+        pod:
+          securityContext:
+            # nfs-fast presents as 99:100 and cannot be chowned from the
+            # container. The image defaults to uid 10001; its entrypoint makes
+            # no uid assumptions, so running as the share owner is safe.
+            runAsUser: 99
+            runAsGroup: 100
+            fsGroup: 100
+            fsGroupChangePolicy: OnRootMismatch
+    # forceRename on both: with more than one service defined, app-template
+    # names them <release>-<identifier>, which would rename the `alexandrie`
+    # Service out from under the HTTPRoute.
     service:
       app:
         controller: *app
+        forceRename: alexandrie
         ports:
           http:
             port: *httpPort
           api:
             port: *apiPort
+      rustfs:
+        controller: rustfs
+        forceRename: alexandrie-rustfs
+        ports:
+          http:
+            port: *rustfsPort
+    persistence:
+      cdn:
+        existingClaim: alexandrie-cdn
+        advancedMounts:
+          rustfs:
+            app:
+              - path: /data
+      logs:
+        type: emptyDir
+        advancedMounts:
+          rustfs:
+            app:
+              - path: /logs
     ingress:
       app:
         enabled: false
