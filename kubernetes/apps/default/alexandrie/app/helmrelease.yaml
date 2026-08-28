@@ -1,0 +1,145 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app alexandrie
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    controllers:
+      alexandrie:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          # Go/Gin API. Serves everything under /api and owns the schema
+          # migrations, so it must reach the Galera primary directly rather
+          # than load balancing writes across the cluster.
+          backend:
+            image:
+              repository: ghcr.io/smaug6739/alexandrie-backend
+              tag: v8.14.0
+            env:
+              BACKEND_PORT: &apiPort 8201
+              GIN_MODE: release
+              TZ: America/Chicago
+              FRONTEND_URL: "https://wiki.ewatkins.dev"
+              COOKIE_DOMAIN: wiki.ewatkins.dev
+              ALLOW_UNSECURE: "false"
+              CONFIG_DISABLE_SIGNUP: "false"
+              CONFIG_DISABLE_NATIVE_LOGIN: "false"
+              DATABASE_HOST: mariadb-primary.database.svc.cluster.local
+              DATABASE_PORT: "3306"
+              DATABASE_NAME: alexandrie
+              DATABASE_USER: alexandrie
+              # iDrive e2. The backend creates both `alexandrie` (public-read)
+              # and `alexandrie-backups` (private, 1-day lifecycle) on boot.
+              MINIO_ENDPOINT: h4d6.ch.idrivee2-28.com
+              MINIO_PUBLIC_URL: "https://h4d6.ch.idrivee2-28.com"
+              MINIO_SECURE: "true"
+              MINIO_BUCKET: alexandrie
+              SMTP_MAIL_FROM: "alexandrie@ewatkins.dev"
+            envFrom:
+              - secretRef:
+                  name: alexandrie-secret
+              - secretRef:
+                  name: alexandrie-db-secret
+              - secretRef:
+                  name: alexandrie-smtp
+            # No HTTP health endpoint is exposed, so probe the listener itself.
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  tcpSocket:
+                    port: *apiPort
+                  periodSeconds: 30
+                  failureThreshold: 3
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  tcpSocket:
+                    port: *apiPort
+                  periodSeconds: 10
+                  failureThreshold: 3
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  tcpSocket:
+                    port: *apiPort
+                  failureThreshold: 30
+                  periodSeconds: 10
+            resources:
+              requests:
+                cpu: 25m
+                memory: 128Mi
+              limits:
+                memory: 512Mi
+          # Nuxt/Nitro SSR. The NUXT_PUBLIC_* values are baked into the client
+          # bundle at container start, so they must be the browser-facing URLs.
+          # useApi() appends /api itself, hence BASE_API is the bare origin.
+          frontend:
+            image:
+              repository: ghcr.io/smaug6739/alexandrie-frontend
+              tag: v8.14.0
+            env:
+              PORT: &httpPort 8200
+              TZ: America/Chicago
+              NUXT_PUBLIC_BASE_URL: "https://wiki.ewatkins.dev"
+              NUXT_PUBLIC_BASE_API: "https://wiki.ewatkins.dev"
+              NUXT_PUBLIC_BASE_CDN: "https://h4d6.ch.idrivee2-28.com"
+              NUXT_PUBLIC_CDN_ENDPOINT: /alexandrie/
+              NUXT_PUBLIC_CONFIG_DISABLE_SIGNUP_PAGE: "false"
+              NUXT_PUBLIC_CONFIG_DISABLE_LANDING_PAGE: "true"
+            probes:
+              liveness: &probe
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: *httpPort
+                  periodSeconds: 30
+                  failureThreshold: 3
+              readiness: *probe
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: *httpPort
+                  failureThreshold: 30
+                  periodSeconds: 10
+            resources:
+              requests:
+                cpu: 25m
+                memory: 192Mi
+              limits:
+                memory: 768Mi
+    service:
+      app:
+        controller: *app
+        ports:
+          http:
+            port: *httpPort
+          api:
+            port: *apiPort
+    ingress:
+      app:
+        enabled: false

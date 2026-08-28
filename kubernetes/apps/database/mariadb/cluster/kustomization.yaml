@@ -10,6 +10,11 @@ resources:
   - ./httproute.yaml
   - ./gatus.yaml
 
+  # Alexandrie
+  - ./users/alexandrie.yaml
+  - ./databases/alexandrie.yaml
+  - ./grants/alexandrie.yaml
+
   # Pterodactyl
   - ./users/pterodactyl.yaml
   - ./grants/pterodactyl.yaml
