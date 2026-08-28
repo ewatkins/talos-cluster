@@ -40,6 +40,18 @@ spec:
               ALLOW_UNSECURE: "false"
               CONFIG_DISABLE_SIGNUP: "false"
               CONFIG_DISABLE_NATIVE_LOGIN: "false"
+              # Keycloak. Providers are read from indexed OIDC_<n>_* vars; the
+              # backend discovers endpoints and negotiates scopes from
+              # CONFIG_URL, so only these four are needed. PROVIDER_NAME is
+              # lowercased into the callback path (/auth/oidc/keycloak/...) and
+              # shown on the login button. The secret arrives via envFrom.
+              #
+              # Discovery runs once at startup behind a sync.Once: if Keycloak
+              # is unreachable then, the provider is dropped with an error in
+              # the log and does not come back until the pod restarts.
+              OIDC_1_PROVIDER_NAME: Keycloak
+              OIDC_1_CLIENT_ID: alexandrie
+              OIDC_1_CONFIG_URL: "https://keycloak.ewatkins.dev/realms/master/.well-known/openid-configuration"
               DATABASE_HOST: mariadb-primary.database.svc.cluster.local
               DATABASE_PORT: "3306"
               DATABASE_NAME: alexandrie
