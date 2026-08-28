@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: alexandrie-cdn
+  namespace: default
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 20Gi
+  # nfs-fast rather than openebs-hostpath: this holds every image and
+  # attachment in the wiki, and hostpath is node-local with no backup.
+  storageClassName: nfs-fast
