@@ -44,12 +44,14 @@ spec:
               DATABASE_PORT: "3306"
               DATABASE_NAME: alexandrie
               DATABASE_USER: alexandrie
-              # iDrive e2. The backend creates both `alexandrie` (public-read)
-              # and `alexandrie-backups` (private, 1-day lifecycle) on boot.
+              # iDrive e2. Buckets `notes` (public-read) and `notes-backups`
+              # (private) are pre-created, since the access key is scoped to
+              # them and cannot create buckets. The -backups suffix is
+              # hardcoded in the backend, not configurable.
               MINIO_ENDPOINT: h4d6.ch.idrivee2-28.com
               MINIO_PUBLIC_URL: "https://h4d6.ch.idrivee2-28.com"
               MINIO_SECURE: "true"
-              MINIO_BUCKET: alexandrie
+              MINIO_BUCKET: notes
               SMTP_MAIL_FROM: "alexandrie@ewatkins.dev"
             envFrom:
               - secretRef:
@@ -103,7 +105,9 @@ spec:
               NUXT_PUBLIC_BASE_URL: "https://wiki.ewatkins.dev"
               NUXT_PUBLIC_BASE_API: "https://wiki.ewatkins.dev"
               NUXT_PUBLIC_BASE_CDN: "https://h4d6.ch.idrivee2-28.com"
-              NUXT_PUBLIC_CDN_ENDPOINT: /alexandrie/
+              # Path-style addressing, so this segment is the bucket name and
+              # must track MINIO_BUCKET above.
+              NUXT_PUBLIC_CDN_ENDPOINT: /notes/
               NUXT_PUBLIC_CONFIG_DISABLE_SIGNUP_PAGE: "false"
               NUXT_PUBLIC_CONFIG_DISABLE_LANDING_PAGE: "true"
             probes:
