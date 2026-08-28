@@ -1,0 +1,9 @@
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Database
+metadata:
+  name: alexandrie
+spec:
+  mariaDbRef:
+    name: mariadb
+  characterSet: utf8mb4
+  collate: utf8mb4_unicode_ci
