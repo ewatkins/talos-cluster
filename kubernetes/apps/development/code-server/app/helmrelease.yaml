@@ -133,7 +133,7 @@ spec:
           z-git-pull:
             image:
               repository: ghcr.io/coder/code-server
-              tag: 4.134.0
+              tag: 4.135.0
             command:
               - /bin/sh
               - -c
@@ -159,7 +159,7 @@ spec:
           app:
             image:
               repository: ghcr.io/coder/code-server
-              tag: 4.134.0
+              tag: 4.135.0
             args:
               # Authentication is handled by the oauth2-proxy sidecar (Keycloak
               # OIDC), not by code-server. Loopback bind means the only network
