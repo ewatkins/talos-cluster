@@ -43,7 +43,7 @@ spec:
               # UnmarshalJSON that accepts bool and object, so NVMe (PVE) and
               # SATA (NAS) both register.
               repository: ghcr.io/starosdev/scrutiny
-              tag: 1.69.2-omnibus@sha256:f1217e88460a7e1bd6cde8f05ed6f079bcfd7613078fbae22607065c276d5641
+              tag: 1.70.0-omnibus@sha256:4230bff4ace237a9c0d83f64edbd37fb91fd5965eda0e266f6af3b9347a33c32
             env:
               TZ: America/Chicago
             probes:
