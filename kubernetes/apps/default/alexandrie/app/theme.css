@@ -173,6 +173,21 @@ svg[fill='none'] :not([fill]) {
   display: none !important;
 }
 
+/*
+ * Collapse the thumbnail slot when there is no thumbnail.
+ *
+ * Node/Document/Thumbnail.vue always renders its .illustration wrapper, and
+ * that wrapper is a flat `height: 160px; margin-bottom: 1rem` -- so a
+ * document with no image still reserves 176px of empty column beside the
+ * title. That, not the margins, is the bulk of the gap above the content.
+ *
+ * :has() keeps this conditional rather than blanket: a document that does
+ * have a thumbnail still shows it.
+ */
+.doc-container > .header .thumbnail:not(:has(img, svg, .user-image)) {
+  display: none !important;
+}
+
 /* Title and description on one line. .infos is a plain block, so it becomes
    the flex row; baseline alignment keeps the 14px description sitting on the
    same line as the 22px title rather than centred against it. */
