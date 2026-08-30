@@ -1,0 +1,115 @@
+/*
+ * VS Code Dark+ for Alexandrie.
+ *
+ * Not applied by Flux -- this is a per-user account preference, pasted into
+ * Settings > Styles > App styles with the injection toggle on. Kept here as
+ * the source of truth so it survives a lost browser profile. See the README.
+ *
+ * Every declaration needs !important: the app's own styles are unlayered and
+ * the injection wraps this in `@layer user-app`, which unlayered always beats.
+ * Selector is :root.dark-mode because @nuxtjs/color-mode runs with
+ * classSuffix: '-mode' and puts the class on <html>, the element :root matches.
+ */
+:root.dark-mode {
+  /* Accent -- VS Code focus blue */
+  --accent: #0078d4 !important;
+  --accent-dark: #005a9e !important;
+  --accent-bg: #04395e !important;
+  --accent-border: #007fd4 !important;
+
+  /* Surfaces: editor -> sidebar -> tab -> widget */
+  --surface-base: #1e1e1e !important;
+  --surface-raised: #252526 !important;
+  --surface-raised-light: #2d2d2d !important;
+  --surface-overlay: #333333 !important;
+  --surface-transparent: rgb(255 255 255 / 5%) !important;
+  --surface-transparent-light: rgb(255 255 255 / 3%) !important;
+  --input-bg: #3c3c3c !important;
+
+  /* Text */
+  --text-body: #d4d4d4 !important;
+  --text-primary: #cccccc !important;
+  --text-primary-light: #e7e7e7 !important;
+  --text-secondary: #9d9d9d !important;
+  --text-muted: #808080 !important;
+  --text-inverse: #ffffff !important;
+
+  /* Borders + selection */
+  --border: #3c3c3c !important;
+  --border-subtle: #2b2b2b !important;
+  --border-strong: #505050 !important;
+  --selection-color: #264f78 !important;
+
+  /* VS Code's widget shadow is far heavier than the stock one */
+  --shadow-sm: 0 2px 4px rgb(0 0 0 / 30%) !important;
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 36%) !important;
+  --shadow-lg: 0 8px 24px rgb(0 0 0 / 44%) !important;
+  --shadow-xl: 0 20px 40px rgb(0 0 0 / 52%) !important;
+
+  /* Dark+ token colors. MarkdownEditor/themes.ts binds its CodeMirror
+     highlight style to these, so the editor follows along. */
+  --blue: #569cd6 !important;
+  --blue-dark: #0078d4 !important;
+  --blue-bg: rgb(86 156 214 / 14%) !important;
+  --blue-bg-light: rgb(86 156 214 / 6%) !important;
+  --blue-border: rgb(86 156 214 / 28%) !important;
+
+  --green: #89d185 !important;
+  --green-dark: #388a34 !important;
+  --green-bg: rgb(137 209 133 / 14%) !important;
+  --green-bg-light: rgb(137 209 133 / 6%) !important;
+  --green-border: rgb(137 209 133 / 28%) !important;
+
+  --red: #f14c4c !important;
+  --red-dark: #c72e2e !important;
+  --red-bg: rgb(241 76 76 / 14%) !important;
+  --red-bg-light: rgb(241 76 76 / 6%) !important;
+  --red-border: rgb(241 76 76 / 28%) !important;
+
+  --yellow: #cca700 !important;
+  --yellow-dark: #9e8100 !important;
+  --yellow-bg: rgb(204 167 0 / 14%) !important;
+  --yellow-bg-light: rgb(204 167 0 / 6%) !important;
+  --yellow-border: rgb(204 167 0 / 28%) !important;
+
+  --teal: #4ec9b0 !important;
+  --teal-dark: #2d8a7a !important;
+  --teal-bg: rgb(78 201 176 / 14%) !important;
+  --teal-bg-light: rgb(78 201 176 / 6%) !important;
+  --teal-border: rgb(78 201 176 / 28%) !important;
+
+  --purple: #c586c0 !important;
+  --purple-dark: #a05fa0 !important;
+  --purple-bg: rgb(197 134 192 / 14%) !important;
+  --purple-bg-light: rgb(197 134 192 / 6%) !important;
+  --purple-border: rgb(197 134 192 / 28%) !important;
+
+  --pink: #d670d6 !important;
+  --pink-dark: #b34fb3 !important;
+
+  --grey: #cccccc !important;
+  --grey-dark: #808080 !important;
+  --grey-bg: #2d2d2d !important;
+  --grey-bg-light: #252526 !important;
+  --grey-border: #3c3c3c !important;
+
+  /* Upstream writes `--oranges` but themes.ts reads `var(--orange)`, so
+     define both or code type names and numbers lose their color. */
+  --oranges: #ce9178 !important;
+  --orange: #ce9178 !important;
+  --oranges-dark: #d18616 !important;
+  --oranges-bg: rgb(206 145 120 / 14%) !important;
+  --oranges-bg-light: rgb(206 145 120 / 6%) !important;
+  --oranges-border: rgb(206 145 120 / 28%) !important;
+}
+
+/* Strip the chrome off the document header. */
+.doc-container > .header {
+  padding: 0 !important;
+  border: none !important;
+  background: none !important;
+}
+.doc-container > .header .user,
+.doc-container > .header .category {
+  display: none !important;
+}
