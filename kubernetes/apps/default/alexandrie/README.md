@@ -224,6 +224,42 @@ SMTP reuses the shared `smtp` item, for password-reset mail only.
 > relay that only speaks 587/STARTTLS will fail at send time — the app still boots, and
 > nothing but password reset is affected.
 
+## Custom styles
+
+[`styles/vscode-dark.css`](styles/vscode-dark.css) is a VS Code Dark+ palette plus the
+document-header trim. **Flux does not apply it** — the directory is a sibling of `app/`, which
+is the only path `ks.yaml` points at, so nothing reconciles it. It is pasted by hand into
+*Settings → Styles → App styles* with the injection toggle on, and lives here so it survives a
+lost browser profile.
+
+Three things the file depends on, all easy to get wrong:
+
+- **Every declaration needs `!important`**, custom properties included. `useStyleInjection()`
+  wraps the input in `@layer user-app`, and the app's own styles are entirely unlayered —
+  there is no `@layer` anywhere in `app/styles/` — so unlayered wins over the named layer on
+  any normal declaration.
+- **The selector is `:root.dark-mode`.** `@nuxtjs/color-mode` runs with `classSuffix: '-mode'`
+  and puts the class on `<html>`, the same element `:root` matches, so this scopes the theme
+  to dark mode without breaking light.
+- **`--primary*` is deliberately untouched.** `useAppColors.ts` sets those inline on
+  `documentElement` for the accent picker, and an `!important` here would outrank the inline
+  value and freeze that feature.
+
+The markdown editor recolors itself: `MarkdownEditor/themes.ts` binds its CodeMirror highlight
+style to the same `--teal` / `--blue` / `--green` vars. It reads `var(--orange)`, though, which
+the themes never define — they define `--oranges` — so the file sets both. A few editor colors
+are hardcoded light values (`base05 = '#424242'`, `selection = '#DDEEFF'`) and cannot be
+reached from here at all.
+
+### Why it is not GitOps-managed
+
+It is a per-user preference, not app config: `stylesInjection` is a key in the `advanced` JSON
+column of `user_settings`, written by `PUT /api/user/settings` and cached in localForage. It
+could be forced from a Job — `UPDATE user_settings SET advanced = JSON_SET(advanced,
+'$.stylesInjection', ?) WHERE user_id = ?` — and `mergeFromBackend()` lets remote win over the
+local cache on the next load, so it would take effect. Not worth a Job and a ConfigMap for one
+account's theme; the file here plus a paste is the whole workflow.
+
 ## Trade-offs
 
 - Wiki media lives on `nfs-fast`, so it is on the NAS rather than node-local — but
