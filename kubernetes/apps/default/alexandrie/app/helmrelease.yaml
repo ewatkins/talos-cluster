@@ -38,7 +38,11 @@ spec:
               FRONTEND_URL: "https://wiki.ewatkins.dev"
               COOKIE_DOMAIN: wiki.ewatkins.dev
               ALLOW_UNSECURE: "false"
-              CONFIG_DISABLE_SIGNUP: "false"
+              # Native registration only. The OIDC path does not consult
+              # this -- createUserFromOIDC() is reached from the callback and
+              # has no signup gate -- so anyone Keycloak authenticates still
+              # gets an account provisioned on first login.
+              CONFIG_DISABLE_SIGNUP: "true"
               # OIDC-only. The backend returns 403 from POST /api/auth for
               # every username/password attempt; the frontend copy below
               # greys the form out to match. Password reset still works, and
@@ -158,7 +162,10 @@ spec:
               # either way, so the flag is left unset rather than set and
               # silently ignored.
               NUXT_PUBLIC_CONFIG_DISABLE_NATIVE_LOGIN: "true"
-              NUXT_PUBLIC_CONFIG_DISABLE_SIGNUP_PAGE: "false"
+              # Frontend half of CONFIG_DISABLE_SIGNUP above: page middleware
+              # redirects /signup to /login. Same split as native login --
+              # the backend enforces, this only hides.
+              NUXT_PUBLIC_CONFIG_DISABLE_SIGNUP_PAGE: "true"
               NUXT_PUBLIC_CONFIG_DISABLE_LANDING_PAGE: "true"
             probes:
               liveness: &probe

@@ -135,9 +135,20 @@ The backend one is the enforcement; the frontend one is cosmetic. Flip them toge
 entirely, bouncing straight to Keycloak on mount. Left off: with native login disabled there
 would be no way back to a working login page if Keycloak were down.
 
-Signup is still open (`CONFIG_DISABLE_SIGNUP: "false"`), so accounts can still be created
-with a password — they just cannot log in with one afterwards. Existing accounts link a
-provider from *Settings → Security*.
+Native signup is off the same way, and for the same reason — an account created with a
+password could not log in with one anyway:
+
+| Variable | Container | Effect |
+| --- | --- | --- |
+| `CONFIG_DISABLE_SIGNUP` | backend | `CreateUser()` returns `403 user signup is disabled` |
+| `NUXT_PUBLIC_CONFIG_DISABLE_SIGNUP_PAGE` | frontend | Page middleware redirects `/signup` to `/login` |
+
+> **This does not gate OIDC.** Account creation on first Keycloak login runs through
+> `createUserFromOIDC()` in `services/oidc.service.go`, reached from the callback, which
+> never reads `CONFIG_DISABLE_SIGNUP`. Anyone Keycloak will authenticate still gets an
+> account provisioned — restricting *that* is a Keycloak-side concern.
+
+Existing accounts link a provider from *Settings → Security*.
 
 ## Admin role
 
