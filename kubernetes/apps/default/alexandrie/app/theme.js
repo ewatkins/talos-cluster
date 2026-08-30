@@ -44,34 +44,33 @@
    */
   var HOST_CLASS = 'doc-header-icon';
 
-  function iconRef(svg) {
-    var use = svg && svg.querySelector('use');
-    if (!use) return '';
-    return use.getAttribute('xlink:href') || use.getAttribute('href') || '';
-  }
-
   function placeIcon() {
     var infos = document.querySelector('.doc-container > .header .infos');
     if (!infos) return;
 
     var existing = infos.querySelector('.' + HOST_CLASS);
     var source = document.querySelector('#navbar-title svg');
-    var ref = iconRef(source);
 
     // Not a document view, or the icon has not rendered yet.
-    if (!source || !ref) {
+    if (!source) {
       if (existing) existing.remove();
       return;
     }
 
+    // Compare the markup itself rather than the sprite reference: Vue sets
+    // the <use> target as a namespaced xlink:href, which is not reliably
+    // readable back with getAttribute, and an unreadable key made this
+    // bail out every time.
+    var key = source.outerHTML;
+
     // Already showing this icon. The early return is what keeps the observer
     // below from looping on its own insertion.
-    if (existing && existing.getAttribute('data-icon') === ref) return;
+    if (existing && existing.getAttribute('data-icon') === key) return;
     if (existing) existing.remove();
 
     var host = document.createElement('span');
     host.className = HOST_CLASS;
-    host.setAttribute('data-icon', ref);
+    host.setAttribute('data-icon', key);
     host.setAttribute('aria-hidden', 'true');
     host.appendChild(source.cloneNode(true));
     infos.insertBefore(host, infos.firstChild);
