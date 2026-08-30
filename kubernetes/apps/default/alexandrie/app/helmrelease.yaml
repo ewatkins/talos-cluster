@@ -162,6 +162,18 @@ spec:
               # either way, so the flag is left unset rather than set and
               # silently ignored.
               NUXT_PUBLIC_CONFIG_DISABLE_NATIVE_LOGIN: "true"
+              # So the form is hidden by never staying on the page: OIDCProviders
+              # calls loginWithProvider() from onMounted and /login bounces
+              # straight to Keycloak. Value is lowercased into the API path, and
+              # matches OIDC_1_PROVIDER_NAME above.
+              #
+              # No redirect loop -- the callback lives at /login/oidc/callback,
+              # a separate page that does not mount OIDCProviders.
+              #
+              # If Keycloak is ever down there is no login page to fall back to,
+              # since native login is disabled anyway. Recovery is unsetting
+              # this and CONFIG_DISABLE_NATIVE_LOGIN.
+              NUXT_PUBLIC_CONFIG_OIDC_PROVIDER_AUTO_REDIRECT: keycloak
               # Frontend half of CONFIG_DISABLE_SIGNUP above: page middleware
               # redirects /signup to /login. Same split as native login --
               # the backend enforces, this only hides.
