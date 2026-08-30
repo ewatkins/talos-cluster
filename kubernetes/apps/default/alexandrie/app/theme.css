@@ -140,13 +140,51 @@ svg[fill='none'] :not([fill]) {
   fill: none !important;
 }
 
-/* Strip the chrome off the document header. */
+/*
+ * Compact the document header.
+ *
+ * Node/Document/Header.vue nests .header > .container > .content > .infos,
+ * with the author, category, <h1>, description and tag list stacked inside
+ * .infos. Stripping the panel is not enough on its own -- the vertical space
+ * is the sum of six separate rules, so each one has to be named:
+ *
+ *   .header      inline style="margin-bottom: 20px" on the component
+ *   .infos       margin-top: 10px
+ *   h1           margin: 10px 0
+ *   .description margin-bottom: 12px
+ *   .tags        padding: 8px 0
+ *
+ * The inline margin needs !important to beat it -- an important declaration
+ * outranks an inline one. The rest are scoped styles at (0,2,0), so the
+ * three-class selectors below clear them on specificity alone.
+ */
 .doc-container > .header {
+  margin-bottom: 8px !important;
   padding: 0 !important;
   border: none !important;
   background: none !important;
 }
+
+/* Author, category and the header's tag list. Tags still show in the TOC
+   sidebar, which is a separate component. */
 .doc-container > .header .user,
-.doc-container > .header .category {
+.doc-container > .header .category,
+.doc-container > .header .tags {
   display: none !important;
+}
+
+/* Title and description on one line. .infos is a plain block, so it becomes
+   the flex row; baseline alignment keeps the 14px description sitting on the
+   same line as the 22px title rather than centred against it. */
+.doc-container > .header .infos {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: baseline !important;
+  gap: 0 12px !important;
+  margin-top: 0 !important;
+}
+
+.doc-container > .header .infos h1,
+.doc-container > .header .infos .description {
+  margin: 0 !important;
 }
