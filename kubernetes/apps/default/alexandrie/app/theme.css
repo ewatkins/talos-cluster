@@ -1,9 +1,9 @@
 /*
  * VS Code Dark+ for Alexandrie.
  *
- * Not applied by Flux -- this is a per-user account preference, pasted into
- * Settings > Styles > App styles with the injection toggle on. Kept here as
- * the source of truth so it survives a lost browser profile. See the README.
+ * Served to every user by the theme sidecar, which injects a <link> to it
+ * into every HTML response. Not the app's own per-user style injection --
+ * that one never runs on public pages. See the README.
  *
  * Every declaration needs !important: the app's own styles are unlayered and
  * the injection wraps this in `@layer user-app`, which unlayered always beats.
@@ -237,109 +237,4 @@ svg[fill='none'] :not([fill]) {
   margin: 6px 0 0 !important;
   font-size: 14px !important;
   color: var(--text-secondary) !important;
-}
-
-/*
- * Keep stroke-only icons (Lucide and friends) from being filled in solid.
- *
- * Alexandrie paints icons with blanket rules -- `.custom-block *`,
- * `.blue *`, `[grey] *` and others in styles/themes/colors.scss and
- * styles/features/document-theme.scss all declare `fill: <colour> !important`
- * on every descendant. An SVG's own `fill="none"` is a presentation
- * attribute, which loses to any stylesheet declaration, so a line icon
- * dropped into a callout or a coloured block renders as a solid blob.
- *
- * Restoring it needs to outrank those: `svg[fill='none'] :not([fill])` is
- * (0,2,1) against their (0,1,1). Children that set their own `fill` are
- * skipped, so mixed fill/stroke artwork still renders as authored, and
- * `stroke` is untouched throughout.
- */
-svg[fill='none'],
-svg[fill='none'] :not([fill]) {
-  fill: none !important;
-}
-
-/*
- * Compact the document header.
- *
- * Node/Document/Header.vue nests .header > .container > .content > .infos,
- * with the author, category, <h1>, description and tag list stacked inside
- * .infos. Stripping the panel is not enough on its own -- the vertical space
- * is the sum of six separate rules, so each one has to be named:
- *
- *   .header      inline style="margin-bottom: 20px" on the component
- *   .infos       margin-top: 10px
- *   h1           margin: 10px 0
- *   .description margin-bottom: 12px
- *   .tags        padding: 8px 0
- *
- * The inline margin needs !important to beat it -- an important declaration
- * outranks an inline one. The rest are scoped styles at (0,2,0), so the
- * three-class selectors below clear them on specificity alone.
- */
-.doc-container > .header {
-  margin-bottom: 8px !important;
-  padding: 0 !important;
-  border: none !important;
-  background: none !important;
-}
-
-/* Author, category and the header's tag list. Tags still show in the TOC
-   sidebar, which is a separate component. */
-.doc-container > .header .user,
-.doc-container > .header .category,
-.doc-container > .header .tags {
-  display: none !important;
-}
-
-/*
- * Drop the thumbnail entirely.
- *
- * Node/Document/Thumbnail.vue always renders its .illustration wrapper at a
- * flat `height: 160px; margin-bottom: 1rem`, so even a document with no image
- * reserved 176px of empty column beside the title -- the bulk of the old gap
- * above the content. The category icon below takes its place.
- */
-.doc-container > .header .thumbnail {
-  display: none !important;
-}
-
-/*
- * The category icon, cloned out of the navbar by theme.js. Circle sized to
- * the two lines of text beside it; the accent class rides along on the clone,
- * so it keeps the category's colour.
- */
-.doc-container > .header .doc-header-icon {
-  display: inline-flex !important;
-  flex: 0 0 auto !important;
-  align-self: center !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 40px !important;
-  height: 40px !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 50% !important;
-  background: var(--surface-overlay) !important;
-}
-
-/* .icon.xl is (0,2,0) and sets 28px, so this has to be important to win. */
-.doc-container > .header .doc-header-icon svg {
-  width: 22px !important;
-  height: 22px !important;
-}
-
-/* Title and description on one line. .infos is a plain block, so it becomes
-   the flex row; baseline alignment keeps the 14px description sitting on the
-   same line as the 22px title rather than centred against it. */
-.doc-container > .header .infos {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  align-items: baseline !important;
-  gap: 0 12px !important;
-  margin-top: 0 !important;
-}
-
-.doc-container > .header .infos h1,
-.doc-container > .header .infos .description {
-  margin: 0 !important;
 }
