@@ -127,13 +127,32 @@ The backend one is the enforcement; the frontend one is cosmetic. Flip them toge
 
 > **`CONFIG_HIDE_NATIVE_LOGIN` is broken in v8.14.0** and is deliberately not set.
 > `nuxt.config.ts` declares `configHideNativeLogin`, but `LoginBase.vue` reads
-> `config.public.configHideLoginForm` — a key that is not declared, and Nuxt only maps
-> `NUXT_PUBLIC_*` onto declared keys. It is `undefined` however it is spelled, so the form
-> fields stay on the page, greyed out.
+> `config.public.configHideLoginForm` — a key that is not declared, and Nitro's `applyEnv`
+> only walks keys that already exist in `runtimeConfig`. So it is `undefined` however it is
+> spelled: the flag cannot be set from the outside at all. Still present on `main`.
 
-`CONFIG_OIDC_PROVIDER_AUTO_REDIRECT` (frontend, value `keycloak`) would skip the page
-entirely, bouncing straight to Keycloak on mount. Left off: with native login disabled there
-would be no way back to a working login page if Keycloak were down.
+So the form is hidden by never staying on the page instead:
+
+```yaml
+NUXT_PUBLIC_CONFIG_OIDC_PROVIDER_AUTO_REDIRECT: keycloak
+```
+
+`OIDCProviders.vue` calls `loginWithProvider()` from `onMounted` when this is set, so `/login`
+bounces straight to Keycloak. The value is lowercased into the API path and tracks
+`OIDC_1_PROVIDER_NAME`. `/signup` redirects to `/login`, so it bounces too.
+
+No redirect loop: the callback is `/login/oidc/callback`, a separate page, and `OIDCProviders`
+is only ever mounted from `LoginBase`.
+
+> **The form is unmounted, not un-rendered.** The redirect waits on a round trip to
+> `/api/auth/oidc/keycloak/authorize`, so the disabled fields are briefly painted first.
+> Removing that flash means patching the built Nuxt bundle — an init container copying
+> `/app` to an `emptyDir` and rewriting `configHideLoginForm` — which is not worth carrying
+> across every Renovate bump for a few hundred milliseconds.
+
+> **There is no fallback login page while Keycloak is down.** Nothing is lost by it — native
+> login is disabled regardless — but recovery means unsetting this and
+> `CONFIG_DISABLE_NATIVE_LOGIN` together.
 
 Native signup is off the same way, and for the same reason — an account created with a
 password could not log in with one anyway:
