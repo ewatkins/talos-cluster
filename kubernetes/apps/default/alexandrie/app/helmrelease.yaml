@@ -205,6 +205,35 @@ spec:
                 memory: 192Mi
               limits:
                 memory: 768Mi
+          # Injects theme.css into every HTML response on its way out, which is
+          # the only way to make a theme instance-wide: Alexandrie's own style
+          # injection is a per-user account preference, mounted solely by
+          # pages/dashboard.vue, so it never touches the login page and does
+          # not exist for a browser that has not signed in.
+          #
+          # This is what the gateway routes to; the Nuxt container above is
+          # reachable only on loopback within the pod.
+          theme:
+            image:
+              repository: docker.io/nginxinc/nginx-unprivileged
+              tag: 1.31.4-alpine
+            probes:
+              liveness: &themeProbe
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /__theme.css
+                    port: &themePort 8202
+                  periodSeconds: 30
+                  failureThreshold: 3
+              readiness: *themeProbe
+            resources:
+              requests:
+                cpu: 10m
+                memory: 16Mi
+              limits:
+                memory: 64Mi
       # S3-compatible object store for wiki media. Its own controller rather
       # than a container in the pod above: it owns a ReadWriteOnce claim, and
       # keeping it separate means an app restart does not interrupt asset
@@ -266,8 +295,9 @@ spec:
         controller: *app
         forceRename: alexandrie
         ports:
+          # The gateway talks to the theme sidecar, not to Nuxt directly.
           http:
-            port: *httpPort
+            port: *themePort
           api:
             port: *apiPort
       rustfs:
@@ -277,6 +307,18 @@ spec:
           http:
             port: *rustfsPort
     persistence:
+      theme:
+        type: configMap
+        name: alexandrie-theme
+        advancedMounts:
+          alexandrie:
+            theme:
+              - path: /etc/nginx/nginx.conf
+                subPath: nginx.conf
+                readOnly: true
+              - path: /etc/alexandrie/theme.css
+                subPath: theme.css
+                readOnly: true
       cdn:
         existingClaim: alexandrie-cdn
         advancedMounts:
