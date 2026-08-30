@@ -121,6 +121,34 @@
 }
 
 /*
+ * Match Outline's sidebar typography.
+ *
+ * Outline's theme.ts puts the system UI face first and Inter behind it --
+ * "-apple-system, BlinkMacSystemFont, Inter, 'Segoe UI', Roboto, ..." -- and
+ * its SidebarLink is 16px/475 with default tracking. Alexandrie ships Inter
+ * in $font-ui already, so nothing new is downloaded.
+ *
+ * $font-ui is a compile-time SCSS variable with no custom property behind it,
+ * so this is a plain override on .sidebar; family inherits down to the rows.
+ * Scoped to the sidebar on purpose: the document body and the editor keep
+ * their own configured faces from Settings.
+ */
+.sidebar {
+  font-family: -apple-system, BlinkMacSystemFont, Inter, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+/* .item sets 15px with -0.4px of tracking, which is what makes Alexandrie's
+   labels read tighter than Outline's. */
+.sidebar .item {
+  font-size: 16px !important;
+  letter-spacing: normal !important;
+}
+
+.sidebar .item .content {
+  font-weight: 475 !important;
+}
+
+/*
  * Keep stroke-only icons (Lucide and friends) from being filled in solid.
  *
  * Alexandrie paints icons with blanket rules -- `.custom-block *`,
