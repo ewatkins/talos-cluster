@@ -115,9 +115,28 @@ flow enabled, valid redirect URI `https://wiki.ewatkins.dev/login/oidc/callback`
 > the pod restarts. A provider with an empty client secret is rejected the same way — logged
 > and skipped, never a failed boot.
 
-Native login is still enabled (`CONFIG_DISABLE_NATIVE_LOGIN: "false"`) while this is being
-trialled. Once OIDC is proven, the relevant knobs are `CONFIG_DISABLE_NATIVE_LOGIN`,
-`CONFIG_HIDE_NATIVE_LOGIN` and `CONFIG_OIDC_PROVIDER_AUTO_REDIRECT`. Existing accounts link a
+Native login is **off** — Keycloak is the only way in. That takes two variables in two
+containers, because the check exists in both:
+
+| Variable | Container | Effect |
+| --- | --- | --- |
+| `CONFIG_DISABLE_NATIVE_LOGIN` | backend | `Login()` returns `403 native login is disabled` before it reads the body |
+| `NUXT_PUBLIC_CONFIG_DISABLE_NATIVE_LOGIN` | frontend | Disables the username/password inputs and prints "login disabled" |
+
+The backend one is the enforcement; the frontend one is cosmetic. Flip them together.
+
+> **`CONFIG_HIDE_NATIVE_LOGIN` is broken in v8.14.0** and is deliberately not set.
+> `nuxt.config.ts` declares `configHideNativeLogin`, but `LoginBase.vue` reads
+> `config.public.configHideLoginForm` — a key that is not declared, and Nuxt only maps
+> `NUXT_PUBLIC_*` onto declared keys. It is `undefined` however it is spelled, so the form
+> fields stay on the page, greyed out.
+
+`CONFIG_OIDC_PROVIDER_AUTO_REDIRECT` (frontend, value `keycloak`) would skip the page
+entirely, bouncing straight to Keycloak on mount. Left off: with native login disabled there
+would be no way back to a working login page if Keycloak were down.
+
+Signup is still open (`CONFIG_DISABLE_SIGNUP: "false"`), so accounts can still be created
+with a password — they just cannot log in with one afterwards. Existing accounts link a
 provider from *Settings → Security*.
 
 ## Admin role

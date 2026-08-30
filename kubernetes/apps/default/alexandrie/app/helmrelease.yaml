@@ -39,7 +39,11 @@ spec:
               COOKIE_DOMAIN: wiki.ewatkins.dev
               ALLOW_UNSECURE: "false"
               CONFIG_DISABLE_SIGNUP: "false"
-              CONFIG_DISABLE_NATIVE_LOGIN: "false"
+              # OIDC-only. The backend returns 403 from POST /api/auth for
+              # every username/password attempt; the frontend copy below
+              # greys the form out to match. Password reset still works, and
+              # still goes nowhere useful for an OIDC account.
+              CONFIG_DISABLE_NATIVE_LOGIN: "true"
               # The only way to hold the admin role. LoadAppAdmins() runs on
               # every boot and demotes any admin not listed here, so this is
               # the authoritative set -- removing an ID revokes on next
@@ -142,6 +146,18 @@ spec:
               # Path-style addressing, so this segment is the bucket name and
               # must track MINIO_BUCKET above.
               NUXT_PUBLIC_CDN_ENDPOINT: /notes/
+              # Mirrors the backend CONFIG_DISABLE_NATIVE_LOGIN above -- the
+              # two are separate variables read by separate processes and
+              # have to be flipped together. This one only disables the
+              # inputs and prints "login disabled"; the fields stay visible.
+              #
+              # CONFIG_HIDE_NATIVE_LOGIN, which would remove them, does not
+              # work in v8.14.0: nuxt.config declares `configHideNativeLogin`
+              # but LoginBase.vue reads `config.public.configHideLoginForm`,
+              # and Nuxt only maps env onto keys that are declared. Undefined
+              # either way, so the flag is left unset rather than set and
+              # silently ignored.
+              NUXT_PUBLIC_CONFIG_DISABLE_NATIVE_LOGIN: "true"
               NUXT_PUBLIC_CONFIG_DISABLE_SIGNUP_PAGE: "false"
               NUXT_PUBLIC_CONFIG_DISABLE_LANDING_PAGE: "true"
             probes:
