@@ -319,6 +319,9 @@ spec:
               - path: /etc/alexandrie/theme.css
                 subPath: theme.css
                 readOnly: true
+              - path: /etc/alexandrie/theme.js
+                subPath: theme.js
+                readOnly: true
       cdn:
         existingClaim: alexandrie-cdn
         advancedMounts:
