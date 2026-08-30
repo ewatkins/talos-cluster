@@ -32,24 +32,46 @@
   });
 
   /*
-   * Put the category icon in the document header.
+   * Put the document's own icon in the header.
    *
-   * Node/Document/Header.vue teleports the icon out to #navbar-title, so the
-   * header itself has no icon to style -- and the icon is an SVG sprite
-   * reference (<svg class="icon xl"><use href="#icon-network"></svg>), which
-   * CSS cannot conjure. So the navbar's node is cloned back in. The clone
-   * keeps the accent class, so it stays the category's colour.
+   * Node/Document/Header.vue renders no icon of its own -- it teleports the
+   * *category* icon out to #navbar-title -- and an icon here is an SVG sprite
+   * reference (<svg class="icon"><use href="#icon-file"></svg>), which CSS
+   * cannot conjure. So the node is cloned out of the sidebar, where every
+   * document already renders its own icon.
+   *
+   * SidebarItem.vue shapes each row as
+   *   <span class="item"><Icon/><a href="/dashboard/docs/:id">label</a>...</span>
+   * so the row for the open document is the one whose link href matches the
+   * current path, and its first <svg> is the file icon. Cloning it carries
+   * the colour along: role 3 nodes get an inline pink fill, categories get an
+   * accent class.
    *
    * The wrapper is drawn as a circle by .doc-header-icon in theme.css.
    */
   var HOST_CLASS = 'doc-header-icon';
+
+  function sidebarIcon() {
+    var links = document.querySelectorAll('.sidebar .item a[href]');
+    for (var i = 0; i < links.length; i++) {
+      // Exact path rather than :is(.router-link-active): Vue Router marks
+      // ancestor routes active too, which would match parent categories.
+      if (links[i].getAttribute('href') !== location.pathname) continue;
+      var row = links[i].closest('.item');
+      var svg = row && row.querySelector('svg');
+      if (svg) return svg;
+    }
+    // Collapsed branch, filtered tree, or a view with no sidebar row at all.
+    // The navbar's category icon is the next best thing.
+    return document.querySelector('#navbar-title svg');
+  }
 
   function placeIcon() {
     var infos = document.querySelector('.doc-container > .header .infos');
     if (!infos) return;
 
     var existing = infos.querySelector('.' + HOST_CLASS);
-    var source = document.querySelector('#navbar-title svg');
+    var source = sidebarIcon();
 
     // Not a document view, or the icon has not rendered yet.
     if (!source) {
