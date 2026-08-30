@@ -15,6 +15,7 @@ configMapGenerator:
     files:
       - nginx.conf=./nginx.conf
       - theme.css=./theme.css
+      - theme.js=./theme.js
 generatorOptions:
   disableNameSuffixHash: true
   annotations:

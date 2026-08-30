@@ -103,6 +103,23 @@
   --oranges-border: rgb(206 145 120 / 28%) !important;
 }
 
+/*
+ * Rename the sidebar home link. The text is a literal in
+ * components/Sidebar/Sidebar.vue, so it is replaced rather than restyled:
+ * zero out the real text and draw the new name in a pseudo-element, which
+ * survives every re-render without touching the bundle. The tab title needs
+ * theme.js -- CSS cannot reach it.
+ */
+.home-link {
+  font-size: 0 !important;
+}
+.home-link::after {
+  content: 'Notebook' !important;
+  font-family: Arial, sans-serif !important;
+  font-size: 19px !important;
+  font-weight: 600 !important;
+}
+
 /* Strip the chrome off the document header. */
 .doc-container > .header {
   padding: 0 !important;
