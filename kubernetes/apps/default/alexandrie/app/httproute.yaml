@@ -29,6 +29,8 @@ spec:
       backendRefs:
         - name: alexandrie
           port: 8201
+    # 8202 is the theme sidecar, which proxies to Nuxt on loopback and injects
+    # the stylesheet into <head>. Routing straight to 8200 bypasses the theme.
     - matches:
         - path:
             type: PathPrefix
@@ -36,7 +38,7 @@ spec:
       filters: *filters
       backendRefs:
         - name: alexandrie
-          port: 8200
+          port: 8202
 ---
 # The CDN origin. Deliberately a separate hostname from the app: Alexandrie's
 # service worker treats every same-origin request as a CDN asset, so serving

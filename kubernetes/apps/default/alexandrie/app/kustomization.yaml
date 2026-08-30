@@ -7,3 +7,15 @@ resources:
   - pvc.yaml
   - helmrelease.yaml
   - httproute.yaml
+# Mounted into the theme sidecar. disableNameSuffixHash keeps the name stable,
+# so the reloader annotation on the controller is what restarts the pod when
+# either file changes.
+configMapGenerator:
+  - name: alexandrie-theme
+    files:
+      - nginx.conf=./nginx.conf
+      - theme.css=./theme.css
+generatorOptions:
+  disableNameSuffixHash: true
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
