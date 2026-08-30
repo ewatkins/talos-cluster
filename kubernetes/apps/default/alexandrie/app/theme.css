@@ -229,10 +229,12 @@ svg[fill='none'] :not([fill]) {
   color: var(--text-primary) !important;
 }
 
+/* Full width on its own row, so it starts at the left edge of the header
+   rather than indented under the title past the icon. */
 .doc-container > .header .infos .description {
   grid-row: 2 !important;
-  grid-column: 2 !important;
-  margin: 0 !important;
+  grid-column: 1 / -1 !important;
+  margin: 6px 0 0 !important;
   font-size: 14px !important;
   color: var(--text-secondary) !important;
 }
