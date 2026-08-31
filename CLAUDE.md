@@ -91,7 +91,7 @@ Use `${VARIABLE_NAME}` syntax in manifests; variables are defined in those two f
 ## Talos Cluster Details
 
 - Cluster name: `great-lakes`
-- Talos version: v1.13.6 | Kubernetes: v1.36.2
+- Talos version: v1.13.9 | Kubernetes: v1.36.4
 - Node IPs: superior=192.168.40.11, huron=192.168.40.12, michigan=192.168.40.13, erie=192.168.40.14, ontario=192.168.40.15, tahoe=192.168.40.16
 - Node subnet: `192.168.40.0/24` (VLAN 40, gateway `192.168.40.1`); migrated off `10.40.0.0/16` on 2026-08-20
 - Pod CIDR: `10.69.0.0/16` | Service CIDR: `10.96.0.0/16`
