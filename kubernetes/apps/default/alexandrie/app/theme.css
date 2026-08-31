@@ -34,6 +34,11 @@
   --text-muted: #808080 !important;
   --text-inverse: #ffffff !important;
 
+  /* Sidebar and header icons with no colour set. Its own token rather than a
+     reuse of --text-*: this is deliberately brighter than the labels it sits
+     beside, which are --text-primary-light. */
+  --icon-default: #ffffff !important;
+
   /* Borders + selection */
   --border: #3c3c3c !important;
   --border-subtle: #2b2b2b !important;
@@ -155,6 +160,50 @@
 }
 
 /*
+ * Even out the two icon treatments.
+ *
+ * SidebarItem.vue hands a node with a colour set `item-icon <accent>` and
+ * one without it `default-icon`. Its scoped styles pin both to 20px, but
+ * .item-icon alone adds `padding: 2px` -- and `* { box-sizing: border-box }`
+ * in styles/base/_index.scss takes that out of the 20 rather than adding to
+ * it, so a coloured glyph draws into 16px beside an uncoloured one's 20.
+ *
+ * The padding is an inset for the tinted tile the accent class paints
+ * (`background-color: var(--blue-bg)` and its siblings in
+ * styles/themes/colors.scss). Dropping the tile along with the padding is
+ * what actually makes the two match -- the same 20px glyph either way,
+ * differing only in hue. Zeroing the padding on its own would leave the
+ * tint hugging the glyph's bounding box.
+ *
+ * The accent hue itself is left alone: it rides on `.blue * { fill: ... }`,
+ * which paints the <use> directly and is untouched by either declaration.
+ */
+.sidebar .item .item-icon {
+  padding: 0 !important;
+  background: none !important;
+}
+
+/*
+ * White for the icons with no colour set.
+ *
+ * SidebarItem.vue paints those with `.item .default-icon { color:
+ * var(--primary) }`, which follows the accent picker -- so an uncoloured icon
+ * came out the same hue as a blue-tagged one, and the row lost the
+ * has-a-colour / has-none distinction the sidebar is built around.
+ *
+ * The extra .icon buys a class over the app's own (0,3,0): both declarations
+ * are important and unlayered, so an equal-specificity match would come down
+ * to which stylesheet the browser saw last.
+ *
+ * --icon-default is only declared under :root.dark-mode, hence the fallback --
+ * white icons would be invisible on a light ground, so light mode keeps the
+ * accent it has today.
+ */
+.sidebar .item .icon.default-icon {
+  color: var(--icon-default, var(--primary)) !important;
+}
+
+/*
  * Keep stroke-only icons (Lucide and friends) from being filled in solid.
  *
  * Alexandrie paints icons with blanket rules -- `.custom-block *`,
@@ -253,10 +302,44 @@ svg[fill='none'] :not([fill]) {
   background: var(--surface-overlay) !important;
 }
 
-/* .icon.xl is (0,2,0) and pins 28px, so this has to be important to win. */
+/*
+ * .icon.xl is (0,2,0) and pins 28px, so the size has to be important to win.
+ *
+ * The background is for the coloured case. theme.js clones the sidebar row's
+ * <svg> class list and all, so a coloured node arrives here still matching
+ * the global `.blue` / `.red` / ... rules -- which is what keeps the glyph on
+ * its accent, but also brings `background-color: var(--<accent>-bg)` along and
+ * paints a square inside the circle.
+ */
 .doc-container > .header .doc-header-icon svg {
   width: 24px !important;
   height: 24px !important;
+  background: none !important;
+}
+
+/*
+ * Give the header icon the same colour as the row it was cloned from.
+ *
+ * An uncoloured icon is coloured in the sidebar by `.item .default-icon`, a
+ * scoped rule that needs the .item ancestor the clone no longer has. What is
+ * left is Icon.vue's own inline `color: var(--text-body)` default, so the
+ * header rendered body grey. An important declaration outranks a normal
+ * inline one, so restating --icon-default here brings it back in step with
+ * the sidebar rule above.
+ *
+ * The glyph follows `color` because Icon.vue's scoped `use { fill:
+ * currentcolor }` survives the clone: cloneNode carries the data-v attribute
+ * the selector is keyed on.
+ *
+ * Coloured nodes are already right and are not named here -- the accent
+ * classes are global, so `.blue *` keeps tinting the <use> unchanged. Role 3
+ * (resources) carries `color: var(--pink) !important` inline from
+ * SidebarItem.vue; an important style-attribute declaration outranks an
+ * important one from a stylesheet, so those stay pink in both places, which
+ * is the match we are after.
+ */
+.doc-container > .header .doc-header-icon .default-icon {
+  color: var(--icon-default, var(--primary)) !important;
 }
 
 .doc-container > .header .infos h1 {
