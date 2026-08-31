@@ -243,6 +243,65 @@
 }
 
 /*
+ * Let a stroke-drawn icon follow the colour its node is set to.
+ *
+ * A Lucide glyph and its relatives paint with `stroke="currentColor"` over
+ * `fill="none"`, so what colours them is the `color` property -- and
+ * SidebarItem.vue pins that to `var(--primary)` on .item-icon as well as on
+ * .default-icon, with !important. The accent classes do set `color`, but
+ * normally (`.blue { color: var(--blue) }` in styles/themes/colors.scss), so
+ * the pin outranks them and every stroke icon came out the accent regardless
+ * of the colour picked for the node.
+ *
+ * The accent's own `fill: ... !important` on descendants is what carries the
+ * fill-drawn icons, which is why this never showed up on those. Restating
+ * `color` rather than `stroke` keeps the two in step and costs one rule per
+ * accent -- there is no way to say "whatever colour this class stands for"
+ * in a single selector.
+ *
+ * `primary` is left out: the pin already resolves to --primary, which is
+ * exactly what that class asks for.
+ *
+ * The header needs none of this. The clone lands outside .item, so the pin
+ * never applies there and the accent class's normal `color` already wins.
+ */
+.sidebar .item .icon.item-icon.blue {
+  color: var(--blue) !important;
+}
+
+.sidebar .item .icon.item-icon.red {
+  color: var(--red) !important;
+}
+
+.sidebar .item .icon.item-icon.green {
+  color: var(--green) !important;
+}
+
+.sidebar .item .icon.item-icon.yellow {
+  color: var(--yellow) !important;
+}
+
+.sidebar .item .icon.item-icon.orange {
+  color: var(--orange) !important;
+}
+
+.sidebar .item .icon.item-icon.purple {
+  color: var(--purple) !important;
+}
+
+.sidebar .item .icon.item-icon.pink {
+  color: var(--pink) !important;
+}
+
+.sidebar .item .icon.item-icon.teal {
+  color: var(--teal) !important;
+}
+
+.sidebar .item .icon.item-icon.grey {
+  color: var(--grey) !important;
+}
+
+/*
  * Keep stroke-only icons (Lucide and friends) from being filled in solid.
  *
  * Alexandrie paints icons with blanket rules -- `.custom-block *`,
