@@ -12,7 +12,7 @@ spec:
       namespace: network
       sectionName: https
   hostnames:
-    - "wiki.ewatkins.dev"
+    - "notes.ewatkins.dev"
   rules:
     # The Go API owns /api; everything else is the Nuxt frontend. Gateway API
     # resolves the longer prefix first, so rule order is not load-bearing.
@@ -42,7 +42,7 @@ spec:
 ---
 # The CDN origin. Deliberately a separate hostname from the app: Alexandrie's
 # service worker treats every same-origin request as a CDN asset, so serving
-# both from wiki.ewatkins.dev would put the app itself behind a network-first
+# both from notes.ewatkins.dev would put the app itself behind a network-first
 # cache. Objects are public-read by a bucket policy the backend sets on boot,
 # so this route is unauthenticated by design -- it is internal-gateway only.
 apiVersion: gateway.networking.k8s.io/v1
@@ -67,3 +67,33 @@ spec:
       backendRefs:
         - name: alexandrie-rustfs
           port: 9000
+---
+# The trial hostname, kept as a redirect. Alexandrie answered on
+# wiki.ewatkins.dev while it ran beside Outline; anything written down during
+# the trial still resolves. A RequestRedirect rule carries no backendRefs --
+# the gateway answers it without touching the app.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: alexandrie-legacy
+  namespace: default
+  annotations:
+    external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
+spec:
+  parentRefs:
+    - name: internal
+      namespace: network
+      sectionName: https
+  hostnames:
+    - "wiki.ewatkins.dev"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            hostname: notes.ewatkins.dev
+            statusCode: 301

@@ -35,8 +35,8 @@ spec:
               BACKEND_PORT: &apiPort 8201
               GIN_MODE: release
               TZ: America/Chicago
-              FRONTEND_URL: "https://wiki.ewatkins.dev"
-              COOKIE_DOMAIN: wiki.ewatkins.dev
+              FRONTEND_URL: "https://notes.ewatkins.dev"
+              COOKIE_DOMAIN: notes.ewatkins.dev
               ALLOW_UNSECURE: "false"
               # Native registration only. The OIDC path does not consult
               # this -- createUserFromOIDC() is reached from the callback and
@@ -140,8 +140,8 @@ spec:
             env:
               PORT: &httpPort 8200
               TZ: America/Chicago
-              NUXT_PUBLIC_BASE_URL: "https://wiki.ewatkins.dev"
-              NUXT_PUBLIC_BASE_API: "https://wiki.ewatkins.dev"
+              NUXT_PUBLIC_BASE_URL: "https://notes.ewatkins.dev"
+              NUXT_PUBLIC_BASE_API: "https://notes.ewatkins.dev"
               # Deliberately a different hostname from the app: the service
               # worker registers its CDN cache as `url.origin === BASE_CDN`,
               # so sharing an origin with the frontend would put the whole app
