@@ -218,6 +218,31 @@
 }
 
 /*
+ * The other half of Icon.vue.
+ *
+ * A name short enough and free of astral characters is treated as a sprite id
+ * and rendered as `<svg class="icon"><use/></svg>`; anything else -- an icon
+ * pasted in as raw SVG markup, a Font Awesome glyph -- is dropped into
+ * `<i class="icon c-icon" v-html>` instead. The two branches do not colour
+ * themselves the same way: the sprite takes an inline `color`, the <i> takes
+ * an inline `fill`. So the rules above never reached a raw-markup icon, and a
+ * document with one kept rendering --pink.
+ *
+ * The inline is on the <i> and cannot be outranked, but it does not reach the
+ * <svg> on its own -- that inherits through Icon.vue's own
+ * `.c-icon:deep(svg) { fill: inherit !important }`, which is (0,2,1) and
+ * loses to this. So the fill is restated a level down instead.
+ *
+ * `[fill='none']` is stepped around so the stroke-only guard further up keeps
+ * its line icons hollow; a child with a fill of its own is left as authored,
+ * the same carve-out that rule makes.
+ */
+.sidebar .item .icon.default-icon > svg:not([fill='none']),
+.sidebar .item .icon.default-icon > svg:not([fill='none']) :not([fill]) {
+  fill: var(--icon-default, var(--primary)) !important;
+}
+
+/*
  * Keep stroke-only icons (Lucide and friends) from being filled in solid.
  *
  * Alexandrie paints icons with blanket rules -- `.custom-block *`,
@@ -325,6 +350,7 @@ svg[fill='none'] :not([fill]) {
  * its accent, but also brings `background-color: var(--<accent>-bg)` along and
  * paints a square inside the circle.
  */
+.doc-container > .header .doc-header-icon .icon,
 .doc-container > .header .doc-header-icon svg {
   width: 24px !important;
   height: 24px !important;
@@ -357,6 +383,12 @@ svg[fill='none'] :not([fill]) {
 }
 
 .doc-container > .header .doc-header-icon .default-icon use {
+  fill: var(--icon-default, var(--primary)) !important;
+}
+
+/* And the raw-markup branch, for the same reason as in the sidebar. */
+.doc-container > .header .doc-header-icon .default-icon > svg:not([fill='none']),
+.doc-container > .header .doc-header-icon .default-icon > svg:not([fill='none']) :not([fill]) {
   fill: var(--icon-default, var(--primary)) !important;
 }
 

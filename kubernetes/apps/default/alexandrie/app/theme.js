@@ -43,9 +43,15 @@
    * SidebarItem.vue shapes each row as
    *   <span class="item"><Icon/><a href="/dashboard/docs/:id">label</a>...</span>
    * so the row for the open document is the one whose link href matches the
-   * current path, and its first <svg> is the file icon. Cloning it carries
+   * current path, and its first .icon is the file icon. Cloning it carries
    * the colour along: role 3 nodes get an inline pink fill, categories get an
    * accent class.
+   *
+   * The .icon element and not the <svg> inside it. Icon.vue renders a sprite
+   * as <svg class="icon"><use/></svg> but an icon stored as raw markup as
+   * <i class="icon c-icon"><svg/></i>, and it is the wrapper that carries the
+   * classes and the inline colour theme.css keys on -- reaching past it to
+   * the <svg> dropped both on the raw-markup branch.
    *
    * The wrapper is drawn as a circle by .doc-header-icon in theme.css.
    */
@@ -58,12 +64,12 @@
       // ancestor routes active too, which would match parent categories.
       if (links[i].getAttribute('href') !== location.pathname) continue;
       var row = links[i].closest('.item');
-      var svg = row && row.querySelector('svg');
-      if (svg) return svg;
+      var icon = row && row.querySelector('.icon');
+      if (icon) return icon;
     }
     // Collapsed branch, filtered tree, or a view with no sidebar row at all.
     // The navbar's category icon is the next best thing.
-    return document.querySelector('#navbar-title svg');
+    return document.querySelector('#navbar-title .icon') || document.querySelector('#navbar-title svg');
   }
 
   function placeIcon() {
