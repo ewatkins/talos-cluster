@@ -121,12 +121,16 @@
 }
 
 /*
- * Match Outline's sidebar typography.
+ * Take the sidebar typography from Outline, but not its size.
  *
  * Outline's theme.ts puts the system UI face first and Inter behind it --
  * "-apple-system, BlinkMacSystemFont, Inter, 'Segoe UI', Roboto, ..." -- and
  * its SidebarLink is 16px/475 with default tracking. Alexandrie ships Inter
  * in $font-ui already, so nothing new is downloaded.
+ *
+ * The face, weight and tracking follow Outline; the size deliberately does
+ * not. Outline's 16px is set against a wider sidebar than Alexandrie's, so
+ * matching it here made the rows read oversized -- see the .item rule below.
  *
  * $font-ui is a compile-time SCSS variable with no custom property behind it,
  * so this is a plain override on .sidebar; family inherits down to the rows.
@@ -138,9 +142,11 @@
 }
 
 /* .item sets 15px with -0.4px of tracking, which is what makes Alexandrie's
-   labels read tighter than Outline's. */
+   labels read tighter than Outline's. The tracking is kept at normal, but the
+   size is taken a step below stock rather than up to Outline's 16px -- the
+   rows read too large at this sidebar width. */
 .sidebar .item {
-  font-size: 16px !important;
+  font-size: 14px !important;
   letter-spacing: normal !important;
 }
 
