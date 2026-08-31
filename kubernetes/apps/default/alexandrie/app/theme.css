@@ -476,3 +476,46 @@ svg[fill='none'] :not([fill]) {
   font-size: 14px !important;
   color: var(--text-secondary) !important;
 }
+
+/*
+ * Inline code, taken from Outline.
+ *
+ * Outline draws it in shared/editor/components/Styles.ts as a bordered chip:
+ * 4px radius, 1px border, 3px/4px padding, 90% of the surrounding size, and
+ * `box-decoration-break: clone` so a span that wraps gets a full chip on each
+ * line instead of one box torn in half. Its Code mark emits
+ * `<code class="inline">`, which the same file then colours with codeKeyword
+ * rather than the body code colour -- so inline code is blue where a fenced
+ * block is near-white.
+ *
+ * Alexandrie's own rule (styles/base/typography.scss) is a borderless tinted
+ * pill: `margin: 2px; padding: 3px 6px; border-radius: 5px` on
+ * --surface-transparent, at full size and in the body colour.
+ *
+ * The geometry is taken verbatim; the colours come from this palette rather
+ * than Outline's literals, which are tuned for its own near-black #111319
+ * page. Two of the three land on the same value anyway: Outline's codeKeyword
+ * is #569cd6 and so is --blue, because its dark theme is Dark+ downstream of
+ * the same source this file is. The chip sits one surface above the page, the
+ * step Outline makes from #111319 to #1d202a.
+ *
+ * The margin has to be zeroed explicitly -- Outline sets none, and 2px on an
+ * inline box shows up as a gap the border makes obvious.
+ *
+ * `:not(pre) > code` rather than a `pre code` exception: fenced blocks keep
+ * their own styling, and the child combinator is what separates them.
+ * .markdown-preview and not .document-content, so this reaches the editor's
+ * preview pane and the reference pages too, which carry only the former.
+ */
+.markdown-preview :not(pre) > code {
+  margin: 0 !important;
+  padding: 3px 4px !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 4px !important;
+  background: var(--surface-raised-light) !important;
+  color: var(--blue) !important;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace !important;
+  font-size: 90% !important;
+  box-decoration-break: clone !important;
+  -webkit-box-decoration-break: clone !important;
+}
