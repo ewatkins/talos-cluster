@@ -6,7 +6,7 @@ tuppr manages automated, sequential upgrades of Talos Linux OS and Kubernetes ve
 
 | Setting | Value | Notes |
 | --- | --- | --- |
-| Chart | `tuppr 0.1.2` via `oci://ghcr.io/home-operations/charts/tuppr` | Chart polled every 15m |
+| Chart | `tuppr 0.5.2` via `oci://ghcr.io/home-operations/charts/tuppr` | Chart polled every 15m |
 | Helm release interval | 1h | |
 | Replicas | 2 | Leader election ensures only one instance drives upgrades at a time |
 | Metrics | Prometheus ServiceMonitor enabled | |
@@ -16,8 +16,8 @@ tuppr manages automated, sequential upgrades of Talos Linux OS and Kubernetes ve
 
 | File | Kind | Current Target |
 | --- | --- | --- |
-| `upgrades/talosupgrade.yaml` | `TalosUpgrade` | Talos `v1.12.5`; reboot mode `powercycle` |
-| `upgrades/kubernetesupgrade.yaml` | `KubernetesUpgrade` | Kubernetes `v1.35.2` |
+| `upgrades/talosupgrade.yaml` | `TalosUpgrade` | Talos `v1.13.9`; reboot mode `powercycle` |
+| `upgrades/kubernetesupgrade.yaml` | `KubernetesUpgrade` | Kubernetes `v1.36.4` |
 
 Both version fields are annotated with Renovate datasource comments so Renovate Bot automatically creates PRs when new versions are available.
 
