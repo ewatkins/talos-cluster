@@ -198,9 +198,23 @@
  * --icon-default is only declared under :root.dark-mode, hence the fallback --
  * white icons would be invisible on a light ground, so light mode keeps the
  * accent it has today.
+ *
+ * `fill` on the <use> is the declaration that actually lands, and `color` is
+ * the fallback for the handful of icons that arrive as raw markup in an <i>
+ * rather than as a sprite reference. Colour alone is not enough because
+ * SidebarItem.vue passes `var(--pink) !important` as an inline style to every
+ * role 3 node -- a document -- and an important style-attribute declaration
+ * outranks an important one from a stylesheet, so no `color` rule here can
+ * reach those. Their <use> carries no inline fill, and Icon.vue's own
+ * `.icon use { fill: currentColor }` is not important, so going at fill
+ * directly wins without having to fight the cascade.
  */
 .sidebar .item .icon.default-icon {
   color: var(--icon-default, var(--primary)) !important;
+}
+
+.sidebar .item .icon.default-icon use {
+  fill: var(--icon-default, var(--primary)) !important;
 }
 
 /*
@@ -332,14 +346,18 @@ svg[fill='none'] :not([fill]) {
  * the selector is keyed on.
  *
  * Coloured nodes are already right and are not named here -- the accent
- * classes are global, so `.blue *` keeps tinting the <use> unchanged. Role 3
- * (resources) carries `color: var(--pink) !important` inline from
- * SidebarItem.vue; an important style-attribute declaration outranks an
- * important one from a stylesheet, so those stay pink in both places, which
- * is the match we are after.
+ * classes are global, so `.blue *` keeps tinting the <use> unchanged.
+ *
+ * The <use> is named for the same reason as in the sidebar: the clone carries
+ * role 3's inline pink along with everything else, and only a fill can get
+ * out from under it.
  */
 .doc-container > .header .doc-header-icon .default-icon {
   color: var(--icon-default, var(--primary)) !important;
+}
+
+.doc-container > .header .doc-header-icon .default-icon use {
+  fill: var(--icon-default, var(--primary)) !important;
 }
 
 .doc-container > .header .infos h1 {
