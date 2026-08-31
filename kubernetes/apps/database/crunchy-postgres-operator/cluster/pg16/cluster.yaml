@@ -102,9 +102,6 @@ spec:
     - name: "paperless-admin"
       databases: ["paperless"]
       password: *password
-    - name: "outline-admin"
-      databases: ["outline"]
-      password: *password
     - name: "patchmon-admin"
       databases: ["patchmon"]
       password: *password

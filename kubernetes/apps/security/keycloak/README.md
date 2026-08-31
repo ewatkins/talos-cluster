@@ -1,6 +1,6 @@
 # [Keycloak](https://www.keycloak.org/)
 
-Keycloak is the central identity provider for this cluster. It provides Single Sign-On (SSO) via OIDC for Outline, Paperless-ngx, and Forgejo. It runs with a custom login theme that overrides the default Keycloak UI with a dark frosted-glass design served from a ConfigMap.
+Keycloak is the central identity provider for this cluster. It provides Single Sign-On (SSO) via OIDC for Alexandrie, Paperless-ngx, and Forgejo. It runs with a custom login theme that overrides the default Keycloak UI with a dark frosted-glass design served from a ConfigMap.
 
 ## Configuration
 
@@ -44,7 +44,6 @@ The theme inherits from the default `keycloak` parent, hides the username/passwo
 
 | App | Protocol | Notes |
 | --- | --- | --- |
-| [Outline](../../default/outline/README.md) | OIDC | `OIDC_DISPLAY_NAME: Keycloak` |
 | [Alexandrie](../../default/alexandrie/README.md) | OIDC | Client ID `alexandrie`, redirect `https://wiki.ewatkins.dev/login/oidc/callback`; configured via indexed `OIDC_1_*` env vars |
 | [Paperless-ngx](../../media/paperless/README.md) | OIDC | `allauth.socialaccount.providers.openid_connect` |
 | [Forgejo](../../development/forgejo/README.md) | OIDC | External authentication only |

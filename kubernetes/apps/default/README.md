@@ -8,4 +8,3 @@ Flux HelmRelease errors are forwarded to Alertmanager at `http://alertmanager-op
 
 | App | Description |
 | --- | --- |
-| [outline](outline/README.md) | Team knowledge base and wiki (`outlinewiki/outline:1.5.0`) at `https://notes.ewatkins.dev`, backed by PostgreSQL, Dragonfly, Garage, and Keycloak OIDC |
