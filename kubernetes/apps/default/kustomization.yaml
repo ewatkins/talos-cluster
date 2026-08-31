@@ -10,6 +10,5 @@ resources:
   - ./homelable/ks.yaml
   - ./homepage/ks.yaml
   - ./netbox/ks.yaml
-  - ./outline/ks.yaml
   - ./patchmon/ks.yaml
   - ./trek/ks.yaml

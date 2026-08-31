@@ -40,7 +40,7 @@ spec:
               DISPATCHARR_LOG_LEVEL: info
               REDIS_HOST: dragonfly.database.svc.cluster.local
               REDIS_PORT: "6379"
-              # Dragonfly db0 is shared (paperless, forgejo, outline, patchmon,
+              # Dragonfly db0 is shared (paperless, forgejo, patchmon,
               # thanos). Paperless also runs Celery there, and two Celery apps
               # on one database consume each other's task queues. Keep
               # Dispatcharr on its own index.
@@ -85,7 +85,7 @@ spec:
               DISPATCHARR_LOG_LEVEL: info
               REDIS_HOST: dragonfly.database.svc.cluster.local
               REDIS_PORT: "6379"
-              # Dragonfly db0 is shared (paperless, forgejo, outline, patchmon,
+              # Dragonfly db0 is shared (paperless, forgejo, patchmon,
               # thanos). Paperless also runs Celery there, and two Celery apps
               # on one database consume each other's task queues. Keep
               # Dispatcharr on its own index.

@@ -104,7 +104,7 @@ currently uses virtual-hosted (`AWS_S3_FORCE_PATH_STYLE: "false"`); it will swit
 against Garage's flat `s3-garage.ewatkins.dev` endpoint.
 
 The `AWS_S3_FORCE_PATH_STYLE: "true"` flip in
-[outline/app/helmrelease.yaml](../../default/outline/app/helmrelease.yaml) is **deferred to the
+`outline/app/helmrelease.yaml` (since removed) is **deferred to the
 Phase 4 Outline cutover**, done atomically with the endpoint/creds swap — flipping it early
 would switch the still-live iDrive e2 connection to path-style (unverified there) for no gain.
 

@@ -5,7 +5,7 @@ Each subdirectory is a separate `PostgresCluster` with its own Flux Kustomizatio
 
 | Directory | Cluster | Version | Purpose |
 | --- | --- | --- | --- |
-| [pg16](./pg16) | `crunchy-postgres` | 16 | General-purpose. Keycloak, Forgejo, Gatus, Grafana, Paperless, Outline, Patchmon |
+| [pg16](./pg16) | `crunchy-postgres` | 16 | General-purpose. Keycloak, Forgejo, Gatus, Grafana, Paperless, Patchmon |
 | [pg17](./pg17) | `crunchy-postgres-17` | 17 | Migration target for the PG16 apps. Currently hosts Dispatcharr |
 | [vector](./vector) | `crunchy-postgres-vector` | 16 | VectorChord (`vchord.so`) for Immich vector similarity search |
 

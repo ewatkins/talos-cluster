@@ -36,7 +36,7 @@ data:
         style: row
         columns: 2
         header: false
-      # Web IDE + Outline in a row directly above Monitoring
+      # Web IDE + Notes in a row directly above Monitoring
       Workspace:
         style: row
         columns: 2
@@ -174,11 +174,6 @@ data:
             icon: vscode
             namespace: development
             app: code-server
-        - Outline:
-            href: https://notes.ewatkins.dev
-            icon: outline
-            namespace: default
-            app: outline
     - Monitoring:
         - Gatus:
             href: https://status.ewatkins.dev

@@ -59,7 +59,6 @@ PGO manages the full lifecycle of highly available PostgreSQL clusters on Kubern
 | `gatus-admin` | `gatus` |
 | `grafana-admin` | `grafana` |
 | `paperless-admin` | `paperless` |
-| `outline-admin` | `outline` |
 
 ### Backups (pgBackRest)
 
