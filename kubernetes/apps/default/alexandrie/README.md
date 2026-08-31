@@ -1,12 +1,12 @@
 # Alexandrie
 
 Self-hosted wiki / knowledge base with an extended Markdown editor
-([upstream](https://github.com/Smaug6739/Alexandrie)). Running as a trial alongside
-[Outline](../outline/README.md); if it wins, the hostname moves to `notes.ewatkins.dev`.
+([upstream](https://github.com/Smaug6739/Alexandrie)). Replaced Outline on 2026-08-31 and took
+over its hostname; `wiki.ewatkins.dev`, the trial hostname, now 301s here.
 
 | | |
 | --- | --- |
-| URL | `https://wiki.ewatkins.dev` |
+| URL | `https://notes.ewatkins.dev` |
 | CDN | `https://s3-notes.ewatkins.dev` |
 | Database | MariaDB Galera, database `alexandrie` |
 | Object storage | RustFS, in-pod, 20Gi on `nfs-fast` |
@@ -104,8 +104,8 @@ so there is nothing else to declare.
 | `OIDC_1_CLIENT_SECRET` | Bitwarden `alexandrie-secret` → `oidc_client_secret` |
 
 Keycloak client `alexandrie` in the `master` realm: client authentication **on**, standard
-flow enabled, valid redirect URI `https://wiki.ewatkins.dev/login/oidc/callback`, web origin
-`https://wiki.ewatkins.dev`. The frontend builds that URI as
+flow enabled, valid redirect URI `https://notes.ewatkins.dev/login/oidc/callback`, web origin
+`https://notes.ewatkins.dev`. The frontend builds that URI as
 `window.location.origin + '/login/oidc/callback'`, so it tracks the app hostname.
 
 `PROVIDER_NAME` is lowercased into the API path, giving `/api/auth/oidc/keycloak/authorize`.
@@ -283,6 +283,6 @@ reached from here at all.
 - Wiki media lives on `nfs-fast`, so it is on the NAS rather than node-local — but
   Alexandrie's own backup bucket lands on the *same* volume, so those are not independent
   copies.
-- `notes` as a bucket name overlaps conceptually with Outline, which serves
-  `notes.ewatkins.dev` today and keeps its own `outline` bucket on Garage. No actual
-  collision; worth remembering if Alexandrie wins the trial.
+- The RustFS bucket is `notes` and the app is now on `notes.ewatkins.dev`, which reads as a
+  collision but is not one — the bucket is served from `s3-notes.ewatkins.dev` and never
+  shares an origin with the app, deliberately. See the CDN section above.
