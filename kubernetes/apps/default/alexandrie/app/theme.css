@@ -71,11 +71,17 @@
   --red-bg-light: rgb(241 76 76 / 6%) !important;
   --red-border: rgb(241 76 76 / 28%) !important;
 
-  --yellow: #cca700 !important;
-  --yellow-dark: #9e8100 !important;
-  --yellow-bg: rgb(204 167 0 / 14%) !important;
-  --yellow-bg-light: rgb(204 167 0 / 6%) !important;
-  --yellow-border: rgb(204 167 0 / 28%) !important;
+  /* Dark+ has two yellows: the mustard #cca700 it warns with, and the pale
+     #dcdcaa it paints function names with. The mustard is the closer match
+     for a warning callout but goes muddy against #1e1e1e at anything larger
+     than a rule, so the pale one is used instead -- still Dark+, and the only
+     genuinely pastel colour the palette owns. The rest of the family is
+     rebuilt from it at the same alphas the other colours use. */
+  --yellow: #dcdcaa !important;
+  --yellow-dark: #9a9a4c !important;
+  --yellow-bg: rgb(220 220 170 / 14%) !important;
+  --yellow-bg-light: rgb(220 220 170 / 6%) !important;
+  --yellow-border: rgb(220 220 170 / 28%) !important;
 
   --teal: #4ec9b0 !important;
   --teal-dark: #2d8a7a !important;
