@@ -1,5 +1,5 @@
 /*
- * Renames the app in the browser tab.
+ * Renames the app in the browser tab and pins its favicon.
  *
  * The tab title is the one piece of branding CSS cannot reach. nginx rewrites
  * the server-rendered <title> so the first paint is already correct, but Nuxt
@@ -15,20 +15,56 @@
   var NAME = 'Notebook';
   var BRAND = /^Alexandrie(\s*\|.*)?$/;
 
+  // Alexandrie ships two marks: favicon.ico is #334155 slate, meant for a
+  // light tab strip, and favicon-dark.ico is near-white for a dark one.
+  var ICON = '/favicon-dark.ico';
+
   function rename() {
     // Assigning only on a match keeps this from re-triggering itself: the
     // observer fires again on the write, but 'Notebook' no longer matches.
     if (BRAND.test(document.title)) document.title = NAME;
   }
 
-  rename();
+  /*
+   * Hold the favicon on the light-on-dark mark.
+   *
+   * The app chooses between its two icons from the OS colour scheme: the
+   * server-rendered head carries both links switched by a `media` attribute,
+   * and on hydration a matchMedia listener rewrites link[rel=icon].href on
+   * every change. This instance renders dark whatever the OS says, so the
+   * slate one is always wrong here. nginx injects the link so the first
+   * request is already for the right file; this is what keeps it there.
+   */
+  function pinIcon() {
+    var links = document.head.querySelectorAll('link[rel~="icon"]');
+    for (var i = 0; i < links.length; i++) {
+      // The server-rendered pair is switched by `media`, not by href.
+      // Dropping it leaves both links unconditional and on the same file.
+      if (links[i].hasAttribute('media')) links[i].removeAttribute('media');
+      // Only on a mismatch, so the observer's re-fire on our own write is a
+      // no-op rather than a loop.
+      if (links[i].getAttribute('href') !== ICON) links[i].setAttribute('href', ICON);
+    }
+  }
 
-  // childList catches unhead swapping the <title> element wholesale;
-  // characterData catches it editing the text node in place.
-  new MutationObserver(rename).observe(document.head, {
+  function apply() {
+    rename();
+    pinIcon();
+  }
+
+  apply();
+
+  // childList catches unhead swapping the <title> element wholesale, or the
+  // app appending an icon link that was not in the markup; characterData
+  // catches unhead editing the title text node in place; the attribute filter
+  // catches the hydration listener rewriting an existing icon link, which is
+  // an attribute change and would otherwise go unseen.
+  new MutationObserver(apply).observe(document.head, {
     subtree: true,
     childList: true,
     characterData: true,
+    attributes: true,
+    attributeFilter: ['href', 'media'],
   });
 
   /*
