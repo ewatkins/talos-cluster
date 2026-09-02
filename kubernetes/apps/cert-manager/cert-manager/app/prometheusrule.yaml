@@ -1,0 +1,66 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/monitoring.coreos.com/prometheusrule_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cert-manager-rules
+spec:
+  groups:
+    - name: cert-manager.rules
+      rules:
+        # Thresholds are relative to each certificate's own lifetime, never a
+        # fixed number of days: this cluster mixes 90-day Let's Encrypt certs
+        # with 168h internal ones, and any absolute threshold that is sane for
+        # the former fires permanently for the latter.
+        - alert: CertManagerCertExpiringSoon
+          expr: |
+            (
+              certmanager_certificate_expiration_timestamp_seconds - time()
+            ) / clamp_min(
+              certmanager_certificate_not_after_timestamp_seconds
+                - certmanager_certificate_not_before_timestamp_seconds,
+              1
+            ) < 0.1
+          for: 1h
+          annotations:
+            summary: >-
+              Certificate {{ $labels.exported_namespace }}/{{ $labels.name }} is
+              into the last 10% of its lifetime and has not been renewed
+          labels:
+            severity: critical
+
+        # cert-manager publishes the moment it intends to renew. Still being
+        # past that moment hours later means renewal is failing, whatever the
+        # certificate's duration is.
+        - alert: CertManagerCertRenewalOverdue
+          expr: |
+            certmanager_certificate_renewal_timestamp_seconds < time()
+          for: 2h
+          annotations:
+            summary: >-
+              Certificate {{ $labels.exported_namespace }}/{{ $labels.name }} is
+              more than 2 hours past its scheduled renewal time
+          labels:
+            severity: warning
+
+        - alert: CertManagerCertNotReady
+          expr: |
+            certmanager_certificate_ready_status{condition="True"} == 0
+          for: 1h
+          annotations:
+            summary: >-
+              Certificate {{ $labels.exported_namespace }}/{{ $labels.name }} has
+              not been ready for more than an hour
+          labels:
+            severity: critical
+
+        - alert: CertManagerClusterIssuerNotReady
+          expr: |
+            certmanager_clusterissuer_ready_status{condition="True"} == 0
+          for: 15m
+          annotations:
+            summary: >-
+              ClusterIssuer {{ $labels.name }} is not ready, so no certificate
+              can be issued or renewed
+          labels:
+            severity: critical

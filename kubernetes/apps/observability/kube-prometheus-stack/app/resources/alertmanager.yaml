@@ -12,17 +12,41 @@ route:
       group_interval: 5m
       group_wait: 0s
       matchers:
-        - alertname =~ "Watchdog"
+        - alertname = "Watchdog"
       repeat_interval: 5m
     - receiver: "null"
       matchers:
-        - alertname =~ "InfoInhibitor"
+        - alertname = "InfoInhibitor"
+    # Informational alerts are for dashboards, not for a phone at 03:00.
+    - receiver: "null"
+      matchers:
+        - severity = "info"
+    # Severity-homogeneous routes: the pushover priority template below reads
+    # .CommonLabels.severity, which is only reliable when every alert in the
+    # group shares one severity.
+    - receiver: pushover
+      matchers:
+        - severity = "critical"
+      repeat_interval: 4h
+    - receiver: pushover
+      matchers:
+        - severity = "warning"
+      repeat_interval: 12h
 inhibit_rules:
   - equal: ["alertname", "namespace"]
     source_matchers:
       - severity = "critical"
     target_matchers:
       - severity = "warning"
+  # A node going down (including every tuppr rolling upgrade) takes its
+  # node-scoped alerts with it. Only suppresses alerts that carry a `node`
+  # label; pod-scoped alerts do not have one and still notify.
+  - equal: ["node"]
+    source_matchers:
+      - alertname = "KubeNodeNotReady"
+    target_matchers:
+      - alertname != "KubeNodeNotReady"
+      - severity =~ "critical|warning"
 receivers:
   - name: heartbeat
     webhook_configs:
@@ -51,8 +75,13 @@ receivers:
               </small>
             {{ "{{-" }} end {{ "}}" }}
           {{ "{{-" }} end {{ "}}" }}
+        # Emergency (2) for critical so Pushover retries until acknowledged;
+        # retry/expire are required by the Pushover API at that priority and are
+        # ignored at every other one.
         priority: |-
-          {{ "{{" }} if eq .Status "firing" {{ "}}" }}1{{ "{{" }} else {{ "}}" }}0{{ "{{" }} end {{ "}}" }}
+          {{ "{{" }} if eq .Status "resolved" {{ "}}" }}-1{{ "{{" }} else if eq .CommonLabels.severity "critical" {{ "}}" }}2{{ "{{" }} else if eq .CommonLabels.severity "warning" {{ "}}" }}0{{ "{{" }} else {{ "}}" }}-1{{ "{{" }} end {{ "}}" }}
+        retry: 5m
+        expire: 1h
         send_resolved: true
         sound: gamelan
         title: >-

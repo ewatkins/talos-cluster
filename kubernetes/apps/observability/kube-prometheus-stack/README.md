@@ -51,6 +51,26 @@ Prometheus runs with a Thanos sidecar that exposes a gRPC store endpoint and upl
 | External URL | `https://alerts.ewatkins.dev` |
 | Memory | 53 M request / 128 Mi limit |
 | Web UI auth | Keycloak OIDC via the `alertmanager-oidc` SecurityPolicy |
+| PDB | `minAvailable: 1`, with hard anti-affinity so a drain cannot break it |
+
+### Routing
+
+| Severity | Destination | Pushover priority | Repeat |
+| --- | --- | --- | --- |
+| `critical` | pushover | 2 (emergency, retries until acknowledged) | 4h |
+| `warning` | pushover | 0 | 12h |
+| `info` | dropped | — | — |
+| `Watchdog` | heartbeat webhook | — | 5m |
+
+Priority is templated from `.CommonLabels.severity`, which is only meaningful
+because each severity has its own route and therefore severity-homogeneous
+groups. `retry`/`expire` are set unconditionally: the Pushover API requires them
+at priority 2 and ignores them everywhere else.
+
+Two inhibit rules: critical suppresses warning for the same alertname and
+namespace, and `KubeNodeNotReady` suppresses alerts sharing its `node` label —
+which covers node-scoped alerts during a tuppr rolling upgrade, but not
+pod-scoped ones, since those carry no `node` label.
 
 `externalUrl` must stay pointed at the public hostname: it is what backs the
 "View in Alertmanager" link in Pushover notifications and every silence URL. The
