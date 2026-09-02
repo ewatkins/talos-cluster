@@ -173,7 +173,7 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: render
-              image: alpine/k8s:1.36.2
+              image: alpine/k8s:1.37.0
               command: ["/bin/sh", "/config/render.sh"]
               env:
                 - name: PULSE_API_TOKEN
