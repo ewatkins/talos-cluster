@@ -56,12 +56,17 @@ spec:
                   storage: 1Gi
         useExistingSecret: true
         configSecret: alertmanager-secret
+        # Links in Pushover notifications and silences are generated from this,
+        # so it must be the externally reachable URL, not the cluster service.
+        externalUrl: https://alerts.ewatkins.dev
         resources:
           requests:
             cpu: 11m
             memory: 53M
           limits:
-            memory: 53M
+            # Headroom above the request: nflog/silence state and gossip grow
+            # with alert volume, and an incident is the worst time to be OOMKilled.
+            memory: 128Mi
 
       ingress:
         enabled: false
