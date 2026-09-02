@@ -1,0 +1,20 @@
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: alertmanager-oidc
+  namespace: observability
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: alertmanager
+  oidc:
+    provider:
+      issuer: https://keycloak.ewatkins.dev/realms/master
+    clientID: alertmanager
+    clientSecret:
+      name: alertmanager-oidc-secret
+      namespace: observability
+    redirectURL: "https://alerts.ewatkins.dev/oauth2/callback"
+    scopes: ["openid", "profile", "email"]
