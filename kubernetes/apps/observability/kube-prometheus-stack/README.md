@@ -48,6 +48,22 @@ Prometheus runs with a Thanos sidecar that exposes a gRPC store endpoint and upl
 | Retention | 72 hours |
 | Storage | 1 GiB on `nfs-slow` |
 | Config source | `alertmanager-secret` (ExternalSecret from Bitwarden) |
+| External URL | `https://alerts.ewatkins.dev` |
+| Memory | 53 M request / 128 Mi limit |
+| Web UI auth | Keycloak OIDC via the `alertmanager-oidc` SecurityPolicy |
+
+`externalUrl` must stay pointed at the public hostname: it is what backs the
+"View in Alertmanager" link in Pushover notifications and every silence URL. The
+chart only derives it automatically when `ingress.enabled` is true, and this
+cluster routes through an HTTPRoute instead, so it is set explicitly.
+
+The OIDC client secret lives in its own `alertmanager-oidc-secret` ExternalSecret
+rather than in `alertmanager-secret`, so a failed render of the OIDC key cannot
+break the Alertmanager config secret and take alerting down with it. It requires
+an `alertmanager` client in the Keycloak `master` realm and an
+`ALERTMANAGER_OIDC_CLIENT_SECRET` field on the `alertmanager-secret` Bitwarden
+item; until both exist, `alerts.ewatkins.dev` errors at the gateway while
+Alertmanager itself keeps alerting normally.
 
 ## Control Plane Scraping
 
