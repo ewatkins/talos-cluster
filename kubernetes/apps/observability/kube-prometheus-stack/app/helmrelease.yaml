@@ -44,13 +44,24 @@ spec:
       enabled: true
       fullnameOverride: alertmanager
 
+      # A node drain (every tuppr upgrade) must not be able to take both
+      # replicas at once.
+      podDisruptionBudget:
+        enabled: true
+        minAvailable: 1
+
       alertmanagerSpec:
         replicas: 2
         retention: 72h
         storage:
           volumeClaimTemplate:
             spec:
-              storageClassName: nfs-slow
+              # Deliberately node-local, not nfs-slow: alerting must not depend
+              # on the storage it is expected to alert about. Silences and the
+              # notification log gossip between replicas, so the local copy is
+              # a cache rather than the source of truth. Trade-off: each pod is
+              # pinned to its node and cannot reschedule elsewhere.
+              storageClassName: openebs-hostpath
               resources:
                 requests:
                   storage: 1Gi
@@ -59,6 +70,10 @@ spec:
         # Links in Pushover notifications and silences are generated from this,
         # so it must be the externally reachable URL, not the cluster service.
         externalUrl: https://alerts.ewatkins.dev
+        # Hard, not soft: with a PDB of minAvailable 1, two replicas sharing a
+        # node would make the budget unsatisfiable during a drain.
+        podAntiAffinity: hard
+        podAntiAffinityTopologyKey: kubernetes.io/hostname
         resources:
           requests:
             cpu: 11m
