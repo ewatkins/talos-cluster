@@ -30,7 +30,7 @@ spec:
           backend:
             image:
               repository: ghcr.io/smaug6739/alexandrie-backend
-              tag: v8.14.0
+              tag: v8.14.1
             env:
               BACKEND_PORT: &apiPort 8201
               GIN_MODE: release
