@@ -11,5 +11,5 @@ spec:
     operation: copy
   ref:
     # renovate: datasource=docker depName=ghcr.io/mogenius/helm-charts/renovate-operator
-    tag: 6.2.0
+    tag: 6.3.0
   url: oci://ghcr.io/mogenius/helm-charts/renovate-operator
