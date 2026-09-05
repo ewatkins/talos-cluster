@@ -21,3 +21,8 @@ spec:
   headers:
     xForwardedClientCert:
       mode: AppendForward
+    # Envoy Gateway rejects headers containing underscores by default, which on
+    # an HTTP/2 connection surfaces to the client as a stream reset. The Dell
+    # iDRAC UI sends X_SYSMGMT_OPTIMIZE and X_SYSMGMT_RANGE, so its pages fail
+    # to load without this. Allow is Envoy's own upstream default.
+    withUnderscoresAction: Allow
