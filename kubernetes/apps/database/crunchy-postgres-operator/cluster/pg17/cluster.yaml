@@ -95,6 +95,9 @@ spec:
     - name: "dispatcharr"
       databases: ["dispatcharr"]
       password: *password
+    - name: "awx"
+      databases: ["awx"]
+      password: *password
 
   backups:
     pgbackrest:
