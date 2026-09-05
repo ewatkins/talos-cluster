@@ -168,6 +168,14 @@ data:
               url: https://pbs.ewatkins.dev
               username: "{{HOMEPAGE_VAR_PBS_USER}}"
               password: "{{HOMEPAGE_VAR_PBS_PASS}}"
+        - AWX:
+            href: https://awx.ewatkins.dev
+            description: Ansible automation.
+            icon: awx
+            namespace: development
+            # The operator labels the web deployment awx-web; plain "awx" is
+            # the CR name and matches no pod.
+            app: awx-web
     - Workspace:
         - Web IDE:
             href: https://code.ewatkins.dev
