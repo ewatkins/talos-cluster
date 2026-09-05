@@ -1,0 +1,52 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app awx-operator
+  namespace: flux-system
+spec:
+  targetNamespace: development
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  path: ./kubernetes/apps/development/awx/operator
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: talos-cluster
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m
+  # The AWX CR below is only admitted once this reconciles the CRDs.
+  wait: true
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app awx
+  namespace: flux-system
+spec:
+  targetNamespace: development
+  components:
+    - ../../../../components/gatus/internal
+  dependsOn:
+    - name: awx-operator
+    - name: crunchy-postgres-17
+    - name: crunchy-postgres-operator-secretstore
+  path: ./kubernetes/apps/development/awx/app
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: talos-cluster
+  interval: 30m
+  retryInterval: 1m
+  # First reconcile runs the full AWX migration set behind the operator's
+  # Ansible run; well past the usual few minutes.
+  timeout: 20m
+  postBuild:
+    substitute:
+      APP: *app
+      # AWX redirects / to /#/login for anonymous users, which still answers 200.
+      GATUS_PATH: /api/v2/ping/

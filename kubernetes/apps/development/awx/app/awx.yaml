@@ -1,0 +1,60 @@
+---
+apiVersion: awx.ansible.com/v1beta1
+kind: AWX
+metadata:
+  name: awx
+  namespace: development
+spec:
+  admin_user: admin
+  # One secret backs both: the operator reads `password` from the first and
+  # `secret_key` from the second, and ignores the other key in each case.
+  admin_password_secret: awx-secret
+  secret_key_secret: awx-secret
+  # type: unmanaged in this secret is what stops the operator from bringing up
+  # its own single-replica Postgres StatefulSet.
+  postgres_configuration_secret: awx-postgres-configuration
+
+  # Ingress is an HTTPRoute on the internal Envoy gateway, not something the
+  # operator manages. hostname is still needed: AWX builds absolute callback
+  # URLs from it.
+  ingress_type: none
+  service_type: ClusterIP
+  hostname: awx.ewatkins.dev
+  extra_settings:
+    - setting: CSRF_TRUSTED_ORIGINS
+      value: "['https://awx.ewatkins.dev']"
+
+  # The demo inventory/job template the operator seeds on first boot.
+  create_preload_data: false
+
+  replicas: 1
+  web_resource_requirements:
+    requests:
+      cpu: 100m
+      memory: 1Gi
+    limits:
+      memory: 3Gi
+  task_resource_requirements:
+    requests:
+      cpu: 100m
+      memory: 1Gi
+    limits:
+      memory: 3Gi
+  ee_resource_requirements:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 512Mi
+  redis_resource_requirements:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
+  init_container_resource_requirements:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
