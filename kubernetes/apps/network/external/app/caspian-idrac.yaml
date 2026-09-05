@@ -8,7 +8,15 @@ spec:
   endpoints:
     - ip:
         address: 192.168.255.40
-        port: 80
+        port: 443
+  # The iDRAC redirects every plaintext request to https://, so the gateway has
+  # to re-originate TLS or the browser ends up in a redirect loop. Its cert is
+  # Dell's self-signed appliance cert (CN=idrac-F4Z5282, no SAN), which cannot
+  # be verified, so verification is skipped on this LAN-only hop. Clients still
+  # get the gateway's *.ewatkins.dev cert.
+  tls:
+    insecureSkipVerify: true
+    alpnProtocols: ["http/1.1"] # the iDRAC does not negotiate ALPN
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
