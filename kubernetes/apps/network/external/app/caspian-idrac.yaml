@@ -24,13 +24,7 @@ spec:
       sectionName: https
   hostnames: ["caspian-idrac.ewatkins.dev"]
   rules:
-    - filters:
-        # The iDRAC rejects any Host header it does not recognize (HTTP 400),
-        # so rewrite it to the appliance's own address.
-        - type: URLRewrite
-          urlRewrite:
-            hostname: 192.168.255.40
-      backendRefs:
+    - backendRefs:
         - group: gateway.envoyproxy.io
           kind: Backend
           name: caspian-idrac
