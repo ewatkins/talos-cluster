@@ -11,7 +11,7 @@ spec:
     # 1500-capped router hop, so responses black-holed: headers arrived, the
     # body never did.
     - ip:
-        address: 10.35.10.14
+        address: 192.168.30.52
         port: 8080
 ---
 apiVersion: gateway.networking.k8s.io/v1
