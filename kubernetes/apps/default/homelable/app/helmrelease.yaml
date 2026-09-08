@@ -54,7 +54,7 @@ spec:
               # Proxmox VE auto-sync. The importer reads /nodes, which returns
               # every cluster member, so pointing at pve01 pulls pve02 and
               # pve03 (and their VMs/LXC) in as well. Keep the FQDN here: the
-              # PVE cert is not valid for the bare 10.35.1.1 address, so the
+              # PVE cert is not valid for the bare 192.168.30.10 address, so the
               # bare IP would force PROXMOX_VERIFY_TLS off.
               # PROXMOX_TOKEN_SECRET comes from homelable-secret via envFrom.
               PROXMOX_HOST: pve01.ewatkins.dev
