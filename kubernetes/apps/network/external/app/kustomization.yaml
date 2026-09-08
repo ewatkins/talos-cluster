@@ -14,4 +14,3 @@ resources:
   - ./duplicacy.yaml
   - ./pterodactyl.yaml
   - ./sab.yaml
-  - ./scanopy.yaml
