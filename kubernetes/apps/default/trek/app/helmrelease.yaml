@@ -65,3 +65,20 @@ spec:
               - op: add
                 path: /spec/template/metadata/labels/app.kubernetes.io~1name
                 value: trek
+              # The chart hardcodes both probes and sets no timeoutSeconds, so
+              # Kubernetes defaults them to 1s. Brief hypervisor-wide VM stalls
+              # (seen cluster-wide, multiple nodes at once) blow a 1s deadline
+              # and liveness then kills a perfectly healthy container after
+              # 3x30s. Give the probes room to ride out a stall.
+              - op: add
+                path: /spec/template/spec/containers/0/livenessProbe/timeoutSeconds
+                value: 5
+              - op: add
+                path: /spec/template/spec/containers/0/livenessProbe/failureThreshold
+                value: 5
+              - op: add
+                path: /spec/template/spec/containers/0/readinessProbe/timeoutSeconds
+                value: 5
+              - op: add
+                path: /spec/template/spec/containers/0/readinessProbe/failureThreshold
+                value: 3
