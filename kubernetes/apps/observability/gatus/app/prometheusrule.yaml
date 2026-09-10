@@ -8,9 +8,13 @@ spec:
   groups:
     - name: gatus.rules
       rules:
+        # Group names are matched case-sensitively against the `group:` field in
+        # the endpoint config. They are capitalised there (External, Guarded,
+        # Internal, Media, S3, Infrastructure) — a lowercase matcher here selects
+        # nothing and the alert silently never fires.
         - alert: GatusEndpointDown
           expr: |
-            gatus_results_endpoint_success{group="external"} == 0
+            gatus_results_endpoint_success{group="External"} == 0
           for: 5m
           annotations:
             summary: >-
@@ -18,9 +22,13 @@ spec:
           labels:
             severity: critical
 
+        # Inverted check: endpoints in the Guarded group resolve a public DNS
+        # query that is expected to return nothing, so success == 0 means the
+        # record exists and the endpoint is reachable from outside.
+        # Set by components/gatus/guarded, which no app currently includes.
         - alert: GatusEndpointExposed
           expr: |
-            gatus_results_endpoint_success{group="guarded"} == 0
+            gatus_results_endpoint_success{group="Guarded"} == 0
           for: 5m
           annotations:
             summary: >-
