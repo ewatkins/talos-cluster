@@ -136,7 +136,7 @@ spec:
           frontend:
             image:
               repository: ghcr.io/smaug6739/alexandrie-frontend
-              tag: v8.14.0
+              tag: v8.14.2
             env:
               PORT: &httpPort 8200
               TZ: America/Chicago
