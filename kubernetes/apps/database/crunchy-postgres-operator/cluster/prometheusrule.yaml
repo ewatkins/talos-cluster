@@ -38,25 +38,44 @@ spec:
               Last {{ $labels.backup_type }} backup errored on {{ $labels.pg_cluster }} (repo {{ $labels.repo }})
 
         # No successful full backup in over 8 days (full is scheduled weekly).
+        # Grouped per repo, not per cluster: every repo is an independent copy,
+        # so a fresh repo1 must not mask a repo3 that stopped weeks ago. min()
+        # only collapses the duplicate series each replica exports for a repo.
         - alert: CrunchyPGNoRecentFullBackup
           expr: |
-            min by (pg_cluster) (ccp_backrest_last_full_backup_time_since_completion_seconds) > 691200
+            min by (pg_cluster, repo) (ccp_backrest_last_full_backup_time_since_completion_seconds) > 691200
           for: 1h
           labels:
             severity: warning
           annotations:
             summary: >-
-              No full backup in over 8 days on {{ $labels.pg_cluster }}
+              No full backup in over 8 days on {{ $labels.pg_cluster }} repo {{ $labels.repo }}
 
-        # No successful incremental backup in over 26 hours. Healthy clusters
-        # take at least daily incrementals; min() means at least one repo must
-        # be fresh, so this fires only when every repo is stale.
+        # Hourly-incremental repos: repo1 (NFS) and repo2 (Garage) on every
+        # cluster run `* 3-23 * * *`, so 26 hours is two missed windows plus the
+        # 01:30-02:30 full/diff gap. Grouped per repo for the same reason as the
+        # full-backup alert above.
         - alert: CrunchyPGNoRecentIncrBackup
           expr: |
-            min by (pg_cluster) (ccp_backrest_last_incr_backup_time_since_completion_seconds) > 93600
+            min by (pg_cluster, repo) (ccp_backrest_last_incr_backup_time_since_completion_seconds{repo!="3"}) > 93600
           for: 1h
           labels:
             severity: warning
           annotations:
             summary: >-
-              No incremental backup in over 26 hours on {{ $labels.pg_cluster }}
+              No incremental backup in over 26 hours on {{ $labels.pg_cluster }} repo {{ $labels.repo }}
+
+        # repo3 (Cloudflare R2, crunchy-postgres only) runs `30 2 * * 1-6/2` —
+        # Mon/Wed/Fri, so the designed maximum gap is Friday 02:30 to Monday
+        # 02:30, 72 hours. A 26-hour threshold here would fire every Tuesday,
+        # Thursday, Saturday and Sunday. 84h leaves 12 hours of grace for a late
+        # or slow run against the off-site copy.
+        - alert: CrunchyPGNoRecentIncrBackupOffsite
+          expr: |
+            min by (pg_cluster, repo) (ccp_backrest_last_incr_backup_time_since_completion_seconds{repo="3"}) > 302400
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: >-
+              No off-site (R2) incremental backup in over 84 hours on {{ $labels.pg_cluster }} repo {{ $labels.repo }}

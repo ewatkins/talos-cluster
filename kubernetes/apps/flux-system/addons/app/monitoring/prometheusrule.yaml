@@ -17,16 +17,23 @@ spec:
           for: 15m
           labels:
             severity: critical
+
+        # Reads flux-operator's flux_resource_info, not the gotk_reconcile_condition
+        # this rule used to query: no Flux controller exports that metric any more,
+        # so the old expression matched zero series and this alert could never fire.
+        #
+        # `ready` is True/False/Unknown. Unknown means Progressing, which is normal
+        # during a long Helm install, so only False counts as a failure. Suspended
+        # resources are excluded — not reconciling is the point of suspending one.
+        # The resource's own namespace is `exported_namespace`; `namespace` holds
+        # flux-system, where the exporter runs.
         - alert: FluxReconciliationFailure
           annotations:
             summary: >-
-              {{ $labels.kind }} {{ $labels.namespace }}/{{ $labels.name }} reconciliation
-              has been failing for more than 15 minutes.
+              {{ $labels.kind }} {{ $labels.exported_namespace }}/{{ $labels.name }} reconciliation
+              has been failing for more than 15 minutes ({{ $labels.reason }}).
           expr: |
-            max(gotk_reconcile_condition{status="False",type="Ready"}) by (namespace, name, kind)
-              +
-            on(namespace, name, kind) (max(gotk_reconcile_condition{status="Deleted"})
-              by (namespace, name, kind)) * 2 == 1
+            flux_resource_info{ready="False", suspended="False"} == 1
           for: 15m
           labels:
             severity: critical
