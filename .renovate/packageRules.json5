@@ -2,6 +2,12 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "packageRules": [
     {
+      "description": ["Let Renovate's own image age before adopting it"],
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["ghcr.io/renovatebot/renovate"],
+      "minimumReleaseAge": "3 days"
+    },
+    {
       "description": ["Custom versioning for minio"],
       "matchDatasources": ["docker"],
       "versioning": "regex:^RELEASE\\.(?<major>\\d+)-(?<minor>\\d+)-(?<patch>\\d+)T.*Z$",
@@ -9,13 +15,13 @@
     },
     {
       "description": ["Custom schedule for frequently updated packages"],
-      "matchDataSources": ["docker", "helm"],
+      "matchDatasources": ["docker", "helm"],
       "matchPackagePatterns": ["reloader", "minio", "postgresql"],
       "schedule": ["* 21 * * 6"]
     },
     {
       "description": ["Custom schedule for kube-prometheus-stack"],
-      "matchDataSources": ["docker", "helm"],
+      "matchDatasources": ["docker", "helm"],
       "matchPackagePatterns": ["kube-prometheus-stack"],
       "schedule": ["* 21 * * *"]
     }
