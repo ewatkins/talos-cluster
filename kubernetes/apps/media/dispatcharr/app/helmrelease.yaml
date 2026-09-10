@@ -127,7 +127,7 @@ spec:
           teamarr:
             image:
               repository: ghcr.io/pharaoh-labs/teamarr
-              tag: 2.15.0@sha256:dec2948ef873bcc854b2bc2046bd368813f909fc5b0fb1940115b9ef2b81f90a
+              tag: 2.17.0@sha256:449d10fb3722f8b7566da0b3c80fb901ed7df26f4f414729c2e800e6b0074eff
             env:
               TZ: "${TIMEZONE}"
               PORT: &teamarrPort 9195
