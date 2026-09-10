@@ -1,0 +1,39 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/monitoring.coreos.com/prometheusrule_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: renovate-operator-rules
+spec:
+  groups:
+    - name: renovate-operator.rules
+      rules:
+        # Renovate logs an unhandledRejection and still exits 0 when it dies on
+        # startup, so the Job reports Complete and neither run_failed nor
+        # project_executions_total{status="failed"} move. The operator scrapes
+        # the job's logs, and log_issues{level="error"} is the only signal that
+        # actually caught 44.64.0's missing 'tar' module. Gauge, reset per run.
+        - alert: RenovateRunLoggedErrors
+          expr: |
+            renovate_operator_log_issues{level="error"} > 0
+          for: 10m
+          annotations:
+            summary: >-
+              Renovate run for {{ $labels.project }} logged
+              {{ $value }} error(s) despite reporting success
+          labels:
+            severity: warning
+
+        # Belt and braces for the same failure mode: a real run over this repo
+        # takes minutes, a crash-on-boot takes seconds. Catches a broken image
+        # that dies before it logs anything the operator recognises as an error.
+        - alert: RenovateRunTooShort
+          expr: |
+            renovate_operator_last_execution_duration_seconds < 60
+          for: 10m
+          annotations:
+            summary: >-
+              Renovate run for {{ $labels.project }} finished in
+              {{ $value }}s — too fast to have scanned the repo
+          labels:
+            severity: warning
