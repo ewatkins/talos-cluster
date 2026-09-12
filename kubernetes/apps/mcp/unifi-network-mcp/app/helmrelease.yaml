@@ -60,6 +60,11 @@ spec:
                 localhost:3000,
                 127.0.0.1,
                 127.0.0.1:3000
+              # 0.32.x rewrites bare allowed hosts to `host:*`, which SDK v2 only
+              # matches when the Host header carries a port. Envoy forwards the
+              # bare hostname, so every gateway request got 421. The route is
+              # internal-only, so turn the check off rather than lose the endpoint.
+              UNIFI_MCP_ENABLE_DNS_REBINDING_PROTECTION: "false"
               # Register meta-tools and load the rest on demand — keeps agent context small
               UNIFI_TOOL_REGISTRATION_MODE: lazy
               # Mutations return a preview and only apply when re-called with confirm=true

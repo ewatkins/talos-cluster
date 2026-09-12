@@ -8,13 +8,13 @@ The container runs as PID 1, which makes the shared transport layer skip stdio a
 
 | Setting | Value | Notes |
 | --- | --- | --- |
-| Image | `ghcr.io/sirkirby/unifi-network-mcp:0.24.1` | Pinned by digest |
-| Helm chart | `bjw-s/app-template` 5.0.1 | `chartRef` to the `app-template` OCIRepository |
+| Image | `ghcr.io/sirkirby/unifi-network-mcp:0.32.6` | Pinned by digest |
+| Helm chart | `bjw-s/app-template` 5.1.0 | `chartRef` to the `app-template` OCIRepository |
 | UniFi controller | `10.0.0.1:443`, site `default` | `UNIFI_VERIFY_SSL=false` — the UDM serves a self-signed cert |
 | Service port | `3000` | |
 | MCP endpoint | `https://unifi-mcp.ewatkins.dev/mcp` | FastMCP's default streamable-http path |
 | Transport | `streamable-http` | `UNIFI_MCP_HTTP_ENABLED=true` |
-| Allowed hosts | ingress hostname + Service DNS + localhost | `UNIFI_MCP_ALLOWED_HOSTS`; DNS-rebinding protection validates the `Host` header, so an unlisted name gets rejected |
+| DNS-rebinding protection | Disabled | `UNIFI_MCP_ENABLE_DNS_REBINDING_PROTECTION=false`. Since 0.32.x the app rewrites bare `UNIFI_MCP_ALLOWED_HOSTS` entries to `host:*`, which MCP SDK v2 only matches when the `Host` header has a port. Envoy forwards the bare hostname, so the check returned 421 for every gateway request. The allowlist is kept for when this is fixed upstream |
 | Tool registration | `lazy` | Meta-tools registered up front, the rest loaded on demand to keep agent context small |
 | Permission mode | `confirm` | Mutating tools return a preview; the agent must re-call with `confirm=true` to apply |
 | Credentials | `unifi-network-mcp-secret` from Bitwarden Secrets Manager | `UNIFI_USERNAME`, `UNIFI_PASSWORD`, `UNIFI_API_KEY` |
