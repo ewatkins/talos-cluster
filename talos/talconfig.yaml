@@ -54,7 +54,7 @@ nodes:
       - deviceSelector:
           hardwareAddr: bc:24:11:be:77:01
         dhcp: false
-        mtu: 9000
+        mtu: 1500
         addresses:
           - 192.168.40.11/24
         routes:
@@ -70,7 +70,7 @@ nodes:
       - deviceSelector:
           hardwareAddr: bc:24:11:be:77:02
         dhcp: false
-        mtu: 9000
+        mtu: 1500
         addresses:
           - 192.168.40.12/24
         routes:
@@ -86,7 +86,7 @@ nodes:
       - deviceSelector:
           hardwareAddr: bc:24:11:be:77:03
         dhcp: false
-        mtu: 9000
+        mtu: 1500
         addresses:
           - 192.168.40.13/24
         routes:
@@ -102,7 +102,7 @@ nodes:
       - deviceSelector:
           hardwareAddr: bc:24:11:be:77:04
         dhcp: false
-        mtu: 9000
+        mtu: 1500
         addresses:
           - 192.168.40.14/24
         routes:
@@ -116,7 +116,7 @@ nodes:
       - deviceSelector:
           hardwareAddr: bc:24:11:be:77:05
         dhcp: false
-        mtu: 9000
+        mtu: 1500
         addresses:
           - 192.168.40.15/24
         routes:
@@ -130,7 +130,7 @@ nodes:
       - deviceSelector:
           hardwareAddr: bc:24:11:be:77:06
         dhcp: false
-        mtu: 9000
+        mtu: 1500
         addresses:
           - 192.168.40.16/24
         routes:
