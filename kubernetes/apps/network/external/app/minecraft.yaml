@@ -39,6 +39,12 @@ spec:
     - ip:
         address: 192.168.50.10
         port: 8080
+  # Wings serves the daemon API over TLS on 8080, so the gateway has to
+  # re-originate TLS rather than send cleartext. Its cert is not verifiable
+  # from here, so verification is skipped on this LAN-only hop -- the same
+  # treatment caspian-idrac gets.
+  tls:
+    insecureSkipVerify: true
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -69,6 +75,12 @@ spec:
     - ip:
         address: 192.168.50.20
         port: 8080
+  # Wings serves the daemon API over TLS on 8080, so the gateway has to
+  # re-originate TLS rather than send cleartext. Its cert is not verifiable
+  # from here, so verification is skipped on this LAN-only hop -- the same
+  # treatment caspian-idrac gets.
+  tls:
+    insecureSkipVerify: true
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -99,6 +111,12 @@ spec:
     - ip:
         address: 192.168.50.30
         port: 8080
+  # Wings serves the daemon API over TLS on 8080, so the gateway has to
+  # re-originate TLS rather than send cleartext. Its cert is not verifiable
+  # from here, so verification is skipped on this LAN-only hop -- the same
+  # treatment caspian-idrac gets.
+  tls:
+    insecureSkipVerify: true
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -129,6 +147,12 @@ spec:
     - ip:
         address: 192.168.50.100
         port: 8080
+  # Wings serves the daemon API over TLS on 8080, so the gateway has to
+  # re-originate TLS rather than send cleartext. Its cert is not verifiable
+  # from here, so verification is skipped on this LAN-only hop -- the same
+  # treatment caspian-idrac gets.
+  tls:
+    insecureSkipVerify: true
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
