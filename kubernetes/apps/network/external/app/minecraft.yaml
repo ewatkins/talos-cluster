@@ -7,7 +7,7 @@ metadata:
 spec:
   endpoints:
     - ip:
-        address: 192.168.50.31
+        address: 192.168.50.11
         port: 8100
 ---
 apiVersion: gateway.networking.k8s.io/v1
