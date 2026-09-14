@@ -73,9 +73,7 @@ spec:
               HASHIDS_LENGTH: "8"
             envFrom:
               - secretRef:
-                  name: pterodactyl-panel-secret
-              - secretRef:
-                  name: pterodactyl-db-secret
+                  name: pterodactyl-secret
             # nginx only starts after the entrypoint has waited on the DB and
             # finished migrating, so the startup probe carries the slack.
             # `/` answers 302 to the login page, which httpGet counts as up.
