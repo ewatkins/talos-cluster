@@ -31,8 +31,10 @@ spec:
 ---
 # A records for the Pterodactyl wing hosts. The panel reaches Wings over
 # https by FQDN (scheme=https, behind_proxy=0), so these must resolve or it
-# cannot talk to the daemons. The hosts live outside the cluster, so these
-# are target-annotated Services that exist only to publish the record.
+# cannot talk to the daemons. The hosts live outside the cluster, so each
+# pairs a headless Service with a hand-written Endpoints object -- the
+# target annotation alone yields "no endpoints could be generated".
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -40,13 +42,26 @@ metadata:
   namespace: network
   annotations:
     external-dns.alpha.kubernetes.io/hostname: wing-node01.ewatkins.dev
-    external-dns.alpha.kubernetes.io/target: "192.168.50.10"
 spec:
   type: ClusterIP
   clusterIP: None
   ports:
     - name: wings
       port: 8080
+      protocol: TCP
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: wing-node01
+  namespace: network
+subsets:
+  - addresses:
+      - ip: 192.168.50.10
+    ports:
+      - name: wings
+        port: 8080
+        protocol: TCP
 ---
 apiVersion: v1
 kind: Service
@@ -55,13 +70,26 @@ metadata:
   namespace: network
   annotations:
     external-dns.alpha.kubernetes.io/hostname: wing-node02.ewatkins.dev
-    external-dns.alpha.kubernetes.io/target: "192.168.50.20"
 spec:
   type: ClusterIP
   clusterIP: None
   ports:
     - name: wings
       port: 8080
+      protocol: TCP
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: wing-node02
+  namespace: network
+subsets:
+  - addresses:
+      - ip: 192.168.50.20
+    ports:
+      - name: wings
+        port: 8080
+        protocol: TCP
 ---
 apiVersion: v1
 kind: Service
@@ -70,13 +98,26 @@ metadata:
   namespace: network
   annotations:
     external-dns.alpha.kubernetes.io/hostname: wing-node03.ewatkins.dev
-    external-dns.alpha.kubernetes.io/target: "192.168.50.30"
 spec:
   type: ClusterIP
   clusterIP: None
   ports:
     - name: wings
       port: 8080
+      protocol: TCP
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: wing-node03
+  namespace: network
+subsets:
+  - addresses:
+      - ip: 192.168.50.30
+    ports:
+      - name: wings
+        port: 8080
+        protocol: TCP
 ---
 apiVersion: v1
 kind: Service
@@ -85,10 +126,23 @@ metadata:
   namespace: network
   annotations:
     external-dns.alpha.kubernetes.io/hostname: wing-proxy.ewatkins.dev
-    external-dns.alpha.kubernetes.io/target: "192.168.50.100"
 spec:
   type: ClusterIP
   clusterIP: None
   ports:
     - name: wings
       port: 8080
+      protocol: TCP
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: wing-proxy
+  namespace: network
+subsets:
+  - addresses:
+      - ip: 192.168.50.100
+    ports:
+      - name: wings
+        port: 8080
+        protocol: TCP
