@@ -1,0 +1,125 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app pterodactyl
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    controllers:
+      pterodactyl:
+        # The entrypoint runs `artisan migrate --seed --force` on every boot;
+        # two pods overlapping during a rollout would race the migrations.
+        strategy: Recreate
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          # Panel only. Wings and the game servers stay off-cluster: Wings
+          # drives a Docker daemon directly, which Talos does not have.
+          #
+          # One image, one supervisord: nginx, php-fpm and the queue worker,
+          # plus crond for `schedule:run`.
+          app:
+            image:
+              repository: ghcr.io/pterodactyl/panel
+              tag: v1.15.1
+            env:
+              # UTC to match the LXC install. The panel derives the MySQL
+              # session offset from APP_TIMEZONE, and schedules stored in the
+              # migrated database were written against it.
+              TZ: UTC
+              APP_TIMEZONE: UTC
+              APP_URL: "https://pterodactyl.ewatkins.dev"
+              APP_ENV: production
+              # Lets the admin UI's settings (mail, 2FA enforcement, reCAPTCHA)
+              # load from the `settings` table. "true" would ignore whatever
+              # the migrated database already holds.
+              APP_ENVIRONMENT_ONLY: "false"
+              # TLS ends at the internal gateway. Without this the panel sees
+              # plain http and generates http:// URLs and non-secure cookies.
+              TRUSTED_PROXIES: 10.69.0.0/16
+              # The Galera primary directly, not MaxScale: migrations run on
+              # every boot and must not be split across nodes.
+              DB_HOST: mariadb-primary.database.svc.cluster.local
+              DB_PORT: "3306"
+              DB_DATABASE: pterodactyl
+              DB_USERNAME: pterodactyl
+              # Shared Dragonfly. It runs --cluster_mode=emulated, which only
+              # allows DB 0, and the panel puts sessions on DB 1 by default.
+              # The prefix keeps keys apart from other tenants -- but a FLUSHDB
+              # is not prefix-scoped, so never run `artisan cache:clear` here:
+              # it empties the whole shared instance.
+              CACHE_DRIVER: redis
+              SESSION_DRIVER: redis
+              QUEUE_DRIVER: redis
+              REDIS_HOST: dragonfly.database.svc.cluster.local
+              REDIS_PORT: "6379"
+              REDIS_DATABASE: "0"
+              REDIS_DATABASE_SESSIONS: "0"
+              REDIS_PREFIX: pterodactyl_
+              HASHIDS_LENGTH: "8"
+            envFrom:
+              - secretRef:
+                  name: pterodactyl-secret
+            # nginx only starts after the entrypoint has waited on the DB and
+            # finished migrating, so the startup probe carries the slack.
+            # `/` answers 302 to the login page, which httpGet counts as up.
+            probes:
+              liveness: &probe
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: &port 80
+                  periodSeconds: 30
+                  failureThreshold: 3
+              readiness: *probe
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: *port
+                  failureThreshold: 60
+                  periodSeconds: 10
+            resources:
+              requests:
+                cpu: 50m
+                memory: 256Mi
+              limits:
+                memory: 1Gi
+    service:
+      app:
+        controller: *app
+        ports:
+          http:
+            port: *port
+    persistence:
+      # The entrypoint writes .env here from APP_KEY/HASHIDS_SALT when it is
+      # missing, so an emptyDir is rebuilt from the secret on every start.
+      var:
+        type: emptyDir
+        globalMounts:
+          - path: /app/var
+      logs:
+        type: emptyDir
+        globalMounts:
+          - path: /app/storage/logs
+    ingress:
+      app:
+        enabled: false
