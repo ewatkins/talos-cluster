@@ -145,7 +145,7 @@ controlPlane:
           - siderolabs/i915
           - siderolabs/qemu-guest-agent
   nameservers:
-    - 10.0.0.1
+    - 192.168.40.1
   certSANs:
     # Node IPs
     - 192.168.40.11
@@ -220,7 +220,7 @@ controlPlane:
             forwardKubeDNSToHost: false
 worker:
   nameservers:
-    - 10.0.0.1
+    - 192.168.40.1
   certSANs:
     # Node IPs
     - 192.168.40.14
