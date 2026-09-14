@@ -29,120 +29,122 @@ spec:
           kind: Backend
           name: atlas
 ---
-# A records for the Pterodactyl wing hosts. The panel reaches Wings over
-# https by FQDN (scheme=https, behind_proxy=0), so these must resolve or it
-# cannot talk to the daemons. The hosts live outside the cluster, so each
-# pairs a headless Service with a hand-written Endpoints object -- the
-# target annotation alone yields "no endpoints could be generated".
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: wing-node01
+  namespace: network
+spec:
+  endpoints:
+    - ip:
+        address: 192.168.50.10
+        port: 8080
 ---
-apiVersion: v1
-kind: Service
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
 metadata:
   name: wing-node01
   namespace: network
   annotations:
-    external-dns.alpha.kubernetes.io/hostname: wing-node01.ewatkins.dev
+    external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
 spec:
-  type: ClusterIP
-  clusterIP: None
-  ports:
-    - name: wings
-      port: 8080
-      protocol: TCP
+  parentRefs:
+    - name: internal
+      namespace: network
+      sectionName: https
+  hostnames: ["wing-node01.ewatkins.dev"]
+  rules:
+    - backendRefs:
+        - group: gateway.envoyproxy.io
+          kind: Backend
+          name: wing-node01
 ---
-apiVersion: v1
-kind: Endpoints
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
 metadata:
-  name: wing-node01
+  name: wing-node02
   namespace: network
-subsets:
-  - addresses:
-      - ip: 192.168.50.10
-    ports:
-      - name: wings
+spec:
+  endpoints:
+    - ip:
+        address: 192.168.50.20
         port: 8080
-        protocol: TCP
 ---
-apiVersion: v1
-kind: Service
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
 metadata:
   name: wing-node02
   namespace: network
   annotations:
-    external-dns.alpha.kubernetes.io/hostname: wing-node02.ewatkins.dev
+    external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
 spec:
-  type: ClusterIP
-  clusterIP: None
-  ports:
-    - name: wings
-      port: 8080
-      protocol: TCP
+  parentRefs:
+    - name: internal
+      namespace: network
+      sectionName: https
+  hostnames: ["wing-node02.ewatkins.dev"]
+  rules:
+    - backendRefs:
+        - group: gateway.envoyproxy.io
+          kind: Backend
+          name: wing-node02
 ---
-apiVersion: v1
-kind: Endpoints
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
 metadata:
-  name: wing-node02
+  name: wing-node03
   namespace: network
-subsets:
-  - addresses:
-      - ip: 192.168.50.20
-    ports:
-      - name: wings
+spec:
+  endpoints:
+    - ip:
+        address: 192.168.50.30
         port: 8080
-        protocol: TCP
 ---
-apiVersion: v1
-kind: Service
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
 metadata:
   name: wing-node03
   namespace: network
   annotations:
-    external-dns.alpha.kubernetes.io/hostname: wing-node03.ewatkins.dev
+    external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
 spec:
-  type: ClusterIP
-  clusterIP: None
-  ports:
-    - name: wings
-      port: 8080
-      protocol: TCP
+  parentRefs:
+    - name: internal
+      namespace: network
+      sectionName: https
+  hostnames: ["wing-node03.ewatkins.dev"]
+  rules:
+    - backendRefs:
+        - group: gateway.envoyproxy.io
+          kind: Backend
+          name: wing-node03
 ---
-apiVersion: v1
-kind: Endpoints
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
 metadata:
-  name: wing-node03
+  name: wing-proxy
   namespace: network
-subsets:
-  - addresses:
-      - ip: 192.168.50.30
-    ports:
-      - name: wings
+spec:
+  endpoints:
+    - ip:
+        address: 192.168.50.100
         port: 8080
-        protocol: TCP
 ---
-apiVersion: v1
-kind: Service
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
 metadata:
   name: wing-proxy
   namespace: network
   annotations:
-    external-dns.alpha.kubernetes.io/hostname: wing-proxy.ewatkins.dev
+    external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
 spec:
-  type: ClusterIP
-  clusterIP: None
-  ports:
-    - name: wings
-      port: 8080
-      protocol: TCP
----
-apiVersion: v1
-kind: Endpoints
-metadata:
-  name: wing-proxy
-  namespace: network
-subsets:
-  - addresses:
-      - ip: 192.168.50.100
-    ports:
-      - name: wings
-        port: 8080
-        protocol: TCP
+  parentRefs:
+    - name: internal
+      namespace: network
+      sectionName: https
+  hostnames: ["wing-proxy.ewatkins.dev"]
+  rules:
+    - backendRefs:
+        - group: gateway.envoyproxy.io
+          kind: Backend
+          name: wing-proxy
