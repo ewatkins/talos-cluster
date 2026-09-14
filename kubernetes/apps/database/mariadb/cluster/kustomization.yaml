@@ -17,6 +17,7 @@ resources:
 
   # Pterodactyl
   - ./users/pterodactyl.yaml
+  - ./databases/pterodactyl.yaml
   - ./grants/pterodactyl.yaml
 
   # LuckPerms
