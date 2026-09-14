@@ -45,6 +45,9 @@ spec:
   # treatment caspian-idrac gets.
   tls:
     insecureSkipVerify: true
+    # Wings offers h2 over TLS, and a websocket upgrade (the panel console)
+    # cannot ride an h2 upstream -- Envoy resets it as a protocol error.
+    alpnProtocols: ["http/1.1"]
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -81,6 +84,9 @@ spec:
   # treatment caspian-idrac gets.
   tls:
     insecureSkipVerify: true
+    # Wings offers h2 over TLS, and a websocket upgrade (the panel console)
+    # cannot ride an h2 upstream -- Envoy resets it as a protocol error.
+    alpnProtocols: ["http/1.1"]
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -117,6 +123,9 @@ spec:
   # treatment caspian-idrac gets.
   tls:
     insecureSkipVerify: true
+    # Wings offers h2 over TLS, and a websocket upgrade (the panel console)
+    # cannot ride an h2 upstream -- Envoy resets it as a protocol error.
+    alpnProtocols: ["http/1.1"]
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -153,6 +162,9 @@ spec:
   # treatment caspian-idrac gets.
   tls:
     insecureSkipVerify: true
+    # Wings offers h2 over TLS, and a websocket upgrade (the panel console)
+    # cannot ride an h2 upstream -- Envoy resets it as a protocol error.
+    alpnProtocols: ["http/1.1"]
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
