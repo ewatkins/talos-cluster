@@ -1,6 +1,6 @@
 # [unifi-dns (ExternalDNS)](https://github.com/kubernetes-sigs/external-dns)
 
-ExternalDNS configured with the UniFi webhook provider. It watches Gateway API HTTPRoutes and LoadBalancer Services, then publishes corresponding DNS records to the UniFi controller at `https://10.0.0.1`. This makes cluster services resolvable by hostname on the LAN without relying on split-horizon DNS or manual host entries.
+ExternalDNS configured with the UniFi webhook provider. It watches Gateway API HTTPRoutes and LoadBalancer Services, then publishes corresponding DNS records to the UniFi controller at `https://unifi.ewatkins.dev`. This makes cluster services resolvable by hostname on the LAN without relying on split-horizon DNS or manual host entries.
 
 ## Configuration
 
@@ -8,7 +8,7 @@ ExternalDNS configured with the UniFi webhook provider. It watches Gateway API H
 | --- | --- | --- |
 | Chart | `external-dns` `1.20.0` | OCI mirror at `ghcr.io/home-operations/charts-mirror/external-dns`, verified with cosign |
 | Provider | `webhook` | Uses `ghcr.io/home-operations/external-dns-unifi-webhook:0.10.6` as a sidecar |
-| UniFi controller | `https://10.0.0.1` | |
+| UniFi controller | `https://unifi.ewatkins.dev` | |
 | Sources | `gateway-httproute`, `service` | Publishes records for Gateway API HTTPRoutes and LoadBalancer Services |
 | Domain filter | `ewatkins.dev` | Scoped to this zone; records outside it are ignored |
 | TXT ownership prefix | `k8s.` | Distinguishes ExternalDNS-managed entries from manually created ones |

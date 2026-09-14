@@ -38,7 +38,7 @@ spec:
               TZ: America/Chicago
               HOME: /tmp
               # UniFi controller (UDM at the LAN gateway); credentials come from the secret
-              UNIFI_HOST: 10.0.0.1
+              UNIFI_HOST: unifi.ewatkins.dev
               UNIFI_PORT: "443"
               UNIFI_SITE: default
               UNIFI_VERIFY_SSL: "false"

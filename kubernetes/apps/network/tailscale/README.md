@@ -21,11 +21,14 @@ Defined in [`connector/connector.yaml`](connector/connector.yaml):
 
 | Route               | Purpose                          |
 | ------------------- | -------------------------------- |
-| `10.0.0.1/32`       | UniFi controller                 |
-| `10.35.0.0/16`      | infra / hypervisor + NAS network |
+| `192.168.1.0/24`    | primary LAN / UniFi gateway      |
+| `192.168.30.0/24`   | home network                     |
 | `192.168.40.0/24`   | cluster / services network       |
-| `10.45.0.0/16`      | additional home network          |
-| `10.50.0.0/16`      | additional home network          |
+| `192.168.50.0/24`   | home network                     |
+| `192.168.60.0/24`   | storage / NAS network            |
+| `192.168.70.0/24`   | home network                     |
+| `192.168.80.0/24`   | home network                     |
+| `192.168.255.0/24`  | management network               |
 
 Exit-node duty is enabled (`exitNode: true`).
 
