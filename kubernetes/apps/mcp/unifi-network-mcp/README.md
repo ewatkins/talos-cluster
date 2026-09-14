@@ -1,6 +1,6 @@
 # [UniFi Network MCP](https://github.com/sirkirby/unifi-network-mcp)
 
-An MCP server that exposes the UniFi Network controller as agent tools — clients, devices, firewall rules, port forwards, VLANs, QoS, traffic routes, VPN, stats and events. It talks to the UDM at `10.0.0.1` and serves MCP over streamable HTTP so agents attach over the network instead of running a local stdio process.
+An MCP server that exposes the UniFi Network controller as agent tools — clients, devices, firewall rules, port forwards, VLANs, QoS, traffic routes, VPN, stats and events. It talks to the UDM at `unifi.ewatkins.dev` and serves MCP over streamable HTTP so agents attach over the network instead of running a local stdio process.
 
 The container runs as PID 1, which makes the shared transport layer skip stdio and bind the HTTP listener only.
 
@@ -10,7 +10,7 @@ The container runs as PID 1, which makes the shared transport layer skip stdio a
 | --- | --- | --- |
 | Image | `ghcr.io/sirkirby/unifi-network-mcp:0.32.6` | Pinned by digest |
 | Helm chart | `bjw-s/app-template` 5.1.0 | `chartRef` to the `app-template` OCIRepository |
-| UniFi controller | `10.0.0.1:443`, site `default` | `UNIFI_VERIFY_SSL=false` — the UDM serves a self-signed cert |
+| UniFi controller | `unifi.ewatkins.dev:443`, site `default` | `UNIFI_VERIFY_SSL=false` — the UDM serves a self-signed cert |
 | Service port | `3000` | |
 | MCP endpoint | `https://unifi-mcp.ewatkins.dev/mcp` | FastMCP's default streamable-http path |
 | Transport | `streamable-http` | `UNIFI_MCP_HTTP_ENABLED=true` |

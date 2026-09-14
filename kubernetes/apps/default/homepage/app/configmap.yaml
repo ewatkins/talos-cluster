@@ -190,12 +190,12 @@ data:
               type: gatus
               url: https://status.ewatkins.dev
         - UniFi:
-            href: https://10.0.0.1
+            href: https://unifi.ewatkins.dev
             description: Network controller.
             icon: unifi
             widget:
               type: unifi
-              url: https://10.0.0.1
+              url: https://unifi.ewatkins.dev
               key: "{{HOMEPAGE_VAR_UNIFI_KEY}}"
               fields: ["uptime", "wan", "lan_users", "wlan_users"]
         - MySpeed:
