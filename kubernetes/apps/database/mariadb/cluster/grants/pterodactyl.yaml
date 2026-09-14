@@ -10,3 +10,7 @@ spec:
   database: "*"
   table: "*"
   username: pterodactyl
+  # The panel uses this account as its database host: when a server gets a
+  # database it runs CREATE USER and then GRANTs that user rights on the new
+  # schema, which MariaDB refuses without GRANT OPTION.
+  grantOption: true
