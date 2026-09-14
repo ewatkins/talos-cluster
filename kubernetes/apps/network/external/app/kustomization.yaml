@@ -12,5 +12,4 @@ resources:
   - ./caspian-idrac.yaml
   - ./caspian.yaml
   - ./duplicacy.yaml
-  - ./pterodactyl.yaml
   - ./sab.yaml
