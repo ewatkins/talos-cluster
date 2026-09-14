@@ -57,7 +57,7 @@ spec:
   parentRefs:
     - name: internal
       namespace: network
-      sectionName: https
+      sectionName: wings
   hostnames: ["wing-node01.ewatkins.dev"]
   rules:
     - backendRefs:
@@ -93,7 +93,7 @@ spec:
   parentRefs:
     - name: internal
       namespace: network
-      sectionName: https
+      sectionName: wings
   hostnames: ["wing-node02.ewatkins.dev"]
   rules:
     - backendRefs:
@@ -129,7 +129,7 @@ spec:
   parentRefs:
     - name: internal
       namespace: network
-      sectionName: https
+      sectionName: wings
   hostnames: ["wing-node03.ewatkins.dev"]
   rules:
     - backendRefs:
@@ -165,7 +165,7 @@ spec:
   parentRefs:
     - name: internal
       namespace: network
-      sectionName: https
+      sectionName: wings
   hostnames: ["wing-proxy.ewatkins.dev"]
   rules:
     - backendRefs:
