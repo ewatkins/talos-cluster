@@ -38,6 +38,28 @@ spec:
       allowedRoutes:
         namespaces:
           from: All
+    # The iDRAC 8 virtual console loads its page over 443 but opens the KVM
+    # websocket straight to the Remote Presence Port, which never touches the
+    # 443 listener. Terminate TLS here with the same cert: the browser would
+    # otherwise be handed the iDRAC's self-signed appliance cert on a
+    # websocket, which it rejects with no interstitial and no click-through.
+    # TLS + TLSRoute rather than TCP + TCPRoute because a TCPRoute cannot
+    # reference a Backend, and a Service/EndpointSlice is the shape 8c593f59
+    # backed out of.
+    - name: kvm
+      protocol: TLS
+      port: 5900
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: ewatkins-dev-production-tls
+            namespace: network
+      allowedRoutes:
+        namespaces:
+          from: All
+        kinds:
+          - group: gateway.networking.k8s.io
+            kind: TLSRoute
     - name: ssh
       protocol: TCP
       port: 22

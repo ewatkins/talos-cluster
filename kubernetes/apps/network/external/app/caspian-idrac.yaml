@@ -36,3 +36,43 @@ spec:
         - group: gateway.envoyproxy.io
           kind: Backend
           name: caspian-idrac
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: caspian-idrac-kvm
+  namespace: network
+spec:
+  endpoints:
+    - ip:
+        address: 192.168.255.40
+        port: 5900
+  # The Remote Presence Port speaks TLS 1.2 with the same unverifiable
+  # appliance cert as 443, so the same LAN-only skip applies. Leave Video
+  # Encryption enabled on the iDRAC: with it off this port is plain ws://,
+  # which the browser blocks as mixed content from the HTTPS console page.
+  tls:
+    insecureSkipVerify: true
+    # Raw websocket over TLS, not h2 -- the KVM daemon negotiates no ALPN at
+    # all. An empty list disables the ALPN extension; omitting the field would
+    # offer the h2/http-1.1 default instead.
+    alpnProtocols: []
+---
+# No external-dns target annotation here: caspian-idrac.ewatkins.dev is already
+# published by the HTTPRoute above, and 5900 answers on that same gateway IP.
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TLSRoute
+metadata:
+  name: caspian-idrac-kvm
+  namespace: network
+spec:
+  parentRefs:
+    - name: internal
+      namespace: network
+      sectionName: kvm
+  hostnames: ["caspian-idrac.ewatkins.dev"]
+  rules:
+    - backendRefs:
+        - group: gateway.envoyproxy.io
+          kind: Backend
+          name: caspian-idrac-kvm
