@@ -16,7 +16,7 @@ metadata:
   name: atlas
   namespace: network
   annotations:
-    external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
+    external-dns.kubernetes.io/target: "internal.ewatkins.dev"
 spec:
   parentRefs:
     - name: internal
@@ -55,7 +55,7 @@ metadata:
   name: wing-node01
   namespace: network
   annotations:
-    external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
+    external-dns.kubernetes.io/target: "internal.ewatkins.dev"
 spec:
   parentRefs:
     - name: internal
@@ -94,7 +94,7 @@ metadata:
   name: wing-node02
   namespace: network
   annotations:
-    external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
+    external-dns.kubernetes.io/target: "internal.ewatkins.dev"
 spec:
   parentRefs:
     - name: internal
@@ -133,7 +133,7 @@ metadata:
   name: wing-node03
   namespace: network
   annotations:
-    external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
+    external-dns.kubernetes.io/target: "internal.ewatkins.dev"
 spec:
   parentRefs:
     - name: internal
@@ -172,7 +172,7 @@ metadata:
   name: wing-proxy
   namespace: network
   annotations:
-    external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
+    external-dns.kubernetes.io/target: "internal.ewatkins.dev"
 spec:
   parentRefs:
     - name: internal

@@ -21,4 +21,4 @@ spec:
         externalTrafficPolicy: Cluster
         annotations:
           io.cilium/lb-ipam-ips: "${EXTERNAL}"
-          external-dns.alpha.kubernetes.io/hostname: "external.ewatkins.dev"
+          external-dns.kubernetes.io/hostname: "external.ewatkins.dev"

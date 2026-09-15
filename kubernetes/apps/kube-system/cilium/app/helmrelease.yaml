@@ -53,6 +53,6 @@ spec:
         ingress:
           enabled: true
           annotations:
-            external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
+            external-dns.kubernetes.io/target: "internal.ewatkins.dev"
           className: internal
           hosts: ["hubble.ewatkins.dev"]
