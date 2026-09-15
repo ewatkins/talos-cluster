@@ -309,7 +309,7 @@ spec:
         type: LoadBalancer
         annotations:
           io.cilium/lb-ipam-ips: "${CODE_SERVER}"
-          external-dns.alpha.kubernetes.io/hostname: code.ewatkins.dev
+          external-dns.kubernetes.io/hostname: code.ewatkins.dev
         externalTrafficPolicy: Cluster
         ports:
           https:
