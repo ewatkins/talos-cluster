@@ -1,6 +1,6 @@
 ---
 clusterName: great-lakes
-# renovate: datasource=docker depName=ghcr.io/siderolabs/installer
+# renovate: datasource=docker depName=ghcr.io/siderolabs/installer-base
 talosVersion: v1.13.9
 # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
 kubernetesVersion: v1.36.4
