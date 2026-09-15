@@ -5,7 +5,7 @@ metadata:
   name: homelable
   namespace: default
   annotations:
-    external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
+    external-dns.kubernetes.io/target: "internal.ewatkins.dev"
     # No gethomepage.dev/* annotations: the Homelable tile is defined
     # explicitly in the homepage ConfigMap's Services group. Auto-discovery
     # here produced a duplicate under a separate "Apps" section.
@@ -37,7 +37,7 @@ metadata:
   name: homelable-mcp
   namespace: default
   annotations:
-    external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
+    external-dns.kubernetes.io/target: "internal.ewatkins.dev"
 spec:
   parentRefs:
     - name: internal

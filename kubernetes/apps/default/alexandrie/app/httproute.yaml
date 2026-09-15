@@ -5,7 +5,7 @@ metadata:
   name: alexandrie
   namespace: default
   annotations:
-    external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
+    external-dns.kubernetes.io/target: "internal.ewatkins.dev"
 spec:
   parentRefs:
     - name: internal
@@ -51,7 +51,7 @@ metadata:
   name: alexandrie-cdn
   namespace: default
   annotations:
-    external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
+    external-dns.kubernetes.io/target: "internal.ewatkins.dev"
 spec:
   parentRefs:
     - name: internal
@@ -78,7 +78,7 @@ metadata:
   name: alexandrie-legacy
   namespace: default
   annotations:
-    external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
+    external-dns.kubernetes.io/target: "internal.ewatkins.dev"
 spec:
   parentRefs:
     - name: internal

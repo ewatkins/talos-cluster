@@ -16,7 +16,7 @@ metadata:
   name: duplicacy
   namespace: network
   annotations:
-    external-dns.alpha.kubernetes.io/target: "internal.ewatkins.dev"
+    external-dns.kubernetes.io/target: "internal.ewatkins.dev"
 spec:
   parentRefs:
     - name: internal
