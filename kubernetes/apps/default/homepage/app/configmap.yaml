@@ -135,19 +135,19 @@ data:
               version: 4
               metric: fs:/rootfs/mnt/user
               chart: false
-        - Internal:
+        - Management:
             widget:
               type: glances
               url: http://192.168.30.40:61208
               version: 4
-              metric: network:bond0
+              metric: network:br0.30
               chart: false
-        - External:
+        - Storage:
             widget:
               type: glances
               url: http://192.168.30.40:61208
               version: 4
-              metric: network:bond1
+              metric: network:br2.60
               chart: false
     - Infrastructure:
         - Proxmox:
