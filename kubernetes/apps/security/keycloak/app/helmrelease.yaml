@@ -29,7 +29,7 @@ spec:
           keycloak:
             image:
               repository: quay.io/keycloak/keycloak
-              tag: 26.7.3
+              tag: 26.7.4
             args:
               - start
               - --db
