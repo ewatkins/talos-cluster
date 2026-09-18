@@ -6,7 +6,7 @@ A web-based GUI for exploring and managing Redis-compatible databases. Used to q
 
 | Setting | Value |
 | --- | --- |
-| Chart | `bjw-s/app-template` v3.7.3 |
+| Chart | `bjw-s/app-template` (`chartRef` to the `app-template` OCIRepository) |
 | Image | `redis/redisinsight:3.2.0` |
 | Strategy | Recreate |
 | Port | 5540 |
