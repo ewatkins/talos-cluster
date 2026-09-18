@@ -9,10 +9,10 @@ spec:
   chart:
     spec:
       chart: grafana
-      version: 10.5.15
+      version: 13.2.5
       sourceRef:
         kind: HelmRepository
-        name: grafana
+        name: grafana-community
         namespace: flux-system
   dependsOn:
     - name: keycloak
@@ -47,9 +47,7 @@ spec:
     env:
       GF_DATE_FORMATS_USE_BROWSER_LOCALE: true
       GF_EXPLORE_ENABLED: true
-      GF_FEATURE_TOGGLES_ENABLE: publicDashboards
-      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: natel-discrete-panel,pr0ps-trackmap-panel,panodata-map-panel
-      GF_SECURITY_ANGULAR_SUPPORT_ENABLED: true
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: pr0ps-trackmap-panel,panodata-map-panel
       GF_SECURITY_COOKIE_SAMESITE: grafana
     envFromSecrets:
       - name: grafana-secret
@@ -267,9 +265,6 @@ spec:
         labelValue: ""
     plugins:
       - grafana-clock-panel
-      - grafana-piechart-panel
-      - grafana-worldmap-panel
-      - natel-discrete-panel
       - pr0ps-trackmap-panel
       - vonage-status-panel
     serviceMonitor:
