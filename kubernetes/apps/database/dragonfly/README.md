@@ -6,7 +6,7 @@ A high-performance, Redis-compatible in-memory data store. Deployed via the Drag
 
 | Setting | Value |
 | --- | --- |
-| Chart | `bjw-s/app-template` v3.7.3 |
+| Chart | `bjw-s/app-template` (`chartRef` to the `app-template` OCIRepository) |
 | Image | `ghcr.io/dragonflydb/operator:v1.4.0` |
 | Strategy | RollingUpdate |
 | Metrics port | 8080 |
