@@ -4,7 +4,6 @@ kind: Kustomization
 resources:
   - ./actions-runner-controller.yaml
   - ./app-template.yaml
-  - ./bjw-s.yaml
   - ./envoy-gateway.yaml
   - ./crunchy-users.yaml
   - ./forgejo.yaml
