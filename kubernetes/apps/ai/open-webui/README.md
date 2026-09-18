@@ -7,7 +7,7 @@ A self-hosted web interface for interacting with large language models. In this 
 | Setting | Value | Notes |
 | --- | --- | --- |
 | Image | `ghcr.io/open-webui/open-webui:v0.8.10` | Pinned by digest |
-| Helm chart | `bjw-s/app-template` v3.7.3 | |
+| Helm chart | `bjw-s/app-template` | `chartRef` to the `app-template` OCIRepository |
 | Ollama backend | `http://jetson.ewatkins.dev:11434` | External Jetson host running the inference engine |
 | Ollama API enabled | `true` | `ENABLE_OLLAMA_API=true` |
 | Service port | `8080` | |

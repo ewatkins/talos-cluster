@@ -6,14 +6,10 @@ metadata:
   name: &app dragonfly-operator
 spec:
   interval: 30m
-  chart:
-    spec:
-      chart: app-template
-      version: 3.7.3
-      sourceRef:
-        kind: HelmRepository
-        name: bjw-s
-        namespace: flux-system
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
   install:
     remediation:
       retries: 3
@@ -26,6 +22,8 @@ spec:
     controllers:
       dragonfly-operator:
         strategy: RollingUpdate
+        serviceAccount:
+          identifier: *app
         containers:
           app:
             image:
@@ -69,6 +67,9 @@ spec:
               readOnlyRootFilesystem: true
               capabilities: { drop: [ "ALL" ] }
     defaultPodOptions:
+      # app-template disables SA token automount by default; the operator
+      # needs it to reach the API server with its ClusterRole.
+      automountServiceAccountToken: true
       labels:
         control-plane: controller-manager
       securityContext:
@@ -92,8 +93,7 @@ spec:
           metrics:
             port: 8080
     serviceAccount:
-      create: true
-      name: *app
+      dragonfly-operator: {}
     serviceMonitor:
       app:
         serviceName: *app
