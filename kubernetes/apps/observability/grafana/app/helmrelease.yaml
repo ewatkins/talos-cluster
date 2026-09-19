@@ -61,13 +61,22 @@ spec:
       - name: grafana-secret
       - name: grafana-db-secret
       - name: grafana-alerting-secret
-    # Alerting provisioning (contact points, policies, templates, mute
-    # timings) from ./alerting. Reloader restarts the pods on change; the
+    # Alerting provisioning: contact points, policies, templates and mute
+    # timings from ./alerting plus the generated rules from ./alerting/rules.
+    # Grafana only reads files directly in this directory, so both ConfigMaps
+    # are projected into it. Reloader restarts the pods on change; the
     # sidecar reload API is unusable because there is no local admin user.
-    extraConfigmapMounts:
+    extraContainerVolumes:
+      - name: grafana-alerting
+        projected:
+          sources:
+            - configMap:
+                name: grafana-alerting
+            - configMap:
+                name: grafana-alerting-rules
+    extraVolumeMounts:
       - name: grafana-alerting
         mountPath: /etc/grafana/provisioning/alerting
-        configMap: grafana-alerting
         readOnly: true
     grafana.ini:
       analytics:
