@@ -1,0 +1,46 @@
+---
+# Notification policy tree, mirroring the Alertmanager route in
+# kube-prometheus-stack/app/resources/alertmanager.yaml.
+#
+# Grafana has no receiver without integrations, so routes that should
+# drop notifications (Alertmanager's "null" receiver) are muted around
+# the clock with the `always` mute timing instead.
+apiVersion: 1
+policies:
+  - orgId: 1
+    receiver: pushover-low
+    group_by: ["alertname", "job"]
+    group_wait: 1m
+    group_interval: 10m
+    repeat_interval: 12h
+    routes:
+      # Migration gate: rules imported from Prometheus carry
+      # grafana_shadow=true while Alertmanager still pages. Remove this
+      # route (and the label) at cutover.
+      - receiver: pushover-low
+        mute_time_intervals: [always]
+        object_matchers:
+          - ["grafana_shadow", "=", "true"]
+      - receiver: heartbeat
+        object_matchers:
+          - ["alertname", "=", "Watchdog"]
+        group_wait: 0s
+        group_interval: 5m
+        repeat_interval: 5m
+      - receiver: pushover-low
+        mute_time_intervals: [always]
+        object_matchers:
+          - ["alertname", "=", "InfoInhibitor"]
+      # Informational alerts are for dashboards, not for a phone at 03:00.
+      - receiver: pushover-low
+        mute_time_intervals: [always]
+        object_matchers:
+          - ["severity", "=", "info"]
+      - receiver: pushover-critical
+        object_matchers:
+          - ["severity", "=", "critical"]
+        repeat_interval: 4h
+      - receiver: pushover-warning
+        object_matchers:
+          - ["severity", "=", "warning"]
+        repeat_interval: 12h

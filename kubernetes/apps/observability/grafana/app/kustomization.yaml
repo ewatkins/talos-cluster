@@ -8,3 +8,17 @@ resources:
   - ./helmrelease.yaml
   - ./httproute.yaml
 
+configMapGenerator:
+  - name: grafana-alerting
+    files:
+      - contact-points.yaml=./alerting/contact-points.yaml
+      - mute-timings.yaml=./alerting/mute-timings.yaml
+      - policies.yaml=./alerting/policies.yaml
+      - templates.yaml=./alerting/templates.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+  annotations:
+    # $ALERTING_* is for Grafana's provisioning interpolation, not Flux.
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+    reloader.stakater.com/match: "true"

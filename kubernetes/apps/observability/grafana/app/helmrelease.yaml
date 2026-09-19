@@ -44,14 +44,31 @@ spec:
     #      - secretRef:
     #          name: &secret grafana-secret
     replicas: 2
+    annotations:
+      reloader.stakater.com/search: "true"
+    # Unified alerting HA: the replicas gossip over 9094 via the headless
+    # Service so each notification is sent once.
+    headlessService: true
     env:
       GF_DATE_FORMATS_USE_BROWSER_LOCALE: true
       GF_EXPLORE_ENABLED: true
       GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: pr0ps-trackmap-panel,panodata-map-panel
       GF_SECURITY_COOKIE_SAMESITE: grafana
+      GF_UNIFIED_ALERTING_HA_PEERS: grafana-headless.observability.svc.cluster.local:9094
+      # POD_IP is defined earlier in the container env by the chart.
+      GF_UNIFIED_ALERTING_HA_ADVERTISE_ADDRESS: $(POD_IP):9094
     envFromSecrets:
       - name: grafana-secret
       - name: grafana-db-secret
+      - name: grafana-alerting-secret
+    # Alerting provisioning (contact points, policies, templates, mute
+    # timings) from ./alerting. Reloader restarts the pods on change; the
+    # sidecar reload API is unusable because there is no local admin user.
+    extraConfigmapMounts:
+      - name: grafana-alerting
+        mountPath: /etc/grafana/provisioning/alerting
+        configMap: grafana-alerting
+        readOnly: true
     grafana.ini:
       analytics:
         check_for_updates: false

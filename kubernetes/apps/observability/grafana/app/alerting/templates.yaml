@@ -1,0 +1,35 @@
+---
+# Notification templates, ported from the Alertmanager pushover receiver in
+# kube-prometheus-stack/app/resources/alertmanager.yaml.
+# Template content is not env-interpolated by Grafana provisioning.
+apiVersion: 1
+templates:
+  - orgId: 1
+    name: pushover
+    template: |
+      {{ define "pushover.title" -}}
+      [{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }}
+      {{- end }}
+
+      {{ define "pushover.message" -}}
+      {{- range .Alerts }}
+        {{- if ne (index .Annotations "description") "" }}
+          {{ index .Annotations "description" }}
+        {{- else if ne (index .Annotations "summary") "" }}
+          {{ index .Annotations "summary" }}
+        {{- else if ne (index .Annotations "message") "" }}
+          {{ index .Annotations "message" }}
+        {{- else }}
+          Alert description not available
+        {{- end }}
+        {{- if gt (len .Labels.SortedPairs) 0 }}
+          <small>
+          {{- range .Labels.SortedPairs }}
+            {{- if ne .Name "grafana_folder" }}
+            <b>{{ .Name }}:</b> {{ .Value }}
+            {{- end }}
+          {{- end }}
+          </small>
+        {{- end }}
+      {{- end }}
+      {{- end }}

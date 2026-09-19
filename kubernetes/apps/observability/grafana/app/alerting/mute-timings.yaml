@@ -1,0 +1,11 @@
+---
+# `always` stands in for Alertmanager's "null" receiver: a route that uses it
+# never notifies, while its alerts still show as firing (and muted) in Grafana.
+apiVersion: 1
+muteTimes:
+  - orgId: 1
+    name: always
+    time_intervals:
+      - times:
+          - start_time: "00:00"
+            end_time: "24:00"
