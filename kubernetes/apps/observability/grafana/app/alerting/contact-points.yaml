@@ -1,0 +1,63 @@
+---
+# Contact points. `$ALERTING_*` values come from grafana-alerting-secret
+# (env) and are interpolated by Grafana provisioning; this file is generated
+# with Flux substitution disabled so they reach Grafana untouched.
+#
+# Grafana's pushover priority is fixed per contact point (Alertmanager
+# templated it from .CommonLabels.severity), so severity maps to a contact
+# point instead. Resolved notifications go out at priority -1 everywhere.
+apiVersion: 1
+contactPoints:
+  - orgId: 1
+    name: pushover-critical
+    receivers:
+      - uid: pushover-critical
+        type: pushover
+        settings:
+          apiToken: $ALERTING_PUSHOVER_API_TOKEN
+          userKey: $ALERTING_PUSHOVER_USER_KEY
+          # Emergency: Pushover retries until acknowledged; retry/expire are
+          # required at this priority (seconds).
+          priority: "2"
+          okPriority: "-1"
+          retry: "300"
+          expire: "3600"
+          sound: gamelan
+          title: '{{ template "pushover.title" . }}'
+          message: '{{ template "pushover.message" . }}'
+  - orgId: 1
+    name: pushover-warning
+    receivers:
+      - uid: pushover-warning
+        type: pushover
+        settings:
+          apiToken: $ALERTING_PUSHOVER_API_TOKEN
+          userKey: $ALERTING_PUSHOVER_USER_KEY
+          priority: "0"
+          okPriority: "-1"
+          sound: gamelan
+          title: '{{ template "pushover.title" . }}'
+          message: '{{ template "pushover.message" . }}'
+  # Alerts without a critical/warning/info severity (Alertmanager's
+  # templated priority fell through to -1 for these).
+  - orgId: 1
+    name: pushover-low
+    receivers:
+      - uid: pushover-low
+        type: pushover
+        settings:
+          apiToken: $ALERTING_PUSHOVER_API_TOKEN
+          userKey: $ALERTING_PUSHOVER_USER_KEY
+          priority: "-1"
+          okPriority: "-1"
+          sound: gamelan
+          title: '{{ template "pushover.title" . }}'
+          message: '{{ template "pushover.message" . }}'
+  - orgId: 1
+    name: heartbeat
+    receivers:
+      - uid: heartbeat
+        type: webhook
+        settings:
+          url: $ALERTING_HEARTBEAT_URL
+          httpMethod: POST
