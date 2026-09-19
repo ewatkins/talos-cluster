@@ -24,9 +24,12 @@ Brewfile.lock.json
 wiki
 # Bootstrap
 /config.yaml
-# Kubeconform
-scripts/
+# Scripts: ignored unless listed (`scripts/*`, not `scripts/`, so the
+# exceptions below actually re-include files)
+scripts/*
 !scripts/kubeconform.sh
+!scripts/grafana-alert-rules.py
+!scripts/grafana-alert-rules.sh
 # Claude Code
 .claude/
 # Database dumps
