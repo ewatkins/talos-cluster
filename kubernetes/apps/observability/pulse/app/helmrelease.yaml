@@ -98,3 +98,7 @@ spec:
         existingClaim: pulse-data
         globalMounts:
           - path: /data
+      tmp:
+        type: emptyDir
+        globalMounts:
+          - path: /tmp
