@@ -22,6 +22,13 @@ spec:
       nodecast-tv:
         annotations:
           reloader.stakater.com/auto: "true"
+        pod:
+          # Middle of the iGPU ranking: yields to Jellyfin, beats unmanic
+          # (see ../../priorityclasses.yaml).
+          priorityClassName: media-gpu-secondary
+          resourceClaims:
+            - name: gpu
+              resourceClaimTemplateName: nodecast-tv
         containers:
           app:
             image:
@@ -67,6 +74,8 @@ spec:
             # concurrent streams; CPU is deliberately unlimited so a remux is
             # never throttled into stuttering.
             resources:
+              claims:
+                - name: gpu
               requests:
                 cpu: 100m
                 memory: 512Mi
@@ -74,19 +83,23 @@ spec:
                 memory: 4Gi
     defaultPodOptions:
       enableServiceLinks: false
-      # Deliberately no GPU claim — see ./README.md. transcodeSession.js
-      # hardcodes /dev/dri/renderD128 and DRA presents the device as renderD129,
-      # so VAAPI cannot work here however the claim is written. Claiming a GPU
-      # anyway would only make hwDetect recommend an encoder that fails.
-      #
       # The image declares no USER and would run as root. Drop to the same
       # 99:100 the rest of media uses — /app is read-only, and the only writable
       # paths are the volumes below, which fsGroup covers.
+      #
+      # The claimed GPU's render node is chowned to 99:100 by containerd
+      # (device_ownership_from_security_context in talconfig), which is what
+      # actually grants access. The supplemental groups match Jellyfin and
+      # unmanic so all three GPU consumers are configured alike.
       securityContext:
         runAsUser: 99
         runAsGroup: 100
         fsGroup: 100
         fsGroupChangePolicy: OnRootMismatch
+        supplementalGroups:
+          - 44
+          - 105
+          - 10000
     service:
       app:
         controller: *app

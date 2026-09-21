@@ -127,25 +127,36 @@ pinned to whichever node binds the volume.
 **Two databases.** `content.db` (SQLite, the channel/VOD catalogue) and `db.json` (users,
 settings, favourites) both live in `/app/data`.
 
-**No GPU, and it cannot usefully have one.** Unlike
-[Jellyfin](../../jellyfin/app/resourceclaimtemplate.yaml) and unmanic, which claim an Intel GPU
-over DRA, this app is pinned to a device path it will never find here:
-`server/services/transcodeSession.js` hardcodes `-hwaccel_device /dev/dri/renderD128`, while DRA
-presents the device as **`renderD129`** on all three GPU nodes. Verified in-container — `ffmpeg
--hwaccel vaapi -hwaccel_device /dev/dri/renderD128` fails with *"No VA display found"*, and the
-same command against `renderD129` encodes fine. `addVaapiEncoderArgs` sets no separate
-`-vaapi_device`, so decode and encode fail together. Still hardcoded on upstream `main`, so a
-version bump will not fix it.
+**GPU: claimed over DRA, and it only works because of the VM display type.** Like
+[Jellyfin](../../jellyfin/app/resourceclaimtemplate.yaml) and unmanic, the pod claims an Intel
+iGPU through [`resourceclaimtemplate.yaml`](resourceclaimtemplate.yaml). The catch is that
+`server/services/transcodeSession.js` hardcodes `-hwaccel_device /dev/dri/renderD128` (still
+true on upstream `main`), and DRA passes the device through under its host name.
 
-Claiming a GPU anyway would be actively worse: `hwDetect.js` would then report `Recommended
-encoder: vaapi`, so choosing **auto** in the transcode settings would select an encoder that
-fails, where today it correctly resolves to software.
+On the GPU workers, `renderD128` used to be the Proxmox **VirtIO-GPU** display adapter and the
+iGPU was `renderD129`, so the hardcoded path hit a device the container did not have — ffmpeg
+failed with *"No VA display found"*. Switching erie, ontario and tahoe to **Standard VGA**
+(`qm set <vmid> --vga std`), which the Talos kernel has no render-node driver for, makes the iGPU
+`renderD128`. If a GPU node's display is ever set back to VirtIO-GPU, VAAPI here breaks again
+while `hwDetect.js` keeps recommending it. Check with
+`talosctl -n <ip> read /sys/class/drm/renderD128/device/uevent` — it must say `DRIVER=i915`.
 
-Little is lost. Normal playback is `/api/remux` running ffmpeg with `-c copy` — a pure container
-swap from MPEG-TS to fragmented MP4, no decode, no encode, nothing a GPU accelerates. Only the
-opt-in `/api/transcode` path re-encodes, and it falls back to software. If upstream ever makes
-the device path configurable, adding a claim is a `ResourceClaimTemplate` plus
-`supplementalGroups: [44, 105, 10000]`, copied from Jellyfin.
+Standard VGA needs `i915.disable_display=1`, set in the worker schematic in
+[`talconfig.yaml`](../../../../../talos/talconfig.yaml); without it i915 takes over the console
+and the Talos dashboard disappears.
+
+**Each iGPU is claimed exclusively,** and there are three for three consumers. They are ranked
+Jellyfin > nodecast-tv > unmanic via [`priorityclasses.yaml`](../../priorityclasses.yaml):
+
+- **unmanic** has no priority and a *required* node affinity off tahoe, so it can never hold the
+  GPU this pod needs. If erie or ontario is down it simply stays `Pending`.
+- **Jellyfin** *prefers* to stay off tahoe, but if tahoe is the only GPU left, its higher priority
+  lets the scheduler preempt this pod.
+- **This pod** can only run on tahoe (below), and beats unmanic.
+
+The GPU only matters for the opt-in `/api/transcode` path. Normal playback is `/api/remux`
+running ffmpeg with `-c copy` — a pure container swap from MPEG-TS to fragmented MP4, nothing a
+GPU accelerates — and the AAC audio fix above re-encodes audio only.
 
 **The pod runs on tahoe** because that is where the PVC bound, not because anything pins it
 there. Since the volume follows first scheduling, moving nodes later means recreating the PVC

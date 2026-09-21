@@ -1,0 +1,23 @@
+---
+# Ranking for the three Intel iGPUs, which DRA allocates exclusively — one pod
+# per GPU. Jellyfin > nodecast-tv > unmanic; unmanic has no class (priority 0)
+# and is allowed to go without. When the higher-ranked app has nowhere to
+# schedule, these let the scheduler preempt a lower-ranked GPU holder to free
+# its claim.
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: media-gpu-primary
+value: 1000
+preemptionPolicy: PreemptLowerPriority
+globalDefault: false
+description: Jellyfin. Takes an iGPU ahead of nodecast-tv and unmanic.
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: media-gpu-secondary
+value: 500
+preemptionPolicy: PreemptLowerPriority
+globalDefault: false
+description: nodecast-tv. Takes an iGPU ahead of unmanic, yields to Jellyfin.

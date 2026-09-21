@@ -65,6 +65,8 @@ spec:
               limits:
                 memory: 4Gi
         pod:
+          # Top of the iGPU ranking (see ../../priorityclasses.yaml).
+          priorityClassName: media-gpu-primary
           resourceClaims:
             - name: gpu
               resourceClaimTemplateName: jellyfin
@@ -78,6 +80,18 @@ spec:
                     matchLabels:
                       app.kubernetes.io/name: unmanic
                   topologyKey: kubernetes.io/hostname
+            # nodecast-tv's local PVC pins it to tahoe and it claims tahoe's
+            # iGPU; each iGPU is exclusive, so stay off it when erie or ontario
+            # can take us. Preferred, not required: if tahoe is all that is
+            # left, Jellyfin's higher priority preempts nodecast-tv there.
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  preference:
+                    matchExpressions:
+                      - key: kubernetes.io/hostname
+                        operator: NotIn
+                        values: ["tahoe"]
           securityContext:
             seccompProfile:
               type: RuntimeDefault
