@@ -141,9 +141,12 @@ preload now prunes rows the feed no longer lists after every sync (logged as
 `[epg-batch-fix] pruned N stale EPG channels`), skipping it if the feed is under half the stored
 count.
 
-**Channels list by number.** Upstream returns each category's live channels `ORDER BY name`, so
-channel numbers were ignored. The same preload sorts on the stream id instead — Dispatcharr's
-tvg-id, which is the channel number, subchannels like `12.2` included.
+**Channels list by number.** The channel list is served by `getStreamsFromDb()` in
+`server/routes/proxy.js`, whose `ORDER BY` is commented out ("sorting usually handled by
+client") — and the client never sorts within a category, so channels appeared in first-insert
+order and anything renumbered later landed at the end. The same preload sorts live channels on
+the stream id, Dispatcharr's tvg-id — i.e. the channel number, subchannels like `12.2` included.
+(`m3uXtreamAdapter.getLiveStreams()` sorts by name but is not what the list uses.)
 
 **Two databases.** `content.db` (SQLite, the channel/VOD catalogue) and `db.json` (users,
 settings, favourites) both live in `/app/data`.

@@ -32,11 +32,13 @@ data:
     //    upsert — unless the feed is under half the stored count, which smells
     //    like a failed parse rather than a real change.
     //
-    // 3. m3uXtreamAdapter.js — live channels come back `ORDER BY name`, so each
-    //    category lists alphabetically and channel numbers are ignored. The
-    //    stream id is Dispatcharr's tvg-id, which is the channel number
-    //    (including subchannels like 12.2), so sort numerically on it instead,
-    //    with the name as a tiebreak for anything non-numeric.
+    // 3. routes/proxy.js — getStreamsFromDb(), which feeds the channel list,
+    //    has its ORDER BY commented out ("sorting usually handled by client")
+    //    and the client never sorts within a category, so channels appear in
+    //    first-insert order: a channel renumbered later lands at the end. The
+    //    stream id is Dispatcharr's tvg-id, i.e. the channel number (including
+    //    subchannels like 12.2), so live channels sort numerically on it, with
+    //    the name as a tiebreak. Movies and series keep their existing order.
     'use strict';
     const fs = require('fs');
     const path = require('path');
@@ -103,6 +105,10 @@ data:
       ],
     ]);
 
-    patch('/app/server/services/m3uXtreamAdapter.js', [
-      ['        query += ` ORDER BY name ASC`;\n', '        query += ` ORDER BY CAST(item_id AS REAL), name ASC`;\n', 1],
+    patch('/app/server/routes/proxy.js', [
+      [
+        '    // query += ` ORDER BY name ASC`; // Sorting usually handled by client\n',
+        "    if (type === 'live') query += ` ORDER BY CAST(item_id AS REAL), name ASC`;\n",
+        1,
+      ],
     ]);
