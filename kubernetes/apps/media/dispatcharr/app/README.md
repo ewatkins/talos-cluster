@@ -56,16 +56,25 @@ block is unambiguous (*Get Up* 8–10 am ET, *First Take* 10–12, *The Pat McAf
 If listings ever run **early** instead, the provider has started emitting real UTC: point
 the source back at the provider URL directly and drop the sidecar.
 
-## Channel shutdown delay must not be 0
+## Channel shutdown delay: 2 s, and the account allows ONE connection
 
-*Settings → Proxy → Channel Shutdown Delay* is **10 s** (database, not Git). nodecast-tv opens
+**the primary provider enforces `max_connections: 1`** (see `player_api.php` → `user_info`), so only one
+channel can play at a time across everything that uses Dispatcharr. The M3U account and its
+default profile are set to `max_streams: 1` to match (database, not Git). While they said
+"unlimited", Dispatcharr opened second connections that the provider answered with HTTP 500
+on *every* channel — and enough of those got the account temporarily refused outright.
+
+*Settings → Proxy → Channel Shutdown Delay* is **2 s** (database, not Git). nodecast-tv opens
 every channel twice back to back: an `ffprobe`, then the real transcode session. With the
 delay at 0 the probe's disconnect started a teardown, and the session arriving ~150 ms later
-got `Refusing to initialize channel …; teardown or pending shutdown active` → HTTP 500, so
-channels loaded only on a retry ~15 s later, or not at all. With a delay, the second
-connection logs `Cancelled pending shutdown … (client reconnected)` and plays at once. The
-cost is holding the provider connection 10 s after the last viewer leaves; the primary provider has no
-connection limit.
+got `Refusing to initialize channel …; teardown or pending shutdown active` → HTTP 500. Any
+delay fixes that (`Cancelled pending shutdown … (client reconnected)`); keep it short,
+because the old channel holds the only provider connection for that long after a channel
+switch. 10 s made switching slow.
+
+A nodecast-tv transcode session can outlive its viewer and keep a channel streaming. With
+one connection that blocks everything else — check `ps` in the nodecast-tv pod for a
+long-running `ffmpeg` if every channel suddenly fails.
 
 Relatedly, `Redis command failed during ownership acquisition` in the logs is not a Redis
 fault: redis-py returns `None` from `SET NX` when the key already exists, which Dispatcharr
