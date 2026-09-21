@@ -80,6 +80,28 @@ Relatedly, `Redis command failed during ownership acquisition` in the logs is no
 fault: redis-py returns `None` from `SET NX` when the key already exists, which Dispatcharr
 reports as a failure. It shows up in exactly this reconnect race.
 
+## the secondary provider fails over between server hosts
+
+the secondary provider publishes several interchangeable hostnames for one account (same login, same
+stream IDs); all eight alternates were verified to log in and play on 2026-09-21.
+Dispatcharr keeps a single `server_url` per account, and its failover only moves between
+*different streams*, so a dead host takes every the secondary provider backup down together.
+
+[`iptv-host-failover.yaml`](iptv-host-failover.yaml) is a CronJob (every 5 min) that
+checks the primary with a `player_api.php` login and, if it fails, points the account's
+**default profile** at the first healthy alternate (`^https?://[^/]+` → that host). It
+returns to the primary as soon as that answers again, and leaves a profile with any other
+custom pattern alone. Look for `SWITCHED` in the job logs.
+
+It rewrites at play time rather than editing `server_url` on purpose: streams are hashed on
+their URL (`m3u_hash_key: url`), so changing the host would make the next M3U refresh treat
+every stream as new and silently drop the backups attached to channels. While the primary
+is down the account's own M3U/EPG refresh (which uses `server_url`) will fail; existing
+streams keep playing through the alternate.
+
+To add another provider, append an entry (account id, default profile id, alternates) to
+`accounts.json` in the ConfigMap.
+
 ## Co-located tools
 
 Containers in different pods cannot share a network namespace, so the only way to put a

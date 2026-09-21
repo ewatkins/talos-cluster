@@ -1,0 +1,178 @@
+---
+# the secondary provider publishes several interchangeable server hostnames for the same
+# account (same login, same stream IDs). Dispatcharr stores one server_url per
+# account and its failover only moves between *different streams*, so if the
+# account's host dies every the secondary provider stream fails at once.
+#
+# Editing server_url is not an option: stream identity is hashed on the URL
+# (stream_settings.m3u_hash_key = "url"), so a host change makes the next
+# refresh treat every stream as new and silently drops the backup streams
+# attached to channels. Instead this rewrites the host at play time through the
+# account's default profile (search ^https?://[^/]+ → active host), leaving the
+# stored URLs untouched.
+#
+# Every run: if the primary (server_url) answers player_api with auth=1, use it
+# (identity pattern). Otherwise keep the current alternate if it is healthy, or
+# move to the first healthy alternate in order. A profile carrying any other
+# custom pattern is left alone. The check is a login, not a stream — it spends
+# none of the account's single connection.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dispatcharr-host-failover
+  namespace: media
+  annotations:
+    # "$1" in the script is a regex backreference, not a Flux variable.
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+data:
+  accounts.json: |
+    [
+      {
+        "name": "the secondary provider",
+        "account_id": 111,
+        "profile_id": 111,
+        "alternates": [
+          "http://alternate-host.invalid",
+          "http://alternate-host.invalid",
+          "http://alternate-host.invalid",
+          "http://alternate-host.invalid",
+          "http://alternate-host.invalid",
+          "http://alternate-host.invalid",
+          "http://alternate-host.invalid",
+          "http://alternate-host.invalid:80"
+        ]
+      }
+    ]
+  host-failover.py: |
+    #!/usr/bin/env python3
+    """Point an XC account's default profile at a working server host."""
+    import json
+    import os
+    import sys
+    import urllib.parse
+    import urllib.request
+
+    API = os.environ.get("DISPATCHARR_URL", "http://dispatcharr.media.svc.cluster.local:9191").rstrip("/")
+    KEY = os.environ["DISPATCHARR_API_KEY"]
+    UA = "TiviMate/4.7.0"
+    HOST_PATTERN = "^https?://[^/]+"
+    IDENTITY = ("^(.*)$", "$1")
+
+
+    def api(method, path, body=None):
+        data = json.dumps(body).encode() if body is not None else None
+        req = urllib.request.Request(f"{API}{path}", data=data, method=method,
+                                     headers={"X-API-Key": KEY, "Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            return json.load(resp)
+
+
+    def healthy(host, user, password):
+        q = urllib.parse.urlencode({"username": user, "password": password})
+        reason = "auth != 1"
+        for _ in range(2):
+            try:
+                req = urllib.request.Request(f"{host}/player_api.php?{q}", headers={"User-Agent": UA})
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    if str(json.load(resp).get("user_info", {}).get("auth")) == "1":
+                        return True
+            except Exception as exc:  # noqa: BLE001 - any failure means unhealthy
+                reason = f"{type(exc).__name__}: {exc}"[:80]
+        print(f"  {host}: unhealthy ({reason})")
+        return False
+
+
+    def run(entry):
+        name = entry["name"]
+        acct = api("GET", f"/api/m3u/accounts/{entry['account_id']}/")
+        prof = api("GET", f"/api/m3u/accounts/{entry['account_id']}/profiles/{entry['profile_id']}/")
+        primary = acct["server_url"].rstrip("/")
+        user, password = acct["username"], acct["password"]
+        pattern = (prof.get("search_pattern") or "", prof.get("replace_pattern") or "")
+
+        if pattern == IDENTITY:
+            active = primary
+        elif pattern[0] == HOST_PATTERN:
+            active = pattern[1].rstrip("/")
+        else:
+            print(f"{name}: profile has a custom pattern {pattern!r}; not touching it")
+            return True
+
+        def point(host):
+            new = IDENTITY if host == primary else (HOST_PATTERN, host)
+            api("PATCH", f"/api/m3u/accounts/{entry['account_id']}/profiles/{entry['profile_id']}/",
+                {"search_pattern": new[0], "replace_pattern": new[1]})
+            print(f"{name}: SWITCHED {active} -> {host}")
+
+        if healthy(primary, user, password):
+            if active != primary:
+                point(primary)
+            else:
+                print(f"{name}: primary {primary} healthy")
+            return True
+        if active != primary and healthy(active, user, password):
+            print(f"{name}: primary down, staying on {active}")
+            return True
+        for host in entry["alternates"]:
+            host = host.rstrip("/")
+            if host != active and healthy(host, user, password):
+                point(host)
+                return True
+        print(f"{name}: NO HEALTHY HOST (primary and all {len(entry['alternates'])} alternates failed)")
+        return False
+
+
+    if __name__ == "__main__":
+        entries = json.load(open(os.environ.get("ACCOUNTS_FILE", "/scripts/accounts.json")))
+        ok = all([run(e) for e in entries])
+        sys.exit(0 if ok else 1)
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: dispatcharr-host-failover
+  namespace: media
+spec:
+  schedule: "*/5 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 3600
+      backoffLimit: 0
+      template:
+        spec:
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: failover
+              # Stdlib only, same as the name normalizer.
+              image: docker.io/library/python:3.13-alpine
+              command: ["python3", "/scripts/host-failover.py"]
+              envFrom:
+                - secretRef:
+                    name: dispatcharr-api-secret
+              volumeMounts:
+                - name: scripts
+                  mountPath: /scripts
+                  readOnly: true
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities: { drop: ["ALL"] }
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  memory: 128Mi
+          volumes:
+            - name: scripts
+              configMap:
+                name: dispatcharr-host-failover
