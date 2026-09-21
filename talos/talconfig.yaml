@@ -242,6 +242,17 @@ worker:
   disableSearchDomain: true
   schematic:
     customization:
+      # The workers are exactly the three iGPU nodes. Proxmox's Standard VGA
+      # has no driver in the Talos kernel, so without this i915 registers the
+      # only framebuffer and fbcon moves the console (and the Talos dashboard)
+      # onto the iGPU's unconnected DisplayPort outputs. Disabling the display
+      # engine leaves the render/media engines, which is all VAAPI and QSV use.
+      # It also drops the "Failed to disable SAGV" WARN trace at boot.
+      #
+      # The VMs use Standard VGA rather than VirtIO-GPU because virtio-gpu
+      # claims renderD128, and nodecast-tv hardcodes that path.
+      extraKernelArgs:
+        - i915.disable_display=1
       systemExtensions:
         officialExtensions:
           - siderolabs/intel-ucode
