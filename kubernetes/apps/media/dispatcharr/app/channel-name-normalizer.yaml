@@ -134,7 +134,7 @@ spec:
             - name: normalize
               # Stdlib only (urllib/json/re), so the plain upstream image is
               # enough — no pip install step and nothing to vendor.
-              image: docker.io/library/python:3.13-alpine
+              image: docker.io/library/python:3.14-alpine
               command: ["python3", "/scripts/normalize-names.py"]
               envFrom:
                 - secretRef:
