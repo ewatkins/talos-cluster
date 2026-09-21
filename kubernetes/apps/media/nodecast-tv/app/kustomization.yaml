@@ -6,6 +6,7 @@ resources:
   - ./externalsecret.yaml
   - ./pvc.yaml
   - ./resourceclaimtemplate.yaml
+  - ./epg-batch-fix.yaml
   - ./helmrelease.yaml
   - ./httproute.yaml
   - ./backendtrafficpolicy.yaml

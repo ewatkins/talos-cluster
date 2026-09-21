@@ -1,0 +1,68 @@
+---
+# Preload patch for nodecast-tv's XMLTV parser, which drops whole batches of
+# programmes (and so whole channels) from the guide. The why is in the script
+# header; loaded via NODE_OPTIONS in ./helmrelease.yaml.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nodecast-tv-patches
+  namespace: media
+data:
+  epg-batch-fix.js: |
+    // Preloaded with NODE_OPTIONS=--require. Fixes nodecast-tv's streaming XMLTV
+    // parser dropping whole batches of programmes.
+    //
+    // parseStreaming() hands batches to its consumer through a single slot,
+    // `pendingBatch`. When one network chunk holds more than one batch (1000
+    // programmes) while the consumer is busy, each new batch overwrites the last
+    // and the overwritten ones are silently lost. Dispatcharr's feed is grouped
+    // by channel, so entire channels vanish from the guide: 59 of 125 survived.
+    //
+    // Upstream fixed this with a queue (bfc8073) and then reverted it over a
+    // Node 24 problem with its pause()/resume() backpressure; no release carries
+    // it. This applies the queue part only, by rewriting the module's source
+    // before its first require. It checks for the exact buggy code and applies
+    // every edit or none, so a changed upstream file is left untouched.
+    'use strict';
+    const fs = require('fs');
+    const path = require('path');
+    const Module = require('module');
+
+    const file = '/app/server/services/epgParser.js';
+    const tag = '[epg-batch-fix]';
+
+    const edits = [
+      ['    let pendingBatch = null;\n', '    const pendingBatches = [];\n'],
+      ['pendingBatch = batch;', 'pendingBatches.push(batch);'],
+      [
+        '    while (!ended || pendingBatch) {\n' +
+        '        if (pendingBatch) {\n' +
+        '            const batch = pendingBatch;\n' +
+        '            pendingBatch = null;\n',
+        '    while (!ended || pendingBatches.length > 0) {\n' +
+        '        if (pendingBatches.length > 0) {\n' +
+        '            const batch = pendingBatches.shift();\n',
+      ],
+    ];
+    // How many times each edit must match in the unpatched v2.1.1 source.
+    const expected = [1, 2, 1];
+
+    try {
+      let src = fs.readFileSync(file, 'utf8');
+      const counts = edits.map(([from]) => src.split(from).length - 1);
+      if (counts.some((n, i) => n !== expected[i])) {
+        console.log(`${tag} parser does not match the known-buggy source (${counts}); not patching`);
+      } else {
+        for (const [from, to] of edits) src = src.split(from).join(to);
+        if (/\bpendingBatch\b/.test(src)) throw new Error('stray pendingBatch reference after edit');
+        const mod = new Module(file, null);
+        mod.filename = file;
+        mod.paths = Module._nodeModulePaths(path.dirname(file));
+        mod._compile(src, file);
+        mod.loaded = true;
+        require.cache[file] = mod;
+        console.log(`${tag} patched ${file}: batches now queue instead of overwriting`);
+      }
+    } catch (err) {
+      console.log(`${tag} failed, running unpatched: ${err.message}`);
+    }
