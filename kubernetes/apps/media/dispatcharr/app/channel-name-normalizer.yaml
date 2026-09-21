@@ -47,11 +47,17 @@ data:
 
     Rewrites "PREFIX  | 07 - trailing detail" as "PREFIX 07 · trailing detail",
     collapsing the padding the provider ships and zero-padding the slot number.
-    Names that do not match are left untouched, as are separator entries the
-    provider injects as pseudo-channels.
+    Separator entries the provider injects as pseudo-channels are skipped, as
+    are names matching neither shape.
 
-    Idempotent: only PATCHes names that actually differ, so a run against
-    already-tidy names is a no-op.
+    Clock times in the trailing detail are shifted from the provider's Eastern
+    listings to local Central and tagged "CT". That tag doubles as the guard
+    that keeps this idempotent - an already-tagged time is left alone, so a
+    re-run cannot walk the clock back an hour at a time.
+
+    Already-tidy names are re-examined too, so a change to the time handling
+    reaches channels a previous run normalised. Anything renamed by hand past
+    the "PREFIX NN · detail" shape is left untouched.
     """
     import json, os, re, sys, urllib.request
 
@@ -60,8 +66,23 @@ data:
     KEY   = os.environ.get("DISPATCHARR_API_KEY") or sys.exit("DISPATCHARR_API_KEY not set")
     GROUP = int(os.environ.get("CHANNEL_GROUP_ID", "1859"))
 
-    PATTERN = re.compile(
+    RAW = re.compile(
         r'^(?P<prefix>.+?)\s*\|\s*(?P<slot>\d{1,2}|4[kK])\s*-\s*(?P<rest>.*)$')
+    TIDY = re.compile(
+        r'^(?P<prefix>.+?)\s+(?P<slot>\d{2}|4K)(?:\s*·\s*(?P<rest>.*))?$')
+    TIME = re.compile(r'\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b', re.I)
+
+    def shift(rest):
+        """Eastern -> Central. An already-tagged time is returned unchanged."""
+        if not rest or re.search(r'\bCT\b', rest):
+            return rest
+        def sub(m):
+            h, mnt, ap = int(m.group(1)), m.group(2), m.group(3).lower()
+            h24 = ((h % 12) + (12 if ap == "pm" else 0) - 1) % 24
+            ap2 = "am" if h24 < 12 else "pm"
+            h12 = h24 % 12 or 12
+            return f"{h12}:{mnt}{ap2} CT" if mnt else f"{h12}{ap2} CT"
+        return TIME.sub(sub, rest)
 
     def api(path, method="GET", payload=None):
         data = json.dumps(payload).encode() if payload is not None else None
@@ -76,14 +97,19 @@ data:
         n = " ".join(name.split())
         if n.startswith("#"):          # separator entry, not a real channel
             return None
-        m = PATTERN.match(n)
-        if not m:
-            return None                # unrecognised: leave alone
-        slot = m.group("slot")
-        slot = "4K" if slot.lower() == "4k" else f"{int(slot):02d}"
-        rest = m.group("rest").strip()
-        out = f"{m.group('prefix')} {slot}"
-        return f"{out} · {rest}" if rest else out
+        m = RAW.match(n)
+        if m:
+            slot = m.group("slot")
+            slot = "4K" if slot.lower() == "4k" else f"{int(slot):02d}"
+            rest = shift(m.group("rest").strip())
+            out = f"{m.group('prefix')} {slot}"
+            return f"{out} · {rest}" if rest else out
+        m = TIDY.match(n)
+        if m:                          # already tidy: re-check the time only
+            rest = shift((m.group("rest") or "").strip())
+            out = f"{m.group('prefix')} {m.group('slot')}"
+            return f"{out} · {rest}" if rest else out
+        return None                    # unrecognised: leave alone
 
     def main():
         chans = api("/api/channels/channels/?page_size=500")
