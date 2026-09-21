@@ -10,3 +10,4 @@ resources:
   - ./backendtrafficpolicy.yaml
   - ./channel-name-normalizer.yaml
   - ./epg-tz-fixer.yaml
+  - ./iptv-host-failover.yaml
