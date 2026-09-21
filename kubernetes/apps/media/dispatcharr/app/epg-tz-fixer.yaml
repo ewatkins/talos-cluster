@@ -1,0 +1,114 @@
+---
+# the primary provider's XMLTV is generated in Central European local time but stamps every
+# programme "+0000", so Dispatcharr (which honours the offset correctly) files
+# each listing an hour or two late — two under CEST, one under CET. Confirmed
+# 2026-09-21 against live frames: ESPN showed The Pat McAfee Show at 16:02 UTC
+# while the feed listed it at "18:00 +0000".
+#
+# This sidecar sits between Dispatcharr and the provider. The the primary provider EPG
+# source's URL (in Dispatcharr's database, not Git) is set to
+#
+#   http://127.0.0.1:9290/?url=<url-encoded provider xmltv.php URL>
+#
+# and every "+0000" timestamp is reinterpreted as Europe/Berlin wall-clock
+# time and rewritten as true UTC. The credentials stay in that URL, in
+# Dispatcharr's database, rather than moving into a Secret. It binds loopback
+# only, so it is reachable from Dispatcharr's own containers and nothing else.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dispatcharr-epg-tz-fixer
+  namespace: media
+data:
+  epg-tz-fixer.py: |
+    #!/usr/bin/env python3
+    """Serve an XMLTV feed with CET/CEST wall-clock times relabelled as UTC.
+
+    GET /?url=<upstream>  fetch upstream, fix "+0000" timestamps, return XML
+    GET /healthz          liveness
+
+    Only timestamps carrying "+0000" are touched; anything with a real offset
+    passes through. If the provider ever starts emitting genuine UTC, this
+    would shift it by an hour or two — the tell is listings suddenly running
+    early, and the fix is pointing the source back at the provider directly.
+
+    The EU daylight-saving rule is applied by hand (last Sunday of March,
+    02:00 CET -> 03:00 CEST; last Sunday of October, 03:00 CEST -> 02:00 CET)
+    so the image needs no tz database. The repeated hour in October resolves
+    to CEST, its first occurrence.
+    """
+    import calendar
+    import gzip
+    import re
+    import sys
+    import urllib.parse
+    import urllib.request
+    from datetime import datetime, timedelta
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    LISTEN = ("127.0.0.1", 9290)
+    TIMEOUT = 300
+    STAMP = re.compile(rb'(start|stop)="(\d{14}) \+0000"')
+
+    def last_sunday(year, month):
+        day = calendar.monthrange(year, month)[1]
+        while calendar.weekday(year, month, day) != calendar.SUNDAY:
+            day -= 1
+        return day
+
+    _dst = {}
+
+    def cest_window(year):
+        if year not in _dst:
+            _dst[year] = (
+                datetime(year, 3, last_sunday(year, 3), 2),
+                datetime(year, 10, last_sunday(year, 10), 3),
+            )
+        return _dst[year]
+
+    def to_utc(local):
+        begin, end = cest_window(local.year)
+        return local - timedelta(hours=2 if begin <= local < end else 1)
+
+    def fix(match):
+        local = datetime.strptime(match.group(2).decode(), "%Y%m%d%H%M%S")
+        utc = to_utc(local).strftime("%Y%m%d%H%M%S").encode()
+        return match.group(1) + b'="' + utc + b' +0000"'
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            parsed = urllib.parse.urlsplit(self.path)
+            if parsed.path == "/healthz":
+                return self.reply(200, b"ok", "text/plain")
+            upstream = urllib.parse.parse_qs(parsed.query).get("url", [""])[0]
+            if not upstream.startswith(("http://", "https://")):
+                return self.reply(400, b"missing or invalid ?url=", "text/plain")
+            try:
+                req = urllib.request.Request(upstream, headers={"User-Agent": "Dispatcharr"})
+                with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
+                    body = resp.read()
+                if body[:2] == b"\x1f\x8b":
+                    body = gzip.decompress(body)
+            except Exception as exc:  # surface as 502 so Dispatcharr records a failed refresh
+                self.log_message("upstream fetch failed: %s", exc)
+                return self.reply(502, f"upstream fetch failed: {exc}".encode(), "text/plain")
+            fixed, count = STAMP.subn(fix, body)
+            self.log_message("rewrote %d timestamps (%d bytes)", count, len(fixed))
+            self.reply(200, fixed, "application/xml")
+
+        def reply(self, code, body, ctype):
+            self.send_response(code)
+            self.send_header("Content-Type", ctype)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, fmt, *args):
+            # Never log the request line: the query string carries credentials.
+            sys.stderr.write("epg-tz-fixer: " + (fmt % args) + "\n")
+
+        def log_request(self, code="-", size="-"):
+            pass
+
+    if __name__ == "__main__":
+        ThreadingHTTPServer(LISTEN, Handler).serve_forever()

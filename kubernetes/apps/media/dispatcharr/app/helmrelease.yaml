@@ -227,6 +227,44 @@ spec:
                 memory: 128Mi
               limits:
                 memory: 512Mi
+          # Relabels the primary provider's CET/CEST guide times as UTC before Dispatcharr
+          # parses them — see ./epg-tz-fixer.yaml. Loopback-only on 9290, so
+          # it needs no Service and only this pod's containers can reach it.
+          epg-tz-fixer:
+            image:
+              repository: docker.io/library/python
+              tag: 3.13-alpine
+            command: ["python3", "/scripts/epg-tz-fixer.py"]
+            env:
+              PYTHONUNBUFFERED: "1"
+            probes:
+              liveness: &fixerProbes
+                enabled: true
+                custom: true
+                spec:
+                  # exec, not httpGet: kubelet sends httpGet from the node, and
+                  # this server listens on the pod's loopback only.
+                  exec:
+                    command: ["wget", "-q", "-O", "/dev/null", "http://127.0.0.1:9290/healthz"]
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              readiness: *fixerProbes
+            securityContext:
+              runAsUser: 65534
+              runAsGroup: 65534
+              runAsNonRoot: true
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            # The whole feed (~70 MB) is held in memory while it is rewritten,
+            # roughly twice over during the substitution.
+            resources:
+              requests:
+                cpu: 5m
+                memory: 32Mi
+              limits:
+                memory: 512Mi
         pod:
           securityContext:
             fsGroup: 100
@@ -317,3 +355,11 @@ spec:
           dispatcharr:
             game-thumbs:
               - path: /app/.cache
+      epg-tz-fixer:
+        type: configMap
+        name: dispatcharr-epg-tz-fixer
+        advancedMounts:
+          dispatcharr:
+            epg-tz-fixer:
+              - path: /scripts
+                readOnly: true
