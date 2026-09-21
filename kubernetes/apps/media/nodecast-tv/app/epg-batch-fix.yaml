@@ -1,6 +1,5 @@
 ---
-# Preload patch for nodecast-tv's XMLTV parser, which drops whole batches of
-# programmes (and so whole channels) from the guide. The why is in the script
+# Preload patches for nodecast-tv's guide importer. The why is in the script
 # header; loaded via NODE_OPTIONS in ./helmrelease.yaml.
 apiVersion: v1
 kind: ConfigMap
@@ -12,31 +11,59 @@ metadata:
     kustomize.toolkit.fluxcd.io/substitute: disabled
 data:
   epg-batch-fix.js: |
-    // Preloaded with NODE_OPTIONS=--require. Fixes nodecast-tv's streaming XMLTV
-    // parser dropping whole batches of programmes.
+    // Preloaded with NODE_OPTIONS=--require. Rewrites two nodecast-tv modules'
+    // source before their first require; each patch checks for the exact
+    // v2.1.1 code and applies all of its edits or none, so a changed upstream
+    // file is left untouched and the reason is logged.
     //
-    // parseStreaming() hands batches to its consumer through a single slot,
-    // `pendingBatch`. When one network chunk holds more than one batch (1000
-    // programmes) while the consumer is busy, each new batch overwrites the last
-    // and the overwritten ones are silently lost. Dispatcharr's feed is grouped
-    // by channel, so entire channels vanish from the guide: 59 of 125 survived.
+    // 1. epgParser.js — parseStreaming() hands batches to its consumer through
+    //    a single slot, `pendingBatch`. When one network chunk holds more than
+    //    one batch (1000 programmes) while the consumer is busy, each new batch
+    //    overwrites the last and is silently lost. Dispatcharr's feed is grouped
+    //    by channel, so entire channels vanished from the guide (59 of 125
+    //    survived). Upstream queued the batches (bfc8073) and reverted it over a
+    //    Node 24 pause()/resume() problem; this applies the queue part only.
     //
-    // Upstream fixed this with a queue (bfc8073) and then reverted it over a
-    // Node 24 problem with its pause()/resume() backpressure; no release carries
-    // it. This applies the queue part only, by rewriting the module's source
-    // before its first require. It checks for the exact buggy code and applies
-    // every edit or none, so a changed upstream file is left untouched.
+    // 2. syncService.js — the EPG sync upserts `epg_channel` rows but never
+    //    deletes ones that left the feed. The guide matches a channel to its
+    //    EPG entry by id *or* name, so when Dispatcharr's ids change (channel
+    //    renumbering) a stale same-named row wins and the channel shows
+    //    "No data". This prunes rows the feed no longer lists, right after the
+    //    upsert — unless the feed is under half the stored count, which smells
+    //    like a failed parse rather than a real change.
     'use strict';
     const fs = require('fs');
     const path = require('path');
     const Module = require('module');
 
-    const file = '/app/server/services/epgParser.js';
     const tag = '[epg-batch-fix]';
 
-    const edits = [
-      ['    let pendingBatch = null;\n', '    const pendingBatches = [];\n'],
-      ['pendingBatch = batch;', 'pendingBatches.push(batch);'],
+    function patch(file, edits, check) {
+      try {
+        let src = fs.readFileSync(file, 'utf8');
+        const counts = edits.map(([from]) => src.split(from).length - 1);
+        if (counts.some((n, i) => n !== edits[i][2])) {
+          console.log(`${tag} ${path.basename(file)} does not match the known source (${counts}); not patching`);
+          return;
+        }
+        for (const [from, to] of edits) src = src.split(from).join(to);
+        if (check && !check(src)) throw new Error('post-edit check failed');
+        const mod = new Module(file, null);
+        mod.filename = file;
+        mod.paths = Module._nodeModulePaths(path.dirname(file));
+        mod._compile(src, file);
+        mod.loaded = true;
+        require.cache[file] = mod;
+        console.log(`${tag} patched ${path.basename(file)}`);
+      } catch (err) {
+        console.log(`${tag} ${path.basename(file)} failed, running unpatched: ${err.message}`);
+      }
+    }
+
+    // [from, to, expected occurrences in unpatched v2.1.1]
+    patch('/app/server/services/epgParser.js', [
+      ['    let pendingBatch = null;\n', '    const pendingBatches = [];\n', 1],
+      ['pendingBatch = batch;', 'pendingBatches.push(batch);', 2],
       [
         '    while (!ended || pendingBatch) {\n' +
         '        if (pendingBatch) {\n' +
@@ -45,27 +72,27 @@ data:
         '    while (!ended || pendingBatches.length > 0) {\n' +
         '        if (pendingBatches.length > 0) {\n' +
         '            const batch = pendingBatches.shift();\n',
+        1,
       ],
-    ];
-    // How many times each edit must match in the unpatched v2.1.1 source.
-    const expected = [1, 2, 1];
+    ], (src) => !/\bpendingBatch\b/.test(src));
 
-    try {
-      let src = fs.readFileSync(file, 'utf8');
-      const counts = edits.map(([from]) => src.split(from).length - 1);
-      if (counts.some((n, i) => n !== expected[i])) {
-        console.log(`${tag} parser does not match the known-buggy source (${counts}); not patching`);
-      } else {
-        for (const [from, to] of edits) src = src.split(from).join(to);
-        if (/\bpendingBatch\b/.test(src)) throw new Error('stray pendingBatch reference after edit');
-        const mod = new Module(file, null);
-        mod.filename = file;
-        mod.paths = Module._nodeModulePaths(path.dirname(file));
-        mod._compile(src, file);
-        mod.loaded = true;
-        require.cache[file] = mod;
-        console.log(`${tag} patched ${file}: batches now queue instead of overwriting`);
-      }
-    } catch (err) {
-      console.log(`${tag} failed, running unpatched: ${err.message}`);
-    }
+    // Must load after the parser patch: syncService requires epgParser.
+    patch('/app/server/services/syncService.js', [
+      [
+        '            insertChannels(allChannels);\n',
+        '            insertChannels(allChannels);\n' +
+        '            {\n' +
+        '                const keep = new Set(allChannels.map((c) => String(c.id)));\n' +
+        '                const stored = db.prepare("SELECT item_id FROM playlist_items WHERE source_id = ? AND type = \'epg_channel\'").all(sourceId);\n' +
+        '                const stale = stored.filter((r) => !keep.has(String(r.item_id)));\n' +
+        '                if (stale.length && keep.size >= stored.length / 2) {\n' +
+        '                    const del = db.prepare("DELETE FROM playlist_items WHERE source_id = ? AND type = \'epg_channel\' AND item_id = ?");\n' +
+        '                    db.transaction((rows) => { for (const r of rows) del.run(sourceId, r.item_id); })(stale);\n' +
+        '                    console.log(`[epg-batch-fix] pruned ${stale.length} stale EPG channels`);\n' +
+        '                } else if (stale.length) {\n' +
+        '                    console.log(`[epg-batch-fix] feed has ${keep.size} channels vs ${stored.length} stored; not pruning`);\n' +
+        '                }\n' +
+        '            }\n',
+        1,
+      ],
+    ]);
