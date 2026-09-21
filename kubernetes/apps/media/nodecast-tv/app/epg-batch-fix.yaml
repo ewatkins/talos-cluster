@@ -31,6 +31,12 @@ data:
     //    "No data". This prunes rows the feed no longer lists, right after the
     //    upsert — unless the feed is under half the stored count, which smells
     //    like a failed parse rather than a real change.
+    //
+    // 3. m3uXtreamAdapter.js — live channels come back `ORDER BY name`, so each
+    //    category lists alphabetically and channel numbers are ignored. The
+    //    stream id is Dispatcharr's tvg-id, which is the channel number
+    //    (including subchannels like 12.2), so sort numerically on it instead,
+    //    with the name as a tiebreak for anything non-numeric.
     'use strict';
     const fs = require('fs');
     const path = require('path');
@@ -95,4 +101,8 @@ data:
         '            }\n',
         1,
       ],
+    ]);
+
+    patch('/app/server/services/m3uXtreamAdapter.js', [
+      ['        query += ` ORDER BY name ASC`;\n', '        query += ` ORDER BY CAST(item_id AS REAL), name ASC`;\n', 1],
     ]);
