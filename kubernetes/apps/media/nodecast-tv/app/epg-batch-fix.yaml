@@ -7,6 +7,9 @@ kind: ConfigMap
 metadata:
   name: nodecast-tv-patches
   namespace: media
+  annotations:
+    # The script's JS template literals (`${tag}`) are not Flux variables.
+    kustomize.toolkit.fluxcd.io/substitute: disabled
 data:
   epg-batch-fix.js: |
     // Preloaded with NODE_OPTIONS=--require. Fixes nodecast-tv's streaming XMLTV
