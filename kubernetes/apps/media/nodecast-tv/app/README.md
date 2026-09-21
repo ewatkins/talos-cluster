@@ -134,12 +134,12 @@ rewrites the parser's source before first use. It only acts on the exact buggy c
 either `[epg-batch-fix] patched …` or `… not patching` at startup — after a version bump,
 check that line, and drop the patch once upstream ships a fix.
 
-Leftover guide channels from an earlier ID scheme once caused *No data* too: the importer
-adds and updates `epg_channel` rows but never deletes them, and the guide matches a channel
-by id **or** name, so a stale same-named row could win. They were deleted by hand on
-2026-09-21 (backup `content.db.bak-20260921`); if it recurs after Dispatcharr's channel IDs
-change, delete `playlist_items` rows with `type='epg_channel'` whose `item_id` is no longer in
-`/output/epg`.
+The importer also never deleted `epg_channel` rows that left the feed, and the guide matches a
+channel to its EPG entry by id **or** name, so a stale same-named row could win and show *No data*
+— which happens whenever Dispatcharr's channel numbers change (they are the tvg-ids). The same
+preload now prunes rows the feed no longer lists after every sync (logged as
+`[epg-batch-fix] pruned N stale EPG channels`), skipping it if the feed is under half the stored
+count.
 
 **Two databases.** `content.db` (SQLite, the channel/VOD catalogue) and `db.json` (users,
 settings, favourites) both live in `/app/data`.
