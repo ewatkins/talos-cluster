@@ -1,11 +1,11 @@
 ---
-# the primary provider's XMLTV is generated in Central European local time but stamps every
+# The primary provider's XMLTV is generated in Central European local time but stamps every
 # programme "+0000", so Dispatcharr (which honours the offset correctly) files
 # each listing an hour or two late — two under CEST, one under CET. Confirmed
 # 2026-09-21 against live frames: ESPN showed The Pat McAfee Show at 16:02 UTC
 # while the feed listed it at "18:00 +0000".
 #
-# This sidecar sits between Dispatcharr and the provider. The the primary provider EPG
+# This sidecar sits between Dispatcharr and the provider. That provider's EPG
 # source's URL (in Dispatcharr's database, not Git) is set to
 #
 #   http://127.0.0.1:9290/?url=<url-encoded provider xmltv.php URL>

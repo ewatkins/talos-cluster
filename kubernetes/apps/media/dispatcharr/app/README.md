@@ -34,15 +34,15 @@ with its HTTP proxy enabled (`HTTPPROXY: "on"`, port 8888) with only the affecte
 account pointed at it through an ffmpeg stream profile (`-http_proxy http://…:8888`), rather
 than putting this whole pod back behind a tunnel.
 
-## the primary provider guide times are relabelled
+## Primary provider guide times are relabelled
 
-the primary provider's XMLTV is generated in **Central European local time but stamped `+0000`**, so
+The primary IPTV provider's XMLTV is generated in **Central European local time but stamped `+0000`**, so
 every listing from it landed two hours late under CEST (one under CET). Dispatcharr parses
 offsets correctly and has no per-source time shift, so the fix sits in front of it: the
 `epg-tz-fixer` sidecar ([`epg-tz-fixer.yaml`](epg-tz-fixer.yaml)) fetches the feed,
 reinterprets each `+0000` stamp as `Europe/Berlin` wall-clock time, and serves true UTC.
 
-The the primary provider EPG source's URL — in Dispatcharr's database, not Git — is therefore:
+That provider's EPG source URL — in Dispatcharr's database, not Git — is therefore:
 
 ```
 http://127.0.0.1:9290/?url=<url-encoded provider xmltv.php URL>
@@ -58,7 +58,7 @@ the source back at the provider URL directly and drop the sidecar.
 
 ## Channel shutdown delay: 2 s, and the account allows ONE connection
 
-**the primary provider enforces `max_connections: 1`** (see `player_api.php` → `user_info`), so only one
+**The primary provider enforces `max_connections: 1`** (see `player_api.php` → `user_info`), so only one
 channel can play at a time across everything that uses Dispatcharr. The M3U account and its
 default profile are set to `max_streams: 1` to match (database, not Git). While they said
 "unlimited", Dispatcharr opened second connections that the provider answered with HTTP 500
@@ -80,27 +80,29 @@ Relatedly, `Redis command failed during ownership acquisition` in the logs is no
 fault: redis-py returns `None` from `SET NX` when the key already exists, which Dispatcharr
 reports as a failure. It shows up in exactly this reconnect race.
 
-## the secondary provider fails over between server hosts
+## Provider server-host failover
 
-the secondary provider publishes several interchangeable hostnames for one account (same login, same
-stream IDs); all eight alternates were verified to log in and play on 2026-09-21.
-Dispatcharr keeps a single `server_url` per account, and its failover only moves between
-*different streams*, so a dead host takes every the secondary provider backup down together.
+Some providers serve one account from several interchangeable hostnames (same login, same
+stream IDs). Dispatcharr keeps a single `server_url` per account, and its failover only moves
+between *different streams*, so a dead host takes every stream from that account down
+together.
 
-[`iptv-host-failover.yaml`](iptv-host-failover.yaml) is a CronJob (every 5 min) that
-checks the primary with a `player_api.php` login and, if it fails, points the account's
+[`iptv-host-failover.yaml`](iptv-host-failover.yaml) is a CronJob (every 5 min) that checks
+each account's primary with a `player_api.php` login and, if it fails, points the account's
 **default profile** at the first healthy alternate (`^https?://[^/]+` → that host). It
-returns to the primary as soon as that answers again, and leaves a profile with any other
-custom pattern alone. Look for `SWITCHED` in the job logs.
+returns to the primary as soon as that answers again, and leaves a default profile with any
+other custom pattern alone. Look for `SWITCHED` in the job logs.
+
+**The alternate hosts are kept in Dispatcharr, not in Git.** On the account, add *disabled*
+profiles named `Failover 1`, `Failover 2`, … with search `^https?://[^/]+` and replace set to
+the alternate host. Disabled profiles are never used for streaming, and any account with at
+least one of them is managed automatically.
 
 It rewrites at play time rather than editing `server_url` on purpose: streams are hashed on
 their URL (`m3u_hash_key: url`), so changing the host would make the next M3U refresh treat
 every stream as new and silently drop the backups attached to channels. While the primary
 is down the account's own M3U/EPG refresh (which uses `server_url`) will fail; existing
 streams keep playing through the alternate.
-
-To add another provider, append an entry (account id, default profile id, alternates) to
-`accounts.json` in the ConfigMap.
 
 ## Co-located tools
 

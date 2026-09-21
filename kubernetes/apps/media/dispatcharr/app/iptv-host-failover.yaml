@@ -1,8 +1,8 @@
 ---
-# the secondary provider publishes several interchangeable server hostnames for the same
-# account (same login, same stream IDs). Dispatcharr stores one server_url per
-# account and its failover only moves between *different streams*, so if the
-# account's host dies every the secondary provider stream fails at once.
+# Some IPTV providers serve one account from several interchangeable server
+# hostnames (same login, same stream IDs). Dispatcharr stores one server_url
+# per account and its failover only moves between *different streams*, so if
+# the account's host dies every stream from that account fails at once.
 #
 # Editing server_url is not an option: stream identity is hashed on the URL
 # (stream_settings.m3u_hash_key = "url"), so a host change makes the next
@@ -11,11 +11,17 @@
 # account's default profile (search ^https?://[^/]+ → active host), leaving the
 # stored URLs untouched.
 #
+# The alternate hosts live in Dispatcharr, not here: add *disabled* profiles
+# named "Failover 1", "Failover 2", … to an XC account, each with search
+# ^https?://[^/]+ and replace set to one alternate host (e.g. http://host:80).
+# Disabled profiles are never used for streaming. Any account with at least one
+# such profile is managed; order follows the number in the name.
+#
 # Every run: if the primary (server_url) answers player_api with auth=1, use it
 # (identity pattern). Otherwise keep the current alternate if it is healthy, or
-# move to the first healthy alternate in order. A profile carrying any other
-# custom pattern is left alone. The check is a login, not a stream — it spends
-# none of the account's single connection.
+# move to the first healthy alternate in order. A default profile carrying any
+# other custom pattern is left alone. The check is a login, not a stream — it
+# spends none of the account's connections.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -25,29 +31,12 @@ metadata:
     # "$1" in the script is a regex backreference, not a Flux variable.
     kustomize.toolkit.fluxcd.io/substitute: disabled
 data:
-  accounts.json: |
-    [
-      {
-        "name": "the secondary provider",
-        "account_id": 111,
-        "profile_id": 111,
-        "alternates": [
-          "http://alternate-host.invalid",
-          "http://alternate-host.invalid",
-          "http://alternate-host.invalid",
-          "http://alternate-host.invalid",
-          "http://alternate-host.invalid",
-          "http://alternate-host.invalid",
-          "http://alternate-host.invalid",
-          "http://alternate-host.invalid:80"
-        ]
-      }
-    ]
   host-failover.py: |
     #!/usr/bin/env python3
-    """Point an XC account's default profile at a working server host."""
+    """Point each XC account's default profile at a working server host."""
     import json
     import os
+    import re
     import sys
     import urllib.parse
     import urllib.request
@@ -57,6 +46,7 @@ data:
     UA = "TiviMate/4.7.0"
     HOST_PATTERN = "^https?://[^/]+"
     IDENTITY = ("^(.*)$", "$1")
+    FAILOVER = re.compile(r"^failover\s*(\d+)$", re.I)
 
 
     def api(method, path, body=None):
@@ -82,25 +72,39 @@ data:
         return False
 
 
-    def run(entry):
-        name = entry["name"]
-        acct = api("GET", f"/api/m3u/accounts/{entry['account_id']}/")
-        prof = api("GET", f"/api/m3u/accounts/{entry['account_id']}/profiles/{entry['profile_id']}/")
-        primary = acct["server_url"].rstrip("/")
-        user, password = acct["username"], acct["password"]
-        pattern = (prof.get("search_pattern") or "", prof.get("replace_pattern") or "")
+    def run(acct):
+        name, aid = acct["name"], acct["id"]
+        profiles = api("GET", f"/api/m3u/accounts/{aid}/profiles/")
+        profiles = profiles.get("results", profiles) if isinstance(profiles, dict) else profiles
+        default = next((p for p in profiles if p.get("is_default")), None)
+        alternates = sorted(
+            ((int(m.group(1)), (p.get("replace_pattern") or "").rstrip("/"))
+             for p in profiles
+             if (m := FAILOVER.match(p.get("name") or "")) and p.get("search_pattern") == HOST_PATTERN
+             and p.get("replace_pattern")),
+        )
+        alternates = [host for _, host in alternates]
+        if not alternates:
+            return True
+        if default is None:
+            print(f"{name}: no default profile; skipping")
+            return True
 
+        detail = api("GET", f"/api/m3u/accounts/{aid}/")
+        primary = (detail.get("server_url") or "").rstrip("/")
+        user, password = detail.get("username"), detail.get("password")
+        pattern = (default.get("search_pattern") or "", default.get("replace_pattern") or "")
         if pattern == IDENTITY:
             active = primary
         elif pattern[0] == HOST_PATTERN:
             active = pattern[1].rstrip("/")
         else:
-            print(f"{name}: profile has a custom pattern {pattern!r}; not touching it")
+            print(f"{name}: default profile has a custom pattern {pattern!r}; not touching it")
             return True
 
         def point(host):
             new = IDENTITY if host == primary else (HOST_PATTERN, host)
-            api("PATCH", f"/api/m3u/accounts/{entry['account_id']}/profiles/{entry['profile_id']}/",
+            api("PATCH", f"/api/m3u/accounts/{aid}/profiles/{default['id']}/",
                 {"search_pattern": new[0], "replace_pattern": new[1]})
             print(f"{name}: SWITCHED {active} -> {host}")
 
@@ -108,24 +112,24 @@ data:
             if active != primary:
                 point(primary)
             else:
-                print(f"{name}: primary {primary} healthy")
+                print(f"{name}: primary healthy ({len(alternates)} alternates standing by)")
             return True
         if active != primary and healthy(active, user, password):
             print(f"{name}: primary down, staying on {active}")
             return True
-        for host in entry["alternates"]:
-            host = host.rstrip("/")
+        for host in alternates:
             if host != active and healthy(host, user, password):
                 point(host)
                 return True
-        print(f"{name}: NO HEALTHY HOST (primary and all {len(entry['alternates'])} alternates failed)")
+        print(f"{name}: NO HEALTHY HOST (primary and all {len(alternates)} alternates failed)")
         return False
 
 
     if __name__ == "__main__":
-        entries = json.load(open(os.environ.get("ACCOUNTS_FILE", "/scripts/accounts.json")))
-        ok = all([run(e) for e in entries])
-        sys.exit(0 if ok else 1)
+        accounts = api("GET", "/api/m3u/accounts/")
+        accounts = accounts.get("results", accounts) if isinstance(accounts, dict) else accounts
+        results = [run(a) for a in accounts if a.get("account_type") == "XC" and a.get("is_active", True)]
+        sys.exit(0 if all(results) else 1)
 ---
 apiVersion: batch/v1
 kind: CronJob
