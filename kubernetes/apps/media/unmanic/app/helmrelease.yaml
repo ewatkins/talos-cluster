@@ -71,6 +71,18 @@ spec:
                     matchLabels:
                       app.kubernetes.io/name: jellyfin
                   topologyKey: kubernetes.io/hostname
+            # Bottom of the iGPU ranking (no PriorityClass, see
+            # ../../priorityclasses.yaml) and allowed to go without. Never take
+            # tahoe's iGPU: nodecast-tv is pinned there by its local PVC. With
+            # the Jellyfin anti-affinity above, losing erie or ontario leaves
+            # unmanic Pending rather than displacing anything.
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                  - matchExpressions:
+                      - key: kubernetes.io/hostname
+                        operator: NotIn
+                        values: ["tahoe"]
           securityContext:
             runAsUser: 0
             runAsGroup: 0

@@ -8,6 +8,7 @@ components:
 resources:
   # Pre Flux-Kustomizations
   - ./namespace.yaml
+  - ./priorityclasses.yaml
   # Flux-Kustomizations\
   - ./bazarr/ks.yaml
   - ./dispatcharr/ks.yaml

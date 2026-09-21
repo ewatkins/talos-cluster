@@ -5,6 +5,7 @@ kind: Kustomization
 resources:
   - ./externalsecret.yaml
   - ./pvc.yaml
+  - ./resourceclaimtemplate.yaml
   - ./helmrelease.yaml
   - ./httproute.yaml
   - ./backendtrafficpolicy.yaml
