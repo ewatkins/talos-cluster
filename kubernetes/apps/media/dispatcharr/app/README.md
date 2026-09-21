@@ -56,6 +56,21 @@ block is unambiguous (*Get Up* 8–10 am ET, *First Take* 10–12, *The Pat McAf
 If listings ever run **early** instead, the provider has started emitting real UTC: point
 the source back at the provider URL directly and drop the sidecar.
 
+## Channel shutdown delay must not be 0
+
+*Settings → Proxy → Channel Shutdown Delay* is **10 s** (database, not Git). nodecast-tv opens
+every channel twice back to back: an `ffprobe`, then the real transcode session. With the
+delay at 0 the probe's disconnect started a teardown, and the session arriving ~150 ms later
+got `Refusing to initialize channel …; teardown or pending shutdown active` → HTTP 500, so
+channels loaded only on a retry ~15 s later, or not at all. With a delay, the second
+connection logs `Cancelled pending shutdown … (client reconnected)` and plays at once. The
+cost is holding the provider connection 10 s after the last viewer leaves; the primary provider has no
+connection limit.
+
+Relatedly, `Redis command failed during ownership acquisition` in the logs is not a Redis
+fault: redis-py returns `None` from `SET NX` when the key already exists, which Dispatcharr
+reports as a failure. It shows up in exactly this reconnect race.
+
 ## Co-located tools
 
 Containers in different pods cannot share a network namespace, so the only way to put a
