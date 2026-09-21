@@ -34,6 +34,28 @@ with its HTTP proxy enabled (`HTTPPROXY: "on"`, port 8888) with only the affecte
 account pointed at it through an ffmpeg stream profile (`-http_proxy http://…:8888`), rather
 than putting this whole pod back behind a tunnel.
 
+## the primary provider guide times are relabelled
+
+the primary provider's XMLTV is generated in **Central European local time but stamped `+0000`**, so
+every listing from it landed two hours late under CEST (one under CET). Dispatcharr parses
+offsets correctly and has no per-source time shift, so the fix sits in front of it: the
+`epg-tz-fixer` sidecar ([`epg-tz-fixer.yaml`](epg-tz-fixer.yaml)) fetches the feed,
+reinterprets each `+0000` stamp as `Europe/Berlin` wall-clock time, and serves true UTC.
+
+The the primary provider EPG source's URL — in Dispatcharr's database, not Git — is therefore:
+
+```
+http://127.0.0.1:9290/?url=<url-encoded provider xmltv.php URL>
+```
+
+It listens on loopback only, so it has no Service and only this pod's containers (Celery
+does the fetching) can reach it. If the pod is ever split up, that URL stops resolving.
+
+To check it, compare a listing against a frame of what is airing — ESPN's weekday morning
+block is unambiguous (*Get Up* 8–10 am ET, *First Take* 10–12, *The Pat McAfee Show* 12–3).
+If listings ever run **early** instead, the provider has started emitting real UTC: point
+the source back at the provider URL directly and drop the sidecar.
+
 ## Co-located tools
 
 Containers in different pods cannot share a network namespace, so the only way to put a
