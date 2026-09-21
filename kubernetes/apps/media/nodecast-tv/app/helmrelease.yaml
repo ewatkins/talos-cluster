@@ -46,6 +46,9 @@ spec:
               OIDC_ISSUER_URL: https://keycloak.ewatkins.dev/realms/master
               OIDC_CLIENT_ID: nodecast
               OIDC_CALLBACK_URL: https://tv.ewatkins.dev/api/auth/oidc/callback
+              # Fixes the guide importer dropping channels — see
+              # ./epg-batch-fix.yaml. Self-disables if upstream changes the file.
+              NODE_OPTIONS: --require /patches/epg-batch-fix.js
             envFrom:
               - secretRef:
                   name: nodecast-tv-secret
@@ -123,3 +126,9 @@ spec:
         type: emptyDir
         globalMounts:
           - path: /tmp
+      patches:
+        type: configMap
+        name: nodecast-tv-patches
+        globalMounts:
+          - path: /patches
+            readOnly: true

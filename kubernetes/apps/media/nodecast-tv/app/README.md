@@ -124,6 +124,23 @@ page load — after changing them, hard-reload the browser.
 WAL needs a shared-memory mapping that NFS cannot provide. The tradeoff is that the pod is
 pinned to whichever node binds the volume.
 
+**The guide importer is patched.** v2.1.1's streaming XMLTV parser hands batches of 1000
+programmes over through a single slot; when one network chunk yields two batches, the first
+is overwritten and lost. Dispatcharr's feed is grouped by channel, so whole channels showed
+*No data* — 59 of 125 survived. Upstream queued the batches in `bfc8073`, then reverted it
+with the plugin work in `72e14dc`, so no release has the fix.
+[`epg-batch-fix.yaml`](epg-batch-fix.yaml) is preloaded with `NODE_OPTIONS=--require` and
+rewrites the parser's source before first use. It only acts on the exact buggy code and logs
+either `[epg-batch-fix] patched …` or `… not patching` at startup — after a version bump,
+check that line, and drop the patch once upstream ships a fix.
+
+Leftover guide channels from an earlier ID scheme once caused *No data* too: the importer
+adds and updates `epg_channel` rows but never deletes them, and the guide matches a channel
+by id **or** name, so a stale same-named row could win. They were deleted by hand on
+2026-09-21 (backup `content.db.bak-20260921`); if it recurs after Dispatcharr's channel IDs
+change, delete `playlist_items` rows with `type='epg_channel'` whose `item_id` is no longer in
+`/output/epg`.
+
 **Two databases.** `content.db` (SQLite, the channel/VOD catalogue) and `db.json` (users,
 settings, favourites) both live in `/app/data`.
 
