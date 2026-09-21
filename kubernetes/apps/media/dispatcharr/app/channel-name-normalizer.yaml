@@ -136,6 +136,14 @@ metadata:
   name: dispatcharr-name-normalizer
   namespace: media
 spec:
+  # Suspended 2026-09-21: teamarr now owns NFL Sunday Ticket. Its "NFL Sunday
+  # Ticket" event group matches the US| NFL PPV feeds to real games and creates
+  # per-game channels, named "Away at Home", in this same channel group (1859).
+  # Dispatcharr's auto channel sync for the group is off and its channels were
+  # deleted, so there is nothing left for this to tidy — and running it would
+  # rename teamarr's channels. To go back: re-enable auto sync on the group,
+  # drop teamarr's NFL group, and unsuspend.
+  suspend: true
   # Midnight local. The account's own 24h refresh runs earlier in the evening,
   # so the day's rotation has already landed by the time this tidies it.
   schedule: "0 0 * * *"
