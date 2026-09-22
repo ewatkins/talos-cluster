@@ -12,3 +12,9 @@ spec:
   values:
     serviceMonitor:
       create: true
+    # The Flux Status web UI runs as its own release (../web/, `web.serverOnly`)
+    # so a bad sign-in config or a missing client secret can never take the
+    # operator down with it. Off here, so the two releases don't both own the
+    # flux-web-user / flux-web-admin ClusterRoles.
+    web:
+      enabled: false

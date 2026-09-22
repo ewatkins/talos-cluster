@@ -15,3 +15,25 @@ spec:
     namespace: flux-system
   targetNamespace: flux-system
   wait: true
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: flux-web
+  namespace: flux-system
+spec:
+  # Separate from flux-operator so the operator never waits on the secret
+  # store at bootstrap; the web UI simply comes up once its client secret can.
+  dependsOn:
+    - name: flux-operator
+    - name: external-secrets-stores
+  interval: 1h
+  path: ./kubernetes/apps/flux-system/flux-operator/web
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: talos-cluster
+    namespace: flux-system
+  targetNamespace: flux-system
+  wait: false
