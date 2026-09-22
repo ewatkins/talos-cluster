@@ -1,0 +1,57 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/helm.toolkit.fluxcd.io/helmrelease_v2.json
+# Flux Status web UI at https://flux.ewatkins.dev (internal gateway), as a
+# standalone web server (`web.serverOnly`) — same chart as the operator, second
+# release. Sign-in is the UI's own OIDC against Keycloak; users are impersonated
+# into Kubernetes RBAC, so what someone can see and do is decided by the
+# bindings in ./clusterrolebinding.yaml, not by the UI.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: flux-web
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: flux-operator
+  interval: 1h
+  values:
+    # The operator release owns the CRDs.
+    installCRDs: false
+    web:
+      serverOnly: true
+      config:
+        baseURL: https://flux.ewatkins.dev
+        authentication:
+          type: OAuth2
+          sessionDuration: 24h
+          oauth2:
+            provider: OIDC
+            issuerURL: https://keycloak.ewatkins.dev/realms/master
+            # clientID / clientSecret come from ./externalsecret.yaml below.
+            # Scopes are pinned: the UI's defaults include `groups` and
+            # `offline_access`, and Keycloak rejects scopes the client is not
+            # assigned. Group membership arrives through a mapper on the
+            # client's dedicated scope instead.
+            scopes: [openid, profile, email]
+            impersonation:
+              username: claims.email
+              groups: "has(claims.groups) ? claims.groups : []"
+      httpRoute:
+        enabled: true
+        annotations:
+          external-dns.kubernetes.io/target: internal.ewatkins.dev
+        parentRefs:
+          - name: internal
+            namespace: network
+            sectionName: https
+        hostnames:
+          - flux.ewatkins.dev
+  valuesFrom:
+    - kind: Secret
+      name: flux-web-client
+      valuesKey: client_id
+      targetPath: web.config.authentication.oauth2.clientID
+    - kind: Secret
+      name: flux-web-client
+      valuesKey: client_secret
+      targetPath: web.config.authentication.oauth2.clientSecret

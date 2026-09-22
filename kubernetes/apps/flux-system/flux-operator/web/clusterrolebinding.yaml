@@ -1,0 +1,20 @@
+---
+# Members of the Keycloak group `Flux Admins` get full access in the Flux
+# Status UI (view everything, reconcile, suspend/resume). The group reaches the
+# UI as the `groups` claim — see the README for the Keycloak side. Anyone else
+# who can sign in to Keycloak gets no Flux access at all: impersonation leaves
+# them with no RBAC. Bind a group to `flux-web-user` for read-only access.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: flux-web-admins
+subjects:
+  - kind: Group
+    # Must match the Keycloak group name exactly (case and space). With
+    # "Full group path" off on the mapper, the claim carries the bare name.
+    name: Flux Admins
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: flux-web-admin
+  apiGroup: rbac.authorization.k8s.io
