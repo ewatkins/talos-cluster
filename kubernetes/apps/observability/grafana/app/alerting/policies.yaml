@@ -14,13 +14,6 @@ policies:
     group_interval: 10m
     repeat_interval: 12h
     routes:
-      # Migration gate: rules imported from Prometheus carry
-      # grafana_shadow=true while Alertmanager still pages. Remove this
-      # route (and the label) at cutover.
-      - receiver: pushover-low
-        mute_time_intervals: [always]
-        object_matchers:
-          - ["grafana_shadow", "=", "true"]
       - receiver: heartbeat
         object_matchers:
           - ["alertname", "=", "Watchdog"]
