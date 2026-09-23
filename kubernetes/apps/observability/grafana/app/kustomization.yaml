@@ -17,7 +17,6 @@ configMapGenerator:
       - mute-timings.yaml=./alerting/mute-timings.yaml
       - policies.yaml=./alerting/policies.yaml
       - templates.yaml=./alerting/templates.yaml
-      - delete-rules.yaml=./alerting/delete-rules.yaml
 
 generatorOptions:
   disableNameSuffixHash: true
