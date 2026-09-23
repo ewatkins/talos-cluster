@@ -81,29 +81,10 @@ spec:
         enabled: false
       podAnnotations: &podAnnotations
         configmap.reloader.stakater.com/reload: *configMap
+    # Disabled with Alertmanager, its only receiver. Prometheus going down is
+    # caught by Grafana's Watchdog heartbeat going silent at healthchecks.io.
     rule:
-      enabled: true
-      replicas: 2
-      extraArgs: ["--web.prefix-header=X-Forwarded-Prefix"]
-      alertmanagersConfig:
-        value: |-
-          alertmanagers:
-            - api_version: v2
-              static_configs:
-                - dnssrv+_http-web._tcp.alertmanager-operated.observability.svc.cluster.local
-      rules:
-        value: |-
-          groups:
-            - name: PrometheusWatcher
-              rules:
-                - alert: PrometheusDown
-                  annotations:
-                    summary: A Prometheus has disappeared from Prometheus target discovery
-                  expr: absent(up{job="kps-prometheus"})
-                  for: 5m
-                  labels:
-                    severity: critical
-      persistence: *persistence
+      enabled: false
     storeGateway:
       replicas: 1
       extraEnv: *extraEnv

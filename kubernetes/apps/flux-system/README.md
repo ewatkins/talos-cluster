@@ -2,8 +2,6 @@
 
 The `flux-system` namespace contains the Flux CD GitOps engine and its supporting configuration. Flux watches `kubernetes/apps/` and reconciles cluster state from Git every 30 minutes; push events from GitHub trigger immediate reconciliation via a webhook receiver.
 
-A Flux `Alert` in this namespace forwards error-severity events for all GitRepositories, HelmReleases, HelmRepositories, Kustomizations, and OCIRepositories to Alertmanager at `http://alertmanager-operated.observability.svc.cluster.local:9093`. DNS errors and socket timeouts are suppressed via an exclusion list.
-
 ## Apps
 
 | App | Description |

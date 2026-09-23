@@ -1,6 +1,5 @@
 ---
-# Notification policy tree, mirroring the Alertmanager route in
-# kube-prometheus-stack/app/resources/alertmanager.yaml.
+# Notification policy tree, ported from the retired kps Alertmanager route.
 #
 # Grafana has no receiver without integrations, so routes that should
 # drop notifications (Alertmanager's "null" receiver) are muted around

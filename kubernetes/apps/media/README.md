@@ -2,7 +2,7 @@
 
 Home media stack covering a media server, photo management, document management, download automation, indexing, and notification tooling. All apps run in the `media` namespace.
 
-Flux error events for all HelmReleases in this namespace are forwarded to Alertmanager at `alertmanager-operated.observability.svc.cluster.local:9093`. The namespace has VolSync privileged movers enabled and Goldilocks VPA recommendations enabled.
+The namespace has VolSync privileged movers enabled and Goldilocks VPA recommendations enabled.
 
 ## Apps
 

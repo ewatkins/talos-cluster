@@ -2,8 +2,6 @@
 
 Database operators, clusters, and management tools that back applications across the cluster. All resources deploy into the `database` namespace.
 
-Flux HelmRelease errors are forwarded to Alertmanager at `http://alertmanager-operated.observability.svc.cluster.local:9093`.
-
 ## Apps
 
 | App | Description |

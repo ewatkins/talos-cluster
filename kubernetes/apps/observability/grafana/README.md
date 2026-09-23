@@ -8,7 +8,6 @@ Operational dashboards for metrics, logs, and alerts. Runs 2 replicas and authen
 | --- | --- | --- |
 | Prometheus | `kps-prometheus.observability.svc.cluster.local:9090` | Cluster metrics (2d local retention) |
 | Loki | `loki-headless.observability.svc.cluster.local:3100` | Log aggregation |
-| Alertmanager | `alertmanager-operated.observability.svc.cluster.local:9093` | Active alert state |
 
 ## Dashboard Folders
 
