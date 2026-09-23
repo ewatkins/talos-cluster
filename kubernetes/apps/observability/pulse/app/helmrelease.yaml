@@ -68,6 +68,12 @@ spec:
         serviceAccount:
           identifier: pulse
     defaultPodOptions:
+      # Proxmox advertises its cluster endpoints as bare hostnames
+      # (https://pve02:8006), so add the LAN domain to the search list to let
+      # them resolve against the existing pve0*.ewatkins.dev records.
+      dnsConfig:
+        searches:
+          - ewatkins.dev
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
