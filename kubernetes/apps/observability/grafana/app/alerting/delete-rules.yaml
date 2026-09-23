@@ -1,0 +1,9 @@
+---
+# Removing a rule's provisioning file does not delete the rule from Grafana's
+# database; it keeps evaluating until a deleteRules entry names its uid.
+# Entries can be dropped once Grafana has reconciled them.
+apiVersion: 1
+deleteRules:
+  # PushoverDeliveryTest, the cutover-verification rule removed in dee6cff5.
+  - orgId: 1
+    uid: aaaaaaaa-0000-4000-8000-000000000001
