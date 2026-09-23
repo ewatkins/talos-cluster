@@ -5,7 +5,7 @@ apiVersion: 1
 groups:
   - orgId: 1
     name: flux.rules
-    folder: Cluster alerts
+    folder: Platform
     interval: 30s
     rules:
       - uid: 700c6900-df0f-5e99-b605-5395dcc84a7a

@@ -5,7 +5,7 @@ apiVersion: 1
 groups:
   - orgId: 1
     name: prometheus-operator
-    folder: Cluster alerts
+    folder: Monitoring
     interval: 30s
     rules:
       - uid: d742b500-d753-5f0d-847c-79bc344d1449

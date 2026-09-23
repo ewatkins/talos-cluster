@@ -5,7 +5,7 @@ apiVersion: 1
 groups:
   - orgId: 1
     name: node-exporter
-    folder: Cluster alerts
+    folder: Nodes
     interval: 30s
     rules:
       - uid: 9b9db81c-b654-5df3-8b36-82a59cc28425

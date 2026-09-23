@@ -5,7 +5,7 @@ apiVersion: 1
 groups:
   - orgId: 1
     name: config-reloaders
-    folder: Cluster alerts
+    folder: Monitoring
     interval: 30s
     rules:
       - uid: 219364b9-0501-561f-b938-df8209ea6a83

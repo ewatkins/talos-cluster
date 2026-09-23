@@ -5,7 +5,7 @@ apiVersion: 1
 groups:
   - orgId: 1
     name: kube-state-metrics
-    folder: Cluster alerts
+    folder: Kubernetes
     interval: 30s
     rules:
       - uid: d4cb5f2b-4503-5049-9108-a21248c08d2c

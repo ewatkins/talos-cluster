@@ -5,7 +5,7 @@ apiVersion: 1
 groups:
   - orgId: 1
     name: kubernetes-system
-    folder: Cluster alerts
+    folder: Kubernetes
     interval: 30s
     rules:
       - uid: d73ea543-be24-520f-a58f-30b9f2f04eb1
