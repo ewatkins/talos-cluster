@@ -17,6 +17,8 @@ configMapGenerator:
       - mute-timings.yaml=./alerting/mute-timings.yaml
       - policies.yaml=./alerting/policies.yaml
       - templates.yaml=./alerting/templates.yaml
+      # TEMPORARY: cutover verification, remove with the rule file.
+      - test-pushover.yaml=./alerting/test-pushover.yaml
 
 generatorOptions:
   disableNameSuffixHash: true
