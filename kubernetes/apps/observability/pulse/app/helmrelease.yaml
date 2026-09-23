@@ -22,6 +22,9 @@ spec:
       pulse:
         annotations:
           reloader.stakater.com/auto: "true"
+        # openebs-hostpath is RWO/node-local, so avoid a second pod racing for
+        # the volume during rollouts.
+        strategy: Recreate
         containers:
           app:
             image:
@@ -95,7 +98,10 @@ spec:
     persistence:
       pulse-data:
         enabled: true
-        existingClaim: pulse-data
+        # SQLite (metrics.db) on NFS caused multi-second — occasionally 60s+ —
+        # commit stalls that froze the monitoring loop and tripped the deadman
+        # watchdog, so this lives on node-local storage.
+        existingClaim: pulse-data-local
         globalMounts:
           - path: /data
       tmp:

@@ -2,10 +2,10 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: pulse-data
+  name: pulse-data-local
 spec:
-  accessModes: ["ReadWriteMany"]
+  accessModes: ["ReadWriteOnce"]
   resources:
     requests:
       storage: 10Gi
-  storageClassName: nfs-fast
+  storageClassName: openebs-hostpath
