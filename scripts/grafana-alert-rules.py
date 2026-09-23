@@ -16,7 +16,39 @@ import json
 import sys
 import uuid
 
-FOLDER = "Cluster alerts"
+# Rule groups are filed into folders by name; anything unlisted lands in
+# DEFAULT_FOLDER. Folders only organise the UI: no route matches on them.
+FOLDERS = {
+    "Kubernetes": [
+        "kube-apiserver-slos",
+        "kube-state-metrics",
+        "kubernetes-apps",
+        "kubernetes-resources",
+        "kubernetes-storage",
+        "kubernetes-system",
+        "kubernetes-system-apiserver",
+        "kubernetes-system-controller-manager",
+        "kubernetes-system-kubelet",
+        "kubernetes-system-scheduler",
+    ],
+    "Nodes": ["etcd", "node-exporter", "node-network", "oom"],
+    "Monitoring": [
+        "config-reloaders",
+        "gatus.rules",
+        "general.rules",
+        "prometheus",
+        "prometheus-operator",
+    ],
+    "Platform": [
+        "cert-manager.rules",
+        "crunchy-postgres.backups",
+        "external-dns.rules",
+        "flux.rules",
+        "renovate-operator.rules",
+    ],
+}
+FOLDER_BY_GROUP = {group: folder for folder, groups in FOLDERS.items() for group in groups}
+DEFAULT_FOLDER = "Other"
 DATASOURCE_UID = "prometheus"
 # Stable rule UIDs: uuid5 of source/group/index/alert under this namespace.
 UID_NAMESPACE = uuid.UUID("5d0c1f5e-4f7a-4c1e-9a55-3a7f2f0e6b21")
@@ -124,7 +156,7 @@ def main():
                 groups.append({
                     "orgId": 1,
                     "name": group["name"],
-                    "folder": FOLDER,
+                    "folder": FOLDER_BY_GROUP.get(group["name"], DEFAULT_FOLDER),
                     "interval": group.get("interval", "30s"),
                     "rules": rules,
                 })

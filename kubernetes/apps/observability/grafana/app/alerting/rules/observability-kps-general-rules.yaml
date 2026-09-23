@@ -5,7 +5,7 @@ apiVersion: 1
 groups:
   - orgId: 1
     name: general.rules
-    folder: Cluster alerts
+    folder: Monitoring
     interval: 30s
     rules:
       - uid: 9e109266-07ef-5bb7-b1f6-9be251c91e1b

@@ -5,7 +5,7 @@ apiVersion: 1
 groups:
   - orgId: 1
     name: kubernetes-system-scheduler
-    folder: Cluster alerts
+    folder: Kubernetes
     interval: 30s
     rules:
       - uid: d281563e-6eab-59cb-8160-00f54df1d334

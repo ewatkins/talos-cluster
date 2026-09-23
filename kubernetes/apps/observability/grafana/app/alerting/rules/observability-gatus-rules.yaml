@@ -5,7 +5,7 @@ apiVersion: 1
 groups:
   - orgId: 1
     name: gatus.rules
-    folder: Cluster alerts
+    folder: Monitoring
     interval: 30s
     rules:
       - uid: c8b6de22-4208-5204-89a1-ce204ac91465
