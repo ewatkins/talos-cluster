@@ -6,7 +6,8 @@
 # label matches the first (always-muted) route in policies.yaml, so no
 # imported alert has ever reached a Pushover contact point. This rule omits
 # the label deliberately so it falls through to the severity=warning route
-# and proves the delivery path end to end before Phase 3.
+# and proves the delivery path end to end before Phase 3. Now set to
+# critical to exercise the priority-2 (emergency) contact point.
 apiVersion: 1
 groups:
   - orgId: 1
@@ -56,4 +57,4 @@ groups:
             before the Alertmanager cutover. If you are reading this on your
             phone, the delivery path works and the rule can be removed.
         labels:
-          severity: warning
+          severity: critical
