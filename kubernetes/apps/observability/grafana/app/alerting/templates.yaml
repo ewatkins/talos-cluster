@@ -1,6 +1,6 @@
 ---
-# Notification templates, ported from the Alertmanager pushover receiver in
-# kube-prometheus-stack/app/resources/alertmanager.yaml.
+# Notification templates, ported from the retired kps Alertmanager pushover
+# receiver.
 # Template content is not env-interpolated by Grafana provisioning.
 apiVersion: 1
 templates:

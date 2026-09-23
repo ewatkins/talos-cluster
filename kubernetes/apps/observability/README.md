@@ -10,7 +10,7 @@ A comprehensive observability stack built on the Prometheus ecosystem, providing
 | [Goldilocks](goldilocks/README.md) | Resource request/limit recommendations via VPA |
 | [Grafana](grafana/README.md) | Dashboards for metrics, logs, and alerts |
 | [Kromgo](kromgo/README.md) | Exposes Prometheus metrics as embeddable badges |
-| [kube-prometheus-stack](kube-prometheus-stack/README.md) | Prometheus, Alertmanager, and exporters |
+| [kube-prometheus-stack](kube-prometheus-stack/README.md) | Prometheus and exporters |
 | [Loki](loki/README.md) | Log aggregation system |
 | [Promtail](promtail/README.md) | Log collector agent that ships logs to Loki |
 | [Pulse](pulse/README.md) | Real-time monitoring for Proxmox infrastructure |

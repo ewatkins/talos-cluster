@@ -7,7 +7,6 @@ A collection of Kubernetes manifests, Grafana dashboards, and Prometheus rules t
 | Component | Replicas | Description |
 | --- | --- | --- |
 | Prometheus | 1 | Time-series metrics collection and storage |
-| Alertmanager | 2 | Alert deduplication, grouping, and routing |
 | kube-state-metrics | 1 | Exposes Kubernetes object state as metrics |
 | node-exporter | 1 per node | Exposes host-level hardware and OS metrics |
 
@@ -18,7 +17,6 @@ This cluster uses `fullNameOverride: kps` with `cleanPrometheusOperatorObjectNam
 | Resource | Name |
 | --- | --- |
 | Prometheus | `prometheus-kps-0` |
-| Alertmanager | `alertmanager-kps-0` |
 | Operator | `kps-operator-*` |
 | kube-state-metrics | `kube-state-metrics-*` |
 
@@ -40,50 +38,12 @@ This cluster uses `fullNameOverride: kps` with `cleanPrometheusOperatorObjectNam
 
 Prometheus runs with a Thanos sidecar that exposes a gRPC store endpoint and uploads compacted blocks to the `thanos` Garage bucket. The Thanos query layer then federates across this sidecar and the store gateway to provide the full historical view.
 
-## Alertmanager Configuration
+## Alerting
 
-| Setting | Value |
-| --- | --- |
-| Replicas | 2 |
-| Retention | 72 hours |
-| Storage | 1 GiB on `nfs-slow` |
-| Config source | `alertmanager-secret` (ExternalSecret from Bitwarden) |
-| External URL | `https://alerts.ewatkins.dev` |
-| Memory | 53 M request / 128 Mi limit |
-| Web UI auth | Keycloak OIDC via the `alertmanager-oidc` SecurityPolicy |
-| PDB | `minAvailable: 1`, with hard anti-affinity so a drain cannot break it |
-
-### Routing
-
-| Severity | Destination | Pushover priority | Repeat |
-| --- | --- | --- | --- |
-| `critical` | pushover | 2 (emergency, retries until acknowledged) | 4h |
-| `warning` | pushover | 0 | 12h |
-| `info` | dropped | — | — |
-| `Watchdog` | heartbeat webhook | — | 5m |
-
-Priority is templated from `.CommonLabels.severity`, which is only meaningful
-because each severity has its own route and therefore severity-homogeneous
-groups. `retry`/`expire` are set unconditionally: the Pushover API requires them
-at priority 2 and ignores them everywhere else.
-
-Two inhibit rules: critical suppresses warning for the same alertname and
-namespace, and `KubeNodeNotReady` suppresses alerts sharing its `node` label —
-which covers node-scoped alerts during a tuppr rolling upgrade, but not
-pod-scoped ones, since those carry no `node` label.
-
-`externalUrl` must stay pointed at the public hostname: it is what backs the
-"View in Alertmanager" link in Pushover notifications and every silence URL. The
-chart only derives it automatically when `ingress.enabled` is true, and this
-cluster routes through an HTTPRoute instead, so it is set explicitly.
-
-The OIDC client secret lives in its own `alertmanager-oidc-secret` ExternalSecret
-rather than in `alertmanager-secret`, so a failed render of the OIDC key cannot
-break the Alertmanager config secret and take alerting down with it. It requires
-an `alertmanager` client in the Keycloak `master` realm and an
-`ALERTMANAGER_OIDC_CLIENT_SECRET` field on the `alertmanager-secret` Bitwarden
-item; until both exist, `alerts.ewatkins.dev` errors at the gateway while
-Alertmanager itself keeps alerting normally.
+Alertmanager is disabled. Prometheus still evaluates every PrometheusRule (the
+recording rules feed dashboards), but alerts are evaluated and delivered by
+Grafana: its rules are generated from these PrometheusRules by
+`scripts/grafana-alert-rules.sh`. See [Grafana](../grafana/README.md).
 
 ## Control Plane Scraping
 

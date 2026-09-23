@@ -1,6 +1,6 @@
 # kube-system
 
-Core Kubernetes infrastructure for the `great-lakes` cluster. This namespace contains the CNI, cluster DNS, node-level drivers, certificate management, and workload optimization tooling. Flux alerts for all HelmRelease errors in this namespace are forwarded to Alertmanager. Goldilocks VPA recommendations are enabled on the namespace.
+Core Kubernetes infrastructure for the `great-lakes` cluster. This namespace contains the CNI, cluster DNS, node-level drivers, certificate management, and workload optimization tooling. Goldilocks VPA recommendations are enabled on the namespace.
 
 ## Apps
 
@@ -23,5 +23,4 @@ Core Kubernetes infrastructure for the `great-lakes` cluster. This namespace con
 | --- | --- |
 | Flux prune | disabled (annotation `kustomize.toolkit.fluxcd.io/prune: disabled`) |
 | Goldilocks | enabled (`goldilocks.fairwinds.com/enabled: "true"`) |
-| Flux alert sink | Alertmanager at `alertmanager-operated.observability.svc.cluster.local:9093` |
 | Alert severity | `error` — covers all HelmRelease failures, excluding transient DNS/network timeouts |

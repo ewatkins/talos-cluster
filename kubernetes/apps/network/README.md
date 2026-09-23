@@ -2,7 +2,7 @@
 
 External and internal DNS automation, TLS certificate management, the Cloudflare tunnel for external access, and the Envoy Gateway ingress controller. All apps run in the `network` namespace.
 
-Flux error events for all HelmReleases in this namespace are forwarded to Alertmanager at `alertmanager-operated.observability.svc.cluster.local:9093`. The namespace has VolSync privileged movers enabled and Goldilocks VPA recommendations enabled.
+The namespace has VolSync privileged movers enabled and Goldilocks VPA recommendations enabled.
 
 ## Apps
 

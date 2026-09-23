@@ -154,13 +154,6 @@ spec:
             jsonData:
               maxLines: 250
               manageAlerts: false
-          - name: Alertmanager
-            type: alertmanager
-            uid: alertmanager
-            access: proxy
-            url: http://alertmanager-operated.observability.svc.cluster.local:9093
-            jsonData:
-              implementation: prometheus
     dashboards:
       default:
         cloudflare-tunnel:
