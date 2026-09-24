@@ -14,9 +14,9 @@ spec:
   # renovate: datasource=docker depName=ghcr.io/renovatebot/renovate
   image: ghcr.io/renovatebot/renovate:44.79.1
   parallelism: 1
-  # 8pm America/Chicago daily. The operator evaluates this in its TZ (set on the
-  # deployment), so it stays at 8pm local across DST rather than drifting.
-  schedule: "0 20 * * *"
+  # Hourly, on the hour; a run over this repo takes ~5 minutes. Per-package
+  # schedules in .renovate/ are evaluated by Renovate itself (America/Chicago).
+  schedule: "0 * * * *"
   secretRef: renovate-secret
   extraEnv:
     - name: LOG_LEVEL
