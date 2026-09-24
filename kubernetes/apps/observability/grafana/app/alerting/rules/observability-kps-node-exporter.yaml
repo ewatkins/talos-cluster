@@ -64,7 +64,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 50cc6154-d3ea-5eff-a266-df38334a689c
@@ -123,7 +122,6 @@ groups:
         labels:
           severity: critical
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 717c08d4-301e-5417-bb07-da5f4fa3fe6f
@@ -180,7 +178,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 3de3c067-6f81-5420-a0b7-d9073fc3fa15
@@ -237,7 +234,6 @@ groups:
         labels:
           severity: critical
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 6e3b46d7-e2d0-561b-b704-3598fbd5a6f9
@@ -296,7 +292,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 37070f64-3bb7-5fed-a71a-f6e04a35bc0f
@@ -355,7 +350,6 @@ groups:
         labels:
           severity: critical
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 9b665764-377f-5a03-8e6e-20173022a519
@@ -412,7 +406,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: fa8453b5-e4be-55bf-9a9b-c8b4a704eaf9
@@ -469,7 +462,6 @@ groups:
         labels:
           severity: critical
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 810dbd60-f1a5-56c2-95cd-de3854ea343e
@@ -521,7 +513,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: dfcfc27b-1a81-546d-a8dd-a08c3fd388c1
@@ -573,7 +564,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 5863b0c8-ee84-563d-9dc2-e5360a18194e
@@ -624,7 +614,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: cc060951-b240-5ab4-a4bc-e4d6cf1ca831
@@ -675,7 +664,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 89305f95-22b2-5aef-aa04-8cb3904daf04
@@ -738,7 +726,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 4d68e738-bece-5f2b-87b8-1372391710ec
@@ -793,7 +780,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: a8ded388-39d4-571e-9094-2e3bee6a74fb
@@ -845,7 +831,6 @@ groups:
         labels:
           severity: critical
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 553c89b4-b558-510d-822e-70b27cbc27a3
@@ -896,7 +881,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: d1943d1b-2122-58cc-8a36-3848f72dea89
@@ -951,7 +935,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 483190c2-97d5-5f8a-a96d-cba288eda882
@@ -1006,7 +989,6 @@ groups:
         labels:
           severity: critical
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 06933c9b-5fcf-5df0-b3ea-a6a83b04ca7a
@@ -1059,7 +1041,6 @@ groups:
         labels:
           severity: info
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: f891e2b7-3146-5ea6-9bec-330682a54626
@@ -1115,7 +1096,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 6097986c-ff97-5383-bcd0-576f4f96968e
@@ -1169,7 +1149,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 5efd4251-d835-56d0-82d3-93e6a4c769b3
@@ -1222,7 +1201,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 1ef1acc5-8f1e-5440-9143-bb44514a3e01
@@ -1276,7 +1254,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 65693e0b-0ba3-50bc-99e2-e97b96357053
@@ -1328,7 +1305,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 5076c288-35d9-5945-be01-4faa4eeced45
@@ -1380,7 +1356,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 70011f4a-d4fd-5b57-bde2-bfc817248acc
@@ -1432,6 +1407,5 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1

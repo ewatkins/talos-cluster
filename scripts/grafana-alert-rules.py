@@ -63,11 +63,11 @@ SKIP_ALERTS = {
     # Exists only to drive Alertmanager inhibition and reads the ALERTS
     # series, which goes away when Prometheus stops evaluating alerts.
     "InfoInhibitor",
-}
-# Alerts that notify even while the shadow label is applied.
-UNSHADOWED_ALERTS = {
-    # Pings Grafana's own healthchecks.io check, proving the pipeline works.
-    "Watchdog",
+    # Watch Prometheus's own delivery to Alertmanager. Prometheus has no
+    # Alertmanager now, so these fire permanently (or never can).
+    "PrometheusNotConnectedToAlertmanagers",
+    "PrometheusErrorSendingAlertsToSomeAlertmanagers",
+    "PrometheusErrorSendingAlertsToAnyAlertmanager",
 }
 
 
@@ -90,11 +90,9 @@ def expr_step(ref_id, model):
     }
 
 
-def convert_rule(rule, uid, shadow):
+def convert_rule(rule, uid):
     labels = dict(rule.get("labels") or {})
     labels["__converted_prometheus_rule__"] = "true"
-    if shadow and rule["alert"] not in UNSHADOWED_ALERTS:
-        labels["grafana_shadow"] = "true"
     out = {
         "uid": uid,
         "title": rule["alert"],
@@ -138,7 +136,6 @@ def convert_rule(rule, uid, shadow):
 
 
 def main():
-    shadow = "--shadow" in sys.argv[1:]
     items = json.load(sys.stdin)["items"]
     for item in sorted(items, key=lambda i: (i["metadata"]["namespace"], i["metadata"]["name"])):
         source = f'{item["metadata"]["namespace"]}/{item["metadata"]["name"]}'
@@ -151,7 +148,7 @@ def main():
                 if "alert" not in rule or rule["alert"] in SKIP_ALERTS:
                     continue
                 uid = str(uuid.uuid5(UID_NAMESPACE, f'{source}/{group["name"]}/{index}/{rule["alert"]}'))
-                rules.append(convert_rule(rule, uid, shadow))
+                rules.append(convert_rule(rule, uid))
             if rules:
                 groups.append({
                     "orgId": 1,

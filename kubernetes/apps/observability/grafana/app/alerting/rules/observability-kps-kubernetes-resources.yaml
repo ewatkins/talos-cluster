@@ -81,7 +81,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 5e1a19a5-9513-5cbf-a492-d407b575e7ce
@@ -157,7 +156,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 880d0560-a5c5-50c2-b723-177ad7bccac4
@@ -216,7 +214,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: e7a4bffd-d35a-5084-b7d8-ae978404b5d1
@@ -275,7 +272,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 42fa7ef2-16d0-572e-bf05-62326cbb76c7
@@ -339,7 +335,6 @@ groups:
         labels:
           severity: info
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 92755df1-2af5-51db-a9f9-88e1937c531d
@@ -403,7 +398,6 @@ groups:
         labels:
           severity: info
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: f143bf38-c6af-5673-8c84-58c278dc1dc4
@@ -466,7 +460,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 07808d39-21fe-5729-b26b-800defbf12cf
@@ -534,6 +527,5 @@ groups:
         labels:
           severity: info
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1

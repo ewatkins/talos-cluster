@@ -65,7 +65,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: bbb66a83-f2b2-5cca-bc5b-e2dbf05352e7
@@ -117,7 +116,6 @@ groups:
         labels:
           severity: critical
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 9a87f9a6-2afc-5792-ae83-222a10ed26e3
@@ -169,7 +167,6 @@ groups:
         labels:
           severity: critical
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 247d55c0-65b0-58dd-b64a-00796b9767dc
@@ -221,7 +218,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: aa89df06-7ee2-5e57-8c9c-9b59eb5006e5
@@ -277,7 +273,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: c55b0f0e-204f-568f-81bc-4f5ae052d906
@@ -333,7 +328,6 @@ groups:
         labels:
           severity: critical
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 79d4c6e4-5870-59a3-8fd8-ca8ab3a067d0
@@ -387,7 +381,6 @@ groups:
         labels:
           severity: critical
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: d066f263-43de-5b5a-8084-4e46c7e37a71
@@ -441,7 +434,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 00f3089b-7c12-5a7b-9b34-962c97964012
@@ -493,7 +485,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 6e317671-c2f6-5d0f-b570-7b4fe3fa4e29
@@ -547,7 +538,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: e2cfb33e-f379-5181-89f0-f0deb07017b8
@@ -601,7 +591,6 @@ groups:
         labels:
           severity: critical
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 327975f4-5be4-5602-a26e-ad8b9f70f9a0
@@ -655,7 +644,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: b05a4ad8-43e2-5f7f-8a4d-862f48fac1b6
@@ -707,7 +695,6 @@ groups:
         labels:
           severity: critical
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 7d37d39c-e55d-5e6b-a14e-0d30703e6476
@@ -759,7 +746,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 1d3b9c0a-4368-522a-907e-6d478c4176f9
@@ -811,6 +797,5 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1

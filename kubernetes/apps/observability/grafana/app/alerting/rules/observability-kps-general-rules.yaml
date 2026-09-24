@@ -57,7 +57,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: b2ca5a5a-d7a6-55e8-8be3-62a3aca77f9b

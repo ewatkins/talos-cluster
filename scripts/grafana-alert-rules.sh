@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 # Regenerate Grafana alert-rule provisioning from the cluster's PrometheusRules.
 #
-#   scripts/grafana-alert-rules.sh [--shadow]
+#   scripts/grafana-alert-rules.sh
 #
-# --shadow labels every rule (except Watchdog) grafana_shadow=true, which the
-# Grafana policy tree mutes; use it while Alertmanager is still paging.
 # Output replaces kubernetes/apps/observability/grafana/app/alerting/rules/.
 set -euo pipefail
 
@@ -19,7 +17,7 @@ tmp="$(mktemp -d)"
 trap 'rm -rf "${tmp}"' EXIT
 
 kubectl get prometheusrules --all-namespaces --output json \
-  | python3 "${ROOT_DIR}/scripts/grafana-alert-rules.py" "$@" > "${tmp}/rules.jsonl"
+  | python3 "${ROOT_DIR}/scripts/grafana-alert-rules.py" > "${tmp}/rules.jsonl"
 
 rm -rf "${OUT_DIR}"
 mkdir -p "${OUT_DIR}"

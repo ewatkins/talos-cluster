@@ -55,7 +55,6 @@ groups:
         labels:
           severity: critical
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 79774494-14f5-587b-b2a8-eb38a9781eb4
@@ -105,7 +104,6 @@ groups:
         labels:
           severity: critical
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 158d2ccc-2be4-57e6-a2ce-fa307c30d4e5
@@ -155,7 +153,6 @@ groups:
         labels:
           severity: critical
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: ccc3c0ce-8e5c-58e0-b7a1-031e71f7f3d1
@@ -205,6 +202,5 @@ groups:
         labels:
           severity: critical
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1

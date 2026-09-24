@@ -46,6 +46,11 @@ spec:
     alertmanager:
       enabled: false
 
+    defaultRules:
+      rules:
+        # Monitors the retired Alertmanager; the chart renders it regardless.
+        alertmanager: false
+
     kubelet:
       enabled: true
       serviceMonitor:
