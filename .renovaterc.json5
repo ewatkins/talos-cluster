@@ -29,12 +29,9 @@
     '**/.archive/**',
     '**/resources/**',
   ],
+  // flux also updates images in HelmRelease values, so helm-values stays on
+  // its default patterns; pointing it at kubernetes/ double-extracted them.
   flux: {
-    managerFilePatterns: [
-      '/(^|/)kubernetes/.+\\.ya?ml$/',
-    ],
-  },
-  'helm-values': {
     managerFilePatterns: [
       '/(^|/)kubernetes/.+\\.ya?ml$/',
     ],
