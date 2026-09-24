@@ -27,7 +27,7 @@
 
 [![Home-Internet](https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F2%2Ffbfbdbca-dcc6-4afb-b805-aa951be107ab.shields&label=Home%20Internet&style=for-the-badge&logo=ubiquiti&logoColor=white&labelColor=222222)](https://status.ewatkins.dev)&nbsp;&nbsp;
 [![Status-Page](https://img.shields.io/uptimerobot/status/m797091225-baba12b223916efaf9441add?color=brightgreen&label=Status%20Page&style=for-the-badge&logo=statuspage&logoColor=white&labelColor=222222)](https://status.ewatkins.dev)&nbsp;&nbsp;
-[![Alert Manager](https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F2%2Fac7b0558-1361-42ec-9f31-06d18a40aca8.shields&style=for-the-badge&logo=prometheus&logoColor=white&labelColor=222222)](https://status.ewatkins.dev)
+[![Grafana-Alerts](https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F3%2Fa0b292b4-6515-45d7-b222-5b5ad102fd97.shields&style=for-the-badge&logo=grafana&logoColor=white&labelColor=222222)](https://status.ewatkins.dev)
 
 </div>
 
@@ -106,7 +106,7 @@ While I try to self-host almost everything myself, there are a couple of things 
 | [GitHub](https://github.com/)               | Hosting this repository and continuous integration/deployments                                              |   Free |
 | [Pushover](https://pushover.net/)           | Kubernetes Alerts and application notifications                                                             |     $5 |
 | [UptimeRobot](https://uptimerobot.com/)     | Monitoring external facing applications                                                                     |   Free |
-| [Healthchecks.io](https://healthchecks.io/) | Heartbeat Monitoring for AlertManager and Internet                                                          |   Free |
+| [Healthchecks.io](https://healthchecks.io/) | Heartbeat Monitoring for Grafana Alerting and Internet                                                      |   Free |
 |                                             | <div align="right">Total:</div>                                                                             | $20/yr |
 
 ---
