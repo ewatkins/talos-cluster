@@ -157,7 +157,7 @@ spec:
           containers:
             - name: failover
               # Stdlib only; no pip install step and nothing to vendor.
-              image: docker.io/library/python:3.13-alpine
+              image: docker.io/library/python:3.14-alpine
               command: ["python3", "/scripts/host-failover.py"]
               envFrom:
                 - secretRef:
