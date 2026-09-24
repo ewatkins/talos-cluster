@@ -36,7 +36,7 @@ spec:
           runner-register:
             image:
               repository: code.forgejo.org/forgejo/runner
-              tag: 13.1.0
+              tag: 13.2.0
             command: ["sh", "-c"]
             args:
               - |
@@ -75,7 +75,7 @@ spec:
           app:
             image:
               repository: code.forgejo.org/forgejo/runner
-              tag: 13.1.0
+              tag: 13.2.0
             command:
               [
                 "sh",
