@@ -60,7 +60,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 3f68ad42-ea36-5b17-896e-197fbc871493
@@ -115,7 +114,6 @@ groups:
         labels:
           severity: info
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 7bb0450c-c050-5840-ae38-3e02ede058c7
@@ -167,7 +165,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 3f57b3ed-eb83-5ba7-95ef-be8320f74d4f
@@ -232,7 +229,6 @@ groups:
         labels:
           severity: info
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 1860c269-5134-5eac-ba4b-5775cd40914c
@@ -287,7 +283,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 431f517b-39de-533e-9de4-4e3699654d44
@@ -345,7 +340,6 @@ groups:
         labels:
           severity: info
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: e7eb52e7-a221-5d6a-b30d-ee6e57693399
@@ -397,7 +391,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 978f4afa-2b4a-5a46-a6f8-505ddd21cb13
@@ -461,7 +454,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: f41f3adb-cf24-569b-ab03-88e24ff04d68
@@ -512,7 +504,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 2a612441-07df-5ef3-b19d-cb1bed9ae208
@@ -563,7 +554,6 @@ groups:
         labels:
           severity: critical
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: aec0f953-f67c-5110-991f-f1ba4cfe16e6
@@ -614,7 +604,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 2c4b3502-4142-58ba-ac02-5c85a25eafaa
@@ -665,7 +654,6 @@ groups:
         labels:
           severity: critical
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 7bff2485-92cb-5ad1-a9b9-69ea25444a65
@@ -717,7 +705,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 62e0b950-68c6-5741-9ae0-41db47937af1
@@ -769,7 +756,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 8ac00aed-2219-50be-8542-8c420a5667d8
@@ -821,7 +807,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 0fe331cb-e407-5c89-83f7-9b9c60c9efb5
@@ -876,6 +861,5 @@ groups:
         labels:
           severity: critical
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1

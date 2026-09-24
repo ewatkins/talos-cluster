@@ -60,7 +60,6 @@ groups:
         labels:
           severity: critical
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 6857a9ca-6d35-5ded-8a8a-b54861416386
@@ -112,7 +111,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: fbe23fb3-64aa-51a3-bd1e-048cf92fc04e
@@ -164,7 +162,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: b8b3edd3-e265-59f0-9374-6b7031b6da52
@@ -223,121 +220,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
-        isPaused: false
-        missing_series_evals_to_resolve: 1
-      - uid: 7631e17d-4b0a-5066-ab3d-02ba2d31e978
-        title: PrometheusErrorSendingAlertsToSomeAlertmanagers
-        condition: threshold
-        data:
-          - refId: query
-            queryType: prometheus
-            relativeTimeRange:
-              from: 660
-              to: 60
-            datasourceUid: prometheus
-            model:
-              refId: query
-              datasource:
-                type: prometheus
-                uid: prometheus
-              expr: |-
-                (
-                  rate(prometheus_notifications_errors_total{job="kps-prometheus",namespace="observability"}[5m])
-                /
-                  rate(prometheus_notifications_sent_total{job="kps-prometheus",namespace="observability"}[5m])
-                )
-                * 100
-                > 1
-              instant: true
-              range: false
-              intervalMs: 1000
-              maxDataPoints: 43200
-          - refId: prometheus_math
-            queryType: math
-            datasourceUid: __expr__
-            model:
-              refId: prometheus_math
-              type: math
-              expression: is_number($query) || is_nan($query) || is_inf($query)
-          - refId: threshold
-            queryType: threshold
-            datasourceUid: __expr__
-            model:
-              refId: threshold
-              type: threshold
-              expression: prometheus_math
-              conditions:
-                - evaluator:
-                    type: gt
-                    params:
-                      - 0
-        noDataState: OK
-        execErrState: OK
-        for: 15m
-        annotations:
-          description: '{{ printf "%.1f" $value }}% of alerts sent by Prometheus {{$labels.namespace}}/{{$labels.pod}} to Alertmanager {{$labels.alertmanager}} were affected by errors.'
-          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus/prometheuserrorsendingalertstosomealertmanagers
-          summary: More than 1% of alerts sent by Prometheus to a specific Alertmanager were affected by errors.
-        labels:
-          severity: warning
-          __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
-        isPaused: false
-        missing_series_evals_to_resolve: 1
-      - uid: 83a0367c-e123-52be-a744-11159132ab13
-        title: PrometheusNotConnectedToAlertmanagers
-        condition: threshold
-        data:
-          - refId: query
-            queryType: prometheus
-            relativeTimeRange:
-              from: 660
-              to: 60
-            datasourceUid: prometheus
-            model:
-              refId: query
-              datasource:
-                type: prometheus
-                uid: prometheus
-              expr: |-
-                # Without max_over_time, failed scrapes could create false negatives, see
-                # https://www.robustperception.io/alerting-on-gauges-in-prometheus-2-0 for details.
-                max_over_time(prometheus_notifications_alertmanagers_discovered{job="kps-prometheus",namespace="observability"}[5m]) < 1
-              instant: true
-              range: false
-              intervalMs: 1000
-              maxDataPoints: 43200
-          - refId: prometheus_math
-            queryType: math
-            datasourceUid: __expr__
-            model:
-              refId: prometheus_math
-              type: math
-              expression: is_number($query) || is_nan($query) || is_inf($query)
-          - refId: threshold
-            queryType: threshold
-            datasourceUid: __expr__
-            model:
-              refId: threshold
-              type: threshold
-              expression: prometheus_math
-              conditions:
-                - evaluator:
-                    type: gt
-                    params:
-                      - 0
-        noDataState: OK
-        execErrState: OK
-        for: 10m
-        annotations:
-          description: Prometheus {{$labels.namespace}}/{{$labels.pod}} is not connected to any Alertmanagers.
-          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus/prometheusnotconnectedtoalertmanagers
-          summary: Prometheus is not connected to any Alertmanagers.
-        labels:
-          severity: warning
-          __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 8e0694a5-ca20-58d6-84ab-ba709ebf8825
@@ -389,7 +271,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 5f40515f-c028-55b2-b273-a239174ca313
@@ -441,7 +322,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 07a97b8d-781c-528b-8fb7-8d9ab0c448a9
@@ -502,7 +382,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 458554ad-66aa-5a35-b7f7-71f9f1363311
@@ -554,7 +433,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: feef40ff-033c-5781-a3bd-c43050e512b8
@@ -606,7 +484,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: c57bfcec-43e7-5e69-9ae1-fa52420b2317
@@ -669,7 +546,6 @@ groups:
         labels:
           severity: critical
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 5564b3b2-f292-5781-90ca-821d7e87dca7
@@ -729,7 +605,6 @@ groups:
         labels:
           severity: critical
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: d33eeab5-3e66-5c92-823c-946ebc05b118
@@ -788,7 +663,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: e2a289a8-81dc-5f96-b296-452448df885c
@@ -840,7 +714,6 @@ groups:
         labels:
           severity: critical
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 104c8f54-ddfc-5827-bf0f-e4bcfd6ef64b
@@ -892,7 +765,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 95b07f58-1ad0-5de5-9b84-77f197593901
@@ -944,7 +816,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 1f749729-c953-5665-aab0-d8d22dc1acf8
@@ -996,7 +867,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 28103e5b-5186-5dfe-8ca7-07007cd688f8
@@ -1048,7 +918,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 57d97da1-0c38-5243-83b9-64ffa9a5d507
@@ -1100,7 +969,6 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 69a49f19-f695-5f3d-9e70-e3456603c130
@@ -1152,7 +1020,6 @@ groups:
         labels:
           severity: critical
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
       - uid: 37e816de-3331-5ae3-94c3-80ed9db1ad41
@@ -1204,65 +1071,5 @@ groups:
         labels:
           severity: warning
           __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
-        isPaused: false
-        missing_series_evals_to_resolve: 1
-      - uid: 3305bbaf-b5db-53fd-a715-2f37346e8ca7
-        title: PrometheusErrorSendingAlertsToAnyAlertmanager
-        condition: threshold
-        data:
-          - refId: query
-            queryType: prometheus
-            relativeTimeRange:
-              from: 660
-              to: 60
-            datasourceUid: prometheus
-            model:
-              refId: query
-              datasource:
-                type: prometheus
-                uid: prometheus
-              expr: |-
-                min without (alertmanager) (
-                  rate(prometheus_notifications_errors_total{job="kps-prometheus",namespace="observability",alertmanager!~``}[5m])
-                /
-                  rate(prometheus_notifications_sent_total{job="kps-prometheus",namespace="observability",alertmanager!~``}[5m])
-                )
-                * 100
-                > 3
-              instant: true
-              range: false
-              intervalMs: 1000
-              maxDataPoints: 43200
-          - refId: prometheus_math
-            queryType: math
-            datasourceUid: __expr__
-            model:
-              refId: prometheus_math
-              type: math
-              expression: is_number($query) || is_nan($query) || is_inf($query)
-          - refId: threshold
-            queryType: threshold
-            datasourceUid: __expr__
-            model:
-              refId: threshold
-              type: threshold
-              expression: prometheus_math
-              conditions:
-                - evaluator:
-                    type: gt
-                    params:
-                      - 0
-        noDataState: OK
-        execErrState: OK
-        for: 15m
-        annotations:
-          description: '{{ printf "%.1f" $value }}% minimum errors while sending alerts from Prometheus {{$labels.namespace}}/{{$labels.pod}} to any Alertmanager.'
-          runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus/prometheuserrorsendingalertstoanyalertmanager
-          summary: Prometheus encounters more than 3% errors sending alerts to any Alertmanager.
-        labels:
-          severity: critical
-          __converted_prometheus_rule__: "true"
-          grafana_shadow: "true"
         isPaused: false
         missing_series_evals_to_resolve: 1
