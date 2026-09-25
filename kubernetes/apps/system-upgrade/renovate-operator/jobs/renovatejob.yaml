@@ -12,7 +12,7 @@ spec:
   provider:
     name: github
   # renovate: datasource=docker depName=ghcr.io/renovatebot/renovate
-  image: ghcr.io/renovatebot/renovate:44.115.1
+  image: ghcr.io/renovatebot/renovate:44.115.5
   parallelism: 1
   # Hourly, on the hour; a run over this repo takes ~5 minutes. Per-package
   # schedules in .renovate/ are evaluated by Renovate itself (America/Chicago).
