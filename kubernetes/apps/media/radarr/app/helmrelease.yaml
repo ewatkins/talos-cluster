@@ -46,6 +46,10 @@ spec:
                   httpGet:
                     path: /ping
                     port: *port
+                    # AllowedHosts rejects the pod-IP Host header the kubelet sends
+                    httpHeaders:
+                      - name: Host
+                        value: localhost
                   initialDelaySeconds: 30
                   periodSeconds: 10
                   timeoutSeconds: 30
