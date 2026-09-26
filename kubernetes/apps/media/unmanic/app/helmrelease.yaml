@@ -56,7 +56,9 @@ spec:
                 cpu: 500m
                 memory: 512Mi
               limits:
-                cpu: 2000m
+                # Capped at 1 core: at 2000m it held ~1.5 cores on erie and,
+                # with superior on the same Proxmox host, pinned pve01 at ~90%.
+                cpu: 1000m
                 memory: 4Gi
         pod:
           resourceClaims:
