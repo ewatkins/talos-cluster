@@ -1,9 +1,8 @@
 ---
-# Game servers on VLAN 50, pinged from inside the cluster.
-# status.ewatkins.dev is public, so every hide-* flag is set: Gatus redacts
-# the address from stored results and error strings (e.g. "dial tcp ...:
-# connection refused"), not just from the UI. dont-resolve-failed-conditions
-# keeps the reply (MOTD, player sample) off the page when a check fails.
+# Game servers on VLAN 50, pinged from inside the cluster. The addresses are
+# private and shown on the page on purpose; dont-resolve-failed-conditions
+# keeps the reply (MOTD, player sample, raw packet bytes) off the page when a
+# check fails.
 #
 # Java checks send a Server List Ping: handshake (protocol 0, host
 # "localhost", port 0, next state status) then a status request. The server
@@ -32,7 +31,7 @@ data:
         conditions:
           - "[CONNECTED] == true"
           - '[BODY] == pat(*"description"*)'
-        ui: { hide-hostname: true, hide-url: true, hide-port: true, hide-errors: true, dont-resolve-failed-conditions: true }
+        ui: { dont-resolve-failed-conditions: true }
       - name: lobby
         group: Minecraft
         url: tcp://192.168.50.101:25565
@@ -41,7 +40,7 @@ data:
         conditions:
           - "[CONNECTED] == true"
           - '[BODY] == pat(*"description"*)'
-        ui: { hide-hostname: true, hide-url: true, hide-port: true, hide-errors: true, dont-resolve-failed-conditions: true }
+        ui: { dont-resolve-failed-conditions: true }
       - name: homestead
         group: Minecraft
         url: tcp://192.168.50.11:25565
@@ -50,7 +49,7 @@ data:
         conditions:
           - "[CONNECTED] == true"
           - '[BODY] == pat(*"description"*)'
-        ui: { hide-hostname: true, hide-url: true, hide-port: true, hide-errors: true, dont-resolve-failed-conditions: true }
+        ui: { dont-resolve-failed-conditions: true }
       - name: iridium
         group: Minecraft
         url: tcp://192.168.50.21:25565
@@ -59,7 +58,7 @@ data:
         conditions:
           - "[CONNECTED] == true"
           - '[BODY] == pat(*"description"*)'
-        ui: { hide-hostname: true, hide-url: true, hide-port: true, hide-errors: true, dont-resolve-failed-conditions: true }
+        ui: { dont-resolve-failed-conditions: true }
       - name: atlas
         group: Minecraft
         url: tcp://192.168.50.31:25565
@@ -68,7 +67,7 @@ data:
         conditions:
           - "[CONNECTED] == true"
           - '[BODY] == pat(*"description"*)'
-        ui: { hide-hostname: true, hide-url: true, hide-port: true, hide-errors: true, dont-resolve-failed-conditions: true }
+        ui: { dont-resolve-failed-conditions: true }
       - name: velocity-bedrock
         group: Minecraft
         url: udp://192.168.50.100:19132
@@ -77,4 +76,4 @@ data:
         conditions:
           - "[CONNECTED] == true"
           - "[BODY] == pat(*MCPE;*)"
-        ui: { hide-hostname: true, hide-url: true, hide-port: true, hide-errors: true, dont-resolve-failed-conditions: true }
+        ui: { dont-resolve-failed-conditions: true }
