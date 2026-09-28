@@ -1,8 +1,20 @@
 ---
-# Game servers on VLAN 50, checked by TCP connect from inside the cluster.
+# Game servers on VLAN 50, pinged from inside the cluster.
 # status.ewatkins.dev is public, so every hide-* flag is set: Gatus redacts
 # the address from stored results and error strings (e.g. "dial tcp ...:
-# connection refused"), not just from the UI.
+# connection refused"), not just from the UI. dont-resolve-failed-conditions
+# keeps the reply (MOTD, player sample) off the page when a check fails.
+#
+# Java checks send a Server List Ping: handshake (protocol 0, host
+# "localhost", port 0, next state status) then a status request. The server
+# answers with its status JSON; Paper puts the MOTD first, so match on
+# "description", which always lands inside the 1 KiB Gatus reads. Protocol
+# and port are 0 because servers ignore them for a status ping, and YAML
+# escapes above \x7f are re-encoded as UTF-8, which would corrupt the packet.
+#
+# The Bedrock check sends a RakNet unconnected ping (0x01, time 0, magic,
+# guid 0) to Geyser on the proxy. The magic has bytes above \x7f, so it is
+# given as !!binary; Geyser answers with an unconnected pong ("MCPE;...").
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -15,30 +27,54 @@ data:
       - name: velocity
         group: Minecraft
         url: tcp://192.168.50.100:25565
+        body: "\x0f\x00\x00\x09localhost\x00\x00\x01\x01\x00"
         interval: 1m
-        conditions: ["[CONNECTED] == true"]
-        ui: { hide-hostname: true, hide-url: true, hide-port: true, hide-errors: true }
+        conditions:
+          - "[CONNECTED] == true"
+          - '[BODY] == pat(*"description"*)'
+        ui: { hide-hostname: true, hide-url: true, hide-port: true, hide-errors: true, dont-resolve-failed-conditions: true }
       - name: lobby
         group: Minecraft
         url: tcp://192.168.50.101:25565
+        body: "\x0f\x00\x00\x09localhost\x00\x00\x01\x01\x00"
         interval: 1m
-        conditions: ["[CONNECTED] == true"]
-        ui: { hide-hostname: true, hide-url: true, hide-port: true, hide-errors: true }
+        conditions:
+          - "[CONNECTED] == true"
+          - '[BODY] == pat(*"description"*)'
+        ui: { hide-hostname: true, hide-url: true, hide-port: true, hide-errors: true, dont-resolve-failed-conditions: true }
       - name: homestead
         group: Minecraft
         url: tcp://192.168.50.11:25565
+        body: "\x0f\x00\x00\x09localhost\x00\x00\x01\x01\x00"
         interval: 1m
-        conditions: ["[CONNECTED] == true"]
-        ui: { hide-hostname: true, hide-url: true, hide-port: true, hide-errors: true }
+        conditions:
+          - "[CONNECTED] == true"
+          - '[BODY] == pat(*"description"*)'
+        ui: { hide-hostname: true, hide-url: true, hide-port: true, hide-errors: true, dont-resolve-failed-conditions: true }
       - name: iridium
         group: Minecraft
         url: tcp://192.168.50.21:25565
+        body: "\x0f\x00\x00\x09localhost\x00\x00\x01\x01\x00"
         interval: 1m
-        conditions: ["[CONNECTED] == true"]
-        ui: { hide-hostname: true, hide-url: true, hide-port: true, hide-errors: true }
+        conditions:
+          - "[CONNECTED] == true"
+          - '[BODY] == pat(*"description"*)'
+        ui: { hide-hostname: true, hide-url: true, hide-port: true, hide-errors: true, dont-resolve-failed-conditions: true }
       - name: atlas
         group: Minecraft
         url: tcp://192.168.50.31:25565
+        body: "\x0f\x00\x00\x09localhost\x00\x00\x01\x01\x00"
         interval: 1m
-        conditions: ["[CONNECTED] == true"]
-        ui: { hide-hostname: true, hide-url: true, hide-port: true, hide-errors: true }
+        conditions:
+          - "[CONNECTED] == true"
+          - '[BODY] == pat(*"description"*)'
+        ui: { hide-hostname: true, hide-url: true, hide-port: true, hide-errors: true, dont-resolve-failed-conditions: true }
+      - name: velocity-bedrock
+        group: Minecraft
+        url: udp://192.168.50.100:19132
+        body: !!binary AQAAAAAAAAAAAP//AP7+/v79/f39EjRWeAAAAAAAAAAA
+        interval: 1m
+        conditions:
+          - "[CONNECTED] == true"
+          - "[BODY] == pat(*MCPE;*)"
+        ui: { hide-hostname: true, hide-url: true, hide-port: true, hide-errors: true, dont-resolve-failed-conditions: true }
