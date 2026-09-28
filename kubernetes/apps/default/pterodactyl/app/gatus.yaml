@@ -1,0 +1,44 @@
+---
+# Game servers on VLAN 50, checked by TCP connect from inside the cluster.
+# status.ewatkins.dev is public, so every hide-* flag is set: Gatus redacts
+# the address from stored results and error strings (e.g. "dial tcp ...:
+# connection refused"), not just from the UI.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: minecraft-gatus-ep
+  labels:
+    gatus.io/enabled: "true"
+data:
+  config.yaml: |
+    endpoints:
+      - name: network
+        group: Minecraft
+        url: tcp://192.168.50.100:25565
+        interval: 1m
+        conditions: ["[CONNECTED] == true"]
+        ui: { hide-hostname: true, hide-url: true, hide-port: true, hide-errors: true }
+      - name: lobby
+        group: Minecraft
+        url: tcp://192.168.50.101:25565
+        interval: 1m
+        conditions: ["[CONNECTED] == true"]
+        ui: { hide-hostname: true, hide-url: true, hide-port: true, hide-errors: true }
+      - name: homestead
+        group: Minecraft
+        url: tcp://192.168.50.11:25565
+        interval: 1m
+        conditions: ["[CONNECTED] == true"]
+        ui: { hide-hostname: true, hide-url: true, hide-port: true, hide-errors: true }
+      - name: iridium
+        group: Minecraft
+        url: tcp://192.168.50.21:25565
+        interval: 1m
+        conditions: ["[CONNECTED] == true"]
+        ui: { hide-hostname: true, hide-url: true, hide-port: true, hide-errors: true }
+      - name: atlas
+        group: Minecraft
+        url: tcp://192.168.50.31:25565
+        interval: 1m
+        conditions: ["[CONNECTED] == true"]
+        ui: { hide-hostname: true, hide-url: true, hide-port: true, hide-errors: true }
