@@ -4,9 +4,6 @@
 # keeps the reply (MOTD, player sample, raw packet bytes) off the page when a
 # check fails.
 #
-# Gatus only sorts by name (the port is never shown), so names lead with the
-# zero-padded last octet and end with the port: alphabetical is IP order.
-#
 # Java checks send a Server List Ping: handshake (protocol 0, host
 # "localhost", port 0, next state status) then a status request. The server
 # answers with its status JSON; Paper puts the MOTD first, so match on
@@ -26,7 +23,7 @@ metadata:
 data:
   config.yaml: |
     endpoints:
-      - name: "100 velocity :25565"
+      - name: velocity
         group: Minecraft
         url: tcp://192.168.50.100:25565
         body: "\x0f\x00\x00\x09localhost\x00\x00\x01\x01\x00"
@@ -35,7 +32,7 @@ data:
           - "[CONNECTED] == true"
           - '[BODY] == pat(*"description"*)'
         ui: { dont-resolve-failed-conditions: true }
-      - name: "101 lobby :25565"
+      - name: lobby
         group: Minecraft
         url: tcp://192.168.50.101:25565
         body: "\x0f\x00\x00\x09localhost\x00\x00\x01\x01\x00"
@@ -44,7 +41,7 @@ data:
           - "[CONNECTED] == true"
           - '[BODY] == pat(*"description"*)'
         ui: { dont-resolve-failed-conditions: true }
-      - name: "011 homestead :25565"
+      - name: homestead
         group: Minecraft
         url: tcp://192.168.50.11:25565
         body: "\x0f\x00\x00\x09localhost\x00\x00\x01\x01\x00"
@@ -53,7 +50,7 @@ data:
           - "[CONNECTED] == true"
           - '[BODY] == pat(*"description"*)'
         ui: { dont-resolve-failed-conditions: true }
-      - name: "021 iridium :25565"
+      - name: iridium
         group: Minecraft
         url: tcp://192.168.50.21:25565
         body: "\x0f\x00\x00\x09localhost\x00\x00\x01\x01\x00"
@@ -62,7 +59,7 @@ data:
           - "[CONNECTED] == true"
           - '[BODY] == pat(*"description"*)'
         ui: { dont-resolve-failed-conditions: true }
-      - name: "031 atlas :25565"
+      - name: atlas
         group: Minecraft
         url: tcp://192.168.50.31:25565
         body: "\x0f\x00\x00\x09localhost\x00\x00\x01\x01\x00"
@@ -71,7 +68,7 @@ data:
           - "[CONNECTED] == true"
           - '[BODY] == pat(*"description"*)'
         ui: { dont-resolve-failed-conditions: true }
-      - name: "100 velocity :19132/udp"
+      - name: velocity-bedrock
         group: Minecraft
         url: udp://192.168.50.100:19132
         body: !!binary AQAAAAAAAAAAAP//AP7+/v79/f39EjRWeAAAAAAAAAAA
