@@ -16,3 +16,5 @@ spec:
       # open for the whole session. Envoy's 15s default would cut playback at 15
       # seconds. Same reasoning — and same value — as Dispatcharr's own policy.
       requestTimeout: "0s"
+      # Repeats the gateway default (upstream-idle-timeout), which this replaces.
+      connectionIdleTimeout: 4s

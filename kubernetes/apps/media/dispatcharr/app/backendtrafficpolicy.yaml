@@ -16,3 +16,5 @@ spec:
       # stream mid-playback. Disabled rather than merely raised, since a
       # viewer can legitimately stay on a channel for hours.
       requestTimeout: "0s"
+      # Repeats the gateway default (upstream-idle-timeout), which this replaces.
+      connectionIdleTimeout: 4s

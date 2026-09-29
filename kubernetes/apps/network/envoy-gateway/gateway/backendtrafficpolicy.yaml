@@ -1,0 +1,25 @@
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: upstream-idle-timeout
+  namespace: network
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: internal
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: external
+  timeout:
+    http:
+      # Envoy holds idle upstream keep-alives for 1h by default, far longer than
+      # most backends do (Node/uvicorn close at 5s, others at 15-75s). A request
+      # sent on a connection the backend is closing fails as 503 UC
+      # (upstream_reset_before_response_started{connection_termination}), which
+      # is how patchmon/notifiarr/scrutiny flapped in Gatus at a 60s interval.
+      # 4s sits under the shortest backend timeout so Envoy always closes first.
+      # Route-level BackendTrafficPolicies replace this rather than merge, so
+      # each of them repeats the same value.
+      connectionIdleTimeout: 4s
