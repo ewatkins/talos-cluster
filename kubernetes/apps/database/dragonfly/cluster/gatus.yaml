@@ -19,3 +19,6 @@ data:
           - "[CONNECTED] == true"
         alerts:
           - type: pushover
+            minimum-reminder-interval: 4h
+            provider-override:
+              priority: 1

@@ -11,3 +11,9 @@ endpoints:
       query-type: A
     conditions:
       - "len([BODY]) == 0"
+    alerts:
+      - type: pushover
+        description: public DNS record found, endpoint is exposed
+        minimum-reminder-interval: 4h
+        provider-override:
+          priority: 1

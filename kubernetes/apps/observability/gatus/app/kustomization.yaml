@@ -5,7 +5,6 @@ kind: Kustomization
 resources:
   - ./externalsecret.yaml
   - ./helmrelease.yaml
-  - ./prometheusrule.yaml
   - ./pvc.yaml
   - ./rbac.yaml
   - ./httproute.yaml

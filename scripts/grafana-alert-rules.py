@@ -34,7 +34,6 @@ FOLDERS = {
     "Nodes": ["etcd", "node-exporter", "node-network", "oom"],
     "Monitoring": [
         "config-reloaders",
-        "gatus.rules",
         "general.rules",
         "prometheus",
         "prometheus-operator",

@@ -10,7 +10,6 @@ configMapGenerator:
       - ./database-crunchy-postgres-backup-rules.yaml
       - ./flux-system-flux-rules.yaml
       - ./network-external-dns-rules.yaml
-      - ./observability-gatus-rules.yaml
       - ./observability-kps-config-reloaders.yaml
       - ./observability-kps-etcd.yaml
       - ./observability-kps-general-rules.yaml

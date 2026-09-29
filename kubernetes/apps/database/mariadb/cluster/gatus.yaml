@@ -16,3 +16,8 @@ data:
         ui:
           hide-url: true
           hide-hostname: true
+        alerts:
+          - type: pushover
+            minimum-reminder-interval: 4h
+            provider-override:
+              priority: 1
