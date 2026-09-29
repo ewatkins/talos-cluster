@@ -16,6 +16,11 @@ data:
           hide-url: true
         conditions:
           - "[STATUS] == 403"
+        alerts:
+          - type: pushover
+            minimum-reminder-interval: 4h
+            provider-override:
+              priority: 1
       - name: garage-health
         group: S3
         url: http://garage-api.storage.svc.cluster.local:3903/health
@@ -25,6 +30,11 @@ data:
           hide-url: true
         conditions:
           - "[STATUS] == 200"
+        alerts:
+          - type: pushover
+            minimum-reminder-interval: 4h
+            provider-override:
+              priority: 1
       - name: garage-0
         group: S3
         url: tcp://garage-0.garage.storage.svc.cluster.local:3901
@@ -34,6 +44,11 @@ data:
           hide-url: true
         conditions:
           - "[CONNECTED] == true"
+        alerts:
+          - type: pushover
+            minimum-reminder-interval: 4h
+            provider-override:
+              priority: 1
       - name: garage-1
         group: S3
         url: tcp://garage-1.garage.storage.svc.cluster.local:3901
@@ -43,6 +58,11 @@ data:
           hide-url: true
         conditions:
           - "[CONNECTED] == true"
+        alerts:
+          - type: pushover
+            minimum-reminder-interval: 4h
+            provider-override:
+              priority: 1
       - name: garage-2
         group: S3
         url: tcp://garage-2.garage.storage.svc.cluster.local:3901
@@ -52,3 +72,8 @@ data:
           hide-url: true
         conditions:
           - "[CONNECTED] == true"
+        alerts:
+          - type: pushover
+            minimum-reminder-interval: 4h
+            provider-override:
+              priority: 1

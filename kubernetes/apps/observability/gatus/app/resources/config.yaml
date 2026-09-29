@@ -12,6 +12,25 @@ ui:
   header: Status
   logo: https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo_with_border.svg
   link: https://github.com/ewatkins/talos-cluster
+# Pushover alerting. Endpoints opt in with `alerts: [{type: pushover}]`, and
+# default-alert fills in the rest. Severity is per endpoint via
+# provider-override: groups others depend on (External, Infrastructure, S3,
+# Guarded) send at priority 1 (high, bypasses quiet hours) with a 4h reminder;
+# everything else at the default priority 0 with a 12h reminder. Gatus's
+# Pushover provider has no retry/expire, so emergency priority 2 is unusable.
+alerting:
+  pushover:
+    application-token: ${PUSHOVER_TOKEN}
+    user-key: ${PUSHOVER_USER_KEY}
+    resolved-priority: -1
+    sound: gamelan
+    default-alert:
+      description: health check failed
+      # Five 1m failures in a row, so a single dropped request never pages.
+      failure-threshold: 5
+      success-threshold: 2
+      send-on-resolved: true
+      minimum-reminder-interval: 12h
 connectivity:
   checker:
     target: 1.1.1.1:53
@@ -25,6 +44,11 @@ endpoints:
       dns-resolver: tcp://1.1.1.1:53
     conditions:
       - "[STATUS] == 404"
+    alerts:
+      - type: pushover
+        minimum-reminder-interval: 4h
+        provider-override:
+          priority: 1
   - name: internet
     group: Infrastructure
     url: ${SECRET_INTERNET_PING_URL}
@@ -37,3 +61,8 @@ endpoints:
     conditions:
       - "[STATUS] == 200"
       - "[BODY] == pat(*OK*)"
+    alerts:
+      - type: pushover
+        minimum-reminder-interval: 4h
+        provider-override:
+          priority: 1

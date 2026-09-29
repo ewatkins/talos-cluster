@@ -40,6 +40,22 @@ data:
           - type: pushover
 ```
 
+## Alerting
+
+Gatus sends alerts to Pushover itself (`alerting.pushover` in the main [config](app/resources/config.yaml)); nothing goes through Grafana. Each endpoint opts in with an `alerts` entry, and `default-alert` supplies the rest: 5 failures in a row to fire, 2 successes to resolve, a notice on resolve, and a reminder every 12h.
+
+Groups that other things depend on (External, Infrastructure, S3, Guarded) send at high priority with a 4h reminder:
+
+```yaml
+alerts:
+  - type: pushover
+    minimum-reminder-interval: 4h
+    provider-override:
+      priority: 1
+```
+
+Everything else uses the plain `- type: pushover` shown above. The shared components already include the right block.
+
 ## Adding via Kustomize Component
 
 Include one of the following components in the app's `kustomization.yaml`:

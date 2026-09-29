@@ -32,6 +32,8 @@ data:
           - "[CONNECTED] == true"
           - '[BODY] == pat(*"description"*)'
         ui: { dont-resolve-failed-conditions: true }
+        alerts:
+          - type: pushover
       - name: lobby
         group: Minecraft
         url: tcp://192.168.50.101:25565
@@ -41,6 +43,8 @@ data:
           - "[CONNECTED] == true"
           - '[BODY] == pat(*"description"*)'
         ui: { dont-resolve-failed-conditions: true }
+        alerts:
+          - type: pushover
       - name: homestead
         group: Minecraft
         url: tcp://192.168.50.11:25565
@@ -50,6 +54,8 @@ data:
           - "[CONNECTED] == true"
           - '[BODY] == pat(*"description"*)'
         ui: { dont-resolve-failed-conditions: true }
+        alerts:
+          - type: pushover
       - name: iridium
         group: Minecraft
         url: tcp://192.168.50.21:25565
@@ -59,6 +65,8 @@ data:
           - "[CONNECTED] == true"
           - '[BODY] == pat(*"description"*)'
         ui: { dont-resolve-failed-conditions: true }
+        alerts:
+          - type: pushover
       - name: atlas
         group: Minecraft
         url: tcp://192.168.50.31:25565
@@ -68,6 +76,8 @@ data:
           - "[CONNECTED] == true"
           - '[BODY] == pat(*"description"*)'
         ui: { dont-resolve-failed-conditions: true }
+        alerts:
+          - type: pushover
       - name: velocity-bedrock
         group: Minecraft
         url: udp://192.168.50.100:19132
@@ -77,3 +87,5 @@ data:
           - "[CONNECTED] == true"
           - "[BODY] == pat(*MCPE;*)"
         ui: { dont-resolve-failed-conditions: true }
+        alerts:
+          - type: pushover
