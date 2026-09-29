@@ -208,6 +208,8 @@ controlPlane:
             enabled: true
             allowedRoles:
                 - os:admin
+                # etcd-defrag CronJob (system-upgrade); can defrag, can't reconfigure or reset.
+                - os:operator
             allowedKubernetesNamespaces:
                 - actions-runner-system
                 - system-upgrade

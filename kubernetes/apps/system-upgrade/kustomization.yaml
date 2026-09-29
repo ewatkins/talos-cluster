@@ -8,5 +8,6 @@ components:
 
 resources:
   - ./namespace.yaml
+  - ./etcd-defrag/ks.yaml
   - ./renovate-operator/ks.yaml
   - ./tuppr/ks.yaml
