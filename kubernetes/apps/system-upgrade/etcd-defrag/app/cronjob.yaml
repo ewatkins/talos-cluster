@@ -1,0 +1,73 @@
+---
+# etcd never shrinks its database file on its own: space freed by compaction
+# stays allocated until a defrag, and etcdDatabaseHighFragmentationRatio fires
+# once less than half the file is in use. This defrags each member in turn.
+#
+# A member blocks reads and writes while it defrags (seconds at ~100 MB), so
+# the members go one at a time. The talosctl image has no shell, so the order
+# comes from init containers, which run sequentially and stop the Job at the
+# first failure; the main container prints the resulting status.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: etcd-defrag
+spec:
+  schedule: "30 4 1 * *" # monthly, the 1st at 04:30
+  timeZone: America/Chicago
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      # A failed defrag leaves a member to look at, not something to retry blind.
+      backoffLimit: 0
+      ttlSecondsAfterFinished: 604800
+      template:
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          initContainers:
+            - name: defrag-superior
+              image: &image ghcr.io/siderolabs/talosctl:v1.14.1@sha256:30791b2ec3ab1dec4093c342306159ebfe876eb9f646d5a710b853844a65ba13
+              args: ["--nodes", "${SUPERIOR}", "etcd", "defrag"]
+              securityContext: &securityContext
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+              volumeMounts: &volumeMounts
+                - name: talos
+                  mountPath: /var/run/secrets/talos.dev
+                  readOnly: true
+            - name: defrag-michigan
+              image: *image
+              args: ["--nodes", "${MICHIGAN}", "etcd", "defrag"]
+              securityContext: *securityContext
+              volumeMounts: *volumeMounts
+            - name: defrag-huron
+              image: *image
+              args: ["--nodes", "${HURON}", "etcd", "defrag"]
+              securityContext: *securityContext
+              volumeMounts: *volumeMounts
+          containers:
+            - name: status
+              image: *image
+              args: ["--nodes", "${SUPERIOR},${HURON},${MICHIGAN}", "etcd", "status"]
+              securityContext: *securityContext
+              volumeMounts: *volumeMounts
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  memory: 128Mi
+          volumes:
+            - name: talos
+              secret:
+                secretName: etcd-defrag
