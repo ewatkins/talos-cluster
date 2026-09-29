@@ -12,3 +12,5 @@ spec:
   timeout:
     http:
       requestTimeout: "3600s"
+      # Repeats the gateway default (upstream-idle-timeout), which this replaces.
+      connectionIdleTimeout: 4s
