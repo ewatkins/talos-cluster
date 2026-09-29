@@ -19,7 +19,6 @@ spec:
     - --maxmemory=$(MAX_MEMORY)Mi
     - --proactor_threads=2
     - --default_lua_flags=allow-undeclared-keys
-  networkPolicyEnabled: false
   resources:
     requests:
       cpu: 25m
