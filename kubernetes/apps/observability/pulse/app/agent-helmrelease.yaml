@@ -43,6 +43,11 @@ spec:
               # host /var is rbind-mounted, so pod volumes (emptyDirs,
               # projected secrets, CSI mounts) appear beneath it
               - --disk-exclude=/host/var/lib/kubelet/*
+              # the agent keeps one mountpoint per device, the first it sees;
+              # these container plumbing mounts sit on the same EPHEMERAL
+              # partition and would otherwise name it "/tmp"
+              - --disk-exclude=/tmp
+              - --disk-exclude=/etc/*
             env:
               NODE_NAME:
                 valueFrom:
