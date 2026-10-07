@@ -12,6 +12,7 @@ Real-time monitoring dashboard for Proxmox VE infrastructure. Displays node, VM,
 | Authentication | OIDC (`preferred_username` claim) | Proxied through Keycloak |
 | Persistence | PVC `pulse-data` mounted at `/data` | Stores configuration and state |
 | Credentials | `pulse-secret` (ExternalSecret from Bitwarden) | Proxmox API token and OIDC client secret |
+| Node agent | `pulse-agent` DaemonSet | Host agent per Talos node for disk usage (qemu-guest-agent returns no fsinfo on Talos); token `PULSE_AGENT_TOKEN` (`agent:report` scope) |
 
 ## Links
 
