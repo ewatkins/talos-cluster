@@ -1,0 +1,90 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app pulse-agent
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      pulse-agent:
+        # Talos runs qemu-guest-agent in an isolated extension container, so
+        # guest-get-fsinfo comes back empty and Pulse never sees node disk
+        # usage. A host agent per node reports it directly instead.
+        type: daemonset
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              # keep in step with the server image in helmrelease.yaml
+              repository: docker.io/rcourtman/pulse
+              tag: 6.4.5-beta.1@sha256:e23d8a4bdd77c1c2363d0c300848e69451a50f45a96ef38e24d9d64270cfc142
+            command: ["/usr/local/bin/pulse-agent"]
+            args:
+              - --url=https://pulse.ewatkins.dev
+              - --agent-id=$(NODE_NAME)
+              - --state-dir=/tmp/pulse-agent
+              - --disable-auto-update
+              # the agent is on the host network; don't claim a node port
+              - --health-addr=
+              # host /var is rbind-mounted, so pod volumes (emptyDirs,
+              # projected secrets, CSI mounts) appear beneath it
+              - --disk-exclude=/host/var/lib/kubelet/*
+            env:
+              NODE_NAME:
+                valueFrom:
+                  fieldRef:
+                    fieldPath: spec.nodeName
+            envFrom:
+              - secretRef:
+                  name: pulse-agent-secret
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 10m
+                memory: 32Mi
+              limits:
+                memory: 128Mi
+    defaultPodOptions:
+      # Host network makes the agent report the node's own hostname and IP,
+      # which is what Pulse uses to link it to the matching Proxmox VM.
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      tolerations:
+        - operator: Exists
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+    persistence:
+      # Talos' EPHEMERAL partition (images, logs, OpenEBS hostpath volumes).
+      # The agent statfs()s mountpoints in its own mount namespace, so the host
+      # filesystem has to be mounted into the container rather than read via
+      # HOST_PROC.
+      host-var:
+        type: hostPath
+        hostPath: /var
+        hostPathType: Directory
+        globalMounts:
+          - path: /host/var
+            readOnly: true
+      tmp:
+        type: emptyDir
+        globalMounts:
+          - path: /tmp

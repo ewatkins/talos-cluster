@@ -5,6 +5,8 @@ kind: Kustomization
 resources:
   - ./helmrelease.yaml
   - ./externalsecret.yaml
+  - ./agent-helmrelease.yaml
+  - ./agent-externalsecret.yaml
   - ./pvc.yaml
   - ./httproute.yaml
   - ./backendtrafficpolicy.yaml
