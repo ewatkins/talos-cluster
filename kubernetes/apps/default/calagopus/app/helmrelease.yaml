@@ -1,0 +1,120 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app calagopus
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    controllers:
+      calagopus:
+        # DATABASE_MIGRATE runs the schema migrations on every boot; two pods
+        # overlapping during a rollout would race them.
+        strategy: Recreate
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          # Panel only. Wings stays on the VLAN 50 VMs: it needs a Docker
+          # daemon, which Talos does not have. See ../README.md and
+          # ../WINGS.md.
+          app:
+            image:
+              repository: ghcr.io/calagopus/panel
+              tag: 1.2.4@sha256:95ee4a9ea6b3c1567179610ca8f5637f7e8d7f6bc4f97a4207afba6b9cd21d1a
+            env:
+              TZ: UTC
+              PORT: "8000"
+              APP_DEBUG: "false"
+              # The only replica, so it also runs the background tasks.
+              APP_PRIMARY: "true"
+              DATABASE_MIGRATE: "true"
+              APP_LOG_DIRECTORY: /var/log/calagopus
+              # Off for now: browsers keep reaching Wings directly at
+              # wing-*.ewatkins.dev:8080 through the internal gateway, as
+              # they did with Pterodactyl.
+              APP_ENABLE_WINGS_PROXY: "false"
+              APP_USE_DECRYPTION_CACHE: "true"
+              APP_USE_INTERNAL_CACHE: "true"
+              # TLS ends at the internal gateway; trust its X-Forwarded-For so
+              # logins and rate limits see the real client address.
+              APP_TRUSTED_PROXIES: 10.69.0.0/16
+              # Shared Dragonfly. Every key is prefixed `calagopus::`, which
+              # keeps it apart from the other tenants.
+              REDIS_URL: redis://dragonfly.database.svc.cluster.local:6379
+              REDIS_KEY_PREFIX: calagopus
+            envFrom:
+              - secretRef:
+                  name: calagopus-secret
+              - secretRef:
+                  name: calagopus-db-secret
+            # The frontend is served from `/`; the startup probe covers the
+            # migrations, which run before the listener comes up.
+            probes:
+              liveness: &probe
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: &port 8000
+                  periodSeconds: 30
+                  failureThreshold: 3
+              readiness: *probe
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: *port
+                  failureThreshold: 60
+                  periodSeconds: 10
+            resources:
+              requests:
+                cpu: 50m
+                memory: 128Mi
+              limits:
+                memory: 1Gi
+    service:
+      app:
+        controller: *app
+        ports:
+          http:
+            port: *port
+    persistence:
+      # The filesystem storage driver (avatars, uploaded assets). On nfs-fast
+      # so it survives a node loss and is covered by the NAS backups.
+      data:
+        type: persistentVolumeClaim
+        storageClass: nfs-fast
+        accessMode: ReadWriteOnce
+        size: 1Gi
+        globalMounts:
+          - path: /var/lib/calagopus
+      logs:
+        type: emptyDir
+        globalMounts:
+          - path: /var/log/calagopus
+      # Migration only: the importer's view of the Pterodactyl database.
+      import:
+        type: secret
+        name: calagopus-import-env
+        globalMounts:
+          - path: /import
+            readOnly: true
+    ingress:
+      app:
+        enabled: false

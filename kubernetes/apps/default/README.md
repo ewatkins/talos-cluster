@@ -7,3 +7,4 @@ General-purpose applications that do not belong to a more specific category name
 | App | Description |
 | --- | --- |
 | [alexandrie](alexandrie/README.md) | Wiki and knowledge base at `https://notes.ewatkins.dev`, backed by MariaDB Galera, in-pod RustFS object storage, and Keycloak OIDC |
+| [calagopus](calagopus/README.md) | Calagopus game server panel at `https://calagopus.ewatkins.dev`, replacing Pterodactyl; backed by `crunchy-postgres-17` and Dragonfly, with Wings on the VLAN 50 VMs ([WINGS.md](calagopus/WINGS.md)) |
