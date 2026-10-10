@@ -98,6 +98,9 @@ spec:
     - name: "awx"
       databases: ["awx"]
       password: *password
+    - name: "calagopus"
+      databases: ["calagopus"]
+      password: *password
 
   backups:
     pgbackrest:
