@@ -33,7 +33,7 @@ spec:
           app:
             image:
               repository: ghcr.io/rekklesna/proxmoxmcp-plus
-              tag: v0.6.1@sha256:e3b7c50d01511c05425043d71324adf23b7ad8ab7593f4d3ecba2c671a081f8d
+              tag: v0.6.2@sha256:362b8dd475a98eaf7a3f4457b18c3e3e93481feeef937cb88d5bb7e45a843981
             env:
               TZ: America/Chicago
               HOME: /tmp
