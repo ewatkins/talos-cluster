@@ -1,0 +1,14 @@
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Grant
+metadata:
+  name: calagopus-import
+spec:
+  mariaDbRef:
+    name: mariadb
+  # SELECT only: the importer cannot modify the Pterodactyl database even if
+  # it is pointed at the wrong target or misbehaves.
+  privileges:
+    - "SELECT"
+  database: pterodactyl
+  table: "*"
+  username: calagopus-import

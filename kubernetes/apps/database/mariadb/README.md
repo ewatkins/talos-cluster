@@ -56,6 +56,7 @@ The following databases, users, and grants are managed as operator CRs:
 | `playerpoints` | `playerpoints` | Minecraft PlayerPoints plugin |
 | `wildstacker` | `wildstacker` | Minecraft WildStacker plugin |
 | `pterodactyl` | `pterodactyl` | Pterodactyl panel (`default/pterodactyl`); the user also holds `ALL` on `*.*` for the panel's database-host feature |
+| — | `calagopus-import` | `SELECT` on `pterodactyl.*` only, for the Calagopus importer (`default/calagopus`); removed with the Pterodactyl decommission |
 
 All databases use `utf8` character set with `utf8_general_ci` collation. User secrets are sourced from Bitwarden via ExternalSecrets (refreshed every 15 minutes).
 
