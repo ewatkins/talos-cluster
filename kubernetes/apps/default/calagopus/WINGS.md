@@ -65,10 +65,10 @@ cp -a /etc/pterodactyl/config.yml /root/config.yml.pterodactyl
 
 ### 4. Install Calagopus Wings
 
-Pin the version the panel runs (1.2.4 at the time of writing):
+Pin the version the panel runs (1.2.5 at the time of writing):
 
 ```sh
-curl -fL https://github.com/calagopus/wings/releases/download/release-1.2.4/wings-rs-x86_64-linux \
+curl -fL https://github.com/calagopus/wings/releases/download/release-1.2.5/wings-rs-x86_64-linux \
   -o /usr/local/bin/wings.calagopus
 chmod +x /usr/local/bin/wings.calagopus
 /usr/local/bin/wings.calagopus version

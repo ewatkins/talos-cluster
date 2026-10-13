@@ -7,7 +7,7 @@ copies a Pterodactyl database across.
 
 | Setting | Value |
 | --- | --- |
-| Image | `ghcr.io/calagopus/panel:1.2.4` (digest-pinned) |
+| Image | `ghcr.io/calagopus/panel:1.2.5` (digest-pinned) |
 | Database | `calagopus` on `crunchy-postgres-17`, through pgBouncer |
 | Cache | Shared Dragonfly, keys prefixed `calagopus::` |
 | File storage | 1 Gi `nfs-fast` PVC at `/var/lib/calagopus` |
