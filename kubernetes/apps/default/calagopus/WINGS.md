@@ -87,7 +87,7 @@ systemctl cat wings | grep ExecStart
 Edit `/etc/pterodactyl/config.yml` and change only these lines:
 
 ```yaml
-remote: https://calagopus.ewatkins.dev
+remote: https://mcpanel.ewatkins.dev
 docker:
   network:
     name: pterodactyl_nw
