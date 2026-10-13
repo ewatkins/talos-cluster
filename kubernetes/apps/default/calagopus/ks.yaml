@@ -30,4 +30,4 @@ spec:
   postBuild:
     substitute:
       APP: *app
-      GATUS_SUBDOMAIN: calagopus
+      GATUS_SUBDOMAIN: mcpanel

@@ -1,6 +1,6 @@
 # [Calagopus](https://calagopus.com) Panel
 
-Game server panel at `https://calagopus.ewatkins.dev`, replacing the
+Game server panel at `https://mcpanel.ewatkins.dev`, replacing the
 Pterodactyl panel (`default/pterodactyl`). Calagopus is a Rust rewrite of
 Pterodactyl that keeps its eggs and Wings API, and ships an importer that
 copies a Pterodactyl database across.
@@ -73,7 +73,7 @@ Do all of this before merging this PR.
    - the `calagopus` user and database on `crunchy-postgres-17`
    - the `calagopus-import` MariaDB account (`SELECT` on `pterodactyl.*` only)
    - the panel
-3. **Open `https://calagopus.ewatkins.dev` and stop at the setup (OOBE)
+3. **Open `https://mcpanel.ewatkins.dev` and stop at the setup (OOBE)
    screen.** Do not create an admin user: the importer expects an empty
    target.
 
