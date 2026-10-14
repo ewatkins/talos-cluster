@@ -28,7 +28,7 @@ locals {
       bluemap           = true
     }
     iridium = {
-      enabled           = false
+      enabled           = true
       servers           = "Iridium"
       vm_id             = 5021
       node              = "pve02"
