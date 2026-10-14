@@ -1,0 +1,10 @@
+[Unit]
+Description=Add VMs in the Proxmox pool "wings" to HA, every 2 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=2min
+RandomizedDelaySec=30s
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,8 @@
+[Unit]
+Description=Add VMs in the Proxmox pool "wings" to HA
+After=pve-cluster.service pve-ha-crm.service
+Requires=pve-cluster.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/wings-ha-sync

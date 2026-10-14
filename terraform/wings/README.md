@@ -78,9 +78,12 @@ The cluster holds two credentials, from the Bitwarden item `tofu-wings-secret`:
 | API token `terraform@pve!tofu` | Create, configure, power and migrate VMs **in the `wings` pool**; allocate disks on `caspian-fast`; read the image on `caspian`; manage the `wings-snippets` storage; use the Minecraft VNet | Touch the Talos VMs or any VM outside the pool, other storage, node or cluster settings, HA, backups, users |
 | SSH key for `tofu-snippets` on pve01 | Write files to the `wings-snippets` storage over SFTP | Run commands (SFTP only), forward ports, write anywhere else |
 
-HA registration and backups need cluster-wide rights, so they are not done
-from here: the `wings` backup job selects the pool, and each new wing is added
-to HA by hand (WINGS.md, step 1).
+HA and backups need cluster-wide rights (HA needs `Sys.Console` on `/`,
+which amounts to root), so the token is never given them. Both key off the
+`wings` pool instead: the `wings` backup job selects the pool, and
+[`wings-ha-sync`](./proxmox/), a root timer on each Proxmox node, adds every
+pool member to HA within two minutes. A destroy uses `purge`, which removes
+the VM from HA too.
 
 ## One-time setup
 
@@ -154,7 +157,23 @@ Keep the token value from the last command. These are the narrowest rights I
 could derive from the Proxmox and provider source; if the first plan or apply
 fails with a `403` on a path, grant the missing privilege on that path only.
 
-### 4. Bitwarden
+### 4. HA sync
+
+On **each** Proxmox node (any one is enough, all three survive a node being
+down), from a checkout of this repo:
+
+```sh
+for n in pve01 pve02 pve03; do
+  scp terraform/wings/proxmox/wings-ha-sync.sh root@$n.ewatkins.dev:/usr/local/sbin/wings-ha-sync
+  scp terraform/wings/proxmox/wings-ha-sync.{service,timer} root@$n.ewatkins.dev:/etc/systemd/system/
+  ssh root@$n.ewatkins.dev 'chmod 0755 /usr/local/sbin/wings-ha-sync && systemctl daemon-reload && systemctl enable --now wings-ha-sync.timer'
+done
+```
+
+It only adds, and never changes a VM that is already in HA, so a state set
+by hand (`--state stopped` for a rollback) stays. Logs: `journalctl -t wings-ha-sync`.
+
+### 5. Bitwarden
 
 In the `talos` Secrets Manager project, which External Secrets reads, create
 `tofu-wings-secret` with this JSON value:
@@ -182,6 +201,6 @@ decodes it. Shred the private key file once it is saved.
 - **Wings version:** `wings_version`/`wings_sha256` only set what a *new*
   wing installs. Running wings are upgraded in place (WINGS.md, "Upgrading
   Wings"), keeping them in step with the panel image.
-- **Removing a wing:** take it out of HA (`ha-manager remove vm:<id>`),
-  then set `enabled = false` and approve the plan.
+- **Removing a wing:** set `enabled = false` and merge. The destroy purges
+  it from HA and the pool.
 - **Local check** before pushing: `tofu init -backend=false && tofu validate`.

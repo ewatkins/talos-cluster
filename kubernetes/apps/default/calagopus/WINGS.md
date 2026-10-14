@@ -81,11 +81,9 @@ The branch planner comments the plan on it. The plan must only **create**
 a `destroy` or `replace` of another wing) means stop and fix the PR. Merge
 it to build the VM.
 
-Once the VM exists, put it under HA (the token deliberately cannot):
-
-```sh
-ha-manager add vm:$NEW_ID --state started
-```
+Within two minutes of the VM joining the `wings` pool, `wings-ha-sync` on
+the Proxmox nodes adds it to HA. Check with
+`ha-manager status | grep vm:$NEW_ID`.
 
 Wait for cloud-init to finish, then check what it built:
 
@@ -104,7 +102,7 @@ ssh ewatkins@$NEW '
 ```
 
 If cloud-init failed (for example a Wings checksum mismatch), fix the template,
-then rebuild: `ha-manager remove vm:$NEW_ID`, then merge `enabled = false`,
+then rebuild: merge `enabled = false`,
 then `enabled = true`. Do not patch a half-built VM
 by hand.
 
@@ -256,7 +254,7 @@ Phase 4. Change the panel node's FQDN back to `wing-node0X.ewatkins.dev`.
 it back with the step 2 command in reverse first if you need it.
 
 The new VM stays stopped. Either fix it and try the cutover again, or remove
-it: `ha-manager remove vm:$NEW_ID`, then merge `enabled = false`.
+it: merge `enabled = false` (the destroy also drops it from HA).
 
 ## Upgrading Wings
 
