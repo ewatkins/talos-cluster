@@ -75,23 +75,11 @@ SERVICE="192.168.50.30 192.168.50.31 192.168.50.32"
 
 ### 1. Build the VM
 
-Set `enabled = true` on the wing in `terraform/wings/main.tf`, commit and
-push. Then read the plan and approve it:
-
-```sh
-kubectl -n calagopus-wings get terraform calagopus-wings     # plan ID in the message
-kubectl -n calagopus-wings get cm tfplan-default-calagopus-wings -o jsonpath='{.data.tfplan}'
-```
-
-The plan must only **create** `wing-$WING` and its two snippets. Anything
-else (above all a `destroy` or `replace` of another wing) means stop. Approve
-it in the cluster (a committed approval never matches; see
-[`terraform/wings`](../../../../terraform/wings/README.md#how-changes-are-applied)):
-
-```sh
-kubectl -n calagopus-wings patch terraform calagopus-wings --type merge \
-  -p '{"spec":{"approvePlan":"<plan ID>"}}'
-```
+Set `enabled = true` on the wing in `terraform/wings/main.tf` and open a PR.
+The branch planner comments the plan on it. The plan must only **create**
+`wing-$WING`, its two snippets and its MAC record. Anything else (above all
+a `destroy` or `replace` of another wing) means stop and fix the PR. Merge
+it to build the VM.
 
 Once the VM exists, put it under HA (the token deliberately cannot):
 
@@ -116,8 +104,8 @@ ssh ewatkins@$NEW '
 ```
 
 If cloud-init failed (for example a Wings checksum mismatch), fix the template,
-then rebuild: `ha-manager remove vm:$NEW_ID`, set `enabled = false` and
-approve, then `enabled = true` and approve. Do not patch a half-built VM
+then rebuild: `ha-manager remove vm:$NEW_ID`, then merge `enabled = false`,
+then `enabled = true`. Do not patch a half-built VM
 by hand.
 
 ### 2. Copy the data while the servers run
@@ -268,8 +256,7 @@ Phase 4. Change the panel node's FQDN back to `wing-node0X.ewatkins.dev`.
 it back with the step 2 command in reverse first if you need it.
 
 The new VM stays stopped. Either fix it and try the cutover again, or remove
-it: `ha-manager remove vm:$NEW_ID`, then `enabled = false` and approve the
-plan.
+it: `ha-manager remove vm:$NEW_ID`, then merge `enabled = false`.
 
 ## Upgrading Wings
 
