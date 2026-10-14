@@ -106,6 +106,7 @@ write_files:
       [Install]
       WantedBy=multi-user.target
 
+%{ if length(service_addresses) > 0 ~}
   # The old wing's addresses. Disabled by the suffix until the old VM is
   # off; WINGS.md renames it and runs `netplan apply`. eth0 is the name
   # cloud-init gives the NIC, so netplan merges these into its config.
@@ -120,6 +121,7 @@ write_files:
 %{ for address in service_addresses ~}
               - ${address}/24
 %{ endfor ~}
+%{ endif ~}
 
 runcmd:
   # Pinned and checksummed; a mismatch fails cloud-init visibly.
