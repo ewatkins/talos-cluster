@@ -16,6 +16,8 @@ spec:
     /*
     # include kubernetes directory
     !/kubernetes
+    # include OpenTofu stacks applied by tofu-controller (terraform/wings)
+    !/terraform
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
