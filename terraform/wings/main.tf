@@ -65,6 +65,11 @@ locals {
 
   enabled = { for name, wing in local.wings : name => wing if wing.enabled }
 
+  # A fixed MAC per wing, derived from its VMID: locally administered
+  # (02:...), and readable (5031 -> 02:00:00:00:50:31). Rebuilding a wing
+  # keeps its MAC, so the router and switch see the same device.
+  mac = { for name, wing in local.enabled : name => format("02:00:00:00:%s:%s", substr(tostring(wing.vm_id), 0, 2), substr(tostring(wing.vm_id), 2, 2)) }
+
   gateway = "192.168.50.1"
   ssh_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJLUii06o9M7IuYRamEe5tB5GlOlB3zJu7ydmz99gHUc Personal SSH Key"
 
@@ -187,8 +192,9 @@ resource "proxmox_virtual_environment_vm" "wing" {
   # virtio NIC with no MTU set inherits it. At 9000, anything off-VLAN (the
   # NAS on VLAN 60) black-holes large packets: NFS mounts, then hangs.
   network_device {
-    bridge = "Minecrft"
-    mtu    = 1500
+    bridge      = "Minecrft"
+    mtu         = 1500
+    mac_address = local.mac[each.key]
   }
 
   initialization {
@@ -213,7 +219,16 @@ resource "proxmox_virtual_environment_vm" "wing" {
     # Bumping the image is for new wings only; it must not replace a
     # running one.
     ignore_changes = [disk[0].import_from]
+    # The guest's network config is bound to the MAC on first boot, so a
+    # changed MAC would leave the VM with no network after its next reboot.
+    # Rebuild instead.
+    replace_triggered_by = [terraform_data.mac[each.key]]
   }
+}
+
+resource "terraform_data" "mac" {
+  for_each = local.mac
+  input    = each.value
 }
 
 output "wings" {
