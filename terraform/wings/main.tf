@@ -3,10 +3,12 @@ locals {
   # Lobby). Set `enabled` to build a wing; WINGS.md covers doing that one
   # node at a time.
   #
-  # address           The VM's own management address. Never moves.
-  # service_addresses Taken over from the old VM at cutover: the wing address
-  #                   (.X0, the Envoy Backend), the game server (.X1) and
-  #                   spare allocations. Applied by hand, see WINGS.md.
+  # address           The VM's own address. While a wing is being built beside
+  #                   its old VM it is a temporary .X9; after the cutover it
+  #                   is consolidated to .X0 (WINGS.md, step 11).
+  # service_addresses Taken over from the old VM at cutover (.X0 for the
+  #                   Envoy Backend, .X1 for the game server, spares). Empty
+  #                   once consolidated: game servers then listen on .X0.
   # memory            Panel limits are 8200 MiB per game server and
   #                   2250 + 1125 MiB on the proxy; the rest is the OS,
   #                   Docker and Wings.
@@ -21,8 +23,8 @@ locals {
       cores             = 4
       memory            = 12288
       disk              = 32
-      address           = "192.168.50.39"
-      service_addresses = ["192.168.50.30", "192.168.50.31", "192.168.50.32"]
+      address           = "192.168.50.30"
+      service_addresses = []
       bluemap           = true
     }
     iridium = {

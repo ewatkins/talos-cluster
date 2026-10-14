@@ -235,6 +235,35 @@ Then remove `$OLD_ID` from the hand-made **Minecraft Backups** job
 (Datacenter → Backup). The new VM is in the `wings` pool, which the `wings`
 job backs up.
 
+### 11. Consolidate onto `.X0`
+
+Once the wing is verified (the old VM can still be around), fold everything
+onto the wing address, so the VM has one address and the game server
+listens on it. Done for Atlas on 2026-10-14.
+
+1. **Stop** the node's servers (panel, or `POST /api/servers/<uuid>/power`
+   `{"action":"stop"}` to Wings on the node). Calagopus Wings removes a
+   stopped server's container; the data stays.
+2. **Panel allocations:** move the server's `.X1` allocations to `.X0`
+   (same ports) and delete unused spares. Restart the panel so it drops its
+   cache.
+3. **Velocity** (`velocity.toml` on `wing-proxy`): change the server's
+   backend to `.X0:25565`, then `velocity reload` in its console.
+4. **Start** the server; it binds `.X0`. Check with a Minecraft status ping.
+5. **Guest network:** in `/etc/netplan/50-cloud-init.yaml` change the
+   `.X9` address to `.X0`, move `60-service-addresses.yaml` out of
+   `/etc/netplan`, then `netplan apply` and `arping -U -c 2 -I eth0 <.X0>`.
+   Connect over `.X0` while doing this; `.X9` goes away.
+6. **Git:** set the wing's `address` to `.X0` and `service_addresses = []`,
+   and move its Gatus check to `.X0`. The plan must be an **in-place update**
+   of the VM (its cloud-init IP) and its user-data snippet, never a replace.
+   cloud-init doesn't reapply the network on an existing VM, so this only
+   brings Git in line with step 5 and makes a rebuild come up on `.X0`.
+
+`wing-proxy` is the exception: Velocity (`.100`) and the Lobby (`.101`) both
+need port 25565, so it keeps `.101` (and stays at `address = .100` with
+`service_addresses = [".101"]` once consolidated).
+
 ## Rollback
 
 Until step 10, on the affected node:
