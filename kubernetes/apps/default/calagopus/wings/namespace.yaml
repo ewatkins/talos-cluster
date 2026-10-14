@@ -1,0 +1,11 @@
+---
+# A namespace of its own, so the runner's Secret access reaches only the
+# Wings credentials and state, not every app's secrets in `default`.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: calagopus-wings
+  annotations:
+    # Holds the OpenTofu state (tfstate-default-calagopus-wings). Never let a
+    # prune take it.
+    kustomize.toolkit.fluxcd.io/prune: disabled
