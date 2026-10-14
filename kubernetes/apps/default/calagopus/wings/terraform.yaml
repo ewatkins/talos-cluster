@@ -20,6 +20,12 @@ spec:
   # Proxmox (ignore_changes in terraform/wings), so rollbacks and HA moves
   # are not undone here.
   approvePlan: auto
+  # Branch planner: only plan PRs that change terraform/wings. Without this it
+  # plans every open PR, and a Renovate branch cut from an older main shows a
+  # misleading plan (destroying wings that exist on main) for a change that
+  # never touches Terraform.
+  branchPlanner:
+    enablePathScope: true
   # The plan as text, in ConfigMap tfplan-default-calagopus-wings.
   storeReadablePlan: human
   # Removing this object must never delete the VMs (or their game data).
