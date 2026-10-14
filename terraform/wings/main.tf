@@ -1,6 +1,7 @@
 locals {
-  # One VM per game mode. Set `enabled` to build a wing; WINGS.md covers
-  # doing that one node at a time.
+  # One VM per world, named after it (the proxy carries Velocity and the
+  # Lobby). Set `enabled` to build a wing; WINGS.md covers doing that one
+  # node at a time.
   #
   # address           The VM's own management address. Never moves.
   # service_addresses Taken over from the old VM at cutover: the wing address
@@ -12,9 +13,8 @@ locals {
   # bluemap           Mount the shared BlueMap NFS export. Only servers
   #                   that render a map write to it.
   wings = {
-    creative = {
-      # Rebuilding with the MTU and NFS fixes: down here, back up next.
-      enabled           = false
+    atlas = {
+      enabled           = true
       servers           = "Atlas"
       vm_id             = 5031
       node              = "pve03"
@@ -25,7 +25,7 @@ locals {
       service_addresses = ["192.168.50.30", "192.168.50.31", "192.168.50.32"]
       bluemap           = true
     }
-    skyblock = {
+    iridium = {
       enabled           = false
       servers           = "Iridium"
       vm_id             = 5021
@@ -37,7 +37,7 @@ locals {
       service_addresses = ["192.168.50.20", "192.168.50.21", "192.168.50.22"]
       bluemap           = false
     }
-    survival = {
+    homestead = {
       enabled           = false
       servers           = "Homestead"
       vm_id             = 5011
@@ -136,9 +136,8 @@ resource "proxmox_virtual_environment_vm" "wing" {
 
   on_boot = true
   started = true
-  # A deleted wing takes its game data with it. To remove one, add
-  # `unprotect = true` to its entry and apply before disabling it.
-  protection = !try(each.value.unprotect, false)
+  # No Proxmox protection: rebuilding a wing is a normal operation. Every
+  # destroy still needs an approved plan, which is the safeguard.
   # HA may move the VM; follow it rather than recreate it.
   migrate = true
   # Never reboot a running game server to apply a config change.
