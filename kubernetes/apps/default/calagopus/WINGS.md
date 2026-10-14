@@ -77,15 +77,12 @@ SERVICE="192.168.50.30 192.168.50.31 192.168.50.32"
 
 Set `enabled = true` on the wing in `terraform/wings/main.tf` and open a PR.
 The branch planner comments the plan on it. The plan must only **create**
-`wing-$WING`, its two snippets and its MAC record. Anything else (above all
+`wing-$WING`, its two snippets, its MAC record and its HA resource. Anything else (above all
 a `destroy` or `replace` of another wing) means stop and fix the PR. Merge
 it to build the VM.
 
-Once the VM exists, put it under HA (the token deliberately cannot):
-
-```sh
-ha-manager add vm:$NEW_ID --state started
-```
+The same apply puts it under HA (`proxmox_haresource`); check with
+`ha-manager status | grep vm:$NEW_ID`.
 
 Wait for cloud-init to finish, then check what it built:
 
@@ -104,7 +101,7 @@ ssh ewatkins@$NEW '
 ```
 
 If cloud-init failed (for example a Wings checksum mismatch), fix the template,
-then rebuild: `ha-manager remove vm:$NEW_ID`, then merge `enabled = false`,
+then rebuild: merge `enabled = false`,
 then `enabled = true`. Do not patch a half-built VM
 by hand.
 
@@ -256,7 +253,7 @@ Phase 4. Change the panel node's FQDN back to `wing-node0X.ewatkins.dev`.
 it back with the step 2 command in reverse first if you need it.
 
 The new VM stays stopped. Either fix it and try the cutover again, or remove
-it: `ha-manager remove vm:$NEW_ID`, then merge `enabled = false`.
+it: merge `enabled = false` (its HA resource goes with it).
 
 ## Upgrading Wings
 
