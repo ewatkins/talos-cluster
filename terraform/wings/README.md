@@ -30,6 +30,9 @@ everything inside the guest.
   No rpcbind listening, and no certbot or Cloudflare token on the VM: Wings
   uses a self-signed cert, which is all Envoy's TLS hop needs.
 - **Serial console only**, no ballooning, no emulated display.
+- **Fixed MAC** derived from the VMID (`02:00:00:00:50:31` for 5031), so a
+  rebuilt wing looks like the same device to the network. Changing it
+  rebuilds the VM, because the guest's network config is bound to it.
 - **In the `wings` pool**, which is what the API token is limited to and what
   the `wings` backup job selects.
 - **Not protected** in Proxmox: rebuilding a wing is routine. Nothing is
