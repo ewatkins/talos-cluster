@@ -13,7 +13,8 @@ locals {
   #                   that render a map write to it.
   wings = {
     creative = {
-      enabled           = true
+      # Rebuilding with the MTU and NFS fixes: down here, back up next.
+      enabled           = false
       servers           = "Atlas"
       vm_id             = 5031
       node              = "pve03"
@@ -127,8 +128,8 @@ resource "proxmox_virtual_environment_vm" "wing" {
   # the pool, so tagging a new VM needs rights the pool-scoped token lacks
   # (PVE::GuestHelpers::assert_tag_permissions). The pool and the
   # description identify a wing instead.
-  node_name   = each.value.node
-  vm_id       = each.value.vm_id
+  node_name = each.value.node
+  vm_id     = each.value.vm_id
   # The API token's VM rights reach only this pool, and the PBS job that
   # backs up the wings selects it.
   pool_id = "wings"
@@ -183,9 +184,12 @@ resource "proxmox_virtual_environment_vm" "wing" {
     discard      = "on"
   }
 
-  # VLAN 50 is a 1500-MTU network; the NIC's default of 1500 matches it.
+  # VLAN 50 is a 1500-MTU network, but the DATA SDN zone is 9000 and a
+  # virtio NIC with no MTU set inherits it. At 9000, anything off-VLAN (the
+  # NAS on VLAN 60) black-holes large packets: NFS mounts, then hangs.
   network_device {
     bridge = "Minecrft"
+    mtu    = 1500
   }
 
   initialization {

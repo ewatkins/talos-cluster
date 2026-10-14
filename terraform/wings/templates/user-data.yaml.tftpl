@@ -121,12 +121,6 @@ write_files:
               - ${address}/24
 %{ endfor ~}
 
-%{ if bluemap ~}
-# Shared BlueMap storage. NFSv4.2 needs no rpcbind, which is masked below.
-mounts:
-  - [storage.ewatkins.dev:/mnt/user/bluemap, /mnt/bluemap, nfs4, "rw,hard,vers=4.2,timeo=600,retrans=2,_netdev,nofail", "0", "0"]
-
-%{ endif ~}
 runcmd:
   # Pinned and checksummed; a mismatch fails cloud-init visibly.
   - [sh, -c, "curl -fsSL -o /usr/local/bin/wings https://github.com/calagopus/wings/releases/download/${wings_version}/wings-rs-x86_64-linux && echo '${wings_sha256}  /usr/local/bin/wings' | sha256sum -c - && chmod 0755 /usr/local/bin/wings"]
@@ -136,6 +130,10 @@ runcmd:
   - [sh, -c, "mkdir -p /etc/calagopus-wings/tls && openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:P-256 -nodes -days 3650 -subj '/CN=${hostname}.ewatkins.dev' -addext 'subjectAltName=DNS:${hostname}.ewatkins.dev' -keyout /etc/calagopus-wings/tls/key.pem -out /etc/calagopus-wings/tls/cert.pem && chmod 0600 /etc/calagopus-wings/tls/key.pem"]
 %{ if bluemap ~}
   - [systemctl, mask, --now, rpcbind.service, rpcbind.socket]
+  # Shared BlueMap storage. Mounted here rather than with the `mounts`
+  # module, which runs before packages are installed, so there is no NFS
+  # helper yet. NFSv4.2 needs no rpcbind.
+  - [sh, -c, "grep -q ' /mnt/bluemap ' /etc/fstab || echo 'storage.ewatkins.dev:/mnt/user/bluemap /mnt/bluemap nfs4 rw,hard,vers=4.2,timeo=600,retrans=2,_netdev,nofail 0 0' >> /etc/fstab; mkdir -p /mnt/bluemap && mount /mnt/bluemap"]
 %{ endif ~}
   - [systemctl, enable, --now, qemu-guest-agent]
   - [systemctl, restart, ssh]

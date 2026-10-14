@@ -108,7 +108,9 @@ ssh ewatkins@$NEW '
   docker info --format "{{.ServerVersion}} live-restore={{.LiveRestoreEnabled}}"
   /usr/local/bin/wings version
   systemctl is-enabled wings          # enabled (not started yet)
+  ip -o link show eth0 | grep -o "mtu [0-9]*"   # mtu 1500, never 9000
   findmnt /mnt/bluemap                # creative and survival only
+  ls /mnt/bluemap | head -3           # must list files, not hang
   sudo ss -tlnpH                      # only sshd, and resolved on loopback
 '
 ```
