@@ -224,7 +224,18 @@ resource "proxmox_virtual_environment_vm" "wing" {
     # Plans apply on merge (approvePlan: auto), and drift is corrected hourly,
     # so leave power state and placement to Proxmox: a wing stopped for a
     # rollback (WINGS.md) must stay stopped, and one HA moved must stay put.
-    ignore_changes = [disk[0].import_from, started, node_name]
+    #
+    # cloud-init runs once per VM (fixed instance-id), so a changed template
+    # must never touch an existing wing. The provider treats a new snippet
+    # file ID as "replace the VM", which would destroy its game data; a
+    # template change reaches a wing only by a deliberate rebuild.
+    ignore_changes = [
+      disk[0].import_from,
+      started,
+      node_name,
+      initialization[0].user_data_file_id,
+      initialization[0].meta_data_file_id,
+    ]
     # The guest's network config is bound to the MAC on first boot, so a
     # changed MAC would leave the VM with no network after its next reboot.
     # Rebuild instead.
