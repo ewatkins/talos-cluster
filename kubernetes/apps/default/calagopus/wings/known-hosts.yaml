@@ -1,0 +1,13 @@
+---
+# pve01's host keys, pinned. The provider otherwise trusts whatever key it
+# sees first, and a runner pod starts with an empty known_hosts every time.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: calagopus-wings-known-hosts
+  namespace: calagopus-wings
+data:
+  known_hosts: |
+    pve01.ewatkins.dev ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFU1bGCiYdcPLoR+xstkSjtaqxp+vAgOrXKRKI8MW5OD
+    pve01.ewatkins.dev ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBC1XURFPvmILQnVaUsHrhBGaF9T/1PpRQOJl8NacwaiiU/VmgfIe6C5FhR0vXfEvnKpIfE3swcB7/wgE2YHoRWI=
+    pve01.ewatkins.dev ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCoFkwJZ9njfuQZnWaMRIiBnnku0+sTIAE+P2kRYMG2PkCsbby+S6onA1XS5vo8OTD4F/s90Suk2kFolMlzQ+CQQzfrQC+eATlh4KSpMN/9pD5ThDZsf8EQ5ggXU9IEEVhNntc5jV7MxDvF9Y0inWe+/OnBmhAENzdLsVgsGJLVAa3DBXXKwhVmX5B/i57aaCRBm5exGdajstYfoCWNgdeDkwHe8Me/Mbug4840wABYEBdYt/jR6lbJV1s6PCm/lgVlljYFiGubpyC93x9SKDhLxSksx1sWax8t8oqa4qdYaP+11TGBK968/0HVJPk35dT+Gc9qFURJ8I6HhqCeT/YC/L+V+lHdK62YWjX7qo2Mpykpx5w6G+mRNQNTiaH7DW8wHBIaQ2g6/C4/owxr6kTjx74yhczNQfYrjIpopqaKEDvanbOeOIbgLKDcRsiUkbBwViWwDIcAvdZTQcIUlZmAYuUVgWGthGn9SpPP9+iHoXYcafb1cIQeOx7X6mk5sl8=

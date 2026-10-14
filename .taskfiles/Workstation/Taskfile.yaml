@@ -5,7 +5,6 @@ version: "3"
 vars:
   ARCHFILE: "{{.ROOT_DIR}}/.taskfiles/Workstation/Archfile"
   BREWFILE: "{{.ROOT_DIR}}/.taskfiles/Workstation/Brewfile"
-  GENERIC_BIN_DIR: "{{.ROOT_DIR}}/.bin"
 
 tasks:
 
@@ -46,7 +45,11 @@ tasks:
       - { msg: "Missing Archfile", sh: "test -f {{.ARCHFILE}}" }
 
   generic-linux:
-    desc: Install CLI tools into the projects .bin directory using curl
+    desc: Install CLI tools into ~/.local/bin using curl [bin_dir=~/.local/bin]
+    vars:
+      # User-level and on PATH, so no sudo. A task var, not a file var, so
+      # `bin_dir=<path>` on the command line can override it.
+      GENERIC_BIN_DIR: '{{.bin_dir | default (print .HOME "/.local/bin")}}'
     dir: "{{.GENERIC_BIN_DIR}}"
     platforms: ["linux/amd64", "linux/arm64"]
     cmds:
@@ -68,4 +71,11 @@ tasks:
       - cmd: curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/arm64/kubectl"
         platforms: ["linux/arm64"]
       - cmd: chmod +x kubectl
+      # Bitwarden Secrets Manager CLI, for creating and editing the items
+      # External Secrets reads. Not in the loop above: its repo also tags SDK
+      # releases, so "latest" is not bws.
+      - cmd: curl -fsSL -o bws.zip "https://github.com/bitwarden/sdk-sm/releases/download/bws-v2.1.0/bws-x86_64-unknown-linux-gnu-2.1.0.zip" && unzip -o bws.zip bws && rm bws.zip
+        platforms: ["linux/amd64"]
+      - cmd: curl -fsSL -o bws.zip "https://github.com/bitwarden/sdk-sm/releases/download/bws-v2.1.0/bws-aarch64-unknown-linux-gnu-2.1.0.zip" && unzip -o bws.zip bws && rm bws.zip
+        platforms: ["linux/arm64"]
       - cmd: curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | USE_SUDO="false" HELM_INSTALL_DIR="." bash

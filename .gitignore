@@ -12,6 +12,8 @@ talosconfig
 # Private
 .private
 .bin
+# OpenTofu: local `tofu validate` only; tofu-controller keeps the state in-cluster
+.terraform/
 # Ansible
 .venv*
 # Taskfile

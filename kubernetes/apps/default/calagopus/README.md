@@ -12,12 +12,13 @@ copies a Pterodactyl database across.
 | Cache | Shared Dragonfly, keys prefixed `calagopus::` |
 | File storage | 1 Gi `nfs-fast` PVC at `/var/lib/calagopus` |
 | Encryption key | `calagopus-secret` Bitwarden item, `encryption_key` field |
-| Wings | Unchanged VMs on VLAN 50; see [WINGS.md](./WINGS.md) |
+| Wings | One VM per game mode on VLAN 50, defined in [`terraform/wings`](../../../../terraform/wings/README.md) and built by tofu-controller from [`wings/`](./wings/terraform.yaml) (Flux Kustomization `calagopus-wings`); see [WINGS.md](./WINGS.md) |
 
 Only the panel runs in the cluster. Wings drives a Docker daemon directly, and
 Talos has none; running it here would mean a privileged Docker-in-Docker pod,
-which upstream does not support. The four Wings VMs keep running the game
-servers and keep their data where it is.
+which upstream does not support. The game servers move from the four
+Pterodactyl Wings VMs to new Calagopus Wings VMs (one per game mode),
+which take over the old addresses.
 
 ## Migration plan
 
@@ -135,9 +136,10 @@ here. That is expected.
    Only drop `calagopus`. Check the command before running it, because the
    same cluster hosts Dispatcharr and AWX.
 3. **Run the final import** with the Phase 2 commands, and repeat the checks.
-4. **Switch Wings over one node at a time** by following
-   [WINGS.md](./WINGS.md). Start with `wing-node03`, then `wing-node02`,
-   `wing-node01` and `wing-proxy` last (Velocity sits in front of the others).
+4. **Move each node to its new VM, one at a time**, by following
+   [WINGS.md](./WINGS.md): `wing-node03` → `wing-creative`, `wing-node02` →
+   `wing-skyblock`, `wing-node01` → `wing-survival`, and `wing-proxy` last
+   (Velocity sits in front of the others).
 5. **Verify each node** in the panel: it shows online, and every server
    starts. Its console, file manager and SFTP work, and a test backup
    succeeds.
@@ -164,7 +166,7 @@ Only after every node has run on Calagopus for a while:
 | Point | How to roll back |
 | --- | --- |
 | Phases 1 and 2 | Nothing to undo; Pterodactyl was never touched. Reset or drop the `calagopus` database if needed. |
-| Phase 3, per node | Restore the old Wings binary and `remote:` on that node (see [WINGS.md](./WINGS.md#rollback)). Pterodactyl still holds the node's records. |
+| Phase 3, per node | Power off the new VM and power the old one back on (see [WINGS.md](./WINGS.md#rollback)). The old VM is never modified, and Pterodactyl still holds the node's records. |
 | Phase 4 | Revert the removal commit; the `pterodactyl` database is still in MariaDB. |
 
 ## Not migrated

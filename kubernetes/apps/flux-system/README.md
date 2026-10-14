@@ -8,4 +8,5 @@ The `flux-system` namespace contains the Flux CD GitOps engine and its supportin
 | --- | --- |
 | [flux-operator](flux-operator/README.md) | Kubernetes operator that manages the Flux CD installation lifecycle via the `FluxInstance` CRD |
 | [flux-instance](flux-instance/README.md) | `FluxInstance` resource declaring the Flux distribution, components, and performance tuning |
+| [tofu-controller](tofu-controller/README.md) | Runs OpenTofu from `Terraform` objects, so infrastructure outside the cluster (the Wings VMs) is reconciled from Git like everything else |
 | [addons](addons/README.md) | Prometheus monitoring, GitHub commit status notifications, and GitHub webhook receiver |
