@@ -218,7 +218,11 @@ resource "proxmox_virtual_environment_vm" "wing" {
   lifecycle {
     # Bumping the image is for new wings only; it must not replace a
     # running one.
-    ignore_changes = [disk[0].import_from]
+    #
+    # Plans apply on merge (approvePlan: auto), and drift is corrected hourly,
+    # so leave power state and placement to Proxmox: a wing stopped for a
+    # rollback (WINGS.md) must stay stopped, and one HA moved must stay put.
+    ignore_changes = [disk[0].import_from, started, node_name]
     # The guest's network config is bound to the MAC on first boot, so a
     # changed MAC would leave the VM with no network after its next reboot.
     # Rebuild instead.

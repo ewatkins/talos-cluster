@@ -13,6 +13,22 @@ spec:
     crds: CreateReplace
   upgrade:
     crds: CreateReplace
+  # The branch planner only plans Terraform objects in the chart's runner
+  # namespaces (--allowed-namespaces). Listing calagopus-wings there would
+  # also create the chart's tf-runner account in it, with read/write on every
+  # Secret in the cluster and a long-lived token our runner could read. So
+  # append the namespace to the planner alone (pflag string slices
+  # accumulate across repeated flags).
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: Deployment
+              name: tofu-controller-branch-planner
+            patch: |
+              - op: add
+                path: /spec/template/spec/containers/0/args/-
+                value: --allowed-namespaces=calagopus-wings
   values:
     # Terraform objects live in their app's own namespace (e.g.
     # calagopus-wings) but read the one GitRepository in flux-system.
@@ -21,6 +37,19 @@ spec:
     # chart's tf-runner account is bound to read/write on every Secret in the
     # cluster. Each Terraform object brings its own namespace-scoped account
     # (`serviceAccountName`) instead.
+
+    # Plans each open PR and comments the result (see branch-planner.yaml).
+    branchPlanner:
+      enabled: true
+      # How often to poll GitHub for PRs, and to refetch each PR's branch.
+      pollingInterval: 1m
+      sourceInterval: 2m
+      resources:
+        requests:
+          cpu: 10m
+          memory: 64Mi
+        limits:
+          memory: 256Mi
 
     # The AWS primitive modules are not used here.
     awsPackage:

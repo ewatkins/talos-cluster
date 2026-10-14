@@ -1,0 +1,38 @@
+---
+# Branch planner: posts each open PR's plan as a PR comment, so a merge (which
+# auto-approves) is reviewed as a plan first. Authenticates as the repo's bot
+# GitHub App, the same one Renovate and the flux-local workflow use.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: branch-planner
+data:
+  secretNamespace: flux-system
+  secretName: branch-planner-token
+  # Terraform objects to plan PRs against.
+  resources: |-
+    - namespace: calagopus-wings
+      name: calagopus-wings
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: &name branch-planner-token
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: bitwarden-secrets-manager
+  target:
+    name: *name
+    template:
+      engineVersion: v2
+      data:
+        # The keys select GitHub App auth; the planner mints and refreshes
+        # installation tokens itself.
+        githubAppID: "${SECRET_RENOVATE_APP_ID}"
+        githubAppInstallationID: "${SECRET_RENOVATE_INSTALLATION_ID}"
+        githubAppPrivateKey: "{{ .RENOVATE_PRIVATE_KEY | b64dec }}"
+  dataFrom:
+    - extract:
+        key: renovate-operator

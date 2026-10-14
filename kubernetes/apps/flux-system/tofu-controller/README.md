@@ -20,17 +20,23 @@ managed from Git: see
 ## Working with a `Terraform` object
 
 State lives in a Secret beside the object (`tfstate-default-<name>`), so
-the object's namespace should not be pruned. With
-`approvePlan` empty, the controller plans and waits:
+the object's namespace should not be pruned.
+
+`calagopus-wings` uses `approvePlan: auto`: merging applies. The review step
+is the **branch planner**, which polls open PRs every minute and posts a
+plan-only run for each PR branch as a comment (`!replan` refreshes it). It
+plans against the object's real state, runs with the object's own runner
+account, and can only plan. Branches are fetched from this repo by name,
+so PRs from forks are never planned with the cluster's credentials. It signs
+in as the repo's bot GitHub App (`branch-planner-token`, from the
+`renovate-operator` Bitwarden item and `cluster-secrets`); to plan another
+`Terraform` object, add it to `resources` in `app/branch-planner.yaml`.
+
+For an object left on manual approval (`approvePlan: ""`), approve **in the
+cluster**, not in Git: the controller sees an approval commit's new revision
+before Flux applies it, and replaces the pending plan.
 
 ```sh
 kubectl -n <ns> get terraform <name>                   # READY message shows the plan ID
-kubectl -n <ns> get cm tfplan-default-<name> -o jsonpath='{.data.tfplan}'   # needs storeReadablePlan: human
+kubectl -n <ns> patch terraform <name> --type merge -p '{"spec":{"approvePlan":"<plan ID>"}}'
 ```
-
-To apply, set `approvePlan` to the plan ID (the `plan-main-…` value) **on
-the object in the cluster** (`kubectl patch`, or `tfctl approve`). Keep it
-`""` in Git: committing an approval does not work here, because the new
-revision reaches the controller before Flux applies the approval, and the
-controller replaces the pending plan. A new commit to the source likewise
-makes a new plan, which needs its own approval.
