@@ -1,8 +1,7 @@
 ---
 # The Wings VMs, one per game mode, defined in terraform/wings and applied by
-# tofu-controller. Plans wait for approval: commit the plan ID shown by
-# `kubectl -n calagopus-wings get terraform calagopus-wings` as `approvePlan`. See
-# ../WINGS.md.
+# tofu-controller. Plans wait for approval (see approvePlan below and
+# ../WINGS.md).
 apiVersion: infra.contrib.fluxcd.io/v1alpha2
 kind: Terraform
 metadata:
@@ -15,9 +14,13 @@ spec:
     kind: GitRepository
     name: talos-cluster
     namespace: flux-system
-  # Empty: plan, then wait for a committed approval. Set to the plan ID to
-  # apply that plan; a stale ID matches nothing and is harmless.
-  approvePlan: "plan-main-b9f0382091"
+  # Empty: plan, then wait. Approve in the cluster, not in Git:
+  #   kubectl -n calagopus-wings patch terraform calagopus-wings --type merge \
+  #     -p '{"spec":{"approvePlan":"<plan ID>"}}'
+  # A Git commit cannot approve: the controller sees the new revision before
+  # Flux applies the approval and replaces the pending plan. Flux later resets
+  # this field to "", which matches no plan.
+  approvePlan: ""
   # The plan as text, in ConfigMap tfplan-default-calagopus-wings.
   storeReadablePlan: human
   # Removing this object must never delete the VMs (or their game data).

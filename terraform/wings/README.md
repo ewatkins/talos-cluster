@@ -49,10 +49,19 @@ everything inside the guest.
    kubectl -n calagopus-wings get cm tfplan-default-calagopus-wings -o jsonpath='{.data.tfplan}'
    ```
 
-3. Read the plan. To apply it, set `approvePlan` in
-   `kubernetes/apps/default/calagopus/wings/terraform.yaml` to the plan ID
-   (`plan-main-…`) and push. If another commit lands first, the controller
-   re-plans and the ID changes; approve the new one.
+3. Read the plan. To apply it, approve it **in the cluster**:
+
+   ```sh
+   kubectl -n calagopus-wings patch terraform calagopus-wings --type merge \
+     -p '{"spec":{"approvePlan":"<plan ID>"}}'
+   ```
+
+   Not with a Git commit: the controller sees the new revision before Flux
+   applies the approval, throws the pending plan away and plans again, so a
+   committed approval never matches. `approvePlan` stays `""` in Git, and
+   Flux resets the patched value on its next reconcile, after the apply. If
+   a commit lands between the plan and your approval, the ID changes;
+   re-read the plan and approve the new one.
 
 Everything runs in the `calagopus-wings` namespace: the `Terraform` object,
 its credentials, and the state, in the Secret `tfstate-default-calagopus-wings`

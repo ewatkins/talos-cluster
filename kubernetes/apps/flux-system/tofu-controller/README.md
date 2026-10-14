@@ -28,6 +28,9 @@ kubectl -n <ns> get terraform <name>                   # READY message shows the
 kubectl -n <ns> get cm tfplan-default-<name> -o jsonpath='{.data.tfplan}'   # needs storeReadablePlan: human
 ```
 
-To apply, commit `approvePlan: <plan ID>` (the `plan-main-…` value) to the
-object and push. A new commit to the source makes a new plan, which needs its
-own approval.
+To apply, set `approvePlan` to the plan ID (the `plan-main-…` value) **on
+the object in the cluster** (`kubectl patch`, or `tfctl approve`). Keep it
+`""` in Git: committing an approval does not work here, because the new
+revision reaches the controller before Flux applies the approval, and the
+controller replaces the pending plan. A new commit to the source likewise
+makes a new plan, which needs its own approval.

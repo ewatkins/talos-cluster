@@ -123,7 +123,10 @@ resource "proxmox_virtual_environment_vm" "wing" {
 
   name        = "wing-${each.key}"
   description = "Calagopus Wings for ${each.value.servers}. Managed by tofu-controller from terraform/wings."
-  tags        = ["tofu", "vlan50", "wings"]
+  # No tags: Proxmox checks tag changes against /vms/<id> only, ignoring
+  # the pool, so tagging a new VM needs rights the pool-scoped token lacks
+  # (PVE::GuestHelpers::assert_tag_permissions). The pool and the
+  # description identify a wing instead.
   node_name   = each.value.node
   vm_id       = each.value.vm_id
   # The API token's VM rights reach only this pool, and the PBS job that
