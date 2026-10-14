@@ -61,9 +61,9 @@ spec:
     - name: internal
       namespace: network
       sectionName: wings
-  # wing-survival is the rebuilt VM's name; wing-node01 goes once the panel
+  # wing-homestead is the rebuilt VM's name; wing-node01 goes once the panel
   # node uses the new one (terraform/wings, WINGS.md).
-  hostnames: ["wing-node01.ewatkins.dev", "wing-survival.ewatkins.dev"]
+  hostnames: ["wing-node01.ewatkins.dev", "wing-homestead.ewatkins.dev"]
   rules:
     - backendRefs:
         - group: gateway.envoyproxy.io
@@ -102,9 +102,9 @@ spec:
     - name: internal
       namespace: network
       sectionName: wings
-  # wing-skyblock is the rebuilt VM's name; wing-node02 goes once the panel
+  # wing-iridium is the rebuilt VM's name; wing-node02 goes once the panel
   # node uses the new one (terraform/wings, WINGS.md).
-  hostnames: ["wing-node02.ewatkins.dev", "wing-skyblock.ewatkins.dev"]
+  hostnames: ["wing-node02.ewatkins.dev", "wing-iridium.ewatkins.dev"]
   rules:
     - backendRefs:
         - group: gateway.envoyproxy.io
@@ -143,9 +143,9 @@ spec:
     - name: internal
       namespace: network
       sectionName: wings
-  # wing-creative is the rebuilt VM's name; wing-node03 goes once the panel
+  # wing-atlas is the rebuilt VM's name; wing-node03 goes once the panel
   # node uses the new one (terraform/wings, WINGS.md).
-  hostnames: ["wing-node03.ewatkins.dev", "wing-creative.ewatkins.dev"]
+  hostnames: ["wing-node03.ewatkins.dev", "wing-atlas.ewatkins.dev"]
   rules:
     - backendRefs:
         - group: gateway.envoyproxy.io

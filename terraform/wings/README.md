@@ -1,7 +1,7 @@
 # Wings VMs (OpenTofu, via tofu-controller)
 
 The Proxmox VMs that run [Calagopus Wings](https://github.com/calagopus/wings)
-on VLAN 50, one per game mode. They are part of the Calagopus app: the
+on VLAN 50, one per world, named after it. They are part of the Calagopus app: the
 [`Terraform` object](../../kubernetes/apps/default/calagopus/wings/terraform.yaml)
 next to the panel points [tofu-controller](../../kubernetes/apps/flux-system/tofu-controller/README.md)
 at this directory, so the VMs are changed the same way as everything else in the
@@ -10,9 +10,9 @@ cluster, by committing to Git. The migration onto them is a runbook:
 
 | Wing | VMID | Node | Servers | Management | Service addresses |
 | --- | --- | --- | --- | --- | --- |
-| `wing-creative` | 5031 | pve03 | Atlas | 192.168.50.39 | .30, .31, .32 |
-| `wing-skyblock` | 5021 | pve02 | Iridium | 192.168.50.29 | .20, .21, .22 |
-| `wing-survival` | 5011 | pve01 | Homestead | 192.168.50.19 | .10, .11, .12, .13 |
+| `wing-atlas` | 5031 | pve03 | Atlas | 192.168.50.39 | .30, .31, .32 |
+| `wing-iridium` | 5021 | pve02 | Iridium | 192.168.50.29 | .20, .21, .22 |
+| `wing-homestead` | 5011 | pve01 | Homestead | 192.168.50.19 | .10, .11, .12, .13 |
 | `wing-proxy` | 5001 | pve01 | Velocity, Lobby | 192.168.50.109 | .100, .101 |
 
 All of it is in [`main.tf`](./main.tf): the `wings` map is the inventory, and
@@ -32,8 +32,8 @@ everything inside the guest.
 - **Serial console only**, no ballooning, no emulated display.
 - **In the `wings` pool**, which is what the API token is limited to and what
   the `wings` backup job selects.
-- **Protected**: `protection` is on, so neither Proxmox nor a plan will
-  delete one by accident.
+- **Not protected** in Proxmox: rebuilding a wing is routine. Nothing is
+  destroyed without an approved plan that says so.
 - **Configured once.** Cloud-init runs on first boot only (fixed
   `instance-id`). A template change reaches a wing by rebuilding it, not by
   re-running cloud-init on a live game server.
@@ -177,7 +177,7 @@ decodes it. Shred the private key file once it is saved.
 
 ## Day to day
 
-- **New wing / new game mode:** add an entry to `wings` (next free VMID and
+- **New world:** add an entry to `wings`, named after the world (next free VMID and
   `.X9`-style management address), approve the plan, then follow WINGS.md
   from step 1.
 - **More CPU, memory or disk:** change the entry and approve the plan. Disks
@@ -188,7 +188,6 @@ decodes it. Shred the private key file once it is saved.
 - **Wings version:** `wings_version`/`wings_sha256` only set what a *new*
   wing installs. Running wings are upgraded in place (WINGS.md, "Upgrading
   Wings"), keeping them in step with the panel image.
-- **Removing a wing:** take it out of HA (`ha-manager remove vm:<id>`), add
-  `unprotect = true` to its entry and approve, then set `enabled = false` and
-  approve again.
+- **Removing a wing:** take it out of HA (`ha-manager remove vm:<id>`),
+  then set `enabled = false` and approve the plan.
 - **Local check** before pushing: `tofu init -backend=false && tofu validate`.

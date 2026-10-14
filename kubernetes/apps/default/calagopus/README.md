@@ -12,12 +12,12 @@ copies a Pterodactyl database across.
 | Cache | Shared Dragonfly, keys prefixed `calagopus::` |
 | File storage | 1 Gi `nfs-fast` PVC at `/var/lib/calagopus` |
 | Encryption key | `calagopus-secret` Bitwarden item, `encryption_key` field |
-| Wings | One VM per game mode on VLAN 50, defined in [`terraform/wings`](../../../../terraform/wings/README.md) and built by tofu-controller from [`wings/`](./wings/terraform.yaml) (Flux Kustomization `calagopus-wings`); see [WINGS.md](./WINGS.md) |
+| Wings | One VM per world on VLAN 50, named after it, defined in [`terraform/wings`](../../../../terraform/wings/README.md) and built by tofu-controller from [`wings/`](./wings/terraform.yaml) (Flux Kustomization `calagopus-wings`); see [WINGS.md](./WINGS.md) |
 
 Only the panel runs in the cluster. Wings drives a Docker daemon directly, and
 Talos has none; running it here would mean a privileged Docker-in-Docker pod,
 which upstream does not support. The game servers move from the four
-Pterodactyl Wings VMs to new Calagopus Wings VMs (one per game mode),
+Pterodactyl Wings VMs to new Calagopus Wings VMs (one per world),
 which take over the old addresses.
 
 ## Migration plan
@@ -137,8 +137,8 @@ here. That is expected.
    same cluster hosts Dispatcharr and AWX.
 3. **Run the final import** with the Phase 2 commands, and repeat the checks.
 4. **Move each node to its new VM, one at a time**, by following
-   [WINGS.md](./WINGS.md): `wing-node03` → `wing-creative`, `wing-node02` →
-   `wing-skyblock`, `wing-node01` → `wing-survival`, and `wing-proxy` last
+   [WINGS.md](./WINGS.md): `wing-node03` → `wing-atlas`, `wing-node02` →
+   `wing-iridium`, `wing-node01` → `wing-homestead`, and `wing-proxy` last
    (Velocity sits in front of the others).
 5. **Verify each node** in the panel: it shows online, and every server
    starts. Its console, file manager and SFTP work, and a test backup

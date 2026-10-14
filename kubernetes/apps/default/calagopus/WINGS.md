@@ -2,7 +2,7 @@
 
 Runbook for moving each game server off its Pterodactyl Wings VM and onto a
 new [Calagopus Wings](https://github.com/calagopus/wings) VM. There is one VM
-per game mode, defined in
+per world (named after it), defined in
 [`terraform/wings`](../../../../terraform/wings/README.md) and built by
 tofu-controller from the [`Terraform` object](./wings/terraform.yaml) beside
 the panel. Run it once per
@@ -10,9 +10,9 @@ node, after the panel's final import (see [README.md](./README.md), Phase 3).
 
 | Old VM | VMID | | New VM | VMID | Node | Servers | Management | Takes over |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `wing-node03` | 5030 | → | `wing-creative` | 5031 | pve03 | Atlas | .39 | .30 .31 .32 |
-| `wing-node02` | 5020 | → | `wing-skyblock` | 5021 | pve02 | Iridium | .29 | .20 .21 .22 |
-| `wing-node01` | 5010 | → | `wing-survival` | 5011 | pve01 | Homestead | .19 | .10 .11 .12 .13 |
+| `wing-node03` | 5030 | → | `wing-atlas` | 5031 | pve03 | Atlas | .39 | .30 .31 .32 |
+| `wing-node02` | 5020 | → | `wing-iridium` | 5021 | pve02 | Iridium | .29 | .20 .21 .22 |
+| `wing-node01` | 5010 | → | `wing-homestead` | 5011 | pve01 | Homestead | .19 | .10 .11 .12 .13 |
 | `wing-proxy` | 5000 | → | `wing-proxy` | 5001 | pve01 | Velocity, Lobby | .109 | .100 .101 |
 
 All addresses are in `192.168.50.0/24`. Do the nodes in that order.
@@ -55,9 +55,9 @@ without gaining anything from Kubernetes scheduling.
       `kubectl -n calagopus-wings get terraform calagopus-wings` is `Ready` with no
       changes pending.
 - [ ] **Space on `caspian-fast`**. New disks are thick, and the old VM's disk
-      stays until it is deleted. With 78 GB free, `wing-creative` (32 GB) and
-      `wing-skyblock` (32 GB) fit alongside their old VMs. **Delete
-      `wing-node03` and `wing-node02` before building `wing-survival`**
+      stays until it is deleted. With 78 GB free, `wing-atlas` (32 GB) and
+      `wing-iridium` (32 GB) fit alongside their old VMs. **Delete
+      `wing-node03` and `wing-node02` before building `wing-homestead`**
       (64 GB). Check first with `pvesm status`.
 - [ ] Your SSH key is loaded in an agent (`ssh-add ~/.ssh/personal_id_ed25519`).
       The copy runs on the new VM and reaches the old one through agent
@@ -65,10 +65,10 @@ without gaining anything from Kubernetes scheduling.
 
 ## Per-node procedure
 
-The examples use `wing-creative`. Set these for the node you are doing:
+The examples use `wing-atlas`. Set these for the node you are doing:
 
 ```sh
-WING=creative OLD_ID=5030 NEW_ID=5031
+WING=atlas OLD_ID=5030 NEW_ID=5031
 OLD=192.168.50.30 NEW=192.168.50.39
 SERVICE="192.168.50.30 192.168.50.31 192.168.50.32"
 ```
@@ -109,15 +109,15 @@ ssh ewatkins@$NEW '
   /usr/local/bin/wings version
   systemctl is-enabled wings          # enabled (not started yet)
   ip -o link show eth0 | grep -o "mtu [0-9]*"   # mtu 1500, never 9000
-  findmnt /mnt/bluemap                # creative and survival only
+  findmnt /mnt/bluemap                # atlas and homestead only
   ls /mnt/bluemap | head -3           # must list files, not hang
   sudo ss -tlnpH                      # only sshd, and resolved on loopback
 '
 ```
 
 If cloud-init failed (for example a Wings checksum mismatch), fix the template,
-then rebuild: `ha-manager remove vm:$NEW_ID`, `unprotect = true` and approve,
-`enabled = false` and approve, and start again. Do not patch a half-built VM
+then rebuild: `ha-manager remove vm:$NEW_ID`, set `enabled = false` and
+approve, then `enabled = true` and approve. Do not patch a half-built VM
 by hand.
 
 ### 2. Copy the data while the servers run
@@ -230,7 +230,7 @@ In Calagopus, open **Admin → Nodes → (node)**:
       new, so your SFTP client will warn about it.
 - [ ] A **test backup** completes, and the old backups are still listed.
 - [ ] The node's Gatus check is green.
-- [ ] On `wing-creative` and `wing-survival`: the BlueMap render reaches
+- [ ] On `wing-atlas` and `wing-homestead`: the BlueMap render reaches
       `atlas.ewatkins.dev`.
 - [ ] Players can join through Velocity (for `wing-proxy`, Java and Bedrock).
 
@@ -268,8 +268,8 @@ Phase 4. Change the panel node's FQDN back to `wing-node0X.ewatkins.dev`.
 it back with the step 2 command in reverse first if you need it.
 
 The new VM stays stopped. Either fix it and try the cutover again, or remove
-it: `ha-manager remove vm:$NEW_ID`, then `unprotect = true` and
-`enabled = false`, approving each plan.
+it: `ha-manager remove vm:$NEW_ID`, then `enabled = false` and approve the
+plan.
 
 ## Upgrading Wings
 
