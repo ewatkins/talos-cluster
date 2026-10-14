@@ -43,28 +43,19 @@ everything inside the guest.
 
 ## How changes are applied
 
-1. Commit a change to this directory. Any new revision of the repo is
-   re-planned, but a plan with no changes needs nothing from you.
-2. A plan with changes waits for approval:
+**Merging is the approval.** Open a PR; within a couple of minutes the
+branch planner (tofu-controller) posts the plan for that branch as a PR
+comment, planned against the real state. Read it like any other diff: it
+lists every VM created, changed, replaced or **destroyed**. Merge, and the
+controller applies the plan from `main` (`approvePlan: auto`). Comment
+`!replan` on the PR to refresh the plan after pushing more commits.
 
-   ```sh
-   kubectl -n calagopus-wings get terraform calagopus-wings        # message shows the plan ID
-   kubectl -n calagopus-wings get cm tfplan-default-calagopus-wings -o jsonpath='{.data.tfplan}'
-   ```
-
-3. Read the plan. To apply it, approve it **in the cluster**:
-
-   ```sh
-   kubectl -n calagopus-wings patch terraform calagopus-wings --type merge \
-     -p '{"spec":{"approvePlan":"<plan ID>"}}'
-   ```
-
-   Not with a Git commit: the controller sees the new revision before Flux
-   applies the approval, throws the pending plan away and plans again, so a
-   committed approval never matches. `approvePlan` stays `""` in Git, and
-   Flux resets the patched value on its next reconcile, after the apply. If
-   a commit lands between the plan and your approval, the ID changes;
-   re-read the plan and approve the new one.
+- A plan with no changes does nothing.
+- Drift is corrected hourly, **except power state and node placement**, which
+  belong to Proxmox (`ignore_changes`): a wing stopped for a rollback stays
+  stopped, and one moved by HA stays where it is.
+- Watch an apply with `kubectl -n calagopus-wings get terraform calagopus-wings`;
+  the last plan is in `kubectl -n calagopus-wings get cm tfplan-default-calagopus-wings -o jsonpath='{.data.tfplan}'`.
 
 Everything runs in the `calagopus-wings` namespace: the `Terraform` object,
 its credentials, and the state, in the Secret `tfstate-default-calagopus-wings`
@@ -76,7 +67,7 @@ Deleting the `Terraform` object leaves the VMs alone
 
 **If the cluster is down,** running wings are unaffected (Proxmox HA keeps them
 up); changes wait until the cluster is back. In an emergency, use the Proxmox
-UI, then bring the code back in line before approving the next plan.
+UI, then bring the code back in line before merging the next change.
 
 ## What the cluster can do on Proxmox
 
