@@ -85,8 +85,13 @@ kubectl -n calagopus-wings get cm tfplan-default-calagopus-wings -o jsonpath='{.
 
 The plan must only **create** `wing-$WING` and its two snippets. Anything
 else (above all a `destroy` or `replace` of another wing) means stop. Approve
-by committing the plan ID as `approvePlan` in
-`kubernetes/apps/default/calagopus/wings/terraform.yaml`.
+it in the cluster (a committed approval never matches; see
+[`terraform/wings`](../../../../terraform/wings/README.md#how-changes-are-applied)):
+
+```sh
+kubectl -n calagopus-wings patch terraform calagopus-wings --type merge \
+  -p '{"spec":{"approvePlan":"<plan ID>"}}'
+```
 
 Once the VM exists, put it under HA (the token deliberately cannot):
 
