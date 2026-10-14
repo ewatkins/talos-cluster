@@ -22,7 +22,7 @@ task talos:upgrade node=NODE  # Upgrade a single Talos node (e.g., node=superior
 task talos:upgrade-k8s        # Upgrade Kubernetes version
 task sops:encrypt             # Encrypt all .sops.yaml files
 task workstation:brew         # Install CLI tools locally — pick per platform:
-                              #   :brew (Brewfile), :arch (Archfile), :generic-linux (curl into .bin/)
+                              #   :brew (Brewfile), :arch (Archfile), :generic-linux (curl into ~/.local/bin, bin_dir= to override)
 ```
 
 **Environment requirements:** `KUBECONFIG=./kubeconfig` and `SOPS_AGE_KEY_FILE=./age.key` are set automatically by Task. A Python virtualenv at `.venv/` is required for templating (`task workstation:venv`).

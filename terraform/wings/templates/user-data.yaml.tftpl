@@ -1,0 +1,143 @@
+#cloud-config
+# Calagopus Wings host. Rendered by OpenTofu (terraform/wings/main.tf) and
+# applied once, on first boot.
+hostname: ${hostname}
+manage_etc_hosts: true
+timezone: Etc/UTC
+
+# Key-only SSH as ewatkins; no default `ubuntu` user, no root login, no
+# passwords. Host keys are generated fresh, so every wing has its own.
+users:
+  - name: ewatkins
+    shell: /bin/bash
+    groups: [sudo]
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    lock_passwd: true
+    ssh_authorized_keys:
+      - ${ssh_key}
+disable_root: true
+ssh_pwauth: false
+
+# Wings looks its user up by name and runs every server container as it.
+# The old wings used 999:987, so pinning the same ids keeps the rsynced game
+# data owned correctly. Runs before any package can claim the ids.
+bootcmd:
+  - [sh, -c, "getent group pterodactyl >/dev/null || groupadd --system --gid 987 pterodactyl"]
+  - [sh, -c, "getent passwd pterodactyl >/dev/null || useradd --system --uid 999 --gid 987 --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin pterodactyl"]
+
+apt:
+  sources:
+    docker.list:
+      source: "deb [arch=amd64 signed-by=$KEY_FILE] https://download.docker.com/linux/ubuntu $RELEASE stable"
+      keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+
+package_update: true
+package_upgrade: true
+packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - qemu-guest-agent
+  - unattended-upgrades
+  - curl
+  - openssl
+  # Migration: the rsync from the old wing, and gratuitous ARP when the
+  # service addresses move over.
+  - rsync
+  - iputils-arping
+%{ if bluemap ~}
+  - nfs-common
+%{ endif ~}
+
+write_files:
+  # Written before the packages are installed, so it applies to them too.
+  - path: /etc/apt/apt.conf.d/99-no-recommends
+    content: |
+      APT::Install-Recommends "false";
+      APT::Install-Suggests "false";
+
+  # Daily unattended upgrades. Ubuntu's defaults take security updates only
+  # and never reboot (a reboot stops the game server); Docker's repository is
+  # not an allowed origin, so Docker is upgraded by hand.
+  - path: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+
+  - path: /etc/ssh/sshd_config.d/10-wings.conf
+    content: |
+      PermitRootLogin no
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+      AllowUsers ewatkins
+      X11Forwarding no
+      MaxAuthTries 3
+
+  # live-restore keeps game servers running through a Docker upgrade.
+  - path: /etc/docker/daemon.json
+    content: |
+      {
+        "live-restore": true,
+        "log-driver": "json-file",
+        "log-opts": { "max-size": "10m", "max-file": "3" }
+      }
+
+  # The unit `wings service-install` would write. Enabled below but not
+  # started: the node's config.yml arrives at cutover.
+  - path: /etc/systemd/system/wings.service
+    content: |
+      [Unit]
+      Description=Calagopus Wings Daemon
+      After=docker.service
+      Requires=docker.service
+      PartOf=docker.service
+
+      [Service]
+      User=root
+      KillMode=process
+      LimitNOFILE=4096
+      PIDFile=/run/calagopus-wings/daemon.pid
+      ExecStart=/usr/local/bin/wings
+      Restart=on-failure
+      StartLimitInterval=180
+      StartLimitBurst=30
+      RestartSec=5s
+
+      [Install]
+      WantedBy=multi-user.target
+
+  # The old wing's addresses. Disabled by the suffix until the old VM is
+  # off; WINGS.md renames it and runs `netplan apply`. eth0 is the name
+  # cloud-init gives the NIC, so netplan merges these into its config.
+  - path: /etc/netplan/60-service-addresses.yaml.cutover
+    permissions: "0600"
+    content: |
+      network:
+        version: 2
+        ethernets:
+          eth0:
+            addresses:
+%{ for address in service_addresses ~}
+              - ${address}/24
+%{ endfor ~}
+
+%{ if bluemap ~}
+# Shared BlueMap storage. NFSv4.2 needs no rpcbind, which is masked below.
+mounts:
+  - [storage.ewatkins.dev:/mnt/user/bluemap, /mnt/bluemap, nfs4, "rw,hard,vers=4.2,timeo=600,retrans=2,_netdev,nofail", "0", "0"]
+
+%{ endif ~}
+runcmd:
+  # Pinned and checksummed; a mismatch fails cloud-init visibly.
+  - [sh, -c, "curl -fsSL -o /usr/local/bin/wings https://github.com/calagopus/wings/releases/download/${wings_version}/wings-rs-x86_64-linux && echo '${wings_sha256}  /usr/local/bin/wings' | sha256sum -c - && chmod 0755 /usr/local/bin/wings"]
+  # Wings serves its API over TLS. Only Envoy talks to it, and Envoy skips
+  # verification on this hop, so a self-signed cert does the job without
+  # certbot or a Cloudflare token on the VM.
+  - [sh, -c, "mkdir -p /etc/calagopus-wings/tls && openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:P-256 -nodes -days 3650 -subj '/CN=${hostname}.ewatkins.dev' -addext 'subjectAltName=DNS:${hostname}.ewatkins.dev' -keyout /etc/calagopus-wings/tls/key.pem -out /etc/calagopus-wings/tls/cert.pem && chmod 0600 /etc/calagopus-wings/tls/key.pem"]
+%{ if bluemap ~}
+  - [systemctl, mask, --now, rpcbind.service, rpcbind.socket]
+%{ endif ~}
+  - [systemctl, enable, --now, qemu-guest-agent]
+  - [systemctl, restart, ssh]
+  - [systemctl, daemon-reload]
+  - [systemctl, enable, wings]
