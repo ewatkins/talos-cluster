@@ -75,12 +75,18 @@ The cluster holds two credentials, from the Bitwarden item `tofu-wings-secret`:
 
 | Credential | Can | Cannot |
 | --- | --- | --- |
-| API token `terraform@pve!tofu` | Create, configure, power and migrate VMs **in the `wings` pool**; allocate disks on `caspian-fast`; read the image on `caspian`; manage the `wings-snippets` storage; use the Minecraft VNet | Touch the Talos VMs or any VM outside the pool, other storage, node or cluster settings, HA, backups, users |
+| API token `terraform@pve!tofu` | Create, configure, power and migrate VMs **in the `wings` pool**; allocate disks on `caspian-fast`; read the image on `caspian`; manage the `wings-snippets` storage; use the Minecraft VNet; **manage HA** (see below) | Configure or open a console on the Talos VMs or any VM outside the pool; other storage; node or cluster settings; the node shell; backups; users |
 | SSH key for `tofu-snippets` on pve01 | Write files to the `wings-snippets` storage over SFTP | Run commands (SFTP only), forward ports, write anywhere else |
 
-HA registration and backups need cluster-wide rights, so they are not done
-from here: the `wings` backup job selects the pool, and each new wing is added
-to HA by hand (WINGS.md, step 1).
+**HA** is managed here (`proxmox_haresource`). Proxmox checks `Sys.Console`
+on `/` for every HA call; the token has it (with `Sys.Audit`) on `/` **only,
+without propagation**. The node shell checks `Sys.Console` on
+`/nodes/<node>`, which the token does not get, so this is not root on
+Proxmox. It does let the token change **any** HA resource, including the
+Talos VMs (stop or relocate them through HA): a compromised cluster could
+disrupt itself, but not take over the hypervisor.
+
+**Backups** stay outside: the `wings` backup job selects the pool.
 
 ## One-time setup
 
@@ -147,6 +153,9 @@ pveum acl modify /storage/caspian-fast    --users terraform@pve --roles PVEDatas
 pveum acl modify /storage/caspian         --users terraform@pve --roles PVEAuditor
 pveum acl modify /storage/wings-snippets  --users terraform@pve --roles PVEDatastoreAdmin
 pveum acl modify /sdn/zones/DATA/Minecrft --users terraform@pve --roles PVESDNUser
+# HA: on / itself only (--propagate 0), so not the node shell on /nodes/*.
+pveum role add TofuWingsHA --privs "Sys.Audit Sys.Console"
+pveum acl modify / --users terraform@pve --roles TofuWingsHA --propagate 0
 pveum user token add terraform@pve tofu --privsep 0
 ```
 
@@ -182,6 +191,6 @@ decodes it. Shred the private key file once it is saved.
 - **Wings version:** `wings_version`/`wings_sha256` only set what a *new*
   wing installs. Running wings are upgraded in place (WINGS.md, "Upgrading
   Wings"), keeping them in step with the panel image.
-- **Removing a wing:** take it out of HA (`ha-manager remove vm:<id>`),
-  then set `enabled = false` and approve the plan.
+- **Removing a wing:** set `enabled = false` and merge; its HA resource
+  goes with it.
 - **Local check** before pushing: `tofu init -backend=false && tofu validate`.

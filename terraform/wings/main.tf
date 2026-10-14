@@ -230,6 +230,23 @@ resource "proxmox_virtual_environment_vm" "wing" {
   }
 }
 
+# HA, so a wing restarts elsewhere if its node dies. Managing HA needs
+# Sys.Console on /; the token has it on / only, without propagation, which
+# covers the HA API but not the node shell (/nodes/<node>). See README.md.
+resource "proxmox_haresource" "wing" {
+  for_each = local.enabled
+
+  resource_id = "vm:${proxmox_virtual_environment_vm.wing[each.key].vm_id}"
+  state       = "started"
+  comment     = "wing-${each.key} (terraform/wings)"
+
+  lifecycle {
+    # WINGS.md rolls back by setting the HA state by hand; hourly drift
+    # correction must not undo it.
+    ignore_changes = [state]
+  }
+}
+
 resource "terraform_data" "mac" {
   for_each = local.mac
   input    = each.value
