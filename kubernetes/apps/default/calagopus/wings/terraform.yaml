@@ -15,8 +15,9 @@ spec:
     kind: GitRepository
     name: talos-cluster
     namespace: flux-system
-  # Empty: plan, then wait for a committed approval.
-  approvePlan: ""
+  # Empty: plan, then wait for a committed approval. Set to the plan ID to
+  # apply that plan; a stale ID matches nothing and is harmless.
+  approvePlan: "plan-main-b9f0382091"
   # The plan as text, in ConfigMap tfplan-default-calagopus-wings.
   storeReadablePlan: human
   # Removing this object must never delete the VMs (or their game data).
