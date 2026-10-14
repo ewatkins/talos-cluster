@@ -13,7 +13,7 @@ locals {
   #                   that render a map write to it.
   wings = {
     creative = {
-      enabled           = false
+      enabled           = true
       servers           = "Atlas"
       vm_id             = 5031
       node              = "pve03"
