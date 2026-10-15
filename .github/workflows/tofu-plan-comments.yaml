@@ -1,0 +1,49 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: "Tofu Plan Comments"
+
+# The branch planner (tofu-controller) posts a new plan comment on every push
+# and every `!replan`, and has no option to replace the last one. Keep only
+# the newest, so the plan on a PR is always the one that merging applies.
+on:
+  issue_comment:
+    types: ["created"]
+
+# Deletes as the bot that posted the plans (the same GitHub App), not as
+# github-actions: a comment deleted by its own author leaves no "deleted a
+# comment" entry in the PR timeline.
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.issue.number }}
+
+jobs:
+  prune:
+    name: Prune Stale Plans
+    runs-on: ubuntu-latest
+    if: >-
+      ${{ github.event.issue.pull_request
+      && github.event.comment.user.login == 'butler-hobbes[bot]'
+      && startsWith(github.event.comment.body, 'tf-controller plan output') }}
+    steps:
+      - name: Generate Token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        id: app-token
+        with:
+          app-id: "${{ secrets.BOT_APP_ID }}"
+          private-key: "${{ secrets.BOT_APP_PRIVATE_KEY }}"
+
+      - name: Delete Older Plan Comments
+        env:
+          GH_TOKEN: "${{ steps.app-token.outputs.token }}"
+          KEEP: "${{ github.event.comment.id }}"
+          PR: "${{ github.event.issue.number }}"
+        run: |
+          gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${PR}/comments" \
+            --jq ".[] | select(.user.login == \"butler-hobbes[bot]\"
+              and (.body | startswith(\"tf-controller plan output\"))
+              and .id < ${KEEP}) | .id" |
+          while read -r id; do
+            gh api --method DELETE "repos/${GITHUB_REPOSITORY}/issues/comments/${id}"
+            echo "Deleted stale plan comment ${id}"
+          done
