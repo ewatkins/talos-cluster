@@ -9,6 +9,10 @@ locals {
   # service_addresses Taken over from the old VM at cutover (.X0 for the
   #                   Envoy Backend, .X1 for the game server, spares). Empty
   #                   once consolidated: game servers then listen on .X0.
+  # vm_id             50 + the last octet of the wing's address (the proxy,
+  #                   on .100, is 5000). Changing it replaces the VM and its
+  #                   game data: renumber in Proxmox first (backup, restore
+  #                   to the new ID), then move the state (README.md).
   # memory            Panel limits are 8200 MiB per game server and
   #                   2250 + 1125 MiB on the proxy; the rest is the OS,
   #                   Docker and Wings.
@@ -27,7 +31,7 @@ locals {
     atlas = {
       enabled           = true
       servers           = "Atlas"
-      vm_id             = 5031
+      vm_id             = 5010
       node              = "pve03"
       cores             = 4
       memory            = 12288
@@ -41,7 +45,7 @@ locals {
     iridium = {
       enabled           = true
       servers           = "Iridium"
-      vm_id             = 5021
+      vm_id             = 5030
       node              = "pve02"
       cores             = 4
       memory            = 12288
@@ -55,7 +59,7 @@ locals {
     homestead = {
       enabled = true
       servers = "Homestead"
-      vm_id   = 5011
+      vm_id   = 5020
       node    = "pve01"
       cores   = 4
       memory  = 12288
@@ -70,7 +74,7 @@ locals {
     proxy = {
       enabled = true
       servers = "Velocity, Lobby"
-      vm_id   = 5001
+      vm_id   = 5000
       node    = "pve01"
       cores   = 2
       memory  = 6144

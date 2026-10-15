@@ -10,10 +10,10 @@ cluster, by committing to Git. The migration onto them is a runbook:
 
 | Wing | VMID | Node | Servers | Management | Service addresses |
 | --- | --- | --- | --- | --- | --- |
-| `wing-atlas` | 5031 | pve03 | Atlas | 192.168.50.10 (final) | none |
-| `wing-iridium` | 5021 | pve02 | Iridium | 192.168.50.30 (final) | none |
-| `wing-homestead` | 5011 | pve01 | Homestead | 192.168.50.20 (final) | none |
-| `wing-proxy` | 5001 | pve01 | Velocity, Lobby | 192.168.50.109, Lobby NIC 192.168.50.99 (final) | .100 |
+| `wing-atlas` | 5010 | pve03 | Atlas | 192.168.50.10 (final) | none |
+| `wing-iridium` | 5030 | pve02 | Iridium | 192.168.50.30 (final) | none |
+| `wing-homestead` | 5020 | pve01 | Homestead | 192.168.50.20 (final) | none |
+| `wing-proxy` | 5000 | pve01 | Velocity, Lobby | 192.168.50.109, Lobby NIC 192.168.50.99 (final) | .100 |
 
 All of it is in [`main.tf`](./main.tf): the `wings` map is the inventory, and
 [`templates/user-data.yaml.tftpl`](./templates/user-data.yaml.tftpl) is
@@ -240,10 +240,30 @@ decodes it. Shred the private key file once it is saved.
 
 ## Day to day
 
-- **New world:** add an entry to `wings`, named after the world (next free
-  VMID, `.X9`-style management address, and a `mac` that reads as its final
-  address), approve the plan, then follow WINGS.md
-  from step 1.
+- **New world:** add an entry to `wings`, named after the world (VMID `50`
+  + the last octet of its final address, `.X9`-style management address,
+  and a `mac` that reads as its final address), approve the plan, then
+  follow WINGS.md from step 1.
+- **Renumbering a wing** (done once, 2026-10-15). Changing `vm_id` in Git
+  replaces the VM and its game data, so move the VM first:
+  1. Suspend Flux's `calagopus-wings` Kustomization, then the Terraform
+     object, or a drift run plans against the old IDs:
+     `flux suspend ks calagopus-wings -n flux-system`, then
+     `kubectl -n calagopus-wings patch terraform calagopus-wings --type merge -p '{"spec":{"suspend":true}}'`.
+     Flux strips a `kubectl` patch from an object it manages, so suspending
+     the Terraform object alone does not hold.
+  2. Stop the game servers, then on a Proxmox node: `ha-manager set vm:$OLD
+     --state stopped`, `vzdump $OLD --storage backups --mode stop`,
+     `qmrestore <backup> $NEW --storage caspian-fast --pool wings --unique 0`
+     (keeps the MACs), `qm start $NEW`. cloud-init sees the same
+     `instance-id` and changes nothing. Once it is back, `ha-manager remove
+     vm:$OLD` and `qm destroy $OLD --purge`.
+  3. In the state Secret (`tfstate-default-calagopus-wings`, gzipped JSON),
+     set the VM instance's `id`/`vm_id` to the new ID and drop its
+     `proxmox_haresource` instance. Keep a copy of the old state.
+  4. Change `vm_id` in a PR. The plan must only **create** the HA
+     resources. Merge, then `flux resume ks calagopus-wings -n flux-system`
+     (re-applying the object drops `suspend`).
 - **More CPU, memory or disk:** change the entry and approve the plan. Disks
   only grow. `reboot_after_update` is off, so a change that needs a restart
   waits until you reboot the VM yourself.
