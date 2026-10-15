@@ -47,16 +47,17 @@ locals {
       bluemap           = false
     }
     homestead = {
-      enabled           = false
+      enabled           = true
       servers           = "Homestead"
       vm_id             = 5011
       node              = "pve01"
       cores             = 4
       memory            = 12288
       disk              = 64
-      address           = "192.168.50.19"
+      # Built on its final address: .20 is free since Iridium's cutover.
+      address           = "192.168.50.20"
       mac               = "02:00:00:00:50:20"
-      service_addresses = ["192.168.50.10", "192.168.50.11", "192.168.50.12", "192.168.50.13"]
+      service_addresses = []
       bluemap           = true
     }
     proxy = {

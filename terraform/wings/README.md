@@ -12,7 +12,7 @@ cluster, by committing to Git. The migration onto them is a runbook:
 | --- | --- | --- | --- | --- | --- |
 | `wing-atlas` | 5031 | pve03 | Atlas | 192.168.50.30 (consolidated) | none |
 | `wing-iridium` | 5021 | pve02 | Iridium | 192.168.50.29 (serves here until it moves to .30) | none |
-| `wing-homestead` | 5011 | pve01 | Homestead | 192.168.50.19 | .10, .11, .12, .13 |
+| `wing-homestead` | 5011 | pve01 | Homestead | 192.168.50.20 (final) | none |
 | `wing-proxy` | 5001 | pve01 | Velocity, Lobby | 192.168.50.109 | .100, .101 |
 
 All of it is in [`main.tf`](./main.tf): the `wings` map is the inventory, and
@@ -46,8 +46,9 @@ address for a while:
 
 1. **Iridium** is built at .29 with its target MAC (`50:30`). At cutover, old
    Iridium is powered off and the new VM keeps serving on .29, which frees .20.
-2. **Homestead** is built at .19 with its target MAC (`50:20`) and takes over
-   .20 at cutover, which frees .10.
+2. **Homestead** is built directly on .20 (free once old Iridium is off) with
+   its target MAC (`50:20`). At cutover, old Homestead is powered off, which
+   frees .10.
 3. **Atlas** moves from .30 to .10, MAC `50:31` → `50:10`, in place (below).
    That frees .30.
 4. **Iridium** moves from .29 to .30 in place. Its MAC is already right.
