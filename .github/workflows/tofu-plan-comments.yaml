@@ -9,8 +9,10 @@ on:
   issue_comment:
     types: ["created"]
 
-permissions:
-  pull-requests: write
+# Deletes as the bot that posted the plans (the same GitHub App), not as
+# github-actions: a comment deleted by its own author leaves no "deleted a
+# comment" entry in the PR timeline.
+permissions: {}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.issue.number }}
@@ -24,9 +26,16 @@ jobs:
       && github.event.comment.user.login == 'butler-hobbes[bot]'
       && startsWith(github.event.comment.body, 'tf-controller plan output') }}
     steps:
+      - name: Generate Token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        id: app-token
+        with:
+          app-id: "${{ secrets.BOT_APP_ID }}"
+          private-key: "${{ secrets.BOT_APP_PRIVATE_KEY }}"
+
       - name: Delete Older Plan Comments
         env:
-          GH_TOKEN: "${{ github.token }}"
+          GH_TOKEN: "${{ steps.app-token.outputs.token }}"
           KEEP: "${{ github.event.comment.id }}"
           PR: "${{ github.event.issue.number }}"
         run: |
