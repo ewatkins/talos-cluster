@@ -1,5 +1,12 @@
 # Wings: new VMs for Calagopus
 
+> **Done (2026-10-15).** This is the record of the migration, so it still
+> uses the Pterodactyl names the wings kept at first. Afterwards every wing
+> was moved to Calagopus's defaults: user `calagopus` (same 999:987),
+> `/var/lib/calagopus-wings` (data, volumes, backups), `/var/log/calagopus-wings`
+> and the Docker network `calagopus_nw` (same `172.18.0.0/16`). Read the paths
+> and names below with that in mind.
+
 Runbook for moving each game server off its Pterodactyl Wings VM and onto a
 new [Calagopus Wings](https://github.com/calagopus/wings) VM. There is one VM
 per world (named after it), defined in
