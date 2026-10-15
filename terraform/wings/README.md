@@ -32,8 +32,10 @@ replaces both the VMID-derived MAC and the `.X0`/`.X1` service-address scheme:
 | `wing-proxy`, Lobby NIC | 192.168.50.99 | `02:00:00:00:50:99` |
 | `wing-proxy`, Velocity NIC | 192.168.50.100 | `02:00:00:00:50:01` |
 
-None of this is in `main.tf` yet. Every address below is taken today, so the
-moves have to go in order:
+The MACs are set in `main.tf`. Atlas still has `50:31` until it moves, and
+the proxy's single NIC already has Velocity's `50:01`. The addresses aren't
+set yet. Every address below is taken today, so the moves have to go in
+order:
 
 - .10 is old Homestead's (`wing-node01`).
 - .20 is old Iridium's (`wing-node02`).
@@ -81,9 +83,10 @@ addresses, so each one also updates the matching entries in:
   No rpcbind listening, and no certbot or Cloudflare token on the VM: Wings
   uses a self-signed cert, which is all Envoy's TLS hop needs.
 - **Serial console only**, no ballooning, no emulated display.
-- **Fixed MAC** derived from the VMID (`02:00:00:00:50:31` for 5031), so a
-  rebuilt wing looks like the same device to the network. Changing it
-  rebuilds the VM, because the guest's network config is bound to it.
+- **Fixed MAC**, set per wing in `main.tf` (`mac`) to read as its final
+  address, so a rebuilt wing looks like the same device to the network.
+  Changing it rebuilds the VM, because the guest's network config is bound
+  to it.
 - **In the `wings` pool**, which is what the API token is limited to and what
   the `wings` backup job selects.
 - **Not protected** in Proxmox: rebuilding a wing is routine. Nothing is
@@ -231,8 +234,9 @@ decodes it. Shred the private key file once it is saved.
 
 ## Day to day
 
-- **New world:** add an entry to `wings`, named after the world (next free VMID and
-  `.X9`-style management address), approve the plan, then follow WINGS.md
+- **New world:** add an entry to `wings`, named after the world (next free
+  VMID, `.X9`-style management address, and a `mac` that reads as its final
+  address), approve the plan, then follow WINGS.md
   from step 1.
 - **More CPU, memory or disk:** change the entry and approve the plan. Disks
   only grow. `reboot_after_update` is off, so a change that needs a restart
