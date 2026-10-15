@@ -155,7 +155,9 @@ here. That is expected.
    **Admin → Database Hosts → Cluster MariaDB**, set the username to
    `calagopus` and the password from
    `kubectl -n database get secret calagopus-dbhost-secret -o jsonpath='{.data.password}' | base64 -d`.
-4. Then drop the `pterodactyl` database and user: a final dump is in
+4. Removed the `pterodactyl` MariaDB user, grant and database objects once
+   the database host tested successfully with `pterodactyl` locked, then
+   dropped the schema by hand. A final dump is in
    `~/backups/pterodactyl-migration-2026-10-13/`, alongside the Phase 0
    dumps.
 5. Moved the wings themselves to Calagopus's names (see [WINGS.md](./WINGS.md)).
