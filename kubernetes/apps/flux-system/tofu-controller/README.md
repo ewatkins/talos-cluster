@@ -26,9 +26,10 @@ the object's namespace should not be pruned.
 is the **branch planner**, which polls open PRs every minute and posts a
 plan-only run for each PR branch that changes the object's `path`
 (`branchPlanner.enablePathScope`) as a comment (`!replan` refreshes it).
+Each new plan comment deletes the older ones on that PR
+(`.github/workflows/tofu-plan-comments.yaml`), so the one left is current.
 A branch is planned as it stands, so rebase a stale branch before trusting
-its plan. It
-plans against the object's real state, runs with the object's own runner
+its plan. It plans against the object's real state, runs with the object's own runner
 account, and can only plan. Branches are fetched from this repo by name,
 so PRs from forks are never planned with the cluster's credentials. It signs
 in as the repo's bot GitHub App (`branch-planner-token`, from the
