@@ -78,10 +78,8 @@ metadata:
   namespace: network
 spec:
   endpoints:
-    # wing-iridium serves on its own address until it moves to .30
-    # (terraform/wings/README.md, "Target addressing").
     - ip:
-        address: 192.168.50.29
+        address: 192.168.50.30
         port: 8080
   # Wings serves the daemon API over TLS on 8080, so the gateway has to
   # re-originate TLS rather than send cleartext. Its cert is not verifiable
