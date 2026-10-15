@@ -6,8 +6,9 @@ metadata:
   namespace: network
 spec:
   endpoints:
+    # BlueMap's web server, which runs in the Homestead server on wing-homestead.
     - ip:
-        address: 192.168.50.11
+        address: 192.168.50.20
         port: 8100
 ---
 apiVersion: gateway.networking.k8s.io/v1
@@ -37,7 +38,7 @@ metadata:
 spec:
   endpoints:
     - ip:
-        address: 192.168.50.10
+        address: 192.168.50.20
         port: 8080
   # Wings serves the daemon API over TLS on 8080, so the gateway has to
   # re-originate TLS rather than send cleartext. Its cert is not verifiable
