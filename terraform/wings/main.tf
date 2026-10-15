@@ -70,6 +70,8 @@ locals {
   # A fixed MAC per wing, derived from its VMID: locally administered
   # (02:...), and readable (5031 -> 02:00:00:00:50:31). Rebuilding a wing
   # keeps its MAC, so the router and switch see the same device.
+  # Planned: a per-wing MAC that reads as the wing's final address
+  # (README.md, "Target addressing").
   mac = { for name, wing in local.enabled : name => format("02:00:00:00:%s:%s", substr(tostring(wing.vm_id), 0, 2), substr(tostring(wing.vm_id), 2, 2)) }
 
   gateway = "192.168.50.1"
