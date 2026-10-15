@@ -122,7 +122,7 @@ metadata:
 spec:
   endpoints:
     - ip:
-        address: 192.168.50.30
+        address: 192.168.50.10
         port: 8080
   # Wings serves the daemon API over TLS on 8080, so the gateway has to
   # re-originate TLS rather than send cleartext. Its cert is not verifiable
