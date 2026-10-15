@@ -15,7 +15,9 @@ node, after the panel's final import (see [README.md](./README.md), Phase 3).
 | `wing-node01` | 5010 | → | `wing-homestead` | 5011 | pve01 | Homestead | .19 | .10 .11 .12 .13 |
 | `wing-proxy` | 5000 | → | `wing-proxy` | 5001 | pve01 | Velocity, Lobby | .109 | .100 (Lobby: .99, own NIC) |
 
-All addresses are in `192.168.50.0/24`. Do the nodes in that order.
+All addresses are in `192.168.50.0/24`. Do the nodes in that order. (After the
+migration the new VMs were renumbered to match their addresses: 5010, 5020,
+5030 and 5000; see the table in [`terraform/wings`](../../../../terraform/wings/README.md).)
 `wing-proxy` runs Velocity in front of the others, so it goes last.
 
 ## How it works
