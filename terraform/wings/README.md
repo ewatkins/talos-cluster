@@ -19,6 +19,57 @@ All of it is in [`main.tf`](./main.tf): the `wings` map is the inventory, and
 [`templates/user-data.yaml.tftpl`](./templates/user-data.yaml.tftpl) is
 everything inside the guest.
 
+## Target addressing (planned, not applied)
+
+Each wing ends up on one address, with a MAC that reads as that address. That
+replaces both the VMID-derived MAC and the `.X0`/`.X1` service-address scheme:
+
+| Wing | Address | MAC |
+| --- | --- | --- |
+| `wing-atlas` | 192.168.50.10 | `02:00:00:00:50:10` |
+| `wing-homestead` | 192.168.50.20 | `02:00:00:00:50:20` |
+| `wing-iridium` | 192.168.50.30 | `02:00:00:00:50:30` |
+| `wing-proxy`, Lobby NIC | 192.168.50.99 | `02:00:00:00:50:99` |
+| `wing-proxy`, Velocity NIC | 192.168.50.100 | `02:00:00:00:50:01` |
+
+None of this is in `main.tf` yet. Every address below is taken today, so the
+moves have to go in order:
+
+- .10 is old Homestead's (`wing-node01`).
+- .20 is old Iridium's (`wing-node02`).
+- .30 is `wing-atlas`.
+
+Those three form a cycle, which Iridium breaks by serving on its management
+address for a while:
+
+1. **Iridium** is built at .29 with its target MAC (`50:30`). At cutover, old
+   Iridium is powered off and the new VM keeps serving on .29, which frees .20.
+2. **Homestead** is built at .19 with its target MAC (`50:20`) and takes over
+   .20 at cutover, which frees .10.
+3. **Atlas** moves from .30 to .10, MAC `50:31` → `50:10`, in place (below).
+   That frees .30.
+4. **Iridium** moves from .29 to .30 in place. Its MAC is already right.
+5. **Proxy** goes last. It gets a second NIC, Lobby on .99 and Velocity on
+   .100. Both NICs are on the same /24, so the guest needs `arp_ignore`/
+   `arp_announce` and a source routing policy per NIC. Without them, replies
+   leave by the wrong interface.
+
+**In place, not rebuilt.** A MAC change would normally replace the VM
+(`replace_triggered_by`), and with it the game data. Cloud-init only runs on
+first boot, so a new `address` never reaches the guest. For each in-place move:
+
+1. Fix the guest's netplan by hand: the `match: macaddress` and the address.
+2. Merge the `main.tf` change with the MAC dropped from `replace_triggered_by`.
+3. Reboot once.
+
+**Downstream.** Unlike the cutovers in WINGS.md, these moves change
+addresses, so each one also updates the matching entries in:
+
+- the Envoy Backends (`kubernetes/apps/network/external/app/minecraft.yaml`)
+- the Gatus checks
+- Velocity's backends
+- the panel allocations
+
 ## What a wing is
 
 - **Ubuntu 24.04 minimal cloud image** (no snapd), installed with
