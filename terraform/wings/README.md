@@ -13,7 +13,7 @@ cluster, by committing to Git. The migration onto them is a runbook:
 | `wing-atlas` | 5031 | pve03 | Atlas | 192.168.50.10 (final) | none |
 | `wing-iridium` | 5021 | pve02 | Iridium | 192.168.50.30 (final) | none |
 | `wing-homestead` | 5011 | pve01 | Homestead | 192.168.50.20 (final) | none |
-| `wing-proxy` | 5001 | pve01 | Velocity, Lobby | 192.168.50.109 | .100, .101 |
+| `wing-proxy` | 5001 | pve01 | Velocity, Lobby | 192.168.50.109, Lobby NIC 192.168.50.99 (final) | .100 |
 
 All of it is in [`main.tf`](./main.tf): the `wings` map is the inventory, and
 [`templates/user-data.yaml.tftpl`](./templates/user-data.yaml.tftpl) is
@@ -55,7 +55,12 @@ address for a while:
 5. **Proxy** goes last. It gets a second NIC, Lobby on .99 and Velocity on
    .100. Both NICs are on the same /24, so the guest needs `arp_ignore`/
    `arp_announce` and a source routing policy per NIC. Without them, replies
-   leave by the wrong interface.
+   leave by the wrong interface. `second_nic` in `main.tf` adds the NIC, and
+   the template sets up the rest: its own routing table for the Lobby's
+   address, plus a connection mark, because Docker forwards the Lobby's
+   replies with the container's address. The new proxy is built with
+   Velocity on .109 and the Lobby already on .99; at cutover Velocity takes
+   over .100 and the Lobby moves off .101 (WINGS.md).
 
 **In place, not rebuilt.** A MAC change would normally replace the VM
 (`replace_triggered_by`), and with it the game data. Cloud-init only runs on
