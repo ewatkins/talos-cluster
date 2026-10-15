@@ -40,7 +40,7 @@ locals {
       cores             = 4
       memory            = 12288
       disk              = 32
-      address           = "192.168.50.29"
+      address           = "192.168.50.30"
       mac               = "02:00:00:00:50:30"
       service_addresses = []
       bluemap           = false
