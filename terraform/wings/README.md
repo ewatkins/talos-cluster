@@ -19,6 +19,59 @@ All of it is in [`main.tf`](./main.tf): the `wings` map is the inventory, and
 [`templates/user-data.yaml.tftpl`](./templates/user-data.yaml.tftpl) is
 everything inside the guest.
 
+## Target addressing (planned, not applied)
+
+Each wing ends up on one address, with a MAC that reads as that address. That
+replaces both the VMID-derived MAC and the `.X0`/`.X1` service-address scheme:
+
+| Wing | Address | MAC |
+| --- | --- | --- |
+| `wing-atlas` | 192.168.50.10 | `02:00:00:00:50:10` |
+| `wing-homestead` | 192.168.50.20 | `02:00:00:00:50:20` |
+| `wing-iridium` | 192.168.50.30 | `02:00:00:00:50:30` |
+| `wing-proxy`, Lobby NIC | 192.168.50.99 | `02:00:00:00:50:99` |
+| `wing-proxy`, Velocity NIC | 192.168.50.100 | `02:00:00:00:50:01` |
+
+The MACs are set in `main.tf`. Atlas still has `50:31` until it moves, and
+the proxy's single NIC already has Velocity's `50:01`. The addresses aren't
+set yet. Every address below is taken today, so the moves have to go in
+order:
+
+- .10 is old Homestead's (`wing-node01`).
+- .20 is old Iridium's (`wing-node02`).
+- .30 is `wing-atlas`.
+
+Those three form a cycle, which Iridium breaks by serving on its management
+address for a while:
+
+1. **Iridium** is built at .29 with its target MAC (`50:30`). At cutover, old
+   Iridium is powered off and the new VM keeps serving on .29, which frees .20.
+2. **Homestead** is built at .19 with its target MAC (`50:20`) and takes over
+   .20 at cutover, which frees .10.
+3. **Atlas** moves from .30 to .10, MAC `50:31` → `50:10`, in place (below).
+   That frees .30.
+4. **Iridium** moves from .29 to .30 in place. Its MAC is already right.
+5. **Proxy** goes last. It gets a second NIC, Lobby on .99 and Velocity on
+   .100. Both NICs are on the same /24, so the guest needs `arp_ignore`/
+   `arp_announce` and a source routing policy per NIC. Without them, replies
+   leave by the wrong interface.
+
+**In place, not rebuilt.** A MAC change would normally replace the VM
+(`replace_triggered_by`), and with it the game data. Cloud-init only runs on
+first boot, so a new `address` never reaches the guest. For each in-place move:
+
+1. Fix the guest's netplan by hand: the `match: macaddress` and the address.
+2. Merge the `main.tf` change with the MAC dropped from `replace_triggered_by`.
+3. Reboot once.
+
+**Downstream.** Unlike the cutovers in WINGS.md, these moves change
+addresses, so each one also updates the matching entries in:
+
+- the Envoy Backends (`kubernetes/apps/network/external/app/minecraft.yaml`)
+- the Gatus checks
+- Velocity's backends
+- the panel allocations
+
 ## What a wing is
 
 - **Ubuntu 24.04 minimal cloud image** (no snapd), installed with
@@ -30,9 +83,10 @@ everything inside the guest.
   No rpcbind listening, and no certbot or Cloudflare token on the VM: Wings
   uses a self-signed cert, which is all Envoy's TLS hop needs.
 - **Serial console only**, no ballooning, no emulated display.
-- **Fixed MAC** derived from the VMID (`02:00:00:00:50:31` for 5031), so a
-  rebuilt wing looks like the same device to the network. Changing it
-  rebuilds the VM, because the guest's network config is bound to it.
+- **Fixed MAC**, set per wing in `main.tf` (`mac`) to read as its final
+  address, so a rebuilt wing looks like the same device to the network.
+  Changing it rebuilds the VM, because the guest's network config is bound
+  to it.
 - **In the `wings` pool**, which is what the API token is limited to and what
   the `wings` backup job selects.
 - **Not protected** in Proxmox: rebuilding a wing is routine. Nothing is
@@ -180,8 +234,9 @@ decodes it. Shred the private key file once it is saved.
 
 ## Day to day
 
-- **New world:** add an entry to `wings`, named after the world (next free VMID and
-  `.X9`-style management address), approve the plan, then follow WINGS.md
+- **New world:** add an entry to `wings`, named after the world (next free
+  VMID, `.X9`-style management address, and a `mac` that reads as its final
+  address), approve the plan, then follow WINGS.md
   from step 1.
 - **More CPU, memory or disk:** change the entry and approve the plan. Disks
   only grow. `reboot_after_update` is off, so a change that needs a restart

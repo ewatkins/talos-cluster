@@ -12,6 +12,10 @@ locals {
   # memory            Panel limits are 8200 MiB per game server and
   #                   2250 + 1125 MiB on the proxy; the rest is the OS,
   #                   Docker and Wings.
+  # mac               Fixed, locally administered (02:...), and reads as the
+  #                   wing's final address (README.md, "Target addressing").
+  #                   It survives rebuilds, so the router and switch see the
+  #                   same device; changing it rebuilds the VM.
   # bluemap           Mount the shared BlueMap NFS export. Only servers
   #                   that render a map write to it.
   wings = {
@@ -24,6 +28,8 @@ locals {
       memory            = 12288
       disk              = 32
       address           = "192.168.50.30"
+      # Its pre-plan MAC; moves to 50:10 with the address, in place.
+      mac               = "02:00:00:00:50:31"
       service_addresses = []
       bluemap           = true
     }
@@ -36,6 +42,7 @@ locals {
       memory            = 12288
       disk              = 32
       address           = "192.168.50.29"
+      mac               = "02:00:00:00:50:30"
       service_addresses = ["192.168.50.20", "192.168.50.21", "192.168.50.22"]
       bluemap           = false
     }
@@ -48,6 +55,7 @@ locals {
       memory            = 12288
       disk              = 64
       address           = "192.168.50.19"
+      mac               = "02:00:00:00:50:20"
       service_addresses = ["192.168.50.10", "192.168.50.11", "192.168.50.12", "192.168.50.13"]
       bluemap           = true
     }
@@ -60,6 +68,7 @@ locals {
       memory            = 6144
       disk              = 16
       address           = "192.168.50.109"
+      mac               = "02:00:00:00:50:01"
       service_addresses = ["192.168.50.100", "192.168.50.101"]
       bluemap           = false
     }
@@ -67,10 +76,7 @@ locals {
 
   enabled = { for name, wing in local.wings : name => wing if wing.enabled }
 
-  # A fixed MAC per wing, derived from its VMID: locally administered
-  # (02:...), and readable (5031 -> 02:00:00:00:50:31). Rebuilding a wing
-  # keeps its MAC, so the router and switch see the same device.
-  mac = { for name, wing in local.enabled : name => format("02:00:00:00:%s:%s", substr(tostring(wing.vm_id), 0, 2), substr(tostring(wing.vm_id), 2, 2)) }
+  mac = { for name, wing in local.enabled : name => wing.mac }
 
   gateway = "192.168.50.1"
   ssh_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJLUii06o9M7IuYRamEe5tB5GlOlB3zJu7ydmz99gHUc Personal SSH Key"
