@@ -18,12 +18,13 @@ users:
 disable_root: true
 ssh_pwauth: false
 
-# Wings looks its user up by name and runs every server container as it.
-# The old wings used 999:987, so pinning the same ids keeps the rsynced game
-# data owned correctly. Runs before any package can claim the ids.
+# Wings looks its user up by name (`system.username`, Calagopus's default
+# `calagopus`) and runs every server container as it. Every wing's game data
+# is owned by 999:987, so pinning the same ids keeps data copied from another
+# wing owned correctly. Runs before any package can claim the ids.
 bootcmd:
-  - [sh, -c, "getent group pterodactyl >/dev/null || groupadd --system --gid 987 pterodactyl"]
-  - [sh, -c, "getent passwd pterodactyl >/dev/null || useradd --system --uid 999 --gid 987 --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin pterodactyl"]
+  - [sh, -c, "getent group calagopus >/dev/null || groupadd --system --gid 987 calagopus"]
+  - [sh, -c, "getent passwd calagopus >/dev/null || useradd --system --uid 999 --gid 987 --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin calagopus"]
 
 apt:
   sources:
