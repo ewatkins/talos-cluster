@@ -11,7 +11,7 @@ cluster, by committing to Git. The migration onto them is a runbook:
 | Wing | VMID | Node | Servers | Management | Service addresses |
 | --- | --- | --- | --- | --- | --- |
 | `wing-atlas` | 5031 | pve03 | Atlas | 192.168.50.30 (consolidated) | none |
-| `wing-iridium` | 5021 | pve02 | Iridium | 192.168.50.29 | .20, .21, .22 |
+| `wing-iridium` | 5021 | pve02 | Iridium | 192.168.50.29 (serves here until it moves to .30) | none |
 | `wing-homestead` | 5011 | pve01 | Homestead | 192.168.50.19 | .10, .11, .12, .13 |
 | `wing-proxy` | 5001 | pve01 | Velocity, Lobby | 192.168.50.109 | .100, .101 |
 
