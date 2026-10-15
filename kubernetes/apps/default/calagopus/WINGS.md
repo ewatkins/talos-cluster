@@ -260,9 +260,13 @@ listens on it. Done for Atlas on 2026-10-14.
    cloud-init doesn't reapply the network on an existing VM, so this only
    brings Git in line with step 5 and makes a rebuild come up on `.X0`.
 
-`wing-proxy` is the exception: Velocity (`.100`) and the Lobby (`.101`) both
-need port 25565, so it keeps `.101` (and stays at `address = .100` with
-`service_addresses = [".101"]` once consolidated).
+`wing-proxy` is the exception: Velocity and the Lobby both need port 25565,
+so it can't fold onto one address. Instead it gets a second NIC: Velocity
+stays on `.100` (MAC `50:01`) and the Lobby moves from `.101` to `.99` (MAC
+`50:99`), which also updates the Lobby's panel allocation, Velocity's backend
+and its Gatus check. See step 5 of the target addressing in
+[`terraform/wings`](../../../../terraform/wings/README.md#target-addressing-planned-not-applied)
+for the guest's per-NIC ARP and routing settings.
 
 ## Rollback
 
