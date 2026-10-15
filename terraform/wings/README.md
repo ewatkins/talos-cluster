@@ -10,7 +10,7 @@ cluster, by committing to Git. The migration onto them is a runbook:
 
 | Wing | VMID | Node | Servers | Management | Service addresses |
 | --- | --- | --- | --- | --- | --- |
-| `wing-atlas` | 5031 | pve03 | Atlas | 192.168.50.30 (consolidated) | none |
+| `wing-atlas` | 5031 | pve03 | Atlas | 192.168.50.10 (final) | none |
 | `wing-iridium` | 5021 | pve02 | Iridium | 192.168.50.29 (serves here until it moves to .30) | none |
 | `wing-homestead` | 5011 | pve01 | Homestead | 192.168.50.20 (final) | none |
 | `wing-proxy` | 5001 | pve01 | Velocity, Lobby | 192.168.50.109 | .100, .101 |
@@ -32,9 +32,9 @@ replaces both the VMID-derived MAC and the `.X0`/`.X1` service-address scheme:
 | `wing-proxy`, Lobby NIC | 192.168.50.99 | `02:00:00:00:50:99` |
 | `wing-proxy`, Velocity NIC | 192.168.50.100 | `02:00:00:00:50:01` |
 
-The MACs are set in `main.tf`. Atlas still has `50:31` until it moves, and
-the proxy's single NIC already has Velocity's `50:01`. The addresses aren't
-set yet. Every address below is taken today, so the moves have to go in
+The MACs are set in `main.tf`, and the proxy's single NIC already has
+Velocity's `50:01`. Atlas and Homestead are on their final addresses;
+Iridium is on .29 until it moves to .30. Every address below is taken today, so the moves have to go in
 order:
 
 - .10 is old Homestead's (`wing-node01`).

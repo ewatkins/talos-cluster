@@ -27,9 +27,8 @@ locals {
       cores             = 4
       memory            = 12288
       disk              = 32
-      address           = "192.168.50.30"
-      # Its pre-plan MAC; moves to 50:10 with the address, in place.
-      mac               = "02:00:00:00:50:31"
+      address           = "192.168.50.10"
+      mac               = "02:00:00:00:50:10"
       service_addresses = []
       bluemap           = true
     }
@@ -246,7 +245,10 @@ resource "proxmox_virtual_environment_vm" "wing" {
     # The guest's network config is bound to the MAC on first boot, so a
     # changed MAC would leave the VM with no network after its next reboot.
     # Rebuild instead.
-    replace_triggered_by = [terraform_data.mac[each.key]]
+    #
+    # Suspended for wing-atlas's in-place move (.30 -> .10, MAC 50:31 ->
+    # 50:10; its netplan is edited by hand first). Restore it in the next PR.
+    # replace_triggered_by = [terraform_data.mac[each.key]]
   }
 }
 
