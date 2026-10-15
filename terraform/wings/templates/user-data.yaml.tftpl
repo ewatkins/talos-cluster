@@ -155,7 +155,9 @@ write_files:
             routing-policy:
               - from: ${second_nic.address}
                 table: 2
-              - mark: 2
+              # netplan rejects a rule without `from` or `to`.
+              - from: 0.0.0.0/0
+                mark: 2
                 table: 2
 
   # Game servers are Docker containers, so their replies are forwarded with
