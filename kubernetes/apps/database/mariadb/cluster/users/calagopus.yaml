@@ -1,0 +1,47 @@
+---
+# Calagopus's database host account (`default/calagopus`): the panel creates a
+# schema and a user for each server database through it. Replaces the
+# `pterodactyl` account the panel inherited from the migration.
+#
+# The password is generated once in the cluster and never rotated
+# (refreshPolicy: CreatedOnce); the panel stores its own copy, so a rotation
+# would have to be entered there as well.
+# yaml-language-server: $schema=https://kube-schemas.pages.dev/generators.external-secrets.io/password_v1alpha1.json
+apiVersion: generators.external-secrets.io/v1alpha1
+kind: Password
+metadata:
+  name: calagopus-dbhost-password
+spec:
+  length: 32
+  digits: 6
+  symbols: 0
+  noUpper: false
+  allowRepeat: true
+---
+# yaml-language-server: $schema=https://kube-schemas.pages.dev/external-secrets.io/externalsecret_v1.json
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: &name calagopus-dbhost-secret
+spec:
+  refreshPolicy: CreatedOnce
+  target:
+    name: *name
+  dataFrom:
+    - sourceRef:
+        generatorRef:
+          apiVersion: generators.external-secrets.io/v1alpha1
+          kind: Password
+          name: calagopus-dbhost-password
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: User
+metadata:
+  name: calagopus
+spec:
+  mariaDbRef:
+    name: mariadb
+  passwordSecretKeyRef:
+    name: calagopus-dbhost-secret
+    key: password
+  maxUserConnections: 0
