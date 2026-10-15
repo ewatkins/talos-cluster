@@ -13,9 +13,11 @@ node, after the panel's final import (see [README.md](./README.md), Phase 3).
 | `wing-node03` | 5030 | → | `wing-atlas` | 5031 | pve03 | Atlas | .39 | .30 .31 .32 |
 | `wing-node02` | 5020 | → | `wing-iridium` | 5021 | pve02 | Iridium | .29 | .20 .21 .22 |
 | `wing-node01` | 5010 | → | `wing-homestead` | 5011 | pve01 | Homestead | .19 | .10 .11 .12 .13 |
-| `wing-proxy` | 5000 | → | `wing-proxy` | 5001 | pve01 | Velocity, Lobby | .109 | .100 .101 |
+| `wing-proxy` | 5000 | → | `wing-proxy` | 5001 | pve01 | Velocity, Lobby | .109 | .100 (Lobby: .99, own NIC) |
 
-All addresses are in `192.168.50.0/24`. Do the nodes in that order.
+All addresses are in `192.168.50.0/24`. Do the nodes in that order. (After the
+migration the new VMs were renumbered to match their addresses: 5010, 5020,
+5030 and 5000; see the table in [`terraform/wings`](../../../../terraform/wings/README.md).)
 `wing-proxy` runs Velocity in front of the others, so it goes last.
 
 ## How it works
@@ -260,9 +262,16 @@ listens on it. Done for Atlas on 2026-10-14.
    cloud-init doesn't reapply the network on an existing VM, so this only
    brings Git in line with step 5 and makes a rebuild come up on `.X0`.
 
-`wing-proxy` is the exception: Velocity (`.100`) and the Lobby (`.101`) both
-need port 25565, so it keeps `.101` (and stays at `address = .100` with
-`service_addresses = [".101"]` once consolidated).
+`wing-proxy` is the exception: Velocity and the Lobby both need port 25565,
+so it can't fold onto one address. Instead it gets a second NIC: Velocity
+stays on `.100` (MAC `50:01`) and the Lobby moves from `.101` to `.99` (MAC
+`50:99`). The Lobby NIC is built on `.99`, so only `.100` is a service
+address. At cutover (between steps 6 and 7), also move the Lobby off
+`.101`: its panel allocation to `.99:25565`, Velocity's `lobby` backend to
+`.99:25565`, and its Gatus check. Check eth1 with `ip rule` (rules for
+`from .99` and `fwmark 0x2`) and `sudo iptables -t mangle -S PREROUTING`. See step 5 of the target addressing in
+[`terraform/wings`](../../../../terraform/wings/README.md#target-addressing-planned-not-applied)
+for the guest's per-NIC ARP and routing settings.
 
 ## Rollback
 

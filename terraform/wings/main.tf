@@ -9,6 +9,10 @@ locals {
   # service_addresses Taken over from the old VM at cutover (.X0 for the
   #                   Envoy Backend, .X1 for the game server, spares). Empty
   #                   once consolidated: game servers then listen on .X0.
+  # vm_id             50 + the last octet of the wing's address (the proxy,
+  #                   on .100, is 5000). Changing it replaces the VM and its
+  #                   game data: renumber in Proxmox first (backup, restore
+  #                   to the new ID), then move the state (README.md).
   # memory            Panel limits are 8200 MiB per game server and
   #                   2250 + 1125 MiB on the proxy; the rest is the OS,
   #                   Docker and Wings.
@@ -18,66 +22,83 @@ locals {
   #                   same device; changing it rebuilds the VM.
   # bluemap           Mount the shared BlueMap NFS export. Only servers
   #                   that render a map write to it.
+  # second_nic        A second NIC on VLAN 50 with its own address and MAC,
+  #                   or null. The proxy's Lobby lives on it, so Velocity and
+  #                   the Lobby can both listen on 25565 at their own address
+  #                   and MAC. The guest routes replies back out the NIC they
+  #                   came in on (templates/user-data.yaml.tftpl).
   wings = {
     atlas = {
       enabled           = true
       servers           = "Atlas"
-      vm_id             = 5031
+      vm_id             = 5010
       node              = "pve03"
       cores             = 4
       memory            = 12288
       disk              = 32
-      address           = "192.168.50.30"
-      # Its pre-plan MAC; moves to 50:10 with the address, in place.
-      mac               = "02:00:00:00:50:31"
+      address           = "192.168.50.10"
+      mac               = "02:00:00:00:50:10"
       service_addresses = []
       bluemap           = true
+      second_nic        = null
     }
     iridium = {
       enabled           = true
       servers           = "Iridium"
-      vm_id             = 5021
+      vm_id             = 5030
       node              = "pve02"
       cores             = 4
       memory            = 12288
       disk              = 32
-      address           = "192.168.50.29"
+      address           = "192.168.50.30"
       mac               = "02:00:00:00:50:30"
       service_addresses = []
       bluemap           = false
+      second_nic        = null
     }
     homestead = {
-      enabled           = true
-      servers           = "Homestead"
-      vm_id             = 5011
-      node              = "pve01"
-      cores             = 4
-      memory            = 12288
-      disk              = 64
+      enabled = true
+      servers = "Homestead"
+      vm_id   = 5020
+      node    = "pve01"
+      cores   = 4
+      memory  = 12288
+      disk    = 64
       # Built on its final address: .20 is free since Iridium's cutover.
       address           = "192.168.50.20"
       mac               = "02:00:00:00:50:20"
       service_addresses = []
       bluemap           = true
+      second_nic        = null
     }
     proxy = {
-      enabled           = false
-      servers           = "Velocity, Lobby"
-      vm_id             = 5001
-      node              = "pve01"
-      cores             = 2
-      memory            = 6144
-      disk              = 16
-      address           = "192.168.50.109"
+      enabled = true
+      servers = "Velocity, Lobby"
+      vm_id   = 5000
+      node    = "pve01"
+      cores   = 2
+      memory  = 6144
+      disk    = 16
+      # Velocity, consolidated onto .100 (WINGS.md, step 11).
+      address           = "192.168.50.100"
       mac               = "02:00:00:00:50:01"
-      service_addresses = ["192.168.50.100", "192.168.50.101"]
+      service_addresses = []
       bluemap           = false
+      # The Lobby, on its own NIC.
+      second_nic = {
+        address = "192.168.50.99"
+        mac     = "02:00:00:00:50:99"
+      }
     }
   }
 
   enabled = { for name, wing in local.wings : name => wing if wing.enabled }
 
-  mac = { for name, wing in local.enabled : name => wing.mac }
+  # Every MAC a wing has; any change rebuilds it (replace_triggered_by).
+  mac = {
+    for name, wing in local.enabled : name =>
+    wing.second_nic == null ? wing.mac : "${wing.mac},${wing.second_nic.mac}"
+  }
 
   gateway = "192.168.50.1"
   ssh_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJLUii06o9M7IuYRamEe5tB5GlOlB3zJu7ydmz99gHUc Personal SSH Key"
@@ -126,6 +147,8 @@ resource "proxmox_virtual_environment_file" "user_data" {
       hostname          = "wing-${each.key}"
       ssh_key           = local.ssh_key
       service_addresses = each.value.service_addresses
+      second_nic        = each.value.second_nic
+      gateway           = local.gateway
       bluemap           = each.value.bluemap
       wings_version     = local.wings_version
       wings_sha256      = local.wings_sha256
@@ -203,7 +226,16 @@ resource "proxmox_virtual_environment_vm" "wing" {
   network_device {
     bridge      = "Minecrft"
     mtu         = 1500
-    mac_address = local.mac[each.key]
+    mac_address = each.value.mac
+  }
+
+  dynamic "network_device" {
+    for_each = each.value.second_nic == null ? [] : [each.value.second_nic]
+    content {
+      bridge      = "Minecrft"
+      mtu         = 1500
+      mac_address = network_device.value.mac
+    }
   }
 
   initialization {
@@ -213,6 +245,17 @@ resource "proxmox_virtual_environment_vm" "wing" {
       ipv4 {
         address = "${each.value.address}/24"
         gateway = local.gateway
+      }
+    }
+
+    # No gateway: one default route in the main table, via the first NIC.
+    # The guest gives the second NIC its own routing table instead.
+    dynamic "ip_config" {
+      for_each = each.value.second_nic == null ? [] : [each.value.second_nic]
+      content {
+        ipv4 {
+          address = "${ip_config.value.address}/24"
+        }
       }
     }
 

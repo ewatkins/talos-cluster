@@ -36,7 +36,7 @@ data:
           - type: pushover
       - name: lobby
         group: Minecraft
-        url: tcp://192.168.50.101:25565
+        url: tcp://192.168.50.99:25565
         body: "\x0f\x00\x00\x09localhost\x00\x00\x01\x01\x00"
         interval: 1m
         conditions:
@@ -47,7 +47,7 @@ data:
           - type: pushover
       - name: homestead
         group: Minecraft
-        url: tcp://192.168.50.11:25565
+        url: tcp://192.168.50.20:25565
         body: "\x0f\x00\x00\x09localhost\x00\x00\x01\x01\x00"
         interval: 1m
         conditions:
@@ -58,7 +58,7 @@ data:
           - type: pushover
       - name: iridium
         group: Minecraft
-        url: tcp://192.168.50.21:25565
+        url: tcp://192.168.50.30:25565
         body: "\x0f\x00\x00\x09localhost\x00\x00\x01\x01\x00"
         interval: 1m
         conditions:
@@ -69,7 +69,7 @@ data:
           - type: pushover
       - name: atlas
         group: Minecraft
-        url: tcp://192.168.50.30:25565
+        url: tcp://192.168.50.10:25565
         body: "\x0f\x00\x00\x09localhost\x00\x00\x01\x01\x00"
         interval: 1m
         conditions:

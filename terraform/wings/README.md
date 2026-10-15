@@ -10,16 +10,16 @@ cluster, by committing to Git. The migration onto them is a runbook:
 
 | Wing | VMID | Node | Servers | Management | Service addresses |
 | --- | --- | --- | --- | --- | --- |
-| `wing-atlas` | 5031 | pve03 | Atlas | 192.168.50.30 (consolidated) | none |
-| `wing-iridium` | 5021 | pve02 | Iridium | 192.168.50.29 (serves here until it moves to .30) | none |
-| `wing-homestead` | 5011 | pve01 | Homestead | 192.168.50.20 (final) | none |
-| `wing-proxy` | 5001 | pve01 | Velocity, Lobby | 192.168.50.109 | .100, .101 |
+| `wing-atlas` | 5010 | pve03 | Atlas | 192.168.50.10 (final) | none |
+| `wing-iridium` | 5030 | pve02 | Iridium | 192.168.50.30 (final) | none |
+| `wing-homestead` | 5020 | pve01 | Homestead | 192.168.50.20 (final) | none |
+| `wing-proxy` | 5000 | pve01 | Velocity, Lobby | 192.168.50.100, Lobby NIC 192.168.50.99 (final) | none |
 
 All of it is in [`main.tf`](./main.tf): the `wings` map is the inventory, and
 [`templates/user-data.yaml.tftpl`](./templates/user-data.yaml.tftpl) is
 everything inside the guest.
 
-## Target addressing (planned, not applied)
+## Target addressing (applied 2026-10-15)
 
 Each wing ends up on one address, with a MAC that reads as that address. That
 replaces both the VMID-derived MAC and the `.X0`/`.X1` service-address scheme:
@@ -32,10 +32,9 @@ replaces both the VMID-derived MAC and the `.X0`/`.X1` service-address scheme:
 | `wing-proxy`, Lobby NIC | 192.168.50.99 | `02:00:00:00:50:99` |
 | `wing-proxy`, Velocity NIC | 192.168.50.100 | `02:00:00:00:50:01` |
 
-The MACs are set in `main.tf`. Atlas still has `50:31` until it moves, and
-the proxy's single NIC already has Velocity's `50:01`. The addresses aren't
-set yet. Every address below is taken today, so the moves have to go in
-order:
+The MACs are set in `main.tf`, and every wing is on its final address. The
+moves had to go in order, because each target address was taken at the
+start:
 
 - .10 is old Homestead's (`wing-node01`).
 - .20 is old Iridium's (`wing-node02`).
@@ -55,7 +54,12 @@ address for a while:
 5. **Proxy** goes last. It gets a second NIC, Lobby on .99 and Velocity on
    .100. Both NICs are on the same /24, so the guest needs `arp_ignore`/
    `arp_announce` and a source routing policy per NIC. Without them, replies
-   leave by the wrong interface.
+   leave by the wrong interface. `second_nic` in `main.tf` adds the NIC, and
+   the template sets up the rest: its own routing table for the Lobby's
+   address, plus a connection mark, because Docker forwards the Lobby's
+   replies with the container's address. The new proxy is built with
+   Velocity on .109 and the Lobby already on .99; at cutover Velocity takes
+   over .100 and the Lobby moves off .101 (WINGS.md).
 
 **In place, not rebuilt.** A MAC change would normally replace the VM
 (`replace_triggered_by`), and with it the game data. Cloud-init only runs on
@@ -235,10 +239,30 @@ decodes it. Shred the private key file once it is saved.
 
 ## Day to day
 
-- **New world:** add an entry to `wings`, named after the world (next free
-  VMID, `.X9`-style management address, and a `mac` that reads as its final
-  address), approve the plan, then follow WINGS.md
-  from step 1.
+- **New world:** add an entry to `wings`, named after the world (VMID `50`
+  + the last octet of its final address, `.X9`-style management address,
+  and a `mac` that reads as its final address), approve the plan, then
+  follow WINGS.md from step 1.
+- **Renumbering a wing** (done once, 2026-10-15). Changing `vm_id` in Git
+  replaces the VM and its game data, so move the VM first:
+  1. Suspend Flux's `calagopus-wings` Kustomization, then the Terraform
+     object, or a drift run plans against the old IDs:
+     `flux suspend ks calagopus-wings -n flux-system`, then
+     `kubectl -n calagopus-wings patch terraform calagopus-wings --type merge -p '{"spec":{"suspend":true}}'`.
+     Flux strips a `kubectl` patch from an object it manages, so suspending
+     the Terraform object alone does not hold.
+  2. Stop the game servers, then on a Proxmox node: `ha-manager set vm:$OLD
+     --state stopped`, `vzdump $OLD --storage backups --mode stop`,
+     `qmrestore <backup> $NEW --storage caspian-fast --pool wings --unique 0`
+     (keeps the MACs), `qm start $NEW`. cloud-init sees the same
+     `instance-id` and changes nothing. Once it is back, `ha-manager remove
+     vm:$OLD` and `qm destroy $OLD --purge`.
+  3. In the state Secret (`tfstate-default-calagopus-wings`, gzipped JSON),
+     set the VM instance's `id`/`vm_id` to the new ID and drop its
+     `proxmox_haresource` instance. Keep a copy of the old state.
+  4. Change `vm_id` in a PR. The plan must only **create** the HA
+     resources. Merge, then `flux resume ks calagopus-wings -n flux-system`
+     (re-applying the object drops `suspend`).
 - **More CPU, memory or disk:** change the entry and approve the plan. Disks
   only grow. `reboot_after_update` is off, so a change that needs a restart
   waits until you reboot the VM yourself.

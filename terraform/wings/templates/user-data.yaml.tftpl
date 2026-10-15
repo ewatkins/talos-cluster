@@ -122,6 +122,65 @@ write_files:
               - ${address}/24
 %{ endfor ~}
 %{ endif ~}
+%{ if second_nic != null ~}
+
+  # A second NIC on the same /24 (eth1, ${second_nic.address}). Without
+  # this, Linux answers ARP for either address on either NIC and sends every
+  # reply out eth0, so the second address would show up under eth0's MAC.
+  # rp_filter stays loose: eth1's traffic arrives on eth1 but its source is
+  # routed via eth0 in the main table.
+  - path: /etc/sysctl.d/60-second-nic.conf
+    content: |
+      net.ipv4.conf.all.arp_ignore = 1
+      net.ipv4.conf.all.arp_announce = 2
+      net.ipv4.conf.all.rp_filter = 2
+      net.ipv4.conf.default.rp_filter = 2
+
+  # eth1's own routing table (2): anything sent from its address, or marked
+  # as part of a connection that came in on it, leaves by eth1.
+  - path: /etc/netplan/70-second-nic.yaml
+    permissions: "0600"
+    content: |
+      network:
+        version: 2
+        ethernets:
+          eth1:
+            routes:
+              - to: 192.168.50.0/24
+                scope: link
+                table: 2
+              - to: default
+                via: ${gateway}
+                table: 2
+            routing-policy:
+              - from: ${second_nic.address}
+                table: 2
+              # netplan rejects a rule without `from` or `to`.
+              - from: 0.0.0.0/0
+                mark: 2
+                table: 2
+
+  # Game servers are Docker containers, so their replies are forwarded with
+  # the container's source address and only become ${second_nic.address}
+  # on the way out: the `from` rule above never sees them. Mark connections
+  # that arrive on eth1 and route their replies by the mark instead. Packets
+  # arriving on eth1 itself are left unmarked, so they still reach the
+  # container through the main table.
+  - path: /etc/systemd/system/second-nic-connmark.service
+    content: |
+      [Unit]
+      Description=Route replies to eth1's connections back out eth1
+      Before=docker.service
+
+      [Service]
+      Type=oneshot
+      RemainAfterExit=true
+      ExecStart=/bin/sh -c 'iptables -t mangle -C PREROUTING -i eth1 -m conntrack --ctstate NEW -j CONNMARK --set-mark 2 2>/dev/null || iptables -t mangle -A PREROUTING -i eth1 -m conntrack --ctstate NEW -j CONNMARK --set-mark 2'
+      ExecStart=/bin/sh -c 'iptables -t mangle -C PREROUTING ! -i eth1 -m connmark --mark 2 -j MARK --set-mark 2 2>/dev/null || iptables -t mangle -A PREROUTING ! -i eth1 -m connmark --mark 2 -j MARK --set-mark 2'
+
+      [Install]
+      WantedBy=multi-user.target
+%{ endif ~}
 
 runcmd:
   # Pinned and checksummed; a mismatch fails cloud-init visibly.
@@ -136,6 +195,13 @@ runcmd:
   # module, which runs before packages are installed, so there is no NFS
   # helper yet. NFSv4.2 needs no rpcbind.
   - [sh, -c, "grep -q ' /mnt/bluemap ' /etc/fstab || echo 'storage.ewatkins.dev:/mnt/user/bluemap /mnt/bluemap nfs4 rw,hard,vers=4.2,timeo=600,retrans=2,_netdev,nofail 0 0' >> /etc/fstab; mkdir -p /mnt/bluemap && mount /mnt/bluemap"]
+%{ endif ~}
+%{ if second_nic != null ~}
+  # Files written above only take effect on the next boot otherwise.
+  - [sysctl, --system]
+  - [netplan, apply]
+  - [systemctl, daemon-reload]
+  - [systemctl, enable, --now, second-nic-connmark]
 %{ endif ~}
   - [systemctl, enable, --now, qemu-guest-agent]
   - [systemctl, restart, ssh]
