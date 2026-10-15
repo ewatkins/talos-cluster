@@ -144,22 +144,23 @@ here. That is expected.
    starts. Its console, file manager and SFTP work, and a test backup
    succeeds.
 
-### Phase 4: Decommission Pterodactyl
+### Phase 4: Decommission Pterodactyl (2026-10-15)
 
-Only after every node has run on Calagopus for a while:
-
-1. Scale Pterodactyl to zero and remove its route, but keep the HelmRelease
-   files in Git history so it can be restored.
-2. Move the Minecraft Gatus checks (`default/pterodactyl/app/gatus.yaml`)
-   into this app.
-3. Remove `default/pterodactyl`, the `calagopus-import-env` secret and its
-   `/import` mount, and the `calagopus-import` MariaDB user and grant.
-4. **Keep the `pterodactyl` MariaDB user** while any per-server database
-   still exists. It owns the grants Pterodactyl created, and Calagopus uses
-   it as the database host account. Rename it later if you like, but do not
-   drop it with the panel.
-5. Keep the `pterodactyl` database and the Phase 0 dumps until you are sure
-   nothing is missing; they cost almost nothing to keep.
+1. Removed `default/pterodactyl` (it is in Git history if it is ever needed),
+   the `calagopus-import-env` secret and its `/import` mount, and the
+   `calagopus-import` MariaDB user and grant.
+2. Moved the Minecraft Gatus checks into this app (`app/gatus.yaml`).
+3. Gave the database host its own MariaDB account, `calagopus`. No server
+   databases existed, so the `pterodactyl` account owned none. In the panel,
+   **Admin → Database Hosts → Cluster MariaDB**, set the username to
+   `calagopus` and the password from
+   `kubectl -n database get secret calagopus-dbhost-secret -o jsonpath='{.data.password}' | base64 -d`.
+4. Then drop the `pterodactyl` database and user: a final dump is in
+   `~/backups/pterodactyl-migration-2026-10-13/`, alongside the Phase 0
+   dumps.
+5. Moved the wings themselves to Calagopus's names (see [WINGS.md](./WINGS.md)).
+6. In **Admin → Settings → Mail**, the sender still reads Pterodactyl:
+   rename it.
 
 ### Rollback
 

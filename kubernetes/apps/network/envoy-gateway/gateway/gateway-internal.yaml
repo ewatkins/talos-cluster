@@ -24,7 +24,7 @@ spec:
       allowedRoutes:
         namespaces:
           from: All
-    # The Pterodactyl panel reaches each Wings daemon at <node fqdn>:8080, so
+    # The Calagopus panel reaches each Wings daemon at <node fqdn>:8080, so
     # the gateway has to answer on that port as well as 443. Routes for the
     # wing hosts attach here via sectionName: wings.
     - name: wings
