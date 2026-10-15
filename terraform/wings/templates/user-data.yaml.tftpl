@@ -153,6 +153,13 @@ write_files:
                 via: ${gateway}
                 table: 2
             routing-policy:
+              # Docker's own networks always use the main table. Velocity
+              # reaches the Lobby through docker-proxy on this address, and
+              # its replies to the Velocity container must stay on the host
+              # instead of following table 2 out to the gateway.
+              - to: 172.16.0.0/12
+                table: 254
+                priority: 100
               - from: ${second_nic.address}
                 table: 2
               # netplan rejects a rule without `from` or `to`.
