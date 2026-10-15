@@ -79,14 +79,12 @@ locals {
       cores   = 2
       memory  = 6144
       disk    = 16
-      # Velocity: built on .109 beside the old proxy, takes over .100 at
-      # cutover, then consolidates onto it (WINGS.md, step 11).
-      address           = "192.168.50.109"
+      # Velocity, consolidated onto .100 (WINGS.md, step 11).
+      address           = "192.168.50.100"
       mac               = "02:00:00:00:50:01"
-      service_addresses = ["192.168.50.100"]
+      service_addresses = []
       bluemap           = false
-      # The Lobby, on its final address from the start: .99 is free. It
-      # moves off the old proxy's .101 at cutover.
+      # The Lobby, on its own NIC.
       second_nic = {
         address = "192.168.50.99"
         mac     = "02:00:00:00:50:99"
