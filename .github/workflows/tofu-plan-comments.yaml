@@ -5,9 +5,12 @@ name: "Tofu Plan Comments"
 # The branch planner (tofu-controller) posts a new plan comment on every push
 # and every `!replan`, and has no option to replace the last one. Keep only
 # the newest, so the plan on a PR is always the one that merging applies.
+#
+# It posts "Planning in progress..." first and edits the plan into that
+# comment when it finishes, so the plan only shows up as an edit.
 on:
   issue_comment:
-    types: ["created"]
+    types: ["created", "edited"]
 
 # Deletes as the bot that posted the plans (the same GitHub App), not as
 # github-actions: a comment deleted by its own author leaves no "deleted a
@@ -41,7 +44,8 @@ jobs:
         run: |
           gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${PR}/comments" \
             --jq ".[] | select(.user.login == \"butler-hobbes[bot]\"
-              and (.body | startswith(\"tf-controller plan output\"))
+              and (.body | startswith(\"tf-controller plan output\")
+                or startswith(\"Planning in progress\"))
               and .id < ${KEEP}) | .id" |
           while read -r id; do
             gh api --method DELETE "repos/${GITHUB_REPOSITORY}/issues/comments/${id}"
