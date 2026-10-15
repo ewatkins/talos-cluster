@@ -12,5 +12,4 @@ resources:
   - ./homepage/ks.yaml
   - ./netbox/ks.yaml
   - ./patchmon/ks.yaml
-  - ./pterodactyl/ks.yaml
   - ./trek/ks.yaml

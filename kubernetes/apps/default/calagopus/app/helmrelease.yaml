@@ -108,13 +108,6 @@ spec:
         type: emptyDir
         globalMounts:
           - path: /var/log/calagopus
-      # Migration only: the importer's view of the Pterodactyl database.
-      import:
-        type: secret
-        name: calagopus-import-env
-        globalMounts:
-          - path: /import
-            readOnly: true
     ingress:
       app:
         enabled: false

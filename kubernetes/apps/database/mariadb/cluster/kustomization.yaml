@@ -20,9 +20,9 @@ resources:
   - ./databases/pterodactyl.yaml
   - ./grants/pterodactyl.yaml
 
-  # Calagopus importer (read-only on the pterodactyl database)
-  - ./users/calagopus-import.yaml
-  - ./grants/calagopus-import.yaml
+  # Calagopus (database host account)
+  - ./users/calagopus.yaml
+  - ./grants/calagopus.yaml
 
   # LuckPerms
   - ./users/luckperms.yaml
