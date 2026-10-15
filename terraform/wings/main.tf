@@ -68,7 +68,7 @@ locals {
       second_nic        = null
     }
     proxy = {
-      enabled = true
+      enabled = false
       servers = "Velocity, Lobby"
       vm_id   = 5001
       node    = "pve01"
