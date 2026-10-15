@@ -34,7 +34,7 @@ locals {
       bluemap           = true
     }
     iridium = {
-      enabled           = false
+      enabled           = true
       servers           = "Iridium"
       vm_id             = 5021
       node              = "pve02"
@@ -43,7 +43,7 @@ locals {
       disk              = 32
       address           = "192.168.50.29"
       mac               = "02:00:00:00:50:30"
-      service_addresses = ["192.168.50.20", "192.168.50.21", "192.168.50.22"]
+      service_addresses = []
       bluemap           = false
     }
     homestead = {
