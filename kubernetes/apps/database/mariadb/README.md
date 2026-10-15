@@ -56,7 +56,6 @@ The following databases, users, and grants are managed as operator CRs:
 | `playerpoints` | `playerpoints` | Minecraft PlayerPoints plugin |
 | `wildstacker` | `wildstacker` | Minecraft WildStacker plugin |
 | — | `calagopus` | Calagopus's database host (`default/calagopus`): `ALL` on `*.*` with grant option, so the panel can create a schema and user per server database. Its password is generated in the cluster (`calagopus-dbhost-secret`), not from Bitwarden |
-| `pterodactyl` | `pterodactyl` | Retired Pterodactyl panel. Kept (`cleanupPolicy: Skip`) until Calagopus's database host is moved to the `calagopus` account, then dropped by hand |
 
 All databases use `utf8` character set with `utf8_general_ci` collation. User secrets are sourced from Bitwarden via ExternalSecrets (refreshed every 15 minutes), except `calagopus`, whose password is generated once.
 

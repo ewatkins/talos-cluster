@@ -15,11 +15,6 @@ resources:
   - ./databases/alexandrie.yaml
   - ./grants/alexandrie.yaml
 
-  # Pterodactyl
-  - ./users/pterodactyl.yaml
-  - ./databases/pterodactyl.yaml
-  - ./grants/pterodactyl.yaml
-
   # Calagopus (database host account)
   - ./users/calagopus.yaml
   - ./grants/calagopus.yaml
