@@ -101,11 +101,6 @@ spec:
     - name: "calagopus"
       databases: ["calagopus"]
       password: *password
-    # Chaptarr keeps its main, log and cache databases separately; a fourth
-    # (staging.db) is hardcoded SQLite upstream and stays on the config PVC.
-    - name: "chaptarr"
-      databases: ["chaptarr-main", "chaptarr-log", "chaptarr-cache"]
-      password: *password
     # BookOrbit needs the untrusted `vector` extension, which only a superuser
     # can create — see media/bookorbit/README.md for the one-off step.
     - name: "bookorbit"

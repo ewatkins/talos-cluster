@@ -35,10 +35,10 @@ spec:
               # Started as 99:100 rather than root, so the entrypoint skips its
               # chown/su-exec path and only checks /data is writable.
               HOME: /tmp
-              # Book requests (on trial): Prowlarr -> SABnzbd category `bookorbit`
-              # -> import from usenet/complete into the dock -> finalize into
-              # the BookOrbit-owned library. Dock and library share one mount
-              # so finalize is a rename, not a copy.
+              # Book requests: Prowlarr -> SABnzbd category `bookorbit` -> import
+              # from usenet/complete into the dock -> finalize into the eBooks or
+              # Audiobooks library. Dock and libraries share one mount, so
+              # finalize is a rename, not a copy.
               BOOK_DOCK_PATH: /mnt/arrdata/bookorbit/dock
               LIBRARY_BROWSE_ROOT: /mnt/arrdata
               # keycloak.ewatkins.dev resolves to the LAN gateway, which the
@@ -109,8 +109,7 @@ spec:
       # The whole arrdata share, once, like every *arr app. Not subfolder
       # mounts: on Unraid user shares, an NFS mount rooted at a subfolder goes
       # "Stale file handle" once shfs forgets its inode (fuse_remember, ~5 min
-      # idle). Chaptarr's folders are writable here; BookOrbit only writes into
-      # them if its edit features are used on those libraries.
+      # idle).
       media:
         type: nfs
         server: storage.ewatkins.dev
