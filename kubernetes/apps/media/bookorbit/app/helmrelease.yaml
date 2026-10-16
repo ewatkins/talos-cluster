@@ -29,7 +29,7 @@ spec:
               repository: ghcr.io/bookorbit/bookorbit
               tag: 3.4.0@sha256:99539be044c94f10fa5fba616cb08e1b128deb4996c975d181a950818a8632e4
             env:
-              APP_URL: https://bookorbit.ewatkins.dev
+              APP_URL: https://books.ewatkins.dev
               PORT: &port 3000
               TZ: America/Chicago
               # Started as 99:100 rather than root, so the entrypoint skips its

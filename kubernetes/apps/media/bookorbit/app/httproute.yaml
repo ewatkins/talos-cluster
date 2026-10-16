@@ -12,7 +12,7 @@ spec:
       namespace: network
       sectionName: https
   hostnames:
-    - "bookorbit.ewatkins.dev"
+    - "books.ewatkins.dev"
   rules:
     - matches:
         - path:
