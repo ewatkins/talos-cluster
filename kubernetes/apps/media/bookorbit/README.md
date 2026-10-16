@@ -18,58 +18,50 @@ organising books; BookOrbit reads Chaptarr's library and serves it.
 | Memory limit | `2Gi` | The entrypoint sizes the Node heap to 75% of it |
 | Secrets | Bitwarden `bookorbit-secret` | See below |
 
+## Role in the book stack
+
+The book stack mirrors the video one, with BookOrbit in Jellyfin's seat:
+
+| Role | Video | Books |
+| --- | --- | --- |
+| Requests | Seerr | Chaptarr UI (Cantinarr under trial) |
+| Acquire and organise | Radarr / Sonarr | Chaptarr |
+| Indexers | Prowlarr | Prowlarr |
+| Download | SABnzbd | SABnzbd, category `books` |
+| Play / read | Jellyfin | BookOrbit |
+
+BookOrbit never acquires anything. Its built-in request pipeline (Prowlarr +
+download client) is deliberately left unconfigured and `BOOK_REQUEST_ENCRYPTION_KEY`
+is unset, so credentials for it cannot even be saved. Using it would bypass
+Chaptarr: a second category, a second library, and books Chaptarr never tracks or
+upgrades. Sharing Chaptarr's `books` category instead would race Chaptarr's
+completed-download handling, which imports and removes matching items it did not
+grab.
+
 ## Storage layout
 
-Unlike the *arr apps, which mount the whole `arrdata` share once, BookOrbit mounts
-four subdirectories separately so Chaptarr's folders can be read-only:
+The two Chaptarr root folders are mounted **read-only**, at the same container paths
+the *arr apps use, so a path means the same thing in BookOrbit and Chaptarr:
 
-| Mount | NFS path (`storage.ewatkins.dev`) | Mode | Purpose |
-| --- | --- | --- | --- |
-| `/mnt/arrdata/media/ebooks` | `/mnt/user/arrdata/media/ebooks` | ro | Chaptarr eBook library |
-| `/mnt/arrdata/media/audiobooks` | `/mnt/user/arrdata/media/audiobooks` | ro | Chaptarr audiobook library |
-| `/mnt/arrdata/usenet/complete` | `/mnt/user/arrdata/usenet/complete` | ro | SABnzbd completed downloads |
-| `/mnt/arrdata/bookorbit` | `/mnt/user/arrdata/bookorbit` | rw | `dock/` (`BOOK_DOCK_PATH`) and `library/` |
+| Mount | NFS path (`storage.ewatkins.dev`) | Mode |
+| --- | --- | --- |
+| `/mnt/arrdata/media/ebooks` | `/mnt/user/arrdata/media/ebooks` | ro |
+| `/mnt/arrdata/media/audiobooks` | `/mnt/user/arrdata/media/audiobooks` | ro |
 
-Container paths match the *arr apps' view of the share, so a path means the same
-thing in BookOrbit, Chaptarr and Sonarr. Because the mounts are separate, hardlinks
-between them fail with `EXDEV` and BookOrbit falls back to copying; for books that
-is cheap. `/mnt/user/arrdata/bookorbit` must exist on the share before the pod can
-start (`mkdir -p .../bookorbit/{dock,library}` as `99:100`).
+Features that write back into files (embedding metadata, renaming, moving, bulk
+rename) fail by design; fix metadata in Chaptarr. Uploads land in the dock on the
+data PVC (`/data/book-dock`) but there is no writable library to finalize them
+into; add books through Chaptarr's manual import instead.
 
 ## Libraries
 
-Created in the UI (Settings → Libraries), not in Git:
+Created in the UI (Settings → Libraries), not in Git. `LIBRARY_BROWSE_ROOT` limits
+the folder picker to `/mnt/arrdata/media`.
 
-| Library | Folder | Owner |
-| --- | --- | --- |
-| eBooks | `/mnt/arrdata/media/ebooks` | Chaptarr (read-only here) |
-| Audiobooks | `/mnt/arrdata/media/audiobooks` | Chaptarr (read-only here) |
-| BookOrbit | `/mnt/arrdata/bookorbit/library` | BookOrbit; destination for its own requests |
-
-Features that write back into files (embedding metadata, renaming, moving) fail on
-the Chaptarr libraries by design. Fix metadata in Chaptarr instead.
-
-## Book requests
-
-BookOrbit has its own request pipeline (indexer manager → download client → dock →
-library), independent of Chaptarr. It is enabled, configured in the UI under
-Settings → System → Requests:
-
-| Setting | Value |
+| Library | Folder |
 | --- | --- |
-| Indexer manager | Prowlarr `http://prowlarr.media.svc.cluster.local` + Prowlarr API key |
-| Download client | SABnzbd `sab.ewatkins.dev:443` SSL, category **`bookorbit`** |
-| Path mapping | `/data/usenet/complete/` → `/mnt/arrdata/usenet/complete/` |
-| Destination library | `BookOrbit` (`/mnt/arrdata/bookorbit/library`) |
-
-The `bookorbit` SABnzbd category is deliberately separate from Chaptarr's `books`
-so neither app sees the other's downloads in its queue. BookOrbit checks the
-category exists when a client is saved. Credentials are stored encrypted with
-`BOOK_REQUEST_ENCRYPTION_KEY`; rotating that key makes them unreadable.
-
-Requests fulfilled here land in BookOrbit's own library, not Chaptarr's, and
-Chaptarr will not track or upgrade them. To have Chaptarr own a title, add it in
-Chaptarr instead.
+| eBooks | `/mnt/arrdata/media/ebooks` |
+| Audiobooks | `/mnt/arrdata/media/audiobooks` |
 
 ## Secrets
 
@@ -80,7 +72,6 @@ Bitwarden item `bookorbit-secret`:
 | `jwt_secret` | `JWT_SECRET` | `openssl rand -hex 32` |
 | `podcast_encryption_key` | `PODCAST_ENCRYPTION_KEY` | `openssl rand -hex 32` (independent of `jwt_secret`) |
 | `setup_bootstrap_token` | `SETUP_BOOTSTRAP_TOKEN` | `openssl rand -hex 32` |
-| `book_request_encryption_key` | `BOOK_REQUEST_ENCRYPTION_KEY` | `openssl rand -hex 32` (must be 64 hex chars) |
 | `email_encryption_key` | `EMAIL_ENCRYPTION_KEY` | `openssl rand -hex 32` |
 
 ## OIDC
