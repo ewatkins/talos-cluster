@@ -27,7 +27,7 @@ Compared with the video stack, BookOrbit covers three seats at once:
 | Requests | Seerr | BookOrbit |
 | Acquire and organise | Radarr / Sonarr | BookOrbit |
 | Indexers | Prowlarr | Prowlarr |
-| Download | SABnzbd | SABnzbd, category `bookorbit` |
+| Download | SABnzbd | SABnzbd, categories `ebooks` / `audiobooks` |
 | Play / read | Jellyfin | BookOrbit |
 
 Chaptarr (acquisition) and Cantinarr (a request portal for it) were tried first
@@ -41,12 +41,21 @@ Configured in the UI under Settings → System → Requests:
 | Setting | Value |
 | --- | --- |
 | Indexer manager | Prowlarr `http://prowlarr.media.svc.cluster.local` + Prowlarr API key |
-| Download client | SABnzbd `sab.ewatkins.dev:443` SSL, category **`bookorbit`** |
-| Path mapping | `/data/usenet/complete/` → `/mnt/arrdata/usenet/complete/` |
+| Download clients | Two SABnzbd clients, both `sab.ewatkins.dev:443` SSL: one with category **`ebooks`**, one with **`audiobooks`** |
+| Path mapping (each client) | `/data/usenet/complete/` → `/mnt/arrdata/usenet/complete/` |
 | Destination library | `eBooks` or `Audiobooks`, per request |
 
+**BookOrbit 3.4.0 cannot route by media type.** A download client has exactly one
+category, and an automatic grab always goes to the highest-priority enabled
+usenet client, whatever the request's type. With two clients, every automatic grab
+lands in the higher-priority one's category; picking the client by hand on a
+manual grab is the only way to use the other. The category only decides SABnzbd's
+temporary folder: the library a book is filed into comes from the request either
+way.
+
 BookOrbit checks the SABnzbd category exists when the client is saved, and only
-acts on downloads it tagged itself. The download client's credentials are stored
+acts on downloads it tagged itself. SABnzbd's `bookorbit` category is from the first
+single-client setup and can be removed once no client uses it. The download client's credentials are stored
 encrypted with `BOOK_REQUEST_ENCRYPTION_KEY`.
 
 ## Storage layout
@@ -58,7 +67,7 @@ the *arr apps mount it, so a path means the same thing in BookOrbit and Sonarr:
 | --- | --- |
 | `/mnt/arrdata/media/ebooks` | eBooks library |
 | `/mnt/arrdata/media/audiobooks` | Audiobooks library |
-| `/mnt/arrdata/usenet/complete` | SABnzbd completed downloads (`bookorbit/` category folder) |
+| `/mnt/arrdata/usenet/complete` | SABnzbd completed downloads (`ebooks/`, `audiobooks/` category folders) |
 | `/mnt/arrdata/bookorbit/dock` | `BOOK_DOCK_PATH`: request imports and uploads land here before filing |
 
 **Why not subfolder mounts.** BookOrbit first mounted these folders separately so
