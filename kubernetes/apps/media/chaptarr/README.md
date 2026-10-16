@@ -50,35 +50,24 @@ Applied through the API, so they are not in Git.
 | Media management | Import extra files on (`jpg,png,cue,m3u,opf`) | Radarr; keeps covers and `.opf` metadata |
 | Media management | Skip free-space check on import: off | Radarr (Sonarr has it on) |
 | Media management | 100 MB minimum free, `chmod 755`, recycle bin 7 days | Sonarr + Radarr agree |
-| Naming | Rename audiobooks: on | Sonarr + Radarr |
-| Naming | Rename eBooks: **off** | Deliberate deviation — see Calibre below |
+| Naming | Rename audiobooks and eBooks: on | Sonarr + Radarr |
 | Naming | Replace illegal characters: off | Sonarr + Radarr agree |
 | Naming | Colon replacement: Smart | Sonarr (Radarr uses space-dash-space) |
 | Download client | SABnzbd `sab.ewatkins.dev:443` SSL, priority 1, remove completed/failed | Sonarr + Radarr agree |
 | Download client | Category `books` for both audiobooks and eBooks | Matches the existing SAB category |
+| Remote path mapping | `/data/usenet/complete/` → `/mnt/arrdata/usenet/complete/` | Same as Sonarr + Radarr; SAB sees the share at `/data` |
+| Indexers | Synced from Prowlarr (full sync) | Registered in Prowlarr as a **Readarr**-type app — Prowlarr has no Chaptarr type, and Chaptarr keeps Readarr's `/api/v1` |
 
 The SABnzbd API key is not in Git; it was copied from `notifiarr-secret`
 (`DN_SABNZBD_0_API_KEY`).
 
-## The eBook root is a Calibre library
+Unlike Sonarr and Radarr, Chaptarr ties each remote path mapping to a
+`downloadClientId` rather than only a host, so the mapping must be recreated if
+the SABnzbd client is ever deleted and re-added.
 
-`/mnt/arrdata/media/ebooks` contains `metadata.db` and `.calnotes/`, and its
-folders use Calibre's `Title (id)` naming (`Leviathan Wakes (3)`). Nothing in
-the cluster runs Calibre, so it is managed from outside.
-
-Calibre records each book's path in `metadata.db`. If Chaptarr renamed or moved
-files inside the library, Calibre would show those books as missing. eBook
-renaming is therefore **off**, unlike Sonarr and Radarr. The proper integration
-is Chaptarr's Calibre support (`isCalibreLibrary` on the root folder, pointed at
-a Calibre content server) — that needs a content server, which does not exist
-here yet. Until then, Chaptarr should not reorganise this folder.
-
-## The audiobook root holds eBooks
-
-As of setup, `/mnt/arrdata/media/audiobooks` contained five files, all `.epub`
-or `.azw3` — eBooks, filed under audiobooks. Chaptarr correctly imports none of
-them from an Audiobook-type root. They need moving into the eBook library (via
-Calibre, given the above) before Chaptarr will see them.
+The library was started empty on 2026-10-16. The previous contents — a Calibre
+library in `ebooks/` and five eBooks misfiled under `audiobooks/` — were
+deleted.
 
 ## Notes
 
