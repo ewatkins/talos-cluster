@@ -35,7 +35,7 @@ spec:
               # Started as 99:100 rather than root, so the entrypoint skips its
               # chown/su-exec path and only checks /data is writable.
               HOME: /tmp
-              # Book requests: Prowlarr -> SABnzbd category `bookorbit` -> import
+              # Book requests: Prowlarr -> SABnzbd category `books` -> import
               # from usenet/complete into the dock -> finalize into the eBooks or
               # Audiobooks library. Dock and libraries share one mount, so
               # finalize is a rename, not a copy.

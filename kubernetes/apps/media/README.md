@@ -9,7 +9,7 @@ The namespace has VolSync privileged movers enabled and Goldilocks VPA recommend
 | App | URL | Description |
 | --- | --- | --- |
 | [bazarr](bazarr/README.md) | `bazarr.ewatkins.dev` | Automatic subtitle downloader and manager for the media library |
-| [bookorbit](bookorbit/README.md) | `books.ewatkins.dev` | eBook and audiobook library: requests via Prowlarr and SABnzbd, reading, Kobo/KOReader sync |
+| [bookorbit](bookorbit/README.md) | `books.ewatkins.dev` | Book library pairing each e-book with its audiobook: requests via Prowlarr and SABnzbd (`books`), reading, Kobo/KOReader sync |
 | [immich](immich/README.md) | `photos.ewatkins.dev` | Self-hosted photo and video backup with face recognition and smart search |
 | [jellyfin](jellyfin/README.md) | `jellyfin.ewatkins.dev` | Media server for streaming movies, TV shows, and music with Intel GPU transcoding |
 | [jellyseerr](jellyseerr/README.md) | `requests.ewatkins.dev`, `media.ewatkins.dev` | Media request portal for Jellyfin, fulfilled automatically by Radarr and Sonarr |
