@@ -1,0 +1,94 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app cantinarr
+  namespace: &namespace media
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  maxHistory: 2
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    controllers:
+      cantinarr:
+        # SQLite plus process-local auth/pairing state: never run two.
+        strategy: Recreate
+        containers:
+          app:
+            image:
+              repository: ghcr.io/windoze95/cantinarr
+              tag: 1.0.1@sha256:1506e72eb873f3e6edc8bbefbf7653fdc1e03956f68f0180138c84df7ae6bc25
+            env:
+              CANTINARR_SERVER_NAME: Cantinarr
+              # Origin Chaptarr/Radarr/Sonarr call back to for instant request
+              # status updates; in-cluster, so the *arr apps need no route out.
+              CANTINARR_ARR_CALLBACK_URL: http://cantinarr.media.svc.cluster.local
+              # Renovate handles upgrades; skip the in-app release poll.
+              CANTINARR_DISABLE_UPDATE_CHECK: "true"
+              # CANTINARR_PUSH_GATEWAY_URL is deliberately unset: push would
+              # go through the third-party relay at push.cantinarr.com.
+              # Started as 99:100 directly, so the entrypoint's PUID path (which
+              # sets HOME) is skipped.
+              HOME: /config
+              TZ: America/Chicago
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/health
+                    port: &port 8585
+                  initialDelaySeconds: 10
+                  periodSeconds: 10
+                  timeoutSeconds: 5
+                  failureThreshold: 5
+              readiness: *probes
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 50m
+              limits:
+                memory: 1Gi
+    defaultPodOptions:
+      # A Service named `cantinarr` would inject CANTINARR_PORT=tcp://… into
+      # the app's own config namespace. Upstream tolerates it; skip it anyway.
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 99
+        runAsGroup: 100
+        fsGroup: 100
+        fsGroupChangePolicy: OnRootMismatch
+    service:
+      app:
+        controller: cantinarr
+        ports:
+          http:
+            port: 80
+            targetPort: *port
+    ingress:
+      app:
+        enabled: false
+    persistence:
+      config:
+        existingClaim: cantinarr-config
+        globalMounts:
+          - path: /config
+      tmp:
+        type: emptyDir
