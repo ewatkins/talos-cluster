@@ -40,7 +40,15 @@ spec:
               CHAPTARR__LOG__LEVEL: info
               CHAPTARR__SERVER__PORT: &port 80
               CHAPTARR__UPDATE__BRANCH: develop
+              # Database names only; the connection details come from
+              # chaptarr-db-secret via envFrom below.
+              CHAPTARR__POSTGRES__MAINDB: chaptarr-main
+              CHAPTARR__POSTGRES__LOGDB: chaptarr-log
+              CHAPTARR__POSTGRES__CACHEDB: chaptarr-cache
               TZ: America/Chicago
+            envFrom:
+              - secretRef:
+                  name: chaptarr-db-secret
             probes:
               liveness: &probes
                 enabled: true
