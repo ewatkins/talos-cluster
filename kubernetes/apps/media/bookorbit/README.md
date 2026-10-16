@@ -30,38 +30,59 @@ The book stack mirrors the video one, with BookOrbit in Jellyfin's seat:
 | Download | SABnzbd | SABnzbd, category `books` |
 | Play / read | Jellyfin | BookOrbit |
 
-BookOrbit never acquires anything. Its built-in request pipeline (Prowlarr +
-download client) is deliberately left unconfigured and `BOOK_REQUEST_ENCRYPTION_KEY`
-is unset, so credentials for it cannot even be saved. Using it would bypass
-Chaptarr: a second category, a second library, and books Chaptarr never tracks or
-upgrades. Sharing Chaptarr's `books` category instead would race Chaptarr's
-completed-download handling, which imports and removes matching items it did not
-grab.
+Chaptarr remains the system of record. BookOrbit does not use Prowlarr or SABnzbd:
+that would bypass Chaptarr with a second category, and sharing Chaptarr's `books`
+category would race Chaptarr's completed-download handling, which imports and
+removes matching items it did not grab.
+
+### Direct downloads (on trial)
+
+BookOrbit's request pipeline is enabled for one source only, as a comparison
+against Chaptarr: the **libgen** indexer plugin from
+[`orbit-plugins/bookorbit-plugins-extra`](https://github.com/orbit-plugins/bookorbit-plugins-extra)
+(ebooks only, no credential, grabs a direct file — no download client).
+
+- BookOrbit ships no sources; plugins are installed by hand in Settings → System →
+  Requests from the plugin's raw `index.mjs`, and land in `/data/plugins/indexers/`.
+- **A plugin runs inside the BookOrbit process** with its database, keys and files.
+  Read it before installing. libgen 2.0.0 was reviewed on 2026-10-16: one
+  dependency-free file, network only through `host.fetch` (`libgen.li` search,
+  `libgen.download` files). It self-updates from that repo; updates are checked
+  against the Ed25519 key pinned in the installed copy.
+- From the cluster, `libgen.download` answers; the default search mirror `libgen.li`
+  did not on 2026-10-16. Set another mirror in the plugin's base URL if searches
+  time out.
+- Files stage in `/data/request-downloads`, import into the dock, and finalize into
+  the **BookOrbit** library. They are not in Chaptarr's library and Chaptarr will
+  not track or upgrade them.
 
 ## Storage layout
 
 The two Chaptarr root folders are mounted **read-only**, at the same container paths
-the *arr apps use, so a path means the same thing in BookOrbit and Chaptarr:
+the *arr apps use, so a path means the same thing in BookOrbit and Chaptarr. Only
+BookOrbit's own area is writable:
 
-| Mount | NFS path (`storage.ewatkins.dev`) | Mode |
-| --- | --- | --- |
-| `/mnt/arrdata/media/ebooks` | `/mnt/user/arrdata/media/ebooks` | ro |
-| `/mnt/arrdata/media/audiobooks` | `/mnt/user/arrdata/media/audiobooks` | ro |
+| Mount | NFS path (`storage.ewatkins.dev`) | Mode | Purpose |
+| --- | --- | --- | --- |
+| `/mnt/arrdata/media/ebooks` | `/mnt/user/arrdata/media/ebooks` | ro | Chaptarr eBook library |
+| `/mnt/arrdata/media/audiobooks` | `/mnt/user/arrdata/media/audiobooks` | ro | Chaptarr audiobook library |
+| `/mnt/arrdata/bookorbit` | `/mnt/user/arrdata/bookorbit` | rw | `dock/` (`BOOK_DOCK_PATH`) and `library/` |
 
 Features that write back into files (embedding metadata, renaming, moving, bulk
-rename) fail by design; fix metadata in Chaptarr. Uploads land in the dock on the
-data PVC (`/data/book-dock`) but there is no writable library to finalize them
-into; add books through Chaptarr's manual import instead.
+rename) fail by design on the Chaptarr libraries; fix metadata in Chaptarr.
+`/mnt/user/arrdata/bookorbit` must exist on the share (owned `99:100`) before the
+pod can start.
 
 ## Libraries
 
 Created in the UI (Settings → Libraries), not in Git. `LIBRARY_BROWSE_ROOT` limits
-the folder picker to `/mnt/arrdata/media`.
+the folder picker to `/mnt/arrdata`.
 
-| Library | Folder |
-| --- | --- |
-| eBooks | `/mnt/arrdata/media/ebooks` |
-| Audiobooks | `/mnt/arrdata/media/audiobooks` |
+| Library | Folder | Owner |
+| --- | --- | --- |
+| eBooks | `/mnt/arrdata/media/ebooks` | Chaptarr (read-only here) |
+| Audiobooks | `/mnt/arrdata/media/audiobooks` | Chaptarr (read-only here) |
+| BookOrbit | `/mnt/arrdata/bookorbit/library` | BookOrbit; destination for direct downloads |
 
 ## Secrets
 
@@ -73,6 +94,7 @@ Bitwarden item `bookorbit-secret`:
 | `podcast_encryption_key` | `PODCAST_ENCRYPTION_KEY` | `openssl rand -hex 32` (independent of `jwt_secret`) |
 | `setup_bootstrap_token` | `SETUP_BOOTSTRAP_TOKEN` | `openssl rand -hex 32` |
 | `email_encryption_key` | `EMAIL_ENCRYPTION_KEY` | `openssl rand -hex 32` |
+| `book_request_encryption_key` | `BOOK_REQUEST_ENCRYPTION_KEY` | `openssl rand -hex 32` (64 hex chars; rotating it makes stored indexer credentials unreadable) |
 
 ## OIDC
 
