@@ -30,38 +30,58 @@ The book stack mirrors the video one, with BookOrbit in Jellyfin's seat:
 | Download | SABnzbd | SABnzbd, category `books` |
 | Play / read | Jellyfin | BookOrbit |
 
-BookOrbit never acquires anything. Its built-in request pipeline (Prowlarr +
-download client) is deliberately left unconfigured and `BOOK_REQUEST_ENCRYPTION_KEY`
-is unset, so credentials for it cannot even be saved. Using it would bypass
-Chaptarr: a second category, a second library, and books Chaptarr never tracks or
-upgrades. Sharing Chaptarr's `books` category instead would race Chaptarr's
-completed-download handling, which imports and removes matching items it did not
-grab.
+Chaptarr remains the system of record.
+
+### BookOrbit requests (on trial)
+
+BookOrbit's own request pipeline is enabled as a comparison against Chaptarr:
+Prowlarr → SABnzbd → dock → BookOrbit's own library. Configured in the UI under
+Settings → System → Requests:
+
+| Setting | Value |
+| --- | --- |
+| Indexer manager | Prowlarr `http://prowlarr.media.svc.cluster.local` + Prowlarr API key |
+| Download client | SABnzbd `sab.ewatkins.dev:443` SSL, category **`bookorbit`** |
+| Path mapping | `/data/usenet/complete/` → `/mnt/arrdata/usenet/complete/` |
+| Destination library | `BookOrbit` (`/mnt/arrdata/bookorbit/library`) |
+
+The `bookorbit` SABnzbd category (folder `bookorbit`) is deliberately separate
+from Chaptarr's `books`: Chaptarr's completed-download handling imports and
+removes matching items in its category even when it did not grab them, so a
+shared category would race BookOrbit's import. BookOrbit checks the category
+exists when the client is saved, and only acts on downloads it tagged itself.
+
+Books fetched this way live only in the BookOrbit library: Chaptarr does not
+track or upgrade them.
 
 ## Storage layout
 
 The two Chaptarr root folders are mounted **read-only**, at the same container paths
-the *arr apps use, so a path means the same thing in BookOrbit and Chaptarr:
+the *arr apps use, so a path means the same thing in BookOrbit and Chaptarr. Only
+BookOrbit's own area is writable:
 
-| Mount | NFS path (`storage.ewatkins.dev`) | Mode |
-| --- | --- | --- |
-| `/mnt/arrdata/media/ebooks` | `/mnt/user/arrdata/media/ebooks` | ro |
-| `/mnt/arrdata/media/audiobooks` | `/mnt/user/arrdata/media/audiobooks` | ro |
+| Mount | NFS path (`storage.ewatkins.dev`) | Mode | Purpose |
+| --- | --- | --- | --- |
+| `/mnt/arrdata/media/ebooks` | `/mnt/user/arrdata/media/ebooks` | ro | Chaptarr eBook library |
+| `/mnt/arrdata/media/audiobooks` | `/mnt/user/arrdata/media/audiobooks` | ro | Chaptarr audiobook library |
+| `/mnt/arrdata/usenet/complete` | `/mnt/user/arrdata/usenet/complete` | ro | SABnzbd completed downloads; imports copy out, cleanup via SAB's API |
+| `/mnt/arrdata/bookorbit` | `/mnt/user/arrdata/bookorbit` | rw | `dock/` (`BOOK_DOCK_PATH`) and `library/` |
 
 Features that write back into files (embedding metadata, renaming, moving, bulk
-rename) fail by design; fix metadata in Chaptarr. Uploads land in the dock on the
-data PVC (`/data/book-dock`) but there is no writable library to finalize them
-into; add books through Chaptarr's manual import instead.
+rename) fail by design on the Chaptarr libraries; fix metadata in Chaptarr.
+`/mnt/user/arrdata/bookorbit` must exist on the share (owned `99:100`) before the
+pod can start.
 
 ## Libraries
 
 Created in the UI (Settings → Libraries), not in Git. `LIBRARY_BROWSE_ROOT` limits
-the folder picker to `/mnt/arrdata/media`.
+the folder picker to `/mnt/arrdata`.
 
-| Library | Folder |
-| --- | --- |
-| eBooks | `/mnt/arrdata/media/ebooks` |
-| Audiobooks | `/mnt/arrdata/media/audiobooks` |
+| Library | Folder | Owner |
+| --- | --- | --- |
+| eBooks | `/mnt/arrdata/media/ebooks` | Chaptarr (read-only here) |
+| Audiobooks | `/mnt/arrdata/media/audiobooks` | Chaptarr (read-only here) |
+| BookOrbit | `/mnt/arrdata/bookorbit/library` | BookOrbit; destination for its own requests |
 
 ## Secrets
 
@@ -73,6 +93,7 @@ Bitwarden item `bookorbit-secret`:
 | `podcast_encryption_key` | `PODCAST_ENCRYPTION_KEY` | `openssl rand -hex 32` (independent of `jwt_secret`) |
 | `setup_bootstrap_token` | `SETUP_BOOTSTRAP_TOKEN` | `openssl rand -hex 32` |
 | `email_encryption_key` | `EMAIL_ENCRYPTION_KEY` | `openssl rand -hex 32` |
+| `book_request_encryption_key` | `BOOK_REQUEST_ENCRYPTION_KEY` | `openssl rand -hex 32` (64 hex chars; rotating it makes stored indexer credentials unreadable) |
 
 ## OIDC
 
