@@ -12,6 +12,7 @@ resources:
   # Flux-Kustomizations\
   - ./bazarr/ks.yaml
   - ./bookorbit/ks.yaml
+  - ./cantinarr/ks.yaml
   - ./chaptarr/ks.yaml
   - ./dispatcharr/ks.yaml
   - ./immich/ks.yaml
