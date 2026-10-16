@@ -30,31 +30,29 @@ The book stack mirrors the video one, with BookOrbit in Jellyfin's seat:
 | Download | SABnzbd | SABnzbd, category `books` |
 | Play / read | Jellyfin | BookOrbit |
 
-Chaptarr remains the system of record. BookOrbit does not use Prowlarr or SABnzbd:
-that would bypass Chaptarr with a second category, and sharing Chaptarr's `books`
-category would race Chaptarr's completed-download handling, which imports and
-removes matching items it did not grab.
+Chaptarr remains the system of record.
 
-### Direct downloads (on trial)
+### BookOrbit requests (on trial)
 
-BookOrbit's request pipeline is enabled for one source only, as a comparison
-against Chaptarr: the **libgen** indexer plugin from
-[`orbit-plugins/bookorbit-plugins-extra`](https://github.com/orbit-plugins/bookorbit-plugins-extra)
-(ebooks only, no credential, grabs a direct file — no download client).
+BookOrbit's own request pipeline is enabled as a comparison against Chaptarr:
+Prowlarr → SABnzbd → dock → BookOrbit's own library. Configured in the UI under
+Settings → System → Requests:
 
-- BookOrbit ships no sources; plugins are installed by hand in Settings → System →
-  Requests from the plugin's raw `index.mjs`, and land in `/data/plugins/indexers/`.
-- **A plugin runs inside the BookOrbit process** with its database, keys and files.
-  Read it before installing. libgen 2.0.0 was reviewed on 2026-10-16: one
-  dependency-free file, network only through `host.fetch` (`libgen.li` search,
-  `libgen.download` files). It self-updates from that repo; updates are checked
-  against the Ed25519 key pinned in the installed copy.
-- From the cluster, `libgen.download` answers; the default search mirror `libgen.li`
-  did not on 2026-10-16. Set another mirror in the plugin's base URL if searches
-  time out.
-- Files stage in `/data/request-downloads`, import into the dock, and finalize into
-  the **BookOrbit** library. They are not in Chaptarr's library and Chaptarr will
-  not track or upgrade them.
+| Setting | Value |
+| --- | --- |
+| Indexer manager | Prowlarr `http://prowlarr.media.svc.cluster.local` + Prowlarr API key |
+| Download client | SABnzbd `sab.ewatkins.dev:443` SSL, category **`bookorbit`** |
+| Path mapping | `/data/usenet/complete/` → `/mnt/arrdata/usenet/complete/` |
+| Destination library | `BookOrbit` (`/mnt/arrdata/bookorbit/library`) |
+
+The `bookorbit` SABnzbd category (folder `bookorbit`) is deliberately separate
+from Chaptarr's `books`: Chaptarr's completed-download handling imports and
+removes matching items in its category even when it did not grab them, so a
+shared category would race BookOrbit's import. BookOrbit checks the category
+exists when the client is saved, and only acts on downloads it tagged itself.
+
+Books fetched this way live only in the BookOrbit library: Chaptarr does not
+track or upgrade them.
 
 ## Storage layout
 
@@ -66,6 +64,7 @@ BookOrbit's own area is writable:
 | --- | --- | --- | --- |
 | `/mnt/arrdata/media/ebooks` | `/mnt/user/arrdata/media/ebooks` | ro | Chaptarr eBook library |
 | `/mnt/arrdata/media/audiobooks` | `/mnt/user/arrdata/media/audiobooks` | ro | Chaptarr audiobook library |
+| `/mnt/arrdata/usenet/complete` | `/mnt/user/arrdata/usenet/complete` | ro | SABnzbd completed downloads; imports copy out, cleanup via SAB's API |
 | `/mnt/arrdata/bookorbit` | `/mnt/user/arrdata/bookorbit` | rw | `dock/` (`BOOK_DOCK_PATH`) and `library/` |
 
 Features that write back into files (embedding metadata, renaming, moving, bulk
@@ -82,7 +81,7 @@ the folder picker to `/mnt/arrdata`.
 | --- | --- | --- |
 | eBooks | `/mnt/arrdata/media/ebooks` | Chaptarr (read-only here) |
 | Audiobooks | `/mnt/arrdata/media/audiobooks` | Chaptarr (read-only here) |
-| BookOrbit | `/mnt/arrdata/bookorbit/library` | BookOrbit; destination for direct downloads |
+| BookOrbit | `/mnt/arrdata/bookorbit/library` | BookOrbit; destination for its own requests |
 
 ## Secrets
 
