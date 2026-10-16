@@ -46,10 +46,22 @@ Done in the UI, stored in the database:
 
 | Area | Setting |
 | --- | --- |
-| Chaptarr instance | `http://chaptarr.media.svc.cluster.local` + Chaptarr API key; root folders `/mnt/arrdata/media/ebooks` and `/mnt/arrdata/media/audiobooks` |
+| Chaptarr instance | `http://chaptarr.media.svc.cluster.local` + Chaptarr API key |
 | Instant updates | Enable on the Chaptarr instance; Chaptarr calls the callback URL above |
 | External Address | `https://cantinarr.ewatkins.dev` (connect links and OIDC) |
 | SSO | Keycloak client `cantinarr` in the `master` realm, issuer `https://keycloak.ewatkins.dev/realms/master` |
+
+Root folders are not set in Cantinarr. Each book request reads Chaptarr's root
+folders over its API and picks, per format, the folder Chaptarr marks as the
+effective default eBook/audiobook folder, falling back to a folder flagged for
+that format. If none matches, or two are both default, the request fails asking
+for "a download folder" — fix it in Chaptarr (Settings → Media Management → Root
+Folders), not here.
+
+The instance editor's **Media downloads** section ("No server media folders are
+available… set CANTINARR_MEDIA_ROOTS") is the optional completed-file download
+feature, not request routing. It stays **Off**: BookOrbit is where books are read
+and downloaded.
 
 Use **Test Connection** inside Cantinarr; it runs from the server, which is the
 connection that matters.
