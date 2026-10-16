@@ -10,9 +10,9 @@ organising books; BookOrbit reads Chaptarr's library and serves it.
 | Setting | Value | Notes |
 | --- | --- | --- |
 | Image | `ghcr.io/bookorbit/bookorbit:3.4.0` | Upstream tags have no `v` prefix |
-| URL | `https://bookorbit.ewatkins.dev` | Internal gateway only (`internal.ewatkins.dev` DNS target); also `APP_URL` |
+| URL | `https://books.ewatkins.dev` | Internal gateway only (`internal.ewatkins.dev` DNS target); also `APP_URL` |
 | Port | `3000` | Service exposes it on `80` |
-| Database | PG17 `bookorbit` | Via pgbouncer (`pool_mode: session`); creds from `bookorbit-db-secret` |
+| Database | PG17 `bookorbit` | Direct to `crunchy-postgres-17-primary`, **not** pgbouncer (see below); creds from `bookorbit-db-secret` |
 | App data PVC | `bookorbit-data`, 10Gi (`nfs-slow`) | Mounted at `/data`; covers and the upload bucket |
 | Run as user/group | `99:100` | Matches the *arr apps and the `arrdata` share owner |
 | Memory limit | `2Gi` | The entrypoint sizes the Node heap to 75% of it |
@@ -81,10 +81,20 @@ are no OIDC env vars beyond `OIDC_ALLOW_LOCAL_ISSUERS=true`, needed because
 `keycloak.ewatkins.dev` resolves to a private address.
 
 Keycloak client `bookorbit` in the `master` realm: client authentication **on**,
-standard flow, valid redirect URI `https://bookorbit.ewatkins.dev/oauth2-callback`,
-web origin `https://bookorbit.ewatkins.dev`. Issuer
+standard flow, valid redirect URI `https://books.ewatkins.dev/oauth2-callback`,
+web origin `https://books.ewatkins.dev`. Issuer
 `https://keycloak.ewatkins.dev/realms/master`. Local login stays enabled as the
 recovery path (`DISABLE_LOCAL_AUTH` unset).
+
+## Why not pgbouncer
+
+node-postgres sends `statement_timeout` as a connection startup parameter, and
+pgbouncer refuses unknown startup parameters. Migrations run on a plain
+connection and pass, then the app dies at boot with `unsupported startup
+parameter: statement_timeout`. The alternative, adding it to pgbouncer's
+`ignore_startup_parameters`, would silently drop the timeout for every tenant of
+the shared pooler, so BookOrbit uses the pguser secret's direct `host`/`port`
+instead.
 
 ## `vector` extension caveat
 
