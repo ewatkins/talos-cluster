@@ -1,9 +1,9 @@
 # [BookOrbit](https://github.com/bookorbit/bookorbit)
 
-BookOrbit is the reading front end for the book collection: a web reader for eBooks
-and audiobooks, Kobo and KOReader sync, OPDS, read-aloud and reading statistics.
-[Chaptarr](../chaptarr/README.md) stays the system of record for acquiring and
-organising books; BookOrbit reads Chaptarr's library and serves it.
+BookOrbit is the whole book stack: it takes requests, fetches them through
+Prowlarr and SABnzbd, files them into the eBook and audiobook libraries, and serves
+them, with a web reader, Kobo and KOReader sync, OPDS, read-aloud and reading
+statistics.
 
 ## Configuration
 
@@ -20,63 +20,55 @@ organising books; BookOrbit reads Chaptarr's library and serves it.
 
 ## Role in the book stack
 
-The book stack mirrors the video one, with BookOrbit in Jellyfin's seat:
+Compared with the video stack, BookOrbit covers three seats at once:
 
 | Role | Video | Books |
 | --- | --- | --- |
-| Requests | Seerr | Chaptarr UI (Cantinarr under trial) |
-| Acquire and organise | Radarr / Sonarr | Chaptarr |
+| Requests | Seerr | BookOrbit |
+| Acquire and organise | Radarr / Sonarr | BookOrbit |
 | Indexers | Prowlarr | Prowlarr |
-| Download | SABnzbd | SABnzbd, category `books` |
+| Download | SABnzbd | SABnzbd, category `bookorbit` |
 | Play / read | Jellyfin | BookOrbit |
 
-Chaptarr remains the system of record.
+Chaptarr (acquisition) and Cantinarr (a request portal for it) were tried first
+and removed on 2026-10-16 in favour of this. Books they fetched stay in the
+library folders.
 
-### BookOrbit requests (on trial)
+### Requests
 
-BookOrbit's own request pipeline is enabled as a comparison against Chaptarr:
-Prowlarr → SABnzbd → dock → BookOrbit's own library. Configured in the UI under
-Settings → System → Requests:
+Configured in the UI under Settings → System → Requests:
 
 | Setting | Value |
 | --- | --- |
 | Indexer manager | Prowlarr `http://prowlarr.media.svc.cluster.local` + Prowlarr API key |
 | Download client | SABnzbd `sab.ewatkins.dev:443` SSL, category **`bookorbit`** |
 | Path mapping | `/data/usenet/complete/` → `/mnt/arrdata/usenet/complete/` |
-| Destination library | `BookOrbit` (`/mnt/arrdata/bookorbit/library`) |
+| Destination library | `eBooks` or `Audiobooks`, per request |
 
-The `bookorbit` SABnzbd category (folder `bookorbit`) is deliberately separate
-from Chaptarr's `books`: Chaptarr's completed-download handling imports and
-removes matching items in its category even when it did not grab them, so a
-shared category would race BookOrbit's import. BookOrbit checks the category
-exists when the client is saved, and only acts on downloads it tagged itself.
-
-Books fetched this way live only in the BookOrbit library: Chaptarr does not
-track or upgrade them.
+BookOrbit checks the SABnzbd category exists when the client is saved, and only
+acts on downloads it tagged itself. The download client's credentials are stored
+encrypted with `BOOK_REQUEST_ENCRYPTION_KEY`.
 
 ## Storage layout
 
 The whole `arrdata` share is mounted once, writable, at `/mnt/arrdata`, exactly as
-the *arr apps mount it, so a path means the same thing in BookOrbit, Chaptarr and
-Sonarr:
+the *arr apps mount it, so a path means the same thing in BookOrbit and Sonarr:
 
 | Container path | Purpose |
 | --- | --- |
-| `/mnt/arrdata/media/ebooks`, `/mnt/arrdata/media/audiobooks` | Chaptarr's libraries |
+| `/mnt/arrdata/media/ebooks` | eBooks library |
+| `/mnt/arrdata/media/audiobooks` | Audiobooks library |
 | `/mnt/arrdata/usenet/complete` | SABnzbd completed downloads (`bookorbit/` category folder) |
-| `/mnt/arrdata/bookorbit/dock` | `BOOK_DOCK_PATH`: request imports land here first |
-| `/mnt/arrdata/bookorbit/library` | BookOrbit's own library, the request destination |
+| `/mnt/arrdata/bookorbit/dock` | `BOOK_DOCK_PATH`: request imports and uploads land here before filing |
 
-**Why not subfolder mounts.** BookOrbit first mounted those four folders separately
-so Chaptarr's could be read-only. On Unraid that breaks: `/mnt/user` is a FUSE
+**Why not subfolder mounts.** BookOrbit first mounted these folders separately so
+some could be read-only. On Unraid that breaks: `/mnt/user` is a FUSE
 (shfs) filesystem, and an NFS mount *rooted at a subfolder* goes `Stale file
 handle` once shfs forgets that folder's inode, by default after ~330 s idle
 (`fuse_remember`). It hit `bookorbit/` ten minutes after a restart and failed a
 request at the filing step with `ENOENT`; the same thing hit this app's NFS-backed
 data PVC once. The share root does not go stale, which is why every *arr app mounts
-it. The cost is that Chaptarr's folders are writable here: leave BookOrbit's
-file-editing features (embed metadata, rename, move) unused on the eBooks and
-Audiobooks libraries, and fix metadata in Chaptarr instead.
+it.
 
 Imports copy rather than hardlink (`EXDEV` in the log is expected): the files cross
 from SABnzbd's folder into the dock.
@@ -86,11 +78,13 @@ from SABnzbd's folder into the dock.
 Created in the UI (Settings → Libraries), not in Git. `LIBRARY_BROWSE_ROOT` limits
 the folder picker to `/mnt/arrdata`.
 
-| Library | Folder | Owner |
-| --- | --- | --- |
-| eBooks | `/mnt/arrdata/media/ebooks` | Chaptarr (don't edit files from BookOrbit) |
-| Audiobooks | `/mnt/arrdata/media/audiobooks` | Chaptarr (don't edit files from BookOrbit) |
-| BookOrbit | `/mnt/arrdata/bookorbit/library` | BookOrbit; destination for its own requests |
+| Library | Folder |
+| --- | --- |
+| eBooks | `/mnt/arrdata/media/ebooks` |
+| Audiobooks | `/mnt/arrdata/media/audiobooks` |
+
+The dock must stay outside both library folders: BookOrbit refuses a dock and a
+library nested in each other.
 
 ## Secrets
 
@@ -138,8 +132,8 @@ first boot or migrations fail. One-off, as the superuser:
 CREATE EXTENSION IF NOT EXISTS vector;
 ```
 
-`IF NOT EXISTS` skips the privilege check once it is installed. Like Chaptarr's
-ownership fix this is not captured in Git and must be redone if the PG17 cluster
+`IF NOT EXISTS` skips the privilege check once it is installed. This is not
+captured in Git and must be redone if the PG17 cluster
 is rebuilt. Upstream ships PG18 (`pgvector/pgvector:pg18`); the migrations use
 nothing PG18-specific.
 
