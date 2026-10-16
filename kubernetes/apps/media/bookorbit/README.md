@@ -56,21 +56,30 @@ track or upgrade them.
 
 ## Storage layout
 
-The two Chaptarr root folders are mounted **read-only**, at the same container paths
-the *arr apps use, so a path means the same thing in BookOrbit and Chaptarr. Only
-BookOrbit's own area is writable:
+The whole `arrdata` share is mounted once, writable, at `/mnt/arrdata`, exactly as
+the *arr apps mount it, so a path means the same thing in BookOrbit, Chaptarr and
+Sonarr:
 
-| Mount | NFS path (`storage.ewatkins.dev`) | Mode | Purpose |
-| --- | --- | --- | --- |
-| `/mnt/arrdata/media/ebooks` | `/mnt/user/arrdata/media/ebooks` | ro | Chaptarr eBook library |
-| `/mnt/arrdata/media/audiobooks` | `/mnt/user/arrdata/media/audiobooks` | ro | Chaptarr audiobook library |
-| `/mnt/arrdata/usenet/complete` | `/mnt/user/arrdata/usenet/complete` | ro | SABnzbd completed downloads; imports copy out, cleanup via SAB's API |
-| `/mnt/arrdata/bookorbit` | `/mnt/user/arrdata/bookorbit` | rw | `dock/` (`BOOK_DOCK_PATH`) and `library/` |
+| Container path | Purpose |
+| --- | --- |
+| `/mnt/arrdata/media/ebooks`, `/mnt/arrdata/media/audiobooks` | Chaptarr's libraries |
+| `/mnt/arrdata/usenet/complete` | SABnzbd completed downloads (`bookorbit/` category folder) |
+| `/mnt/arrdata/bookorbit/dock` | `BOOK_DOCK_PATH`: request imports land here first |
+| `/mnt/arrdata/bookorbit/library` | BookOrbit's own library, the request destination |
 
-Features that write back into files (embedding metadata, renaming, moving, bulk
-rename) fail by design on the Chaptarr libraries; fix metadata in Chaptarr.
-`/mnt/user/arrdata/bookorbit` must exist on the share (owned `99:100`) before the
-pod can start.
+**Why not subfolder mounts.** BookOrbit first mounted those four folders separately
+so Chaptarr's could be read-only. On Unraid that breaks: `/mnt/user` is a FUSE
+(shfs) filesystem, and an NFS mount *rooted at a subfolder* goes `Stale file
+handle` once shfs forgets that folder's inode, by default after ~330 s idle
+(`fuse_remember`). It hit `bookorbit/` ten minutes after a restart and failed a
+request at the filing step with `ENOENT`; the same thing hit this app's NFS-backed
+data PVC once. The share root does not go stale, which is why every *arr app mounts
+it. The cost is that Chaptarr's folders are writable here: leave BookOrbit's
+file-editing features (embed metadata, rename, move) unused on the eBooks and
+Audiobooks libraries, and fix metadata in Chaptarr instead.
+
+Imports copy rather than hardlink (`EXDEV` in the log is expected): the files cross
+from SABnzbd's folder into the dock.
 
 ## Libraries
 
@@ -79,8 +88,8 @@ the folder picker to `/mnt/arrdata`.
 
 | Library | Folder | Owner |
 | --- | --- | --- |
-| eBooks | `/mnt/arrdata/media/ebooks` | Chaptarr (read-only here) |
-| Audiobooks | `/mnt/arrdata/media/audiobooks` | Chaptarr (read-only here) |
+| eBooks | `/mnt/arrdata/media/ebooks` | Chaptarr (don't edit files from BookOrbit) |
+| Audiobooks | `/mnt/arrdata/media/audiobooks` | Chaptarr (don't edit files from BookOrbit) |
 | BookOrbit | `/mnt/arrdata/bookorbit/library` | BookOrbit; destination for its own requests |
 
 ## Secrets

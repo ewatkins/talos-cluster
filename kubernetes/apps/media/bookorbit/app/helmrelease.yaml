@@ -106,36 +106,14 @@ spec:
           - path: /data
       tmp:
         type: emptyDir
-      # Chaptarr's library, read-only: like Jellyfin with Sonarr/Radarr,
-      # BookOrbit only reads and serves it. Chaptarr owns every file.
-      ebooks:
+      # The whole arrdata share, once, like every *arr app. Not subfolder
+      # mounts: on Unraid user shares, an NFS mount rooted at a subfolder goes
+      # "Stale file handle" once shfs forgets its inode (fuse_remember, ~5 min
+      # idle). Chaptarr's folders are writable here; BookOrbit only writes into
+      # them if its edit features are used on those libraries.
+      media:
         type: nfs
         server: storage.ewatkins.dev
-        path: /mnt/user/arrdata/media/ebooks
+        path: /mnt/user/arrdata
         globalMounts:
-          - path: /mnt/arrdata/media/ebooks
-            readOnly: true
-      audiobooks:
-        type: nfs
-        server: storage.ewatkins.dev
-        path: /mnt/user/arrdata/media/audiobooks
-        globalMounts:
-          - path: /mnt/arrdata/media/audiobooks
-            readOnly: true
-      # SABnzbd's completed downloads. Read-only is enough: imports hardlink
-      # or copy out, and cleanup goes through SABnzbd's API (del_files).
-      usenet:
-        type: nfs
-        server: storage.ewatkins.dev
-        path: /mnt/user/arrdata/usenet/complete
-        globalMounts:
-          - path: /mnt/arrdata/usenet/complete
-            readOnly: true
-      # BookOrbit's own writable area: request dock + its own library. The
-      # only place BookOrbit writes; Chaptarr's folders above stay read-only.
-      bookorbit:
-        type: nfs
-        server: storage.ewatkins.dev
-        path: /mnt/user/arrdata/bookorbit
-        globalMounts:
-          - path: /mnt/arrdata/bookorbit
+          - path: /mnt/arrdata
