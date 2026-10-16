@@ -43,7 +43,7 @@ Configured in the UI under Settings → System → Requests:
 | Indexer manager | Prowlarr `http://prowlarr.media.svc.cluster.local` + Prowlarr API key |
 | Download client | SABnzbd `sab.ewatkins.dev:443` SSL, category **`bookorbit`** |
 | Path mapping | `/data/usenet/complete/` → `/mnt/arrdata/usenet/complete/` |
-| Destination library | `eBooks` or `Audiobooks`, per request |
+| Destination library | `Books` for both e-books and audiobooks |
 
 BookOrbit checks the SABnzbd category exists when the client is saved, and only
 acts on downloads it tagged itself. The download client's credentials are stored
@@ -56,8 +56,7 @@ the *arr apps mount it, so a path means the same thing in BookOrbit and Sonarr:
 
 | Container path | Purpose |
 | --- | --- |
-| `/mnt/arrdata/media/ebooks` | eBooks library |
-| `/mnt/arrdata/media/audiobooks` | Audiobooks library |
+| `/mnt/arrdata/media/books` | The `Books` library: one folder per book, holding the e-book and the audiobook together |
 | `/mnt/arrdata/usenet/complete` | SABnzbd completed downloads (`bookorbit/` category folder) |
 | `/mnt/arrdata/bookorbit/dock` | `BOOK_DOCK_PATH`: request imports and uploads land here before filing |
 
@@ -78,10 +77,16 @@ from SABnzbd's folder into the dock.
 Created in the UI (Settings → Libraries), not in Git. `LIBRARY_BROWSE_ROOT` limits
 the folder picker to `/mnt/arrdata`.
 
-| Library | Folder |
-| --- | --- |
-| eBooks | `/mnt/arrdata/media/ebooks` |
-| Audiobooks | `/mnt/arrdata/media/audiobooks` |
+| Library | Folder | Organization |
+| --- | --- | --- |
+| Books | `/mnt/arrdata/media/books` | Folder per book |
+
+**One library on purpose.** BookOrbit pairs an e-book with its audiobook only when
+both are files of the same book, which means the same folder in the same
+folder-per-book library. Requested together ("Request both") into `Books`, the two
+formats arrive as one book with an e-book side and an audio side; split across two
+libraries they arrive as two books. `media/ebooks` and `media/audiobooks` were
+merged into `media/books` on 2026-10-16 for this.
 
 The dock must stay outside both library folders: BookOrbit refuses a dock and a
 library nested in each other.
