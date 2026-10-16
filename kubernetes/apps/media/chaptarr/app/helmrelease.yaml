@@ -37,7 +37,6 @@ spec:
               CHAPTARR__APP__THEME: dark
               CHAPTARR__AUTH__METHOD: External
               CHAPTARR__AUTH__REQUIRED: DisabledForLocalAddresses
-              CHAPTARR__LOG__DBENABLED: "False"
               CHAPTARR__LOG__LEVEL: info
               CHAPTARR__SERVER__PORT: &port 80
               CHAPTARR__UPDATE__BRANCH: develop
