@@ -16,7 +16,6 @@ download client, then sort and rename completed downloads into the library.
 | Theme | `dark` | |
 | Auth method | `External` | Authentication handled upstream; disabled for local addresses |
 | Update branch | `develop` | |
-| DB logging | Disabled | |
 | Timezone | `America/Chicago` | |
 | Config PVC | `chaptarr-config`, 10Gi (`nfs-slow`) | Mounted at `/config` |
 | Media library | NFS `storage.ewatkins.dev:/mnt/user/arrdata` | Mounted at `/mnt/arrdata`; shared with all *arr apps |
@@ -46,6 +45,16 @@ These must be set in the UI on first run; they are not part of the manifests.
   also supports running as an already-unprivileged user — it only needs `/config`
   to be writable, which `fsGroup: 100` provides.
 - The image bundles `m4b-tool`, `mp4v2` and PHP for audiobook chapter handling.
+- Unlike Sonarr and Radarr there is no `LOG__DBENABLED` option: this fork's
+  `LogOptions` has no such property, so the log database is always created and
+  setting the variable has no effect.
+- Chaptarr keeps three SQLite databases in `/config` — `chaptarr.db` (WAL),
+  plus `logs.db` and `cache.db` (rollback journal). The journal-mode databases
+  are the weak point on NFS: the first start here failed with
+  `SQLite Error 14: 'unable to open database file'` creating `logs.db`, and
+  succeeded on the retry. If that recurs, the fix is to move the databases to
+  the cluster's Postgres via `CHAPTARR__POSTGRES__*` rather than to fight NFS
+  locking.
 
 ## Links
 
