@@ -1,0 +1,139 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app bookorbit
+  namespace: &namespace media
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  maxHistory: 2
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    controllers:
+      bookorbit:
+        containers:
+          app:
+            image:
+              repository: ghcr.io/bookorbit/bookorbit
+              tag: 3.4.0@sha256:99539be044c94f10fa5fba616cb08e1b128deb4996c975d181a950818a8632e4
+            env:
+              APP_URL: https://bookorbit.ewatkins.dev
+              PORT: &port 3000
+              TZ: America/Chicago
+              # Started as 99:100 rather than root, so the entrypoint skips its
+              # chown/su-exec path and only checks /data is writable.
+              HOME: /tmp
+              # Book requests import from SABnzbd's completed folder into the
+              # dock, then finalize into the BookOrbit-owned library. Dock and
+              # library share one mount so finalize is a rename, not a copy.
+              BOOK_DOCK_PATH: /mnt/arrdata/bookorbit/dock
+              LIBRARY_BROWSE_ROOT: /mnt/arrdata
+              # keycloak.ewatkins.dev resolves to the LAN gateway, which the
+              # default SSRF guard rejects as an OIDC issuer.
+              OIDC_ALLOW_LOCAL_ISSUERS: "true"
+            envFrom:
+              - secretRef:
+                  name: bookorbit-secret
+              - secretRef:
+                  name: bookorbit-db-secret
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/v1/health
+                    port: *port
+                  initialDelaySeconds: 30
+                  periodSeconds: 10
+                  timeoutSeconds: 5
+                  failureThreshold: 5
+              readiness: *probes
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/v1/health
+                    port: *port
+                  # Migrations run before the server listens; the first boot
+                  # applies 100+ of them.
+                  periodSeconds: 10
+                  failureThreshold: 60
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 100m
+              limits:
+                memory: 2Gi
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 99
+        runAsGroup: 100
+        fsGroup: 100
+        fsGroupChangePolicy: OnRootMismatch
+    service:
+      app:
+        controller: bookorbit
+        ports:
+          http:
+            port: 80
+            targetPort: *port
+    ingress:
+      app:
+        enabled: false
+    persistence:
+      data:
+        existingClaim: bookorbit-data
+        globalMounts:
+          - path: /data
+      tmp:
+        type: emptyDir
+      # Chaptarr's library, read-only: BookOrbit reads and serves it but must
+      # never rename or rewrite files Chaptarr tracks.
+      ebooks:
+        type: nfs
+        server: storage.ewatkins.dev
+        path: /mnt/user/arrdata/media/ebooks
+        globalMounts:
+          - path: /mnt/arrdata/media/ebooks
+            readOnly: true
+      audiobooks:
+        type: nfs
+        server: storage.ewatkins.dev
+        path: /mnt/user/arrdata/media/audiobooks
+        globalMounts:
+          - path: /mnt/arrdata/media/audiobooks
+            readOnly: true
+      # SABnzbd's completed downloads. Read-only is enough: imports hardlink or
+      # copy out, and cleanup goes through SABnzbd's API (del_files).
+      usenet:
+        type: nfs
+        server: storage.ewatkins.dev
+        path: /mnt/user/arrdata/usenet/complete
+        globalMounts:
+          - path: /mnt/arrdata/usenet/complete
+            readOnly: true
+      # BookOrbit's own writable area: request dock + its own library.
+      bookorbit:
+        type: nfs
+        server: storage.ewatkins.dev
+        path: /mnt/user/arrdata/bookorbit
+        globalMounts:
+          - path: /mnt/arrdata/bookorbit
