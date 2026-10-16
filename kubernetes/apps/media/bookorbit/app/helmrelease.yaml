@@ -35,7 +35,12 @@ spec:
               # Started as 99:100 rather than root, so the entrypoint skips its
               # chown/su-exec path and only checks /data is writable.
               HOME: /tmp
-              LIBRARY_BROWSE_ROOT: /mnt/arrdata/media
+              # Book requests (on trial): Prowlarr -> SABnzbd category `bookorbit`
+              # -> import from usenet/complete into the dock -> finalize into
+              # the BookOrbit-owned library. Dock and library share one mount
+              # so finalize is a rename, not a copy.
+              BOOK_DOCK_PATH: /mnt/arrdata/bookorbit/dock
+              LIBRARY_BROWSE_ROOT: /mnt/arrdata
               # keycloak.ewatkins.dev resolves to the LAN gateway, which the
               # default SSRF guard rejects as an OIDC issuer.
               OIDC_ALLOW_LOCAL_ISSUERS: "true"
@@ -117,3 +122,20 @@ spec:
         globalMounts:
           - path: /mnt/arrdata/media/audiobooks
             readOnly: true
+      # SABnzbd's completed downloads. Read-only is enough: imports hardlink
+      # or copy out, and cleanup goes through SABnzbd's API (del_files).
+      usenet:
+        type: nfs
+        server: storage.ewatkins.dev
+        path: /mnt/user/arrdata/usenet/complete
+        globalMounts:
+          - path: /mnt/arrdata/usenet/complete
+            readOnly: true
+      # BookOrbit's own writable area: request dock + its own library. The
+      # only place BookOrbit writes; Chaptarr's folders above stay read-only.
+      bookorbit:
+        type: nfs
+        server: storage.ewatkins.dev
+        path: /mnt/user/arrdata/bookorbit
+        globalMounts:
+          - path: /mnt/arrdata/bookorbit
