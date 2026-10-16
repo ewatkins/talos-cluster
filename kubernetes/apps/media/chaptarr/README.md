@@ -36,7 +36,49 @@ library and download directories:
 | eBook root folder | `/mnt/arrdata/media/ebooks` |
 | Download client category | `/mnt/arrdata/torrent/books` |
 
-These must be set in the UI on first run; they are not part of the manifests.
+Root folders, like the rest of the app settings below, live in Chaptarr's
+database rather than the manifests.
+
+## App settings
+
+Copied from the live Sonarr and Radarr configuration and adapted for books.
+Applied through the API, so they are not in Git.
+
+| Area | Setting | Source |
+| --- | --- | --- |
+| Media management | Hardlinks on, propers/repacks `doNotPrefer` | Sonarr + Radarr agree |
+| Media management | Import extra files on (`jpg,png,cue,m3u,opf`) | Radarr; keeps covers and `.opf` metadata |
+| Media management | Skip free-space check on import: off | Radarr (Sonarr has it on) |
+| Media management | 100 MB minimum free, `chmod 755`, recycle bin 7 days | Sonarr + Radarr agree |
+| Naming | Rename audiobooks: on | Sonarr + Radarr |
+| Naming | Rename eBooks: **off** | Deliberate deviation — see Calibre below |
+| Naming | Replace illegal characters: off | Sonarr + Radarr agree |
+| Naming | Colon replacement: Smart | Sonarr (Radarr uses space-dash-space) |
+| Download client | SABnzbd `sab.ewatkins.dev:443` SSL, priority 1, remove completed/failed | Sonarr + Radarr agree |
+| Download client | Category `books` for both audiobooks and eBooks | Matches the existing SAB category |
+
+The SABnzbd API key is not in Git; it was copied from `notifiarr-secret`
+(`DN_SABNZBD_0_API_KEY`).
+
+## The eBook root is a Calibre library
+
+`/mnt/arrdata/media/ebooks` contains `metadata.db` and `.calnotes/`, and its
+folders use Calibre's `Title (id)` naming (`Leviathan Wakes (3)`). Nothing in
+the cluster runs Calibre, so it is managed from outside.
+
+Calibre records each book's path in `metadata.db`. If Chaptarr renamed or moved
+files inside the library, Calibre would show those books as missing. eBook
+renaming is therefore **off**, unlike Sonarr and Radarr. The proper integration
+is Chaptarr's Calibre support (`isCalibreLibrary` on the root folder, pointed at
+a Calibre content server) — that needs a content server, which does not exist
+here yet. Until then, Chaptarr should not reorganise this folder.
+
+## The audiobook root holds eBooks
+
+As of setup, `/mnt/arrdata/media/audiobooks` contained five files, all `.epub`
+or `.azw3` — eBooks, filed under audiobooks. Chaptarr correctly imports none of
+them from an Audiobook-type root. They need moving into the eBook library (via
+Calibre, given the above) before Chaptarr will see them.
 
 ## Notes
 
