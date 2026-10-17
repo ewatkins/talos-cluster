@@ -1,0 +1,14 @@
+---
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: playit
+spec:
+  endpoints:
+    # Players join mc.ewatkins.dev. playit's free Minecraft Java tunnel resets
+    # any handshake naming a host other than its own, so this has to be an SRV
+    # record (the client then sends the SRV target as the hostname), not a
+    # CNAME. The port is the tunnel's public port on playit.gg.
+    - dnsName: "_minecraft._tcp.mc.ewatkins.dev"
+      recordType: SRV
+      targets: ["0 5 19087 practically-unclog.tun.ply.gg."]

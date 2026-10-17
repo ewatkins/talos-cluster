@@ -27,6 +27,22 @@ local address the agent can reach from the pod network:
 | Minecraft Java | TCP | `192.168.50.100:25565` (Velocity) |
 | Minecraft Bedrock | UDP | `192.168.50.100:19132` |
 
+Players join `mc.ewatkins.dev` (Java). The tunnel's own address is
+`practically-unclog.tun.ply.gg`, public port `19087`.
+
+## DNS
+
+`app/dnsendpoint.yaml` publishes `_minecraft._tcp.mc.ewatkins.dev` as an SRV
+record pointing at the tunnel, through `cloudflare-dns`. It is an SRV record,
+not a CNAME, because playit's free Minecraft Java tunnel resets any handshake
+whose hostname isn't the tunnel's own. With SRV, the client sends the SRV
+target (`practically-unclog.tun.ply.gg.`) as the hostname, which playit
+accepts. `mc.ewatkins.dev:19087` typed directly would be rejected, and Bedrock
+clients don't read SRV records.
+
+If the tunnel is ever recreated, its address and port change: update the SRV
+target.
+
 ## Secrets
 
 `playit-secret` (Bitwarden Secrets Manager via ExternalSecrets) holds the
