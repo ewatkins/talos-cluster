@@ -62,7 +62,8 @@ Free Oracle capacity is scarce, so `app/relay-launcher.yaml` is a CronJob that
 tries to launch the VM every 10 minutes. It launches only when no
 non-terminated instance named `bedrock-relay` exists, so it never makes a
 second VM; once the VM exists every run is a no-op that logs its state and
-public IP:
+public IP. The first run that finds it RUNNING with an address sends a
+Pushover notification (once; the instance is tagged `notified=true`):
 
 ```sh
 kubectl -n network logs -l job-name --tail=5 --prefix | grep bedrock-relay
@@ -77,7 +78,8 @@ and in UniFi, replacing the CNAME), move the external Gatus Bedrock check to
 `playit-secret` (Bitwarden Secrets Manager via ExternalSecrets) holds the
 agent's secret key in its `secret_key` field. `oci-api-secret` holds the Oracle API
 key the relay launcher uses (`user`, `tenancy`, `fingerprint`, `region`,
-`private_key_b64`). Create the agent on playit.gg
+`private_key_b64`); `bedrock-relay-launcher-secret` combines it with the shared
+`pushover` item for the launch notification. Create the agent on playit.gg
 (Docker setup) and copy the key it shows.
 
 ## Cutover
