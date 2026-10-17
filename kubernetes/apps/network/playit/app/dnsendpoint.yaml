@@ -12,3 +12,12 @@ spec:
     - dnsName: "_minecraft._tcp.mc.ewatkins.dev"
       recordType: SRV
       targets: ["0 5 19087 practically-unclog.tun.ply.gg."]
+    # Bedrock players join mc.ewatkins.dev on the Bedrock tunnel's port.
+    # Bedrock doesn't read SRV records, but RakNet carries no hostname either,
+    # so a CNAME to the tunnel works. DNS-only: Cloudflare can't proxy UDP.
+    - dnsName: "mc.ewatkins.dev"
+      recordType: CNAME
+      targets: ["practically-detected.tun.ply.gg"]
+      providerSpecific:
+        - name: cloudflare/proxied
+          value: "false"
