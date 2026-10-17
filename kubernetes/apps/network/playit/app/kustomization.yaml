@@ -4,4 +4,6 @@ kind: Kustomization
 resources:
   - ./dnsendpoint.yaml
   - ./externalsecret.yaml
+  - ./externalsecret-oci.yaml
   - ./helmrelease.yaml
+  - ./relay-launcher.yaml

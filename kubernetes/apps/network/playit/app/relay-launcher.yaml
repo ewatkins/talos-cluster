@@ -1,0 +1,161 @@
+---
+# Free Oracle Cloud VMs are often "out of host capacity", so instead of
+# retrying by hand this CronJob asks for the Bedrock relay VM every 10 minutes
+# until Oracle hands one over. The relay listens on UDP 19132 and forwards to
+# the playit Bedrock tunnel, so players can use mc.ewatkins.dev on the default
+# port (playit's free tunnel only offers a random port).
+#
+# Exactly one VM: every run first lists instances named bedrock-relay that are
+# not TERMINATED/TERMINATING and does nothing if one exists, whatever its state
+# (PROVISIONING, RUNNING, STOPPED, ...). A launch shows up as PROVISIONING
+# straight away, and concurrencyPolicy Forbid keeps two runs from overlapping.
+# Delete the VM and the next run builds a fresh one; delete this CronJob once
+# the VM is up for good.
+#
+# Network (relay-vcn, relay-subnet, security list opening UDP 19132 to all and
+# SSH from home only) was created by hand in us-chicago-1; only the VM is
+# launched here. VM.Standard.E2.1.Micro is Always Free and only offered in
+# AD-2 in this region.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bedrock-relay-launcher
+  namespace: network
+  annotations:
+    # The scripts use shell ${...} expansions, not Flux variables.
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+data:
+  launch.sh: |
+    #!/usr/bin/env bash
+    set -euo pipefail
+    C="$OCI_CLI_TENANCY"
+
+    existing=$(oci compute instance list --compartment-id "$C" --display-name "$NAME" --all \
+      --query 'data[?"lifecycle-state"!=`TERMINATED` && "lifecycle-state"!=`TERMINATING`]' 2>/dev/null \
+      | jq -r '.[] | "\(.id) \(."lifecycle-state")"')
+    if [ -n "$existing" ]; then
+      while read -r id state; do
+        ip=$(oci compute instance list-vnics --instance-id "$id" --query 'data[0]."public-ip"' --raw-output 2>/dev/null || true)
+        echo "$NAME already exists: $state public-ip=${ip:-none}; nothing to do"
+      done <<<"$existing"
+      exit 0
+    fi
+
+    echo "no $NAME instance; launching $SHAPE in $AD"
+    if out=$(oci compute instance launch --compartment-id "$C" \
+        --availability-domain "$AD" --shape "$SHAPE" --image-id "$IMAGE_ID" \
+        --subnet-id "$SUBNET_ID" --assign-public-ip true \
+        --display-name "$NAME" --hostname-label "$NAME" \
+        --freeform-tags '{"managed-by":"talos-cluster/bedrock-relay-launcher"}' \
+        --ssh-authorized-keys-file /config/ssh.pub \
+        --user-data-file /config/cloud-init.yaml 2>&1); then
+      echo "launched: $(jq -r '.data | "\(.id) \(."lifecycle-state")"' <<<"$out")"
+      exit 0
+    fi
+
+    msg=$(grep -oE '"message": "[^"]*"' <<<"$out" | head -1 || true)
+    # Expected while Oracle has no capacity or the account is still changing
+    # tier; try again next run without failing the Job.
+    if grep -qE 'Out of host capacity|out of capacity|NotAuthorizedOrNotFound|TooManyRequests|InternalError' <<<"$out"; then
+      echo "not yet: ${msg:-$(head -c 300 <<<"$out")}"
+      exit 0
+    fi
+    echo "unexpected error:" >&2
+    echo "$out" >&2
+    exit 1
+  ssh.pub: |
+    ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJLUii06o9M7IuYRamEe5tB5GlOlB3zJu7ydmz99gHUc ewatkins@ewatkins-pc
+  cloud-init.yaml: |
+    #cloud-config
+    package_update: true
+    packages:
+      - socat
+    write_files:
+      - path: /etc/systemd/system/bedrock-relay.service
+        content: |
+          # Relays Minecraft Bedrock (UDP 19132) to the playit tunnel. socat
+          # forks one child per client and resolves the tunnel hostname for
+          # each, so it follows playit if the tunnel's IP changes. -T reaps a
+          # child after 120 s of silence.
+          [Unit]
+          Description=Minecraft Bedrock UDP relay to playit
+          After=network-online.target
+          Wants=network-online.target
+
+          [Service]
+          DynamicUser=yes
+          ExecStart=/usr/bin/socat -T 120 UDP4-LISTEN:19132,fork,reuseaddr UDP4:practically-detected.tun.ply.gg:63404
+          Restart=always
+          RestartSec=5
+
+          [Install]
+          WantedBy=multi-user.target
+    runcmd:
+      # Oracle's Ubuntu images ship iptables rules that reject everything but SSH.
+      - iptables -I INPUT -p udp --dport 19132 -j ACCEPT
+      - netfilter-persistent save
+      - systemctl daemon-reload
+      - systemctl enable --now bedrock-relay.service
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: bedrock-relay-launcher
+  namespace: network
+spec:
+  schedule: "*/10 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 3600
+      backoffLimit: 0
+      activeDeadlineSeconds: 480
+      template:
+        spec:
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: launcher
+              image: ghcr.io/oracle/oci-cli:20261007@sha256:48884d8710d30356cac71c7aa678873a97c53c594fefdf2724c80270f3ca563b
+              command: ["bash", "/config/launch.sh"]
+              env:
+                - { name: HOME, value: /tmp }
+                - { name: OCI_CLI_SUPPRESS_FILE_PERMISSIONS_WARNING, value: "True" }
+                - { name: NAME, value: bedrock-relay }
+                - { name: SHAPE, value: VM.Standard.E2.1.Micro }
+                - { name: AD, value: "lXFQ:US-CHICAGO-1-AD-2" }
+                # Canonical-Ubuntu-24.04-Minimal-2026.09.18-0
+                - { name: IMAGE_ID, value: ocid1.image.oc1.us-chicago-1.aaaaaaaaqexbn3tdvmjovmjkunbylan2rriovcbl2tsvyjiidaykgad4kemq }
+                # relay-subnet in relay-vcn
+                - { name: SUBNET_ID, value: ocid1.subnet.oc1.us-chicago-1.aaaaaaaawrch3tasud77qoiweiyukyieqmngefmqc6dss6fumq6sn4xpuaia }
+              # OCI_CLI_USER/TENANCY/FINGERPRINT/REGION/KEY_CONTENT; the CLI
+              # needs no config file when these are set.
+              envFrom:
+                - secretRef:
+                    name: oci-api-secret
+              volumeMounts:
+                - { name: config, mountPath: /config, readOnly: true }
+                - { name: tmp, mountPath: /tmp }
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities: { drop: ["ALL"] }
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 128Mi
+                limits:
+                  memory: 512Mi
+          volumes:
+            - name: config
+              configMap:
+                name: bedrock-relay-launcher
+            - name: tmp
+              emptyDir: {}
