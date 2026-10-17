@@ -12,6 +12,7 @@ The namespace has VolSync privileged movers enabled and Goldilocks VPA recommend
 | [cloudflare-dns](cloudflare-dns/README.md) | ExternalDNS controller publishing proxied `ewatkins.dev` DNS records to Cloudflare |
 | [cloudflare-tunnel](cloudflare-tunnel/README.md) | Outbound-only `cloudflared` tunnel (2 replicas, QUIC + post-quantum) exposing services externally without inbound firewall ports |
 | [envoy-gateway](envoy-gateway/README.md) | Kubernetes Gateway API implementation (Envoy Proxy) providing `internal` and `external` Gateways with HTTPRoute-based routing |
+| [playit](playit/README.md) | Outbound playit.gg tunnel exposing the Minecraft servers (Velocity on `wing-proxy`) without revealing the home IP |
 | [unifi-dns](unifi-dns/README.md) | ExternalDNS controller publishing local DNS records to a UniFi controller at `https://unifi.ewatkins.dev` for LAN resolution |
 
 ## Certificates
