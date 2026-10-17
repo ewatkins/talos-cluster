@@ -29,7 +29,7 @@ spec:
           app:
             image:
               repository: ghcr.io/playit-cloud/playit-agent
-              tag: 1.0.10@sha256:ca4766ced6e5bcee19137337808ec8fee5867c0910ac737efbb0bb452c378521
+              tag: 1.0.12@sha256:5b7748d3e8564f1cac3d3a295a23640136fbf774c76a9509bd262d16b324b06b
             # The image's entrypoint reads SECRET_KEY and runs
             # `playitd --secret ... --platform-docker`. Tunnels and their
             # local targets (Velocity on wing-proxy) are set on playit.gg.
