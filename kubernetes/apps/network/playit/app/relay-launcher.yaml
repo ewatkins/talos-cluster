@@ -149,7 +149,7 @@ spec:
               type: RuntimeDefault
           containers:
             - name: launcher
-              image: ghcr.io/oracle/oci-cli:20261007@sha256:48884d8710d30356cac71c7aa678873a97c53c594fefdf2724c80270f3ca563b
+              image: ghcr.io/oracle/oci-cli:20261014@sha256:9b13656be34c1c147e5a6d68246a01ee2a7da27ae2c132f1a22d488dfede9bbe
               command: ["bash", "/config/launch.sh"]
               env:
                 - { name: HOME, value: /tmp }
