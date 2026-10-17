@@ -49,14 +49,27 @@ don't collide: the SRV lives at `_minecraft._tcp.mc`, the CNAME at `mc`.
 If a tunnel is ever recreated, its address and port change: update
 `app/dnsendpoint.yaml` (and tell Bedrock players the new port).
 
-## Bedrock relay (port 19132)
+The SRV record gets Java players in, but the server list shows no MOTD: the
+vanilla client's server-list ping sends the address the player typed
+(`mc.ewatkins.dev`), not the SRV target, and playit resets it. Joining sends
+the SRV target, so it works. playit's raw TCP tunnels (no hostname check) are
+IPv6-only on the free tier, so the relay VM below fixes this instead.
+
+## Relay VM (Bedrock 19132, Java 25565)
 
 playit's free tunnel gives Bedrock a random public port (63404). To let
 players use `mc.ewatkins.dev` on the default port 19132, a relay VM on Oracle
 Cloud's Always Free tier (`bedrock-relay`, `VM.Standard.E2.1.Micro`,
 us-chicago-1 AD-2) listens on UDP 19132 and forwards to the Bedrock tunnel
 with `socat`. Its network (`relay-vcn`, `relay-subnet`, security list with UDP
-19132 open and SSH from home only) was created by hand.
+19132 and TCP 25565 open and SSH from home only) was created by hand.
+
+The same VM listens on TCP 25565 for Java (`java-relay.service`, a small
+Python proxy in the cloud-init). It rewrites the hostname in each
+connection's handshake to `practically-unclog.tun.ply.gg` and then copies
+bytes through, so both server-list pings and logins naming
+`mc.ewatkins.dev` reach Velocity. Oracle's Always Free tier includes 10 TB of
+outbound traffic a month.
 
 Free Oracle capacity is scarce, so `app/relay-launcher.yaml` is a CronJob that
 tries to launch the VM every 10 minutes. It launches only when no
@@ -69,9 +82,16 @@ Pushover notification (once; the instance is tagged `notified=true`):
 kubectl -n network logs -l job-name --tail=5 --prefix | grep bedrock-relay
 ```
 
-Once the VM is up: point `mc.ewatkins.dev` at its public IP (an A record here
-and in UniFi, replacing the CNAME), move the external Gatus Bedrock check to
-`mc.ewatkins.dev:19132`, and delete the CronJob.
+Once the VM is up:
+
+1. Point `mc.ewatkins.dev` at its public IP (an A record here and in UniFi,
+   replacing the CNAME).
+2. Remove the `_minecraft._tcp.mc` SRV record here and in UniFi. Java clients
+   prefer SRV, so while it exists they skip the relay and the MOTD stays
+   blank.
+3. Move the external Gatus checks to `mc.ewatkins.dev:19132` (Bedrock) and
+   `mc.ewatkins.dev:25565` (Java).
+4. Delete the CronJob.
 
 ## Secrets
 
