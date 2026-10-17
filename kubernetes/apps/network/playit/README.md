@@ -49,10 +49,35 @@ don't collide: the SRV lives at `_minecraft._tcp.mc`, the CNAME at `mc`.
 If a tunnel is ever recreated, its address and port change: update
 `app/dnsendpoint.yaml` (and tell Bedrock players the new port).
 
+## Bedrock relay (port 19132)
+
+playit's free tunnel gives Bedrock a random public port (63404). To let
+players use `mc.ewatkins.dev` on the default port 19132, a relay VM on Oracle
+Cloud's Always Free tier (`bedrock-relay`, `VM.Standard.E2.1.Micro`,
+us-chicago-1 AD-2) listens on UDP 19132 and forwards to the Bedrock tunnel
+with `socat`. Its network (`relay-vcn`, `relay-subnet`, security list with UDP
+19132 open and SSH from home only) was created by hand.
+
+Free Oracle capacity is scarce, so `app/relay-launcher.yaml` is a CronJob that
+tries to launch the VM every 10 minutes. It launches only when no
+non-terminated instance named `bedrock-relay` exists, so it never makes a
+second VM; once the VM exists every run is a no-op that logs its state and
+public IP:
+
+```sh
+kubectl -n network logs -l job-name --tail=5 --prefix | grep bedrock-relay
+```
+
+Once the VM is up: point `mc.ewatkins.dev` at its public IP (an A record here
+and in UniFi, replacing the CNAME), move the external Gatus Bedrock check to
+`mc.ewatkins.dev:19132`, and delete the CronJob.
+
 ## Secrets
 
 `playit-secret` (Bitwarden Secrets Manager via ExternalSecrets) holds the
-agent's secret key in its `secret_key` field. Create the agent on playit.gg
+agent's secret key in its `secret_key` field. `oci-api-secret` holds the Oracle API
+key the relay launcher uses (`user`, `tenancy`, `fingerprint`, `region`,
+`private_key_b64`). Create the agent on playit.gg
 (Docker setup) and copy the key it shows.
 
 ## Cutover
