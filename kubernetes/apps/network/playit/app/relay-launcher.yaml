@@ -10,7 +10,8 @@
 # (PROVISIONING, RUNNING, STOPPED, ...). A launch shows up as PROVISIONING
 # straight away, and concurrencyPolicy Forbid keeps two runs from overlapping.
 # Delete the VM and the next run builds a fresh one; delete this CronJob once
-# the VM is up for good.
+# the VM is up for good. When the VM first reports RUNNING with a public IP, a
+# run sends one Pushover notification and tags the instance notified=true.
 #
 # Network (relay-vcn, relay-subnet, security list opening UDP 19132 to all and
 # SSH from home only) was created by hand in us-chicago-1; only the VM is
@@ -30,13 +31,38 @@ data:
     set -euo pipefail
     C="$OCI_CLI_TENANCY"
 
+    TAGS='{"managed-by":"talos-cluster/bedrock-relay-launcher"}'
+
+    notify() {
+      python3 -I - "$1" <<'PY'
+    import os, sys, urllib.parse, urllib.request
+    data = urllib.parse.urlencode({
+        "token": os.environ["PUSHOVER_TOKEN"], "user": os.environ["PUSHOVER_USER_KEY"],
+        "title": "Bedrock relay VM is up", "message": sys.argv[1],
+    }).encode()
+    urllib.request.urlopen("https://api.pushover.net/1/messages.json", data, timeout=20).read()
+    PY
+    }
+
     existing=$(oci compute instance list --compartment-id "$C" --display-name "$NAME" --all \
       --query 'data[?"lifecycle-state"!=`TERMINATED` && "lifecycle-state"!=`TERMINATING`]' 2>/dev/null \
-      | jq -r '.[] | "\(.id) \(."lifecycle-state")"')
+      | jq -r '.[] | "\(.id) \(."lifecycle-state") \(."freeform-tags".notified // "false")"')
     if [ -n "$existing" ]; then
-      while read -r id state; do
+      while read -r id state notified; do
         ip=$(oci compute instance list-vnics --instance-id "$id" --query 'data[0]."public-ip"' --raw-output 2>/dev/null || true)
-        echo "$NAME already exists: $state public-ip=${ip:-none}; nothing to do"
+        echo "$NAME already exists: $state public-ip=${ip:-none}; nothing to launch"
+        # Tell the user once, when the VM is running with an address. The
+        # notified tag on the instance records that it was sent; if Pushover
+        # fails the tag stays unset and the next run tries again.
+        if [ "$state" = RUNNING ] && [ -n "$ip" ] && [ "$notified" != true ]; then
+          if notify "$NAME is RUNNING at $ip (Oracle us-chicago-1). Point mc.ewatkins.dev at it and test UDP 19132."; then
+            oci compute instance update --instance-id "$id" --force \
+              --freeform-tags "$(jq -c '. + {notified: "true"}' <<<"$TAGS")" >/dev/null
+            echo "sent Pushover notification"
+          else
+            echo "Pushover notification failed; will retry next run" >&2
+          fi
+        fi
       done <<<"$existing"
       exit 0
     fi
@@ -46,7 +72,7 @@ data:
         --availability-domain "$AD" --shape "$SHAPE" --image-id "$IMAGE_ID" \
         --subnet-id "$SUBNET_ID" --assign-public-ip true \
         --display-name "$NAME" --hostname-label "$NAME" \
-        --freeform-tags '{"managed-by":"talos-cluster/bedrock-relay-launcher"}' \
+        --freeform-tags "$TAGS" \
         --ssh-authorized-keys-file /config/ssh.pub \
         --user-data-file /config/cloud-init.yaml 2>&1); then
       echo "launched: $(jq -r '.data | "\(.id) \(."lifecycle-state")"' <<<"$out")"
@@ -135,11 +161,11 @@ spec:
                 - { name: IMAGE_ID, value: ocid1.image.oc1.us-chicago-1.aaaaaaaaqexbn3tdvmjovmjkunbylan2rriovcbl2tsvyjiidaykgad4kemq }
                 # relay-subnet in relay-vcn
                 - { name: SUBNET_ID, value: ocid1.subnet.oc1.us-chicago-1.aaaaaaaawrch3tasud77qoiweiyukyieqmngefmqc6dss6fumq6sn4xpuaia }
-              # OCI_CLI_USER/TENANCY/FINGERPRINT/REGION/KEY_CONTENT; the CLI
-              # needs no config file when these are set.
+              # OCI_CLI_USER/TENANCY/FINGERPRINT/REGION/KEY_CONTENT (the CLI
+              # needs no config file when these are set) and PUSHOVER_*.
               envFrom:
                 - secretRef:
-                    name: oci-api-secret
+                    name: bedrock-relay-launcher-secret
               volumeMounts:
                 - { name: config, mountPath: /config, readOnly: true }
                 - { name: tmp, mountPath: /tmp }
