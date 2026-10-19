@@ -280,6 +280,19 @@ address. At cutover (between steps 6 and 7), also move the Lobby off
 [`terraform/wings`](../../../../terraform/wings/README.md#target-addressing-planned-not-applied)
 for the guest's per-NIC ARP and routing settings.
 
+`wing-proxy` also has settings in panel-managed files, which cloud-init
+can't write; set them again after rebuilding Velocity's server:
+
+- `velocity.toml`: `haproxy-protocol = true` (under `[advanced]`). The Oracle
+  relay sends a PROXY v2 header, so Velocity sees real player addresses.
+- `plugins/Geyser-Velocity/config.yml`, under `advanced.bedrock`:
+  `use-haproxy-protocol: true` and
+  `haproxy-protocol-whitelisted-ips: ["170.9.242.78", "192.168.40.8/29", "192.168.40.16"]`
+  (the relay and the cluster nodes, for Gatus).
+
+The Gatus `velocity` and `velocity-bedrock` checks send PROXY headers, so
+they fail if either setting is missing.
+
 ## Rollback
 
 Until step 10, on the affected node:
