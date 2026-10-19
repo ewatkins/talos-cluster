@@ -80,10 +80,12 @@ kubectl -n network logs -l job-name --tail=5 --prefix | grep bedrock-relay
 ```
 
 The VM was launched on 2026-10-19 and renamed `minecraft-relay` in the
-console; it is at `147.224.198.213` (an ephemeral IP). The CronJob is now
-suspended in Git with `NAME=minecraft-relay`, so unsuspending it only rebuilds
-the VM after it is deleted. A rebuilt VM gets a new IP: update
-`app/dnsendpoint.yaml` and the UniFi record.
+console. Its address, `170.9.242.78`, is a reserved public IP (also named
+`minecraft-relay`), so it outlives the VM. The CronJob is suspended in Git
+with `NAME=minecraft-relay`, so unsuspending it only rebuilds the VM after it
+is deleted. A rebuilt VM comes up with an ephemeral IP: on its primary private
+IP, set the public IP to none, then attach the `minecraft-relay` reserved IP.
+DNS needs no change.
 
 The Gatus checks `relay-java` and `relay-bedrock` (in
 `default/calagopus/app/gatus.yaml`) ping `mc.ewatkins.dev` from the cluster,
