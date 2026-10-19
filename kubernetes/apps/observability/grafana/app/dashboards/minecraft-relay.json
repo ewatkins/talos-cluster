@@ -17,7 +17,7 @@
     {
       "id": 10,
       "type": "stat",
-      "title": "Play sessions",
+      "title": "Play Sessions",
       "description": "Connections of 50 KB or more in the selected range.",
       "datasource": {
         "type": "oci-logs-datasource",
@@ -118,7 +118,7 @@
     {
       "id": 11,
       "type": "stat",
-      "title": "Distinct players",
+      "title": "Distinct Players",
       "description": "Distinct source IPs with a play session (everyone at home counts as one).",
       "datasource": {
         "type": "oci-logs-datasource",
@@ -318,9 +318,505 @@
       }
     },
     {
+      "id": 20,
+      "type": "geomap",
+      "title": "Play Sessions Map",
+      "description": "Where play sessions came from, sized by connection count. IPs are looked up with ip-api.com.",
+      "gridPos": {
+        "h": 11,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "oci-logs-datasource",
+            "uid": "oci-logs"
+          },
+          "tenancy": "DEFAULT/",
+          "region": "us-chicago-1",
+          "searchQuery": "search \"{{ .compartment }}/ocid1.loggroup.oc1.us-chicago-1.amaaaaaazjfsi5aa2fqxnvwfcischkgombkdvjsrfvjite53ck3jo4vwqg6a/ocid1.log.oc1.us-chicago-1.amaaaaaazjfsi5aa2oq4c34dzvuazr4hu6iku6ntnj3b4rjtemlyysmskxvq\" | where data.tailed_path = '/var/log/haproxy.log' | sort by datetime desc"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "ip-geo"
+          },
+          "type": "json",
+          "source": "url",
+          "parser": "backend",
+          "format": "table",
+          "url": "http://ip-api.com/batch?fields=status,country,regionName,city,lat,lon,query",
+          "url_options": {
+            "method": "POST",
+            "body_type": "raw",
+            "body_content_type": "application/json",
+            "data": "${relay_ips:json}"
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "query",
+              "text": "Player",
+              "type": "string"
+            },
+            {
+              "selector": "city",
+              "text": "City",
+              "type": "string"
+            },
+            {
+              "selector": "regionName",
+              "text": "Region",
+              "type": "string"
+            },
+            {
+              "selector": "country",
+              "text": "Country",
+              "type": "string"
+            },
+            {
+              "selector": "lat",
+              "text": "Latitude",
+              "type": "number"
+            },
+            {
+              "selector": "lon",
+              "text": "Longitude",
+              "type": "number"
+            }
+          ]
+        }
+      ],
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "data",
+            "format": "json"
+          },
+          "filter": {
+            "id": "byRefId",
+            "options": "A"
+          }
+        },
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "message",
+            "format": "regexp",
+            "regExp": "/^\\S+ \\S+ haproxy\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] \\S+ \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
+          },
+          "filter": {
+            "id": "byRefId",
+            "options": "A"
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "targetField": "Connect",
+                "destinationType": "number"
+              },
+              {
+                "targetField": "Duration",
+                "destinationType": "number"
+              },
+              {
+                "targetField": "Bytes",
+                "destinationType": "number"
+              }
+            ]
+          },
+          "filter": {
+            "id": "byRefId",
+            "options": "A"
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "type": "include",
+            "match": "all",
+            "filters": [
+              {
+                "fieldName": "Bytes",
+                "config": {
+                  "id": "greaterOrEqual",
+                  "options": {
+                    "value": 50000
+                  }
+                }
+              }
+            ]
+          },
+          "filter": {
+            "id": "byRefId",
+            "options": "A"
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Player": {
+                "operation": "groupby",
+                "aggregations": []
+              },
+              "Bytes": {
+                "operation": "aggregate",
+                "aggregations": [
+                  "count"
+                ]
+              }
+            }
+          },
+          "filter": {
+            "id": "byRefId",
+            "options": "A"
+          }
+        },
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "Player",
+            "mode": "inner"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "Bytes (count)": "Connections"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "view": {
+          "id": "zero",
+          "lat": 20,
+          "lon": 0,
+          "zoom": 1
+        },
+        "controls": {
+          "showZoom": true,
+          "mouseWheelZoom": true
+        },
+        "tooltip": {
+          "mode": "details"
+        },
+        "basemap": {
+          "type": "default",
+          "name": "Basemap"
+        },
+        "layers": [
+          {
+            "type": "markers",
+            "name": "Connections",
+            "tooltip": true,
+            "location": {
+              "mode": "coords",
+              "latitude": "Latitude",
+              "longitude": "Longitude"
+            },
+            "config": {
+              "showLegend": false,
+              "style": {
+                "size": {
+                  "field": "Connections",
+                  "min": 5,
+                  "max": 25,
+                  "fixed": 5
+                },
+                "color": {
+                  "fixed": "green"
+                },
+                "opacity": 0.6,
+                "symbol": {
+                  "fixed": "img/icons/marker/circle.svg",
+                  "mode": "fixed"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": 21,
+      "type": "geomap",
+      "title": "Pings Map",
+      "description": "Where status pings came from, sized by connection count. IPs are looked up with ip-api.com.",
+      "gridPos": {
+        "h": 11,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "oci-logs-datasource",
+            "uid": "oci-logs"
+          },
+          "tenancy": "DEFAULT/",
+          "region": "us-chicago-1",
+          "searchQuery": "search \"{{ .compartment }}/ocid1.loggroup.oc1.us-chicago-1.amaaaaaazjfsi5aa2fqxnvwfcischkgombkdvjsrfvjite53ck3jo4vwqg6a/ocid1.log.oc1.us-chicago-1.amaaaaaazjfsi5aa2oq4c34dzvuazr4hu6iku6ntnj3b4rjtemlyysmskxvq\" | where data.tailed_path = '/var/log/haproxy.log' | sort by datetime desc"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "ip-geo"
+          },
+          "type": "json",
+          "source": "url",
+          "parser": "backend",
+          "format": "table",
+          "url": "http://ip-api.com/batch?fields=status,country,regionName,city,lat,lon,query",
+          "url_options": {
+            "method": "POST",
+            "body_type": "raw",
+            "body_content_type": "application/json",
+            "data": "${relay_ips:json}"
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "query",
+              "text": "Player",
+              "type": "string"
+            },
+            {
+              "selector": "city",
+              "text": "City",
+              "type": "string"
+            },
+            {
+              "selector": "regionName",
+              "text": "Region",
+              "type": "string"
+            },
+            {
+              "selector": "country",
+              "text": "Country",
+              "type": "string"
+            },
+            {
+              "selector": "lat",
+              "text": "Latitude",
+              "type": "number"
+            },
+            {
+              "selector": "lon",
+              "text": "Longitude",
+              "type": "number"
+            }
+          ]
+        }
+      ],
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "data",
+            "format": "json"
+          },
+          "filter": {
+            "id": "byRefId",
+            "options": "A"
+          }
+        },
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "message",
+            "format": "regexp",
+            "regExp": "/^\\S+ \\S+ haproxy\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] \\S+ \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
+          },
+          "filter": {
+            "id": "byRefId",
+            "options": "A"
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "targetField": "Connect",
+                "destinationType": "number"
+              },
+              {
+                "targetField": "Duration",
+                "destinationType": "number"
+              },
+              {
+                "targetField": "Bytes",
+                "destinationType": "number"
+              }
+            ]
+          },
+          "filter": {
+            "id": "byRefId",
+            "options": "A"
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "type": "include",
+            "match": "all",
+            "filters": [
+              {
+                "fieldName": "Bytes",
+                "config": {
+                  "id": "lower",
+                  "options": {
+                    "value": 50000
+                  }
+                }
+              }
+            ]
+          },
+          "filter": {
+            "id": "byRefId",
+            "options": "A"
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Player": {
+                "operation": "groupby",
+                "aggregations": []
+              },
+              "Bytes": {
+                "operation": "aggregate",
+                "aggregations": [
+                  "count"
+                ]
+              }
+            }
+          },
+          "filter": {
+            "id": "byRefId",
+            "options": "A"
+          }
+        },
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "Player",
+            "mode": "inner"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "Bytes (count)": "Connections"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "view": {
+          "id": "zero",
+          "lat": 20,
+          "lon": 0,
+          "zoom": 1
+        },
+        "controls": {
+          "showZoom": true,
+          "mouseWheelZoom": true
+        },
+        "tooltip": {
+          "mode": "details"
+        },
+        "basemap": {
+          "type": "default",
+          "name": "Basemap"
+        },
+        "layers": [
+          {
+            "type": "markers",
+            "name": "Connections",
+            "tooltip": true,
+            "location": {
+              "mode": "coords",
+              "latitude": "Latitude",
+              "longitude": "Longitude"
+            },
+            "config": {
+              "showLegend": false,
+              "style": {
+                "size": {
+                  "field": "Connections",
+                  "min": 5,
+                  "max": 25,
+                  "fixed": 5
+                },
+                "color": {
+                  "fixed": "orange"
+                },
+                "opacity": 0.6,
+                "symbol": {
+                  "fixed": "img/icons/marker/circle.svg",
+                  "mode": "fixed"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "id": 1,
       "type": "table",
-      "title": "Play sessions",
+      "title": "Play Sessions",
       "datasource": {
         "type": "oci-logs-datasource",
         "uid": "oci-logs"
@@ -330,7 +826,7 @@
         "h": 11,
         "w": 24,
         "x": 0,
-        "y": 4
+        "y": 15
       },
       "targets": [
         {
@@ -606,7 +1102,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 15
+        "y": 26
       },
       "targets": [
         {
@@ -872,7 +1368,7 @@
     {
       "id": 2,
       "type": "table",
-      "title": "SSH and sudo",
+      "title": "SSH and Sudo",
       "description": "auth.log without the Oracle Cloud Agent's own sudo calls.",
       "datasource": {
         "type": "oci-logs-datasource",
@@ -882,7 +1378,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 23
+        "y": 34
       },
       "targets": [
         {
@@ -1025,7 +1521,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 33
+        "y": 44
       },
       "targets": [
         {
@@ -1168,7 +1664,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 43
+        "y": 54
       },
       "targets": [
         {
@@ -1280,5 +1776,51 @@
         ]
       }
     }
-  ]
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "relay_region",
+        "type": "constant",
+        "hide": 2,
+        "query": "us-chicago-1"
+      },
+      {
+        "name": "relay_haproxy_query",
+        "type": "constant",
+        "hide": 2,
+        "query": "search \"{{ .compartment }}/ocid1.loggroup.oc1.us-chicago-1.amaaaaaazjfsi5aa2fqxnvwfcischkgombkdvjsrfvjite53ck3jo4vwqg6a/ocid1.log.oc1.us-chicago-1.amaaaaaazjfsi5aa2oq4c34dzvuazr4hu6iku6ntnj3b4rjtemlyysmskxvq\" | where data.tailed_path = '/var/log/haproxy.log' | sort by datetime desc"
+      },
+      {
+        "name": "relay_field",
+        "type": "constant",
+        "hide": 2,
+        "query": "message"
+      },
+      {
+        "name": "relay_ips",
+        "type": "query",
+        "hide": 2,
+        "datasource": {
+          "type": "oci-logs-datasource",
+          "uid": "oci-logs"
+        },
+        "query": "search($relay_region, $relay_haproxy_query, $relay_field)",
+        "definition": "search($relay_region, $relay_haproxy_query, $relay_field)",
+        "regex": "/haproxy\\[\\d+\\]: (?<value>[\\d.]+):\\d+ /",
+        "refresh": 2,
+        "sort": 0,
+        "multi": true,
+        "includeAll": true,
+        "current": {
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        }
+      }
+    ]
+  }
 }
