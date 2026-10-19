@@ -61,6 +61,7 @@ spec:
       - name: grafana-secret
       - name: grafana-db-secret
       - name: grafana-alerting-secret
+      - name: grafana-oci-logs-secret
     # Alerting provisioning: contact points, policies, templates and mute
     # timings from ./alerting plus the generated rules from ./alerting/rules.
     # Grafana only reads files directly in this directory, so both ConfigMaps
@@ -154,6 +155,21 @@ spec:
             jsonData:
               maxLines: 250
               manageAlerts: false
+          # minecraft-relay VM logs in OCI Logging. $${...} is escaped for
+          # Flux; Grafana expands it from grafana-oci-logs-secret.
+          - name: OCI Logs
+            type: oci-logs-datasource
+            uid: oci-logs
+            jsonData:
+              environment: local
+              tenancymode: single
+              profile0: DEFAULT
+              region0: $${OCI_LOGS_REGION}
+            secureJsonData:
+              user0: $${OCI_LOGS_USER}
+              tenancy0: $${OCI_LOGS_TENANCY}
+              fingerprint0: $${OCI_LOGS_FINGERPRINT}
+              privkey0: $${OCI_LOGS_PRIVATE_KEY}
     dashboards:
       default:
         cloudflare-tunnel:
@@ -290,6 +306,7 @@ spec:
       - grafana-clock-panel
       - pr0ps-trackmap-panel
       - vonage-status-panel
+      - oci-logs-datasource
     serviceMonitor:
       enabled: true
     ingress:
