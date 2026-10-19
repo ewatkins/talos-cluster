@@ -13,10 +13,9 @@ spec:
     kind: GitRepository
     name: talos-cluster
     namespace: flux-system
-  # Merging is the approval: every plan from main is applied. Review it on the
-  # PR first, where the branch planner posts it as a comment. Every resource
-  # has prevent_destroy, so a plan that would replace or destroy one fails.
-  approvePlan: auto
+  # Plan only: approve each plan by hand (kubectl patch approvePlan) until
+  # the restricted key has a clean history here.
+  approvePlan: ""
   # Fresh state (tfstate-default-oracle-relay-v2): the first state was
   # corrupted by a refresh that could not see the network, and is kept as
   # tfstate-default-oracle-relay. imports.tf adopts the network again.
