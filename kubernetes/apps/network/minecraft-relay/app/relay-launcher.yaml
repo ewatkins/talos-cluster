@@ -193,6 +193,10 @@ data:
           upstream for a client starts with a PROXY v2 header naming that client;
           Geyser (advanced.bedrock.use-haproxy-protocol) takes the player address from
           it and expects no header on later packets from the same upstream socket.
+
+          When a client goes idle, one line is logged in HAProxy's tcplog layout
+          (frontend minecraft_bedrock) and rsyslog files it with the Java connections
+          in /var/log/haproxy.log, so the Grafana relay dashboard parses both alike.
           """
           import os
           import selectors
@@ -215,6 +219,14 @@ data:
               return SIG + b"\x21\x12" + struct.pack(">H", len(body)) + body
 
 
+          def log_session(client, entry):
+              up, seen, start, start_wall, to_client = entry
+              accepted = time.strftime("%d/%b/%Y:%H:%M:%S", time.gmtime(start_wall))
+              duration = int((seen - start) * 1000)
+              print(f"{client[0]}:{client[1]} [{accepted}] minecraft_bedrock geyser/home "
+                    f"0/0/{duration} {to_client} -- 0/0/0/0/0 0/0", flush=True)
+
+
           def main():
               sel = selectors.DefaultSelector()
               listener = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -222,7 +234,8 @@ data:
               listener.setblocking(False)
               sel.register(listener, selectors.EVENT_READ, None)
 
-              clients = {}  # client address -> [upstream socket, last seen]
+              # client address -> [upstream socket, last seen, start, start wall time, bytes to client]
+              clients = {}
               print(f"relaying udp {LISTEN[1]} to {UPSTREAM[0]}:{UPSTREAM[1]} with PROXY v2", flush=True)
               last_sweep = time.monotonic()
               while True:
@@ -241,7 +254,7 @@ data:
                               up.setblocking(False)
                               up.connect(UPSTREAM)
                               sel.register(up, selectors.EVENT_READ, client)
-                              entry = clients[client] = [up, now]
+                              entry = clients[client] = [up, now, now, time.time(), 0]
                               data = proxy_header(client) + data
                           entry[1] = now
                           try:
@@ -259,14 +272,16 @@ data:
                               continue
                           entry[1] = now
                           try:
-                              listener.sendto(data, client)
+                              entry[4] += listener.sendto(data, client)
                           except OSError:
                               pass
                   now = time.monotonic()
                   if now - last_sweep >= 5:
                       last_sweep = now
-                      for client, (up, seen) in list(clients.items()):
+                      for client, entry in list(clients.items()):
+                          up, seen = entry[0], entry[1]
                           if now - seen > IDLE:
+                              log_session(client, entry)
                               sel.unregister(up)
                               up.close()
                               del clients[client]
@@ -286,6 +301,7 @@ data:
 
           [Service]
           DynamicUser=yes
+          SyslogIdentifier=bedrock-relay
           Environment=UPSTREAM_HOST=@HOME_WAN_IP@
           ExecStart=/usr/bin/python3 -I /usr/local/bin/bedrock-relay.py
           Restart=always
@@ -308,6 +324,13 @@ data:
 
           [Install]
           WantedBy=multi-user.target
+      - path: /etc/rsyslog.d/48-bedrock-relay.conf
+        content: |
+          # Bedrock sessions go next to the Java connections in haproxy.log.
+          :programname, isequal, "bedrock-relay" {
+            /var/log/haproxy.log
+            stop
+          }
       - path: /etc/ssh/sshd_config.d/10-hardening.conf
         content: |
           # Key-only logins as ewatkins, nothing forwarded. Read before
@@ -363,6 +386,7 @@ data:
       - systemctl daemon-reload
       - systemctl enable --now bedrock-relay.service
       - systemctl restart haproxy.service
+      - systemctl restart rsyslog.service
 ---
 apiVersion: batch/v1
 kind: CronJob
