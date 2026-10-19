@@ -170,6 +170,20 @@ spec:
               tenancy0: $${OCI_LOGS_TENANCY}
               fingerprint0: $${OCI_LOGS_FINGERPRINT}
               privkey0: $${OCI_LOGS_PRIVATE_KEY}
+          # minecraft-relay VM network metrics (bandwidth), same read-only user.
+          - name: OCI Metrics
+            type: oci-metrics-datasource
+            uid: oci-metrics
+            jsonData:
+              environment: local
+              tenancymode: single
+              profile0: DEFAULT
+              region0: $${OCI_LOGS_REGION}
+            secureJsonData:
+              user0: $${OCI_LOGS_USER}
+              tenancy0: $${OCI_LOGS_TENANCY}
+              fingerprint0: $${OCI_LOGS_FINGERPRINT}
+              privkey0: $${OCI_LOGS_PRIVATE_KEY}
           # IP geolocation for the minecraft-relay maps (ip-api.com batch API).
           - name: IP Geolocation
             type: yesoreyeram-infinity-datasource
@@ -314,6 +328,7 @@ spec:
       - pr0ps-trackmap-panel
       - vonage-status-panel
       - oci-logs-datasource
+      - oci-metrics-datasource
       - yesoreyeram-infinity-datasource
     serviceMonitor:
       enabled: true

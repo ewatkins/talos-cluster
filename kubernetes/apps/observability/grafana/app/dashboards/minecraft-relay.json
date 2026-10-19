@@ -1,9 +1,10 @@
 {
   "uid": "minecraft-relay",
-  "title": "Minecraft relay",
+  "title": "Analytics",
   "tags": [
     "minecraft",
-    "oci"
+    "oci",
+    "analytics"
   ],
   "timezone": "browser",
   "editable": true,
@@ -1719,162 +1720,217 @@
       }
     },
     {
-      "id": 2,
-      "type": "table",
-      "title": "SSH and Sudo",
-      "description": "auth.log without the Oracle Cloud Agent's own sudo calls.",
-      "datasource": {
-        "type": "oci-logs-datasource",
-        "uid": "oci-logs"
-      },
+      "id": 40,
+      "type": "row",
+      "title": "Bandwidth",
+      "collapsed": false,
       "gridPos": {
-        "h": 10,
+        "h": 1,
         "w": 24,
         "x": 0,
         "y": 44
       },
+      "panels": []
+    },
+    {
+      "id": 41,
+      "type": "stat",
+      "title": "Data Out",
+      "description": "Bytes the relay VM sent in the selected range (Oracle's VNIC metrics). Outbound transfer is what Oracle bills, after the first 10 TB a month.",
+      "datasource": {
+        "type": "oci-metrics-datasource",
+        "uid": "oci-metrics"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 45
+      },
       "targets": [
         {
           "refId": "A",
           "datasource": {
-            "type": "oci-logs-datasource",
-            "uid": "oci-logs"
+            "type": "oci-metrics-datasource",
+            "uid": "oci-metrics"
           },
           "tenancy": "DEFAULT/",
           "region": "us-chicago-1",
-          "searchQuery": "search \"{{ .compartment }}/ocid1.loggroup.oc1.us-chicago-1.amaaaaaazjfsi5aa2fqxnvwfcischkgombkdvjsrfvjite53ck3jo4vwqg6a/ocid1.log.oc1.us-chicago-1.amaaaaaazjfsi5aa2oq4c34dzvuazr4hu6iku6ntnj3b4rjtemlyysmskxvq\" | where data.tailed_path = '/var/log/auth.log' | sort by datetime desc"
-        }
-      ],
-      "transformations": [
-        {
-          "id": "extractFields",
-          "options": {
-            "source": "data",
-            "format": "json"
-          }
-        },
-        {
-          "id": "extractFields",
-          "options": {
-            "source": "message",
-            "format": "regexp",
-            "regExp": "/^\\S+ \\S+ (?<Process>[^\\[:]+)(?:\\[\\d+\\])?: (?<Event>.*)$/"
-          }
-        },
-        {
-          "id": "filterByValue",
-          "options": {
-            "type": "exclude",
-            "match": "any",
-            "filters": [
-              {
-                "fieldName": "message",
-                "config": {
-                  "id": "regex",
-                  "options": {
-                    "value": "snap_daemon|by \\(uid=584788\\)|session (opened|closed) for user root"
-                  }
-                }
-              }
-            ]
-          }
-        },
-        {
-          "id": "filterFieldsByName",
-          "options": {
-            "include": {
-              "names": [
-                "timestamp",
-                "Process",
-                "Event"
-              ]
-            }
-          }
-        },
-        {
-          "id": "organize",
-          "options": {
-            "renameByName": {
-              "timestamp": "Time"
-            },
-            "indexByName": {
-              "timestamp": 0,
-              "Process": 1,
-              "Event": 2
-            }
-          }
-        },
-        {
-          "id": "sortBy",
-          "options": {
-            "sort": [
-              {
-                "field": "Time",
-                "desc": true
-              }
-            ]
-          }
+          "compartment": "{{ .compartment }}",
+          "namespace": "oci_vcn",
+          "rawQuery": false,
+          "queryTextRaw": "VnicToNetworkBytes[5m].sum()",
+          "interval": "[5m]",
+          "statistic": "sum",
+          "legendFormat": "Out (to players)"
         }
       ],
       "options": {
-        "showHeader": true,
-        "cellHeight": "sm",
-        "footer": {
-          "show": false
-        }
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "none",
+        "graphMode": "none",
+        "textMode": "value"
       },
       "fieldConfig": {
         "defaults": {
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto",
-              "wrapText": true
-            }
-          }
+          "unit": "decbytes",
+          "decimals": 1,
+          "noValue": "0"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Time"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 190
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Process"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 150
-              }
-            ]
-          }
-        ]
+        "overrides": []
       }
     },
     {
-      "id": 3,
+      "id": 42,
+      "type": "stat",
+      "title": "Data In",
+      "description": "Bytes the relay VM received in the selected range (Oracle's VNIC metrics).",
+      "datasource": {
+        "type": "oci-metrics-datasource",
+        "uid": "oci-metrics"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 45
+      },
+      "targets": [
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "oci-metrics-datasource",
+            "uid": "oci-metrics"
+          },
+          "tenancy": "DEFAULT/",
+          "region": "us-chicago-1",
+          "compartment": "{{ .compartment }}",
+          "namespace": "oci_vcn",
+          "rawQuery": false,
+          "queryTextRaw": "VnicFromNetworkBytes[5m].sum()",
+          "interval": "[5m]",
+          "statistic": "sum",
+          "legendFormat": "In (from players)"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "none",
+        "graphMode": "none",
+        "textMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "decbytes",
+          "decimals": 1,
+          "noValue": "0"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 43,
+      "type": "timeseries",
+      "title": "Relay Bandwidth",
+      "description": "Bytes per 5 minutes through the relay VM's network interface, from Oracle's VNIC metrics. Includes both legs (players and home).",
+      "datasource": {
+        "type": "oci-metrics-datasource",
+        "uid": "oci-metrics"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 49
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "oci-metrics-datasource",
+            "uid": "oci-metrics"
+          },
+          "tenancy": "DEFAULT/",
+          "region": "us-chicago-1",
+          "compartment": "{{ .compartment }}",
+          "namespace": "oci_vcn",
+          "rawQuery": false,
+          "queryTextRaw": "VnicToNetworkBytes[5m].sum()",
+          "interval": "[5m]",
+          "statistic": "sum",
+          "legendFormat": "Out (to players)"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "oci-metrics-datasource",
+            "uid": "oci-metrics"
+          },
+          "tenancy": "DEFAULT/",
+          "region": "us-chicago-1",
+          "compartment": "{{ .compartment }}",
+          "namespace": "oci_vcn",
+          "rawQuery": false,
+          "queryTextRaw": "VnicFromNetworkBytes[5m].sum()",
+          "interval": "[5m]",
+          "statistic": "sum",
+          "legendFormat": "In (from players)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "decbytes",
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60,
+            "barAlignment": 0,
+            "lineWidth": 1,
+            "stacking": {
+              "mode": "none"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": [
+            "sum"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 44,
       "type": "table",
-      "title": "System",
-      "description": "syslog without the log-shipping agent's own chatter.",
+      "title": "Bandwidth by Player",
       "datasource": {
         "type": "oci-logs-datasource",
         "uid": "oci-logs"
       },
+      "description": "Bytes sent to each source IP through the relay, from the relay's connection log (logged when a connection ends). Pings included; Home is everyone at home plus Gatus.",
       "gridPos": {
-        "h": 10,
+        "h": 9,
         "w": 24,
         "x": 0,
-        "y": 54
+        "y": 58
       },
       "targets": [
         {
@@ -1885,7 +1941,7 @@
           },
           "tenancy": "DEFAULT/",
           "region": "us-chicago-1",
-          "searchQuery": "search \"{{ .compartment }}/ocid1.loggroup.oc1.us-chicago-1.amaaaaaazjfsi5aa2fqxnvwfcischkgombkdvjsrfvjite53ck3jo4vwqg6a/ocid1.log.oc1.us-chicago-1.amaaaaaazjfsi5aa2oq4c34dzvuazr4hu6iku6ntnj3b4rjtemlyysmskxvq\" | where data.tailed_path = '/var/log/syslog' | sort by datetime desc"
+          "searchQuery": "search \"{{ .compartment }}/ocid1.loggroup.oc1.us-chicago-1.amaaaaaazjfsi5aa2fqxnvwfcischkgombkdvjsrfvjite53ck3jo4vwqg6a/ocid1.log.oc1.us-chicago-1.amaaaaaazjfsi5aa2oq4c34dzvuazr4hu6iku6ntnj3b4rjtemlyysmskxvq\" | where data.tailed_path = '/var/log/haproxy.log' | sort by datetime desc"
         }
       ],
       "transformations": [
@@ -1901,228 +1957,168 @@
           "options": {
             "source": "message",
             "format": "regexp",
-            "regExp": "/^\\S+ \\S+ (?<Process>[^\\[:]+)(?:\\[\\d+\\])?: (?<Event>.*)$/"
+            "regExp": "/^\\S+ \\S+ (?:haproxy|bedrock-relay)\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] minecraft_(?<Edition>java|bedrock) \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
           }
         },
         {
-          "id": "filterByValue",
+          "id": "convertFieldType",
           "options": {
-            "type": "exclude",
-            "match": "any",
-            "filters": [
+            "conversions": [
               {
-                "fieldName": "message",
-                "config": {
-                  "id": "regex",
-                  "options": {
-                    "value": "unified-monitoring-agent|ruby\\["
+                "targetField": "Connect",
+                "destinationType": "number"
+              },
+              {
+                "targetField": "Duration",
+                "destinationType": "number"
+              },
+              {
+                "targetField": "Bytes",
+                "destinationType": "number"
+              }
+            ]
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Player": {
+                "operation": "groupby",
+                "aggregations": []
+              },
+              "Edition": {
+                "operation": "groupby",
+                "aggregations": []
+              },
+              "Bytes": {
+                "operation": "aggregate",
+                "aggregations": [
+                  "sum",
+                  "count"
+                ]
+              },
+              "Duration": {
+                "operation": "aggregate",
+                "aggregations": [
+                  "sum"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "Bytes (sum)": "Data to Player",
+              "Bytes (count)": "Connections",
+              "Duration (sum)": "Time Connected"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "Data to Player",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Player"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "{{ .ssh_source_cidr | trimSuffix `/32` }}": {
+                        "text": "Home",
+                        "color": "blue",
+                        "index": 0
+                      }
+                    }
                   }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
                 }
               }
             ]
-          }
-        },
-        {
-          "id": "filterFieldsByName",
-          "options": {
-            "include": {
-              "names": [
-                "timestamp",
-                "Process",
-                "Event"
-              ]
-            }
-          }
-        },
-        {
-          "id": "organize",
-          "options": {
-            "renameByName": {
-              "timestamp": "Time"
-            },
-            "indexByName": {
-              "timestamp": 0,
-              "Process": 1,
-              "Event": 2
-            }
-          }
-        },
-        {
-          "id": "sortBy",
-          "options": {
-            "sort": [
-              {
-                "field": "Time",
-                "desc": true
-              }
-            ]
-          }
-        }
-      ],
-      "options": {
-        "showHeader": true,
-        "cellHeight": "sm",
-        "footer": {
-          "show": false
-        }
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto",
-              "wrapText": true
-            }
-          }
-        },
-        "overrides": [
+          },
           {
             "matcher": {
               "id": "byName",
-              "options": "Time"
+              "options": "Edition"
             },
             "properties": [
               {
-                "id": "custom.width",
-                "value": 190
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "java": {
+                        "text": "Java",
+                        "index": 0
+                      },
+                      "bedrock": {
+                        "text": "Bedrock",
+                        "index": 1
+                      }
+                    }
+                  }
+                ]
               }
             ]
           },
           {
             "matcher": {
               "id": "byName",
-              "options": "Process"
+              "options": "Data to Player"
             },
             "properties": [
               {
-                "id": "custom.width",
-                "value": 150
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": 4,
-      "type": "table",
-      "title": "Kernel",
-      "description": "kern.log; usually empty.",
-      "datasource": {
-        "type": "oci-logs-datasource",
-        "uid": "oci-logs"
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 24,
-        "x": 0,
-        "y": 64
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "oci-logs-datasource",
-            "uid": "oci-logs"
-          },
-          "tenancy": "DEFAULT/",
-          "region": "us-chicago-1",
-          "searchQuery": "search \"{{ .compartment }}/ocid1.loggroup.oc1.us-chicago-1.amaaaaaazjfsi5aa2fqxnvwfcischkgombkdvjsrfvjite53ck3jo4vwqg6a/ocid1.log.oc1.us-chicago-1.amaaaaaazjfsi5aa2oq4c34dzvuazr4hu6iku6ntnj3b4rjtemlyysmskxvq\" | where data.tailed_path = '/var/log/kern.log' | sort by datetime desc"
-        }
-      ],
-      "transformations": [
-        {
-          "id": "extractFields",
-          "options": {
-            "source": "data",
-            "format": "json"
-          }
-        },
-        {
-          "id": "extractFields",
-          "options": {
-            "source": "message",
-            "format": "regexp",
-            "regExp": "/^\\S+ \\S+ (?<Process>[^\\[:]+)(?:\\[\\d+\\])?: (?<Event>.*)$/"
-          }
-        },
-        {
-          "id": "filterFieldsByName",
-          "options": {
-            "include": {
-              "names": [
-                "timestamp",
-                "Process",
-                "Event"
-              ]
-            }
-          }
-        },
-        {
-          "id": "organize",
-          "options": {
-            "renameByName": {
-              "timestamp": "Time"
-            },
-            "indexByName": {
-              "timestamp": 0,
-              "Process": 1,
-              "Event": 2
-            }
-          }
-        },
-        {
-          "id": "sortBy",
-          "options": {
-            "sort": [
-              {
-                "field": "Time",
-                "desc": true
-              }
-            ]
-          }
-        }
-      ],
-      "options": {
-        "showHeader": true,
-        "cellHeight": "sm",
-        "footer": {
-          "show": false
-        }
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto",
-              "wrapText": true
-            }
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Time"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 190
+                "id": "unit",
+                "value": "decbytes"
               }
             ]
           },
           {
             "matcher": {
               "id": "byName",
-              "options": "Process"
+              "options": "Time Connected"
             },
             "properties": [
               {
-                "id": "custom.width",
-                "value": 150
+                "id": "unit",
+                "value": "ms"
               }
             ]
           }
