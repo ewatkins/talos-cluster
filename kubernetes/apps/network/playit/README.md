@@ -59,8 +59,8 @@ IPv6-only on the free tier, so the relay VM below fixes this instead.
 
 playit's free tunnel gives Bedrock a random public port (63404). To let
 players use `mc.ewatkins.dev` on the default port 19132, a relay VM on Oracle
-Cloud's Always Free tier (`bedrock-relay`, `VM.Standard.E2.1.Micro`,
-us-chicago-1 AD-2) listens on UDP 19132 and forwards to the Bedrock tunnel
+Cloud's Always Free allowance (`bedrock-relay`, a 1 OCPU / 6 GB
+`VM.Standard.A1.Flex` in us-chicago-1, which offers no `E2.1.Micro`) listens on UDP 19132 and forwards to the Bedrock tunnel
 with `socat`. Its network (`relay-vcn`, `relay-subnet`, security list with UDP
 19132 and TCP 25565 open and SSH from home only) was created by hand.
 
@@ -71,8 +71,9 @@ bytes through, so both server-list pings and logins naming
 `mc.ewatkins.dev` reach Velocity. Oracle's Always Free tier includes 10 TB of
 outbound traffic a month.
 
-Free Oracle capacity is scarce, so `app/relay-launcher.yaml` is a CronJob that
-tries to launch the VM every 10 minutes. It launches only when no
+Oracle capacity can be scarce, so `app/relay-launcher.yaml` is a CronJob that
+tries to launch the VM every 10 minutes, in each AD in turn. Capacity errors
+are retried; any other launch error fails the Job. It launches only when no
 non-terminated instance named `bedrock-relay` exists, so it never makes a
 second VM; once the VM exists every run is a no-op that logs its state and
 public IP. The first run that finds it RUNNING with an address sends a
