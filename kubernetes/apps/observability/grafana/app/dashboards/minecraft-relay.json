@@ -1384,7 +1384,6 @@
               "names": [
                 "timestamp",
                 "Player",
-                "Edition",
                 "Connect",
                 "Duration",
                 "Bytes",
@@ -1402,11 +1401,10 @@
             "indexByName": {
               "timestamp": 0,
               "Player": 1,
-              "Edition": 2,
-              "Connect": 3,
-              "Duration": 4,
-              "Bytes": 5,
-              "Ended": 6
+              "Connect": 2,
+              "Duration": 3,
+              "Bytes": 4,
+              "Ended": 5
             }
           }
         },
@@ -1569,32 +1567,6 @@
                 "value": {
                   "type": "color-text"
                 }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Edition"
-            },
-            "properties": [
-              {
-                "id": "mappings",
-                "value": [
-                  {
-                    "type": "value",
-                    "options": {
-                      "java": {
-                        "text": "Java",
-                        "index": 0
-                      },
-                      "bedrock": {
-                        "text": "Bedrock",
-                        "index": 1
-                      }
-                    }
-                  }
-                ]
               }
             ]
           }
