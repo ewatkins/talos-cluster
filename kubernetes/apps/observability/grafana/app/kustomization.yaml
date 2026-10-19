@@ -22,6 +22,7 @@ configMapGenerator:
     files:
       - minecraft-relay.json=./dashboards/minecraft-relay.json
       - minecraft-security.json=./dashboards/minecraft-security.json
+      - minecraft-bandwidth.json=./dashboards/minecraft-bandwidth.json
 
 generatorOptions:
   disableNameSuffixHash: true
