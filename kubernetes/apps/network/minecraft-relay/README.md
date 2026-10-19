@@ -5,9 +5,6 @@ Players join `mc.ewatkins.dev` on the default ports (Java 25565, Bedrock
 forwards both editions home through port forwards that accept only the VM.
 Players never see the home IP.
 
-The directory and Flux Kustomization are still named `playit`, after the
-playit.gg tunnel this replaced (removed 2026-10-19). Renaming the
-Kustomization would prune and recreate the DNS record, so it was left alone.
 
 ```
 player ─▶ mc.ewatkins.dev (A 170.9.242.78, DNS-only)

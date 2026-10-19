@@ -3,7 +3,7 @@
 # one public subnet, an internet gateway, and the VCN's default route table,
 # security list and DHCP options. It was built by hand in the console on
 # 2026-10-17 and adopted here (imports.tf). The VM and its reserved public IP
-# are not managed here; see kubernetes/apps/network/playit/README.md.
+# are not managed here; see kubernetes/apps/network/minecraft-relay/README.md.
 
 resource "oci_core_vcn" "relay" {
   compartment_id = var.compartment_ocid
