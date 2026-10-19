@@ -17,6 +17,10 @@ configMapGenerator:
       - mute-timings.yaml=./alerting/mute-timings.yaml
       - policies.yaml=./alerting/policies.yaml
       - templates.yaml=./alerting/templates.yaml
+  # Template for the grafana-dashboard-minecraft-relay ExternalSecret.
+  - name: grafana-dashboard-minecraft-relay
+    files:
+      - minecraft-relay.json=./dashboards/minecraft-relay.json
 
 generatorOptions:
   disableNameSuffixHash: true
