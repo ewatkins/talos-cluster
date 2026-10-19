@@ -21,7 +21,7 @@
 # don't use PROXY, so their checks are unchanged.
 #
 # The relay-* checks go the way players do: mc.ewatkins.dev, the Oracle relay
-# VM, the playit tunnels, then back into the cluster to Velocity/Geyser.
+# VM, then back in through the home port forwards to Velocity/Geyser.
 apiVersion: v1
 kind: ConfigMap
 metadata:
