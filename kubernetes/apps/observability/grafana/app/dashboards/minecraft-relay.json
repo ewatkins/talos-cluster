@@ -515,37 +515,37 @@
                     "type": "value",
                     "options": {
                       "--": {
-                        "text": "closed normally",
+                        "text": "Closed normally",
                         "color": "green",
                         "index": 0
                       },
                       "CD": {
-                        "text": "client disconnected",
+                        "text": "Client disconnected",
                         "color": "green",
                         "index": 1
                       },
                       "SD": {
-                        "text": "home disconnected",
+                        "text": "Home disconnected",
                         "color": "yellow",
                         "index": 2
                       },
                       "SC": {
-                        "text": "home unreachable",
+                        "text": "Home unreachable",
                         "color": "red",
                         "index": 3
                       },
                       "sC": {
-                        "text": "home connect timeout",
+                        "text": "Home connect timeout",
                         "color": "red",
                         "index": 4
                       },
                       "cD": {
-                        "text": "client timed out",
+                        "text": "Client timed out",
                         "color": "yellow",
                         "index": 5
                       },
                       "sD": {
-                        "text": "home timed out",
+                        "text": "Home timed out",
                         "color": "orange",
                         "index": 6
                       }
@@ -574,7 +574,7 @@
                     "type": "value",
                     "options": {
                       "{{ .ssh_source_cidr | trimSuffix `/32` }}": {
-                        "text": "home",
+                        "text": "Home",
                         "color": "blue",
                         "index": 0
                       }
@@ -791,37 +791,37 @@
                     "type": "value",
                     "options": {
                       "--": {
-                        "text": "closed normally",
+                        "text": "Closed normally",
                         "color": "green",
                         "index": 0
                       },
                       "CD": {
-                        "text": "client disconnected",
+                        "text": "Client disconnected",
                         "color": "green",
                         "index": 1
                       },
                       "SD": {
-                        "text": "home disconnected",
+                        "text": "Home disconnected",
                         "color": "yellow",
                         "index": 2
                       },
                       "SC": {
-                        "text": "home unreachable",
+                        "text": "Home unreachable",
                         "color": "red",
                         "index": 3
                       },
                       "sC": {
-                        "text": "home connect timeout",
+                        "text": "Home connect timeout",
                         "color": "red",
                         "index": 4
                       },
                       "cD": {
-                        "text": "client timed out",
+                        "text": "Client timed out",
                         "color": "yellow",
                         "index": 5
                       },
                       "sD": {
-                        "text": "home timed out",
+                        "text": "Home timed out",
                         "color": "orange",
                         "index": 6
                       }
@@ -850,7 +850,7 @@
                     "type": "value",
                     "options": {
                       "{{ .ssh_source_cidr | trimSuffix `/32` }}": {
-                        "text": "home",
+                        "text": "Home",
                         "color": "blue",
                         "index": 0
                       }
