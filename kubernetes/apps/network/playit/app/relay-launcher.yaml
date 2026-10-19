@@ -88,6 +88,8 @@ data:
           --subnet-id "$SUBNET_ID" --assign-public-ip true \
           --display-name "$NAME" --hostname-label "$NAME" \
           --freeform-tags "$TAGS" \
+          --agent-config file:///config/agent-config.json \
+          --instance-options '{"areLegacyImdsEndpointsDisabled": true}' \
           --ssh-authorized-keys-file /config/ssh.pub \
           --user-data-file /tmp/cloud-init.yaml 2>&1); then
         echo "launched: $(jq -r '.data | "\(.id) \(."lifecycle-state")"' <<<"$out")"
@@ -109,6 +111,21 @@ data:
     done
   ssh.pub: |
     ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJLUii06o9M7IuYRamEe5tB5GlOlB3zJu7ydmz99gHUc ewatkins@ewatkins-pc
+  # Oracle Cloud Agent: keep monitoring, logs, Cloud Guard and Bastion; turn
+  # off Run Command (root commands for anyone with OCI API rights) and the
+  # scanners nothing reads.
+  agent-config.json: |
+    {"isMonitoringDisabled": false, "isManagementDisabled": false, "areAllPluginsDisabled": false,
+     "pluginsConfig": [
+      {"name": "Compute Instance Run Command", "desiredState": "DISABLED"},
+      {"name": "Vulnerability Scanning", "desiredState": "DISABLED"},
+      {"name": "OS Management Hub Agent", "desiredState": "DISABLED"},
+      {"name": "Block Volume Management", "desiredState": "DISABLED"},
+      {"name": "Compute Instance Monitoring", "desiredState": "ENABLED"},
+      {"name": "Custom Logs Monitoring", "desiredState": "ENABLED"},
+      {"name": "Cloud Guard Workload Protection", "desiredState": "ENABLED"},
+      {"name": "Bastion", "desiredState": "ENABLED"}
+     ]}
   cloud-init.yaml: |
     #cloud-config
     # Key-only SSH as ewatkins, like the wings; no default `ubuntu` user, no
@@ -124,6 +141,8 @@ data:
     disable_root: true
     ssh_pwauth: false
     package_update: true
+    package_upgrade: true
+    package_reboot_if_required: true
     packages:
       - haproxy
       - socat
@@ -135,6 +154,9 @@ data:
           # Velocity (haproxy-protocol = true) sees the real player address.
           global
               log /dev/log local0 notice
+              chroot /var/lib/haproxy
+              user haproxy
+              group haproxy
               daemon
               maxconn 2000
 
@@ -148,6 +170,13 @@ data:
 
           frontend minecraft_java
               bind :25565
+              # Per-source limits, so one address cannot tie up Velocity: at
+              # most 20 open connections and 30 new ones per 10 s. Everyone at
+              # home shares the home IP, which stays well under this.
+              stick-table type ip size 100k expire 10m store conn_cur,conn_rate(10s)
+              tcp-request connection track-sc0 src
+              tcp-request connection reject if { sc_conn_cur(0) gt 20 }
+              tcp-request connection reject if { sc_conn_rate(0) gt 30 }
               default_backend velocity
 
           backend velocity
@@ -155,8 +184,10 @@ data:
       - path: /etc/systemd/system/bedrock-relay.service
         content: |
           # Relays Minecraft Bedrock (UDP 19132) to Geyser through the home
-          # port forward. socat forks one child per client; -T reaps a child
-          # after 120 s of silence. No PROXY header: Geyser's Bedrock listener
+          # port forward. socat forks one child per client address; -T reaps
+          # a child after 120 s of silence. A flood of spoofed sources could
+          # fork without end, so children, tasks and memory are capped and the
+          # service is sandboxed. No PROXY header: Geyser's Bedrock listener
           # sees every player as this VM.
           [Unit]
           Description=Minecraft Bedrock UDP relay
@@ -165,17 +196,79 @@ data:
 
           [Service]
           DynamicUser=yes
-          ExecStart=/usr/bin/socat -T 120 UDP4-LISTEN:19132,fork,reuseaddr UDP4:@HOME_WAN_IP@:19132
+          ExecStart=/usr/bin/socat -T 120 UDP4-LISTEN:19132,fork,reuseaddr,max-children=256 UDP4:@HOME_WAN_IP@:19132
           Restart=always
           RestartSec=5
+          TasksMax=300
+          MemoryMax=512M
+          NoNewPrivileges=yes
+          CapabilityBoundingSet=
+          ProtectSystem=strict
+          ProtectHome=yes
+          PrivateTmp=yes
+          PrivateDevices=yes
+          ProtectKernelTunables=yes
+          ProtectKernelModules=yes
+          ProtectControlGroups=yes
+          RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+          RestrictNamespaces=yes
+          LockPersonality=yes
+          SystemCallArchitectures=native
 
           [Install]
           WantedBy=multi-user.target
+      - path: /etc/ssh/sshd_config.d/10-hardening.conf
+        content: |
+          # Key-only logins as ewatkins, nothing forwarded. Read before
+          # 50-cloud-init.conf, and the first value sshd sees wins.
+          AllowUsers ewatkins
+          PermitRootLogin no
+          PasswordAuthentication no
+          KbdInteractiveAuthentication no
+          AuthorizedKeysFile .ssh/authorized_keys
+          MaxAuthTries 3
+          LoginGraceTime 20
+          X11Forwarding no
+          AllowTcpForwarding no
+          AllowAgentForwarding no
+          AllowStreamLocalForwarding no
+          PermitTunnel no
+          ClientAliveInterval 300
+          ClientAliveCountMax 2
+      - path: /etc/sysctl.d/90-hardening.conf
+        content: |
+          # No ICMP redirects, drop source-routed packets, log martians.
+          net.ipv4.conf.all.accept_redirects = 0
+          net.ipv4.conf.default.accept_redirects = 0
+          net.ipv4.conf.all.send_redirects = 0
+          net.ipv4.conf.default.send_redirects = 0
+          net.ipv4.conf.all.accept_source_route = 0
+          net.ipv6.conf.all.accept_redirects = 0
+          net.ipv6.conf.default.accept_redirects = 0
+          net.ipv4.conf.all.log_martians = 1
+          net.ipv4.icmp_echo_ignore_broadcasts = 1
+          kernel.kptr_restrict = 2
+          kernel.dmesg_restrict = 1
+      - path: /etc/apt/apt.conf.d/52unattended-upgrades-local
+        content: |
+          // Reboot for kernel/libc updates at 10:00 UTC (05:00 Central), a quiet hour.
+          Unattended-Upgrade::Automatic-Reboot "true";
+          Unattended-Upgrade::Automatic-Reboot-Time "10:00";
+          Unattended-Upgrade::Remove-Unused-Dependencies "true";
     runcmd:
+      # Nothing here needs RPC, a modem manager or removable-disk handling.
+      - DEBIAN_FRONTEND=noninteractive apt-get -y purge rpcbind modemmanager udisks2
+      - sysctl --system
       # Oracle's Ubuntu images ship iptables rules that reject everything but SSH.
       - iptables -I INPUT -p udp --dport 19132 -j ACCEPT
       - iptables -I INPUT -p tcp --dport 25565 -j ACCEPT
+      # The VCN has no IPv6: allow loopback, replies and ICMPv6, drop the rest.
+      - ip6tables -A INPUT -i lo -j ACCEPT
+      - ip6tables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+      - ip6tables -A INPUT -p ipv6-icmp -j ACCEPT
+      - ip6tables -P INPUT DROP
       - netfilter-persistent save
+      - systemctl reload ssh
       - systemctl daemon-reload
       - systemctl enable --now bedrock-relay.service
       - systemctl restart haproxy.service
