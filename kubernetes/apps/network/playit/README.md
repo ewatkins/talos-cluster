@@ -25,7 +25,7 @@ player ─▶ mc.ewatkins.dev (A 170.9.242.78, DNS-only)
 | Network | `relay-vcn` / `relay-subnet`, OpenTofu in `terraform/oracle-relay` (security list: TCP 25565 and UDP 19132 from anywhere, SSH from home only, ICMP fragmentation-needed) |
 | Java | `haproxy.service`: TCP 25565 to the home WAN IP, `send-proxy-v2` |
 | Bedrock | `bedrock-relay.service`: `socat` UDP 19132 to the home WAN IP |
-| SSH | `ubuntu@170.9.242.78`, only from the home IP (jump through a wing, e.g. `-J ewatkins@192.168.50.100`) |
+| SSH | `ewatkins@170.9.242.78` (key-only, passwordless sudo), from the home IP or the extra sources in `ssh_extra_cidrs` (`oci-api-secret`); from elsewhere jump through a wing, e.g. `-J ewatkins@192.168.50.100` |
 
 us-chicago-1 offers no `VM.Standard.E2.1.Micro`, hence A1.Flex, inside the
 Always Free 4 OCPU / 24 GB allowance. Oracle's network-level DDoS protection
