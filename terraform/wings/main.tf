@@ -27,6 +27,9 @@ locals {
   #                   the Lobby can both listen on 25565 at their own address
   #                   and MAC. The guest routes replies back out the NIC they
   #                   came in on (templates/user-data.yaml.tftpl).
+  # velocity_firewall Sources allowed to open connections to Velocity
+  #                   (address:25565), or null. Only the proxy sets it:
+  #                   the Oracle relay and the cluster nodes (Gatus).
   wings = {
     atlas = {
       enabled           = true
@@ -41,6 +44,7 @@ locals {
       service_addresses = []
       bluemap           = true
       second_nic        = null
+      velocity_firewall = null
     }
     iridium = {
       enabled           = true
@@ -55,6 +59,7 @@ locals {
       service_addresses = []
       bluemap           = false
       second_nic        = null
+      velocity_firewall = null
     }
     homestead = {
       enabled = true
@@ -70,6 +75,7 @@ locals {
       service_addresses = []
       bluemap           = true
       second_nic        = null
+      velocity_firewall = null
     }
     proxy = {
       enabled = true
@@ -88,6 +94,10 @@ locals {
       second_nic = {
         address = "192.168.50.99"
         mac     = "02:00:00:00:50:99"
+      }
+      velocity_firewall = {
+        address = "192.168.50.100"
+        sources = ["170.9.242.78/32", "192.168.40.8/29", "192.168.40.16/32"]
       }
     }
   }
@@ -148,6 +158,7 @@ resource "proxmox_virtual_environment_file" "user_data" {
       ssh_key           = local.ssh_key
       service_addresses = each.value.service_addresses
       second_nic        = each.value.second_nic
+      velocity_firewall = each.value.velocity_firewall
       gateway           = local.gateway
       bluemap           = each.value.bluemap
       wings_version     = local.wings_version

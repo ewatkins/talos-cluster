@@ -189,6 +189,38 @@ write_files:
       [Install]
       WantedBy=multi-user.target
 %{ endif ~}
+%{ if velocity_firewall != null ~}
+
+  # Velocity (${velocity_firewall.address}:25565) takes new connections only
+  # from the sources listed in terraform/wings. Docker-published ports skip
+  # INPUT, so this sits in DOCKER-USER, matched on the pre-DNAT destination.
+  - path: /usr/local/sbin/velocity-fw.sh
+    permissions: "0755"
+    content: |
+      #!/bin/sh
+      set -e
+      iptables -N VELOCITY-IN 2>/dev/null || iptables -F VELOCITY-IN
+%{ for source in velocity_firewall.sources ~}
+      iptables -A VELOCITY-IN -s ${source} -j RETURN
+%{ endfor ~}
+      iptables -A VELOCITY-IN -j DROP
+      iptables -C DOCKER-USER -p tcp -m conntrack --ctstate NEW --ctorigdst ${velocity_firewall.address} --ctorigdstport 25565 -j VELOCITY-IN 2>/dev/null \
+        || iptables -I DOCKER-USER -p tcp -m conntrack --ctstate NEW --ctorigdst ${velocity_firewall.address} --ctorigdstport 25565 -j VELOCITY-IN
+  - path: /etc/systemd/system/velocity-fw.service
+    content: |
+      [Unit]
+      Description=Restrict Velocity (25565) to the relay and the cluster
+      After=docker.service
+      Requires=docker.service
+
+      [Service]
+      Type=oneshot
+      RemainAfterExit=yes
+      ExecStart=/usr/local/sbin/velocity-fw.sh
+
+      [Install]
+      WantedBy=multi-user.target
+%{ endif ~}
 
 runcmd:
   # Pinned and checksummed; a mismatch fails cloud-init visibly.
@@ -215,3 +247,6 @@ runcmd:
   - [systemctl, restart, ssh]
   - [systemctl, daemon-reload]
   - [systemctl, enable, wings]
+%{ if velocity_firewall != null ~}
+  - [systemctl, enable, velocity-fw]
+%{ endif ~}
