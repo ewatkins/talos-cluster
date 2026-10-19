@@ -1,0 +1,150 @@
+{
+  "uid": "minecraft-relay",
+  "title": "Minecraft relay",
+  "tags": [
+    "minecraft",
+    "oci"
+  ],
+  "timezone": "browser",
+  "editable": true,
+  "schemaVersion": 39,
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "refresh": "",
+  "panels": [
+    {
+      "id": 1,
+      "type": "logs",
+      "title": "HAProxy",
+      "datasource": {
+        "type": "oci-logs-datasource",
+        "uid": "oci-logs"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "enableLogDetails": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "oci-logs-datasource",
+            "uid": "oci-logs"
+          },
+          "tenancy": "DEFAULT/",
+          "region": "us-chicago-1",
+          "searchQuery": "search \"{{ .compartment }}\" | where data.tailed_path = '/var/log/haproxy.log' | sort by datetime desc"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "logs",
+      "title": "SSH / auth",
+      "datasource": {
+        "type": "oci-logs-datasource",
+        "uid": "oci-logs"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      },
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "enableLogDetails": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "oci-logs-datasource",
+            "uid": "oci-logs"
+          },
+          "tenancy": "DEFAULT/",
+          "region": "us-chicago-1",
+          "searchQuery": "search \"{{ .compartment }}\" | where data.tailed_path = '/var/log/auth.log' | sort by datetime desc"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "logs",
+      "title": "syslog",
+      "datasource": {
+        "type": "oci-logs-datasource",
+        "uid": "oci-logs"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "enableLogDetails": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "oci-logs-datasource",
+            "uid": "oci-logs"
+          },
+          "tenancy": "DEFAULT/",
+          "region": "us-chicago-1",
+          "searchQuery": "search \"{{ .compartment }}\" | where data.tailed_path = '/var/log/syslog' | sort by datetime desc"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "logs",
+      "title": "kernel",
+      "datasource": {
+        "type": "oci-logs-datasource",
+        "uid": "oci-logs"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 36
+      },
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "enableLogDetails": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "oci-logs-datasource",
+            "uid": "oci-logs"
+          },
+          "tenancy": "DEFAULT/",
+          "region": "us-chicago-1",
+          "searchQuery": "search \"{{ .compartment }}\" | where data.tailed_path = '/var/log/kern.log' | sort by datetime desc"
+        }
+      ]
+    }
+  ]
+}
