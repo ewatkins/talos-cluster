@@ -93,22 +93,12 @@
               }
             ]
           }
-        },
-        {
-          "id": "reduce",
-          "options": {
-            "reducers": [
-              "count"
-            ],
-            "fields": "^Player$",
-            "mode": "reduceFields"
-          }
         }
       ],
       "options": {
         "reduceOptions": {
           "calcs": [
-            "lastNotNull"
+            "count"
           ],
           "fields": "/^Player$/",
           "values": false
@@ -204,22 +194,12 @@
               }
             ]
           }
-        },
-        {
-          "id": "reduce",
-          "options": {
-            "reducers": [
-              "distinctCount"
-            ],
-            "fields": "^Player$",
-            "mode": "reduceFields"
-          }
         }
       ],
       "options": {
         "reduceOptions": {
           "calcs": [
-            "lastNotNull"
+            "distinctCount"
           ],
           "fields": "/^Player$/",
           "values": false
@@ -315,22 +295,12 @@
               }
             ]
           }
-        },
-        {
-          "id": "reduce",
-          "options": {
-            "reducers": [
-              "count"
-            ],
-            "fields": "^Player$",
-            "mode": "reduceFields"
-          }
         }
       ],
       "options": {
         "reduceOptions": {
           "calcs": [
-            "lastNotNull"
+            "count"
           ],
           "fields": "/^Player$/",
           "values": false
