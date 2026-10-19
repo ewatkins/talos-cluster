@@ -23,8 +23,7 @@ spec:
   # Removing this object must never delete the relay's network.
   destroyResourcesOnDeletion: false
   serviceAccountName: oracle-relay-runner
-  runnerPodTemplate:
-    spec:
-      envFrom:
-        - secretRef:
-            name: oracle-relay-secret
+  # The Oracle API key and the home /32, as tofu variables.
+  varsFrom:
+    - kind: Secret
+      name: oracle-relay-secret
