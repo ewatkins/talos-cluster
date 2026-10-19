@@ -12,8 +12,9 @@
 # escapes above \x7f are re-encoded as UTF-8, which would corrupt the packet.
 #
 # The Bedrock check sends a RakNet unconnected ping (0x01, time 0, magic,
-# guid 0) to Geyser on the proxy. The magic has bytes above \x7f, so it is
-# given as !!binary; Geyser answers with an unconnected pong ("MCPE;...").
+# guid 0) to Geyser on the proxy, after a PROXY v2 header (Geyser takes the
+# player address from it, like Velocity). The bytes go above \x7f, so the
+# body is !!binary; Geyser answers with an unconnected pong ("MCPE;...").
 #
 # Velocity has haproxy-protocol = true (the Oracle relay sends a PROXY v2
 # header), so it drops any connection that doesn't start with one; the
@@ -89,7 +90,7 @@ data:
       - name: velocity-bedrock
         group: Minecraft
         url: udp://192.168.50.100:19132
-        body: !!binary AQAAAAAAAAAAAP//AP7+/v79/f39EjRWeAAAAAAAAAAA
+        body: !!binary DQoNCgANClFVSVQKIRIADH8AAAHAqDJkAAFKvAEAAAAAAAAAAAD//wD+/v7+/f39/RI0VngAAAAAAAAAAA==
         interval: 1m
         conditions:
           - "[CONNECTED] == true"
