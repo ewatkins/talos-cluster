@@ -34,26 +34,21 @@ local address the agent can reach from the pod network:
 
 ## DNS
 
-`app/dnsendpoint.yaml` publishes `_minecraft._tcp.mc.ewatkins.dev` as an SRV
-record pointing at the tunnel, through `cloudflare-dns`. It is an SRV record,
-not a CNAME, because playit's free Minecraft Java tunnel resets any handshake
-whose hostname isn't the tunnel's own. With SRV, the client sends the SRV
-target (`practically-unclog.tun.ply.gg.`) as the hostname, which playit
-accepts. `mc.ewatkins.dev:19087` typed directly would be rejected.
+`app/dnsendpoint.yaml` publishes `mc.ewatkins.dev` as a DNS-only A record
+pointing at the Oracle relay VM (below), through `cloudflare-dns`. Players
+join on the default ports: Java 25565, Bedrock 19132. UniFi has a matching
+local record for LAN clients.
 
-Bedrock clients don't read SRV records, so `mc.ewatkins.dev` itself is a
-DNS-only CNAME to the Bedrock tunnel and players type its port. RakNet sends no
-hostname, so playit can't reject it the way it does for Java. The two records
-don't collide: the SRV lives at `_minecraft._tcp.mc`, the CNAME at `mc`.
+Before the relay, Java went through an SRV record
+(`_minecraft._tcp.mc.ewatkins.dev`, so the client sent the tunnel's own
+hostname, which playit's free Java tunnel requires) and Bedrock through a
+CNAME on the tunnel's random port 63404. The server-list ping still sent
+`mc.ewatkins.dev`, so playit reset it and the MOTD was blank. playit's raw TCP
+tunnels (no hostname check) are IPv6-only on the free tier, so the relay VM
+fixes this instead.
 
-If a tunnel is ever recreated, its address and port change: update
-`app/dnsendpoint.yaml` (and tell Bedrock players the new port).
-
-The SRV record gets Java players in, but the server list shows no MOTD: the
-vanilla client's server-list ping sends the address the player typed
-(`mc.ewatkins.dev`), not the SRV target, and playit resets it. Joining sends
-the SRV target, so it works. playit's raw TCP tunnels (no hostname check) are
-IPv6-only on the free tier, so the relay VM below fixes this instead.
+If a tunnel is ever recreated, its address and port change: update both relay
+services in the cloud-init in `app/relay-launcher.yaml` and on the VM.
 
 ## Relay VM (Bedrock 19132, Java 25565)
 
@@ -62,7 +57,8 @@ players use `mc.ewatkins.dev` on the default port 19132, a relay VM on Oracle
 Cloud's Always Free allowance (`bedrock-relay`, a 1 OCPU / 6 GB
 `VM.Standard.A1.Flex` in us-chicago-1, which offers no `E2.1.Micro`) listens on UDP 19132 and forwards to the Bedrock tunnel
 with `socat`. Its network (`relay-vcn`, `relay-subnet`, security list with UDP
-19132 and TCP 25565 open and SSH from home only) was created by hand.
+19132 and TCP 25565 open to all, SSH from home only, and ICMP) was created by
+hand in the console.
 
 The same VM listens on TCP 25565 for Java (`java-relay.service`, a small
 Python proxy in the cloud-init). It rewrites the hostname in each
@@ -83,16 +79,15 @@ Pushover notification (once; the instance is tagged `notified=true`):
 kubectl -n network logs -l job-name --tail=5 --prefix | grep bedrock-relay
 ```
 
-Once the VM is up:
+The VM was launched on 2026-10-19 and renamed `minecraft-relay` in the
+console; it is at `147.224.198.213` (an ephemeral IP). The CronJob is now
+suspended in Git with `NAME=minecraft-relay`, so unsuspending it only rebuilds
+the VM after it is deleted. A rebuilt VM gets a new IP: update
+`app/dnsendpoint.yaml` and the UniFi record.
 
-1. Point `mc.ewatkins.dev` at its public IP (an A record here and in UniFi,
-   replacing the CNAME).
-2. Remove the `_minecraft._tcp.mc` SRV record here and in UniFi. Java clients
-   prefer SRV, so while it exists they skip the relay and the MOTD stays
-   blank.
-3. Move the external Gatus checks to `mc.ewatkins.dev:19132` (Bedrock) and
-   `mc.ewatkins.dev:25565` (Java).
-4. Delete the CronJob.
+The Gatus checks `relay-java` and `relay-bedrock` (in
+`default/calagopus/app/gatus.yaml`) ping `mc.ewatkins.dev` from the cluster,
+so they cover the whole path: DNS, the VM, playit, and back to Velocity.
 
 ## Secrets
 

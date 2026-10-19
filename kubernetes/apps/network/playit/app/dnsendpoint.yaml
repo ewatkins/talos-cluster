@@ -5,19 +5,13 @@ metadata:
   name: playit
 spec:
   endpoints:
-    # Players join mc.ewatkins.dev. playit's free Minecraft Java tunnel resets
-    # any handshake naming a host other than its own, so this has to be an SRV
-    # record (the client then sends the SRV target as the hostname), not a
-    # CNAME. The port is the tunnel's public port on playit.gg.
-    - dnsName: "_minecraft._tcp.mc.ewatkins.dev"
-      recordType: SRV
-      targets: ["0 5 19087 practically-unclog.tun.ply.gg."]
-    # Bedrock players join mc.ewatkins.dev on the Bedrock tunnel's port.
-    # Bedrock doesn't read SRV records, but RakNet carries no hostname either,
-    # so a CNAME to the tunnel works. DNS-only: Cloudflare can't proxy UDP.
+    # Players join mc.ewatkins.dev on the default ports (Java 25565, Bedrock
+    # 19132). It points at the Oracle relay VM (minecraft-relay), which
+    # forwards to the playit tunnels and rewrites the Java handshake hostname.
+    # DNS-only: Cloudflare can't proxy Minecraft or UDP.
     - dnsName: "mc.ewatkins.dev"
-      recordType: CNAME
-      targets: ["practically-detected.tun.ply.gg"]
+      recordType: A
+      targets: ["147.224.198.213"]
       providerSpecific:
         - name: cloudflare/proxied
           value: "false"
