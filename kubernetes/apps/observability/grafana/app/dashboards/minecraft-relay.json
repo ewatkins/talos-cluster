@@ -15,24 +15,19 @@
   "refresh": "",
   "panels": [
     {
-      "id": 1,
-      "type": "logs",
-      "title": "HAProxy",
+      "id": 10,
+      "type": "stat",
+      "title": "Java connections",
+      "description": "Connections through the relay in the selected range (includes Gatus checks).",
       "datasource": {
         "type": "oci-logs-datasource",
         "uid": "oci-logs"
       },
       "gridPos": {
-        "h": 12,
-        "w": 24,
+        "h": 4,
+        "w": 6,
         "x": 0,
         "y": 0
-      },
-      "options": {
-        "showTime": true,
-        "wrapLogMessage": true,
-        "sortOrder": "Descending",
-        "enableLogDetails": true
       },
       "targets": [
         {
@@ -45,27 +40,371 @@
           "region": "us-chicago-1",
           "searchQuery": "search \"{{ .compartment }}/ocid1.loggroup.oc1.us-chicago-1.amaaaaaazjfsi5aa2fqxnvwfcischkgombkdvjsrfvjite53ck3jo4vwqg6a/ocid1.log.oc1.us-chicago-1.amaaaaaazjfsi5aa2oq4c34dzvuazr4hu6iku6ntnj3b4rjtemlyysmskxvq\" | where data.tailed_path = '/var/log/haproxy.log' | sort by datetime desc"
         }
-      ]
+      ],
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "data",
+            "format": "json"
+          }
+        },
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "message",
+            "format": "regexp",
+            "regExp": "/^\\S+ \\S+ haproxy\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] \\S+ \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
+          }
+        },
+        {
+          "id": "reduce",
+          "options": {
+            "reducers": [
+              "count"
+            ],
+            "fields": "^Player$",
+            "mode": "reduceFields"
+          }
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^Player$/",
+          "values": false
+        },
+        "colorMode": "none",
+        "graphMode": "none",
+        "textMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0
+        },
+        "overrides": []
+      }
     },
     {
-      "id": 2,
-      "type": "logs",
-      "title": "SSH / auth",
+      "id": 11,
+      "type": "stat",
+      "title": "Distinct IPs",
+      "description": "Distinct source IPs that connected through the relay.",
       "datasource": {
         "type": "oci-logs-datasource",
         "uid": "oci-logs"
       },
       "gridPos": {
-        "h": 12,
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "oci-logs-datasource",
+            "uid": "oci-logs"
+          },
+          "tenancy": "DEFAULT/",
+          "region": "us-chicago-1",
+          "searchQuery": "search \"{{ .compartment }}/ocid1.loggroup.oc1.us-chicago-1.amaaaaaazjfsi5aa2fqxnvwfcischkgombkdvjsrfvjite53ck3jo4vwqg6a/ocid1.log.oc1.us-chicago-1.amaaaaaazjfsi5aa2oq4c34dzvuazr4hu6iku6ntnj3b4rjtemlyysmskxvq\" | where data.tailed_path = '/var/log/haproxy.log' | sort by datetime desc"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "data",
+            "format": "json"
+          }
+        },
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "message",
+            "format": "regexp",
+            "regExp": "/^\\S+ \\S+ haproxy\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] \\S+ \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
+          }
+        },
+        {
+          "id": "reduce",
+          "options": {
+            "reducers": [
+              "distinctCount"
+            ],
+            "fields": "^Player$",
+            "mode": "reduceFields"
+          }
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^Player$/",
+          "values": false
+        },
+        "colorMode": "none",
+        "graphMode": "none",
+        "textMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 1,
+      "type": "table",
+      "title": "Java connections (HAProxy)",
+      "datasource": {
+        "type": "oci-logs-datasource",
+        "uid": "oci-logs"
+      },
+      "description": "Connect is the time to reach home through the port forward (-1 means it never connected).",
+      "gridPos": {
+        "h": 11,
         "w": 24,
         "x": 0,
-        "y": 12
+        "y": 4
       },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "oci-logs-datasource",
+            "uid": "oci-logs"
+          },
+          "tenancy": "DEFAULT/",
+          "region": "us-chicago-1",
+          "searchQuery": "search \"{{ .compartment }}/ocid1.loggroup.oc1.us-chicago-1.amaaaaaazjfsi5aa2fqxnvwfcischkgombkdvjsrfvjite53ck3jo4vwqg6a/ocid1.log.oc1.us-chicago-1.amaaaaaazjfsi5aa2oq4c34dzvuazr4hu6iku6ntnj3b4rjtemlyysmskxvq\" | where data.tailed_path = '/var/log/haproxy.log' | sort by datetime desc"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "data",
+            "format": "json"
+          }
+        },
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "message",
+            "format": "regexp",
+            "regExp": "/^\\S+ \\S+ haproxy\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] \\S+ \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "targetField": "Connect",
+                "destinationType": "number"
+              },
+              {
+                "targetField": "Duration",
+                "destinationType": "number"
+              },
+              {
+                "targetField": "Bytes",
+                "destinationType": "number"
+              }
+            ]
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "timestamp",
+                "Player",
+                "Connect",
+                "Duration",
+                "Bytes",
+                "Ended"
+              ]
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "timestamp": "Time"
+            },
+            "indexByName": {
+              "timestamp": 0,
+              "Player": 1,
+              "Connect": 2,
+              "Duration": 3,
+              "Bytes": 4,
+              "Ended": 5
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "Time",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
       "options": {
-        "showTime": true,
-        "wrapLogMessage": true,
-        "sortOrder": "Descending",
-        "enableLogDetails": true
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 190
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Connect"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Duration"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Bytes"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "decbytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Ended"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "--": {
+                        "text": "normal",
+                        "color": "green",
+                        "index": 0
+                      },
+                      "CD": {
+                        "text": "player left",
+                        "color": "green",
+                        "index": 1
+                      },
+                      "SD": {
+                        "text": "home closed it",
+                        "color": "yellow",
+                        "index": 2
+                      },
+                      "SC": {
+                        "text": "home unreachable",
+                        "color": "red",
+                        "index": 3
+                      },
+                      "sC": {
+                        "text": "connect timeout",
+                        "color": "red",
+                        "index": 4
+                      },
+                      "cD": {
+                        "text": "player timed out",
+                        "color": "yellow",
+                        "index": 5
+                      },
+                      "sD": {
+                        "text": "home timed out",
+                        "color": "orange",
+                        "index": 6
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "type": "table",
+      "title": "SSH and sudo",
+      "description": "auth.log without the Oracle Cloud Agent's own sudo calls.",
+      "datasource": {
+        "type": "oci-logs-datasource",
+        "uid": "oci-logs"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 15
       },
       "targets": [
         {
@@ -78,27 +417,137 @@
           "region": "us-chicago-1",
           "searchQuery": "search \"{{ .compartment }}/ocid1.loggroup.oc1.us-chicago-1.amaaaaaazjfsi5aa2fqxnvwfcischkgombkdvjsrfvjite53ck3jo4vwqg6a/ocid1.log.oc1.us-chicago-1.amaaaaaazjfsi5aa2oq4c34dzvuazr4hu6iku6ntnj3b4rjtemlyysmskxvq\" | where data.tailed_path = '/var/log/auth.log' | sort by datetime desc"
         }
-      ]
+      ],
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "data",
+            "format": "json"
+          }
+        },
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "message",
+            "format": "regexp",
+            "regExp": "/^\\S+ \\S+ (?<Process>[^\\[:]+)(?:\\[\\d+\\])?: (?<Event>.*)$/"
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "type": "exclude",
+            "match": "any",
+            "filters": [
+              {
+                "fieldName": "message",
+                "config": {
+                  "id": "regex",
+                  "options": {
+                    "value": "snap_daemon|by \\(uid=584788\\)|session (opened|closed) for user root"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "timestamp",
+                "Process",
+                "Event"
+              ]
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "timestamp": "Time"
+            },
+            "indexByName": {
+              "timestamp": 0,
+              "Process": 1,
+              "Event": 2
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "Time",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto",
+              "wrapText": true
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 190
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Process"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 150
+              }
+            ]
+          }
+        ]
+      }
     },
     {
       "id": 3,
-      "type": "logs",
-      "title": "syslog",
+      "type": "table",
+      "title": "System",
+      "description": "syslog without the log-shipping agent's own chatter.",
       "datasource": {
         "type": "oci-logs-datasource",
         "uid": "oci-logs"
       },
       "gridPos": {
-        "h": 12,
+        "h": 10,
         "w": 24,
         "x": 0,
-        "y": 24
-      },
-      "options": {
-        "showTime": true,
-        "wrapLogMessage": true,
-        "sortOrder": "Descending",
-        "enableLogDetails": true
+        "y": 25
       },
       "targets": [
         {
@@ -111,27 +560,137 @@
           "region": "us-chicago-1",
           "searchQuery": "search \"{{ .compartment }}/ocid1.loggroup.oc1.us-chicago-1.amaaaaaazjfsi5aa2fqxnvwfcischkgombkdvjsrfvjite53ck3jo4vwqg6a/ocid1.log.oc1.us-chicago-1.amaaaaaazjfsi5aa2oq4c34dzvuazr4hu6iku6ntnj3b4rjtemlyysmskxvq\" | where data.tailed_path = '/var/log/syslog' | sort by datetime desc"
         }
-      ]
+      ],
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "data",
+            "format": "json"
+          }
+        },
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "message",
+            "format": "regexp",
+            "regExp": "/^\\S+ \\S+ (?<Process>[^\\[:]+)(?:\\[\\d+\\])?: (?<Event>.*)$/"
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "type": "exclude",
+            "match": "any",
+            "filters": [
+              {
+                "fieldName": "message",
+                "config": {
+                  "id": "regex",
+                  "options": {
+                    "value": "unified-monitoring-agent|ruby\\["
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "timestamp",
+                "Process",
+                "Event"
+              ]
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "timestamp": "Time"
+            },
+            "indexByName": {
+              "timestamp": 0,
+              "Process": 1,
+              "Event": 2
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "Time",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto",
+              "wrapText": true
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 190
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Process"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 150
+              }
+            ]
+          }
+        ]
+      }
     },
     {
       "id": 4,
-      "type": "logs",
-      "title": "kernel",
+      "type": "table",
+      "title": "Kernel",
+      "description": "kern.log; usually empty.",
       "datasource": {
         "type": "oci-logs-datasource",
         "uid": "oci-logs"
       },
       "gridPos": {
-        "h": 12,
+        "h": 10,
         "w": 24,
         "x": 0,
-        "y": 36
-      },
-      "options": {
-        "showTime": true,
-        "wrapLogMessage": true,
-        "sortOrder": "Descending",
-        "enableLogDetails": true
+        "y": 35
       },
       "targets": [
         {
@@ -144,7 +703,104 @@
           "region": "us-chicago-1",
           "searchQuery": "search \"{{ .compartment }}/ocid1.loggroup.oc1.us-chicago-1.amaaaaaazjfsi5aa2fqxnvwfcischkgombkdvjsrfvjite53ck3jo4vwqg6a/ocid1.log.oc1.us-chicago-1.amaaaaaazjfsi5aa2oq4c34dzvuazr4hu6iku6ntnj3b4rjtemlyysmskxvq\" | where data.tailed_path = '/var/log/kern.log' | sort by datetime desc"
         }
-      ]
+      ],
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "data",
+            "format": "json"
+          }
+        },
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "message",
+            "format": "regexp",
+            "regExp": "/^\\S+ \\S+ (?<Process>[^\\[:]+)(?:\\[\\d+\\])?: (?<Event>.*)$/"
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "timestamp",
+                "Process",
+                "Event"
+              ]
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "timestamp": "Time"
+            },
+            "indexByName": {
+              "timestamp": 0,
+              "Process": 1,
+              "Event": 2
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "Time",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto",
+              "wrapText": true
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 190
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Process"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 150
+              }
+            ]
+          }
+        ]
+      }
     }
   ]
 }
