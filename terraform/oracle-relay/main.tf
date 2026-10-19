@@ -10,6 +10,13 @@ resource "oci_core_vcn" "relay" {
   display_name   = "relay-vcn"
   cidr_blocks    = ["10.0.0.0/16"]
   dns_label      = "relay"
+
+  # Replacing or destroying any of these takes the relay offline (replacing a
+  # default resource resets the real VCN's rules), so a plan that would do it
+  # fails instead of applying.
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "oci_core_internet_gateway" "relay" {
@@ -17,6 +24,13 @@ resource "oci_core_internet_gateway" "relay" {
   vcn_id         = oci_core_vcn.relay.id
   display_name   = "relay-igw"
   enabled        = true
+
+  # Replacing or destroying any of these takes the relay offline (replacing a
+  # default resource resets the real VCN's rules), so a plan that would do it
+  # fails instead of applying.
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 # Default resources are adopted, not imported: tofu takes them over by ID and
@@ -29,6 +43,13 @@ resource "oci_core_default_route_table" "relay" {
     destination       = "0.0.0.0/0"
     destination_type  = "CIDR_BLOCK"
     network_entity_id = oci_core_internet_gateway.relay.id
+  }
+
+  # Replacing or destroying any of these takes the relay offline (replacing a
+  # default resource resets the real VCN's rules), so a plan that would do it
+  # fails instead of applying.
+  lifecycle {
+    prevent_destroy = true
   }
 }
 
@@ -108,6 +129,13 @@ resource "oci_core_default_security_list" "relay" {
       code = 4
     }
   }
+
+  # Replacing or destroying any of these takes the relay offline (replacing a
+  # default resource resets the real VCN's rules), so a plan that would do it
+  # fails instead of applying.
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "oci_core_subnet" "relay" {
@@ -121,4 +149,11 @@ resource "oci_core_subnet" "relay" {
   dhcp_options_id            = oci_core_vcn.relay.default_dhcp_options_id
   prohibit_public_ip_on_vnic = false
   prohibit_internet_ingress  = false
+
+  # Replacing or destroying any of these takes the relay offline (replacing a
+  # default resource resets the real VCN's rules), so a plan that would do it
+  # fails instead of applying.
+  lifecycle {
+    prevent_destroy = true
+  }
 }
