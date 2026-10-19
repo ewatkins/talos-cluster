@@ -1,0 +1,30 @@
+---
+# The relay VM's network (relay-vcn), defined in terraform/oracle-relay and
+# applied by tofu-controller.
+apiVersion: infra.contrib.fluxcd.io/v1alpha2
+kind: Terraform
+metadata:
+  name: oracle-relay
+  namespace: oracle-relay
+spec:
+  interval: 1h
+  path: ./terraform/oracle-relay
+  sourceRef:
+    kind: GitRepository
+    name: talos-cluster
+    namespace: flux-system
+  # Plan only until the first plan (the adoption) has been checked: approve
+  # it with kubectl patch, then switch this to auto like calagopus-wings.
+  approvePlan: ""
+  branchPlanner:
+    enablePathScope: true
+  # The plan as text, in ConfigMap tfplan-default-oracle-relay.
+  storeReadablePlan: human
+  # Removing this object must never delete the relay's network.
+  destroyResourcesOnDeletion: false
+  serviceAccountName: oracle-relay-runner
+  runnerPodTemplate:
+    spec:
+      envFrom:
+        - secretRef:
+            name: oracle-relay-secret
