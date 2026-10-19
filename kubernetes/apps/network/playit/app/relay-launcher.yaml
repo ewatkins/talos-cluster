@@ -1,13 +1,17 @@
 ---
+# Suspended: the VM (minecraft-relay, 147.224.198.213) is up. Unsuspend this
+# only to rebuild it after deleting the VM; a rebuilt VM gets a new public IP,
+# so update app/dnsendpoint.yaml (and UniFi) afterwards.
+#
 # Free Oracle Cloud VMs are often "out of host capacity", so instead of
-# retrying by hand this CronJob asks for the Bedrock relay VM every 10 minutes
+# retrying by hand this CronJob asks for the relay VM every 10 minutes
 # until Oracle hands one over. The relay listens on UDP 19132 and forwards to
 # the playit Bedrock tunnel, so players can use mc.ewatkins.dev on the default
 # port (playit's free tunnel only offers a random port). It also listens on TCP
 # 25565 for Java and forwards to the Java tunnel, rewriting the handshake
 # hostname, because playit resets server-list pings that name mc.ewatkins.dev.
 #
-# Exactly one VM: every run first lists instances named bedrock-relay that are
+# Exactly one VM: every run first lists instances named $NAME that are
 # not TERMINATED/TERMINATING and does nothing if one exists, whatever its state
 # (PROVISIONING, RUNNING, STOPPED, ...). A launch shows up as PROVISIONING
 # straight away, and concurrencyPolicy Forbid keeps two runs from overlapping.
@@ -263,6 +267,7 @@ metadata:
   namespace: network
 spec:
   schedule: "*/10 * * * *"
+  suspend: true
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 3
@@ -287,7 +292,9 @@ spec:
               env:
                 - { name: HOME, value: /tmp }
                 - { name: OCI_CLI_SUPPRESS_FILE_PERMISSIONS_WARNING, value: "True" }
-                - { name: NAME, value: bedrock-relay }
+                # Matched by display name: renaming the VM in the console
+                # makes the next run launch another one.
+                - { name: NAME, value: minecraft-relay }
                 - { name: SHAPE, value: VM.Standard.A1.Flex }
                 - { name: SHAPE_CONFIG, value: '{"ocpus":1,"memoryInGBs":6}' }
                 - { name: ADS, value: "lXFQ:US-CHICAGO-1-AD-1 lXFQ:US-CHICAGO-1-AD-2 lXFQ:US-CHICAGO-1-AD-3" }
