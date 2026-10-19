@@ -13,11 +13,15 @@ spec:
     kind: GitRepository
     name: talos-cluster
     namespace: flux-system
-  # Merging is the approval: every plan from main is applied. Review it on the
-  # PR first, where the branch planner posts it as a comment. The first plan
-  # (adopting the console-built network) was approved by hand on 2026-10-19
-  # and a re-plan showed no drift.
-  approvePlan: auto
+  # Plan only: approve each plan by hand (kubectl patch approvePlan) until
+  # the restricted key has a clean history here.
+  approvePlan: ""
+  # Fresh state (tfstate-default-oracle-relay-v2): the first state was
+  # corrupted by a refresh that could not see the network, and is kept as
+  # tfstate-default-oracle-relay. imports.tf adopts the network again.
+  backendConfig:
+    secretSuffix: oracle-relay-v2
+    inClusterConfig: true
   branchPlanner:
     enablePathScope: true
   # The plan as text, in ConfigMap tfplan-default-oracle-relay.
