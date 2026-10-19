@@ -43,7 +43,7 @@
           },
           "tenancy": "DEFAULT/",
           "region": "us-chicago-1",
-          "searchQuery": "search \"{{ .compartment }}\" | where data.tailed_path = '/var/log/haproxy.log' | sort by datetime desc"
+          "searchQuery": "search \"{{ .compartment }}/ocid1.loggroup.oc1.us-chicago-1.amaaaaaazjfsi5aa2fqxnvwfcischkgombkdvjsrfvjite53ck3jo4vwqg6a/ocid1.log.oc1.us-chicago-1.amaaaaaazjfsi5aa2oq4c34dzvuazr4hu6iku6ntnj3b4rjtemlyysmskxvq\" | where data.tailed_path = '/var/log/haproxy.log' | sort by datetime desc"
         }
       ]
     },
@@ -76,7 +76,7 @@
           },
           "tenancy": "DEFAULT/",
           "region": "us-chicago-1",
-          "searchQuery": "search \"{{ .compartment }}\" | where data.tailed_path = '/var/log/auth.log' | sort by datetime desc"
+          "searchQuery": "search \"{{ .compartment }}/ocid1.loggroup.oc1.us-chicago-1.amaaaaaazjfsi5aa2fqxnvwfcischkgombkdvjsrfvjite53ck3jo4vwqg6a/ocid1.log.oc1.us-chicago-1.amaaaaaazjfsi5aa2oq4c34dzvuazr4hu6iku6ntnj3b4rjtemlyysmskxvq\" | where data.tailed_path = '/var/log/auth.log' | sort by datetime desc"
         }
       ]
     },
@@ -109,7 +109,7 @@
           },
           "tenancy": "DEFAULT/",
           "region": "us-chicago-1",
-          "searchQuery": "search \"{{ .compartment }}\" | where data.tailed_path = '/var/log/syslog' | sort by datetime desc"
+          "searchQuery": "search \"{{ .compartment }}/ocid1.loggroup.oc1.us-chicago-1.amaaaaaazjfsi5aa2fqxnvwfcischkgombkdvjsrfvjite53ck3jo4vwqg6a/ocid1.log.oc1.us-chicago-1.amaaaaaazjfsi5aa2oq4c34dzvuazr4hu6iku6ntnj3b4rjtemlyysmskxvq\" | where data.tailed_path = '/var/log/syslog' | sort by datetime desc"
         }
       ]
     },
@@ -142,7 +142,7 @@
           },
           "tenancy": "DEFAULT/",
           "region": "us-chicago-1",
-          "searchQuery": "search \"{{ .compartment }}\" | where data.tailed_path = '/var/log/kern.log' | sort by datetime desc"
+          "searchQuery": "search \"{{ .compartment }}/ocid1.loggroup.oc1.us-chicago-1.amaaaaaazjfsi5aa2fqxnvwfcischkgombkdvjsrfvjite53ck3jo4vwqg6a/ocid1.log.oc1.us-chicago-1.amaaaaaazjfsi5aa2oq4c34dzvuazr4hu6iku6ntnj3b4rjtemlyysmskxvq\" | where data.tailed_path = '/var/log/kern.log' | sort by datetime desc"
         }
       ]
     }
