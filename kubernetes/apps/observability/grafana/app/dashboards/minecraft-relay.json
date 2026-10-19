@@ -1194,16 +1194,42 @@
                 "id": "mappings",
                 "value": [
                   {
+                    "type": "range",
+                    "options": {
+                      "from": -1000000000000000.0,
+                      "to": -0.5,
+                      "result": {
+                        "text": "Ongoing",
+                        "color": "green",
+                        "index": 0
+                      }
+                    }
+                  },
+                  {
                     "type": "special",
                     "options": {
-                      "match": "null",
+                      "match": "null+nan",
                       "result": {
-                        "text": "\u2013",
-                        "index": 0
+                        "text": "Ongoing",
+                        "color": "green",
+                        "index": 1
                       }
                     }
                   }
                 ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "text"
+                }
               }
             ]
           },
