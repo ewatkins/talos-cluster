@@ -83,10 +83,10 @@
       "id": 10,
       "type": "stat",
       "title": "Play Sessions",
-      "description": "Connections of 50 KB or more in the selected range.",
+      "description": "Velocity logins in the selected range (Java and Bedrock).",
       "datasource": {
-        "type": "oci-logs-datasource",
-        "uid": "oci-logs"
+        "type": "loki",
+        "uid": "loki"
       },
       "gridPos": {
         "h": 4,
@@ -98,74 +98,20 @@
         {
           "refId": "A",
           "datasource": {
-            "type": "oci-logs-datasource",
-            "uid": "oci-logs"
+            "type": "loki",
+            "uid": "loki"
           },
-          "tenancy": "DEFAULT/",
-          "region": "us-chicago-1",
-          "searchQuery": "search \"{{ .compartment }}/ocid1.loggroup.oc1.us-chicago-1.amaaaaaazjfsi5aa2fqxnvwfcischkgombkdvjsrfvjite53ck3jo4vwqg6a/ocid1.log.oc1.us-chicago-1.amaaaaaazjfsi5aa2oq4c34dzvuazr4hu6iku6ntnj3b4rjtemlyysmskxvq\" | where data.tailed_path = '/var/log/haproxy.log' | sort by datetime desc"
-        }
-      ],
-      "transformations": [
-        {
-          "id": "extractFields",
-          "options": {
-            "source": "data",
-            "format": "json"
-          }
-        },
-        {
-          "id": "extractFields",
-          "options": {
-            "source": "message",
-            "format": "regexp",
-            "regExp": "/^\\S+ \\S+ (?:haproxy|bedrock-relay)\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] minecraft_(?<Edition>java|bedrock) \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
-          }
-        },
-        {
-          "id": "convertFieldType",
-          "options": {
-            "conversions": [
-              {
-                "targetField": "Connect",
-                "destinationType": "number"
-              },
-              {
-                "targetField": "Duration",
-                "destinationType": "number"
-              },
-              {
-                "targetField": "Bytes",
-                "destinationType": "number"
-              }
-            ]
-          }
-        },
-        {
-          "id": "filterByValue",
-          "options": {
-            "type": "include",
-            "match": "all",
-            "filters": [
-              {
-                "fieldName": "Bytes",
-                "config": {
-                  "id": "greaterOrEqual",
-                  "options": {
-                    "value": 50000
-                  }
-                }
-              }
-            ]
-          }
+          "queryType": "instant",
+          "editorMode": "code",
+          "expr": "sum(count_over_time({job=\"minecraft\", host=\"wing-proxy\"} |= \"[connected player]\" |= \") has connected\" [$__range]))"
         }
       ],
       "options": {
         "reduceOptions": {
           "calcs": [
-            "count"
+            "lastNotNull"
           ],
-          "fields": "/^Player$/",
+          "fields": "",
           "values": false
         },
         "colorMode": "none",
@@ -185,10 +131,10 @@
       "id": 11,
       "type": "stat",
       "title": "Distinct Players",
-      "description": "Distinct source IPs with a play session (everyone at home counts as one).",
+      "description": "Distinct player names that logged in during the selected range.",
       "datasource": {
-        "type": "oci-logs-datasource",
-        "uid": "oci-logs"
+        "type": "loki",
+        "uid": "loki"
       },
       "gridPos": {
         "h": 4,
@@ -200,74 +146,20 @@
         {
           "refId": "A",
           "datasource": {
-            "type": "oci-logs-datasource",
-            "uid": "oci-logs"
+            "type": "loki",
+            "uid": "loki"
           },
-          "tenancy": "DEFAULT/",
-          "region": "us-chicago-1",
-          "searchQuery": "search \"{{ .compartment }}/ocid1.loggroup.oc1.us-chicago-1.amaaaaaazjfsi5aa2fqxnvwfcischkgombkdvjsrfvjite53ck3jo4vwqg6a/ocid1.log.oc1.us-chicago-1.amaaaaaazjfsi5aa2oq4c34dzvuazr4hu6iku6ntnj3b4rjtemlyysmskxvq\" | where data.tailed_path = '/var/log/haproxy.log' | sort by datetime desc"
-        }
-      ],
-      "transformations": [
-        {
-          "id": "extractFields",
-          "options": {
-            "source": "data",
-            "format": "json"
-          }
-        },
-        {
-          "id": "extractFields",
-          "options": {
-            "source": "message",
-            "format": "regexp",
-            "regExp": "/^\\S+ \\S+ (?:haproxy|bedrock-relay)\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] minecraft_(?<Edition>java|bedrock) \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
-          }
-        },
-        {
-          "id": "convertFieldType",
-          "options": {
-            "conversions": [
-              {
-                "targetField": "Connect",
-                "destinationType": "number"
-              },
-              {
-                "targetField": "Duration",
-                "destinationType": "number"
-              },
-              {
-                "targetField": "Bytes",
-                "destinationType": "number"
-              }
-            ]
-          }
-        },
-        {
-          "id": "filterByValue",
-          "options": {
-            "type": "include",
-            "match": "all",
-            "filters": [
-              {
-                "fieldName": "Bytes",
-                "config": {
-                  "id": "greaterOrEqual",
-                  "options": {
-                    "value": 50000
-                  }
-                }
-              }
-            ]
-          }
+          "queryType": "instant",
+          "editorMode": "code",
+          "expr": "count(sum by (player) (count_over_time({job=\"minecraft\", host=\"wing-proxy\"} |= \"[connected player]\" |= \") has connected\" | regexp \"\\\\[connected player\\\\] (?P<player>\\\\S+) \" [$__range])))"
         }
       ],
       "options": {
         "reduceOptions": {
           "calcs": [
-            "distinctCount"
+            "lastNotNull"
           ],
-          "fields": "/^Player$/",
+          "fields": "",
           "values": false
         },
         "colorMode": "none",
@@ -1009,11 +901,11 @@
       "id": 1,
       "type": "table",
       "title": "Play Sessions",
+      "description": "Sessions from Velocity on wing-proxy (Java and Bedrock): one row per login, paired with its logout. Active means the player is still on. IPs are the real player addresses (PROXY protocol); Home is everyone at home.",
       "datasource": {
-        "type": "oci-logs-datasource",
-        "uid": "oci-logs"
+        "type": "loki",
+        "uid": "loki"
       },
-      "description": "Connections that sent 50 KB or more: someone actually joined and loaded the world. Java and Bedrock; Bedrock sessions are logged after 2 minutes idle. Connect (Java only) is the time to reach home through the port forward.",
       "gridPos": {
         "h": 11,
         "w": 24,
@@ -1024,28 +916,106 @@
         {
           "refId": "A",
           "datasource": {
-            "type": "oci-logs-datasource",
-            "uid": "oci-logs"
+            "type": "loki",
+            "uid": "loki"
           },
-          "tenancy": "DEFAULT/",
-          "region": "us-chicago-1",
-          "searchQuery": "search \"{{ .compartment }}/ocid1.loggroup.oc1.us-chicago-1.amaaaaaazjfsi5aa2fqxnvwfcischkgombkdvjsrfvjite53ck3jo4vwqg6a/ocid1.log.oc1.us-chicago-1.amaaaaaazjfsi5aa2oq4c34dzvuazr4hu6iku6ntnj3b4rjtemlyysmskxvq\" | where data.tailed_path = '/var/log/haproxy.log' | sort by datetime desc"
+          "queryType": "range",
+          "editorMode": "code",
+          "expr": "{job=\"minecraft\", host=\"wing-proxy\"} |= \"[connected player]\" |= \") has connected\""
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "queryType": "range",
+          "editorMode": "code",
+          "expr": "{job=\"minecraft\", host=\"wing-proxy\"} |= \"[connected player]\" |~ \"\\\\) has disconnected\""
         }
       ],
       "transformations": [
         {
           "id": "extractFields",
           "options": {
-            "source": "data",
-            "format": "json"
+            "source": "Line",
+            "format": "regexp",
+            "regExp": "/\\[connected player\\] (?<Player>(?<Dot>\\.)?\\S+) \\(\\/(?<Addr>(?<IP>[\\d.]+):\\d+)\\) has connected$/"
+          },
+          "filter": {
+            "id": "byRefId",
+            "options": "A"
           }
         },
         {
           "id": "extractFields",
           "options": {
-            "source": "message",
+            "source": "Line",
             "format": "regexp",
-            "regExp": "/^\\S+ \\S+ (?:haproxy|bedrock-relay)\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] minecraft_(?<Edition>java|bedrock) \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
+            "regExp": "/\\[connected player\\] \\S+ \\(\\/(?<Addr>[\\d.]+:\\d+)\\) has disconnected(?::\\s*(?<Reason>.*))?$/"
+          },
+          "filter": {
+            "id": "byRefId",
+            "options": "B"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Line": true,
+              "labels": true,
+              "tsNs": true,
+              "id": true
+            },
+            "renameByName": {
+              "Time": "Login"
+            }
+          },
+          "filter": {
+            "id": "byRefId",
+            "options": "A"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Line": true,
+              "labels": true,
+              "tsNs": true,
+              "id": true
+            },
+            "renameByName": {
+              "Time": "Logout"
+            }
+          },
+          "filter": {
+            "id": "byRefId",
+            "options": "B"
+          }
+        },
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "Addr",
+            "mode": "outerTabular"
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "type": "exclude",
+            "match": "any",
+            "filters": [
+              {
+                "fieldName": "Login",
+                "config": {
+                  "id": "isNull",
+                  "options": {}
+                }
+              }
+            ]
           }
         },
         {
@@ -1053,34 +1023,50 @@
           "options": {
             "conversions": [
               {
-                "targetField": "Connect",
+                "targetField": "Login",
                 "destinationType": "number"
               },
               {
-                "targetField": "Duration",
-                "destinationType": "number"
-              },
-              {
-                "targetField": "Bytes",
+                "targetField": "Logout",
                 "destinationType": "number"
               }
             ]
           }
         },
         {
-          "id": "filterByValue",
+          "id": "calculateField",
           "options": {
-            "type": "include",
-            "match": "all",
-            "filters": [
-              {
-                "fieldName": "Bytes",
-                "config": {
-                  "id": "greaterOrEqual",
-                  "options": {
-                    "value": 50000
-                  }
+            "mode": "binary",
+            "alias": "Duration",
+            "binary": {
+              "left": {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Logout"
                 }
+              },
+              "operator": "-",
+              "right": {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Login"
+                }
+              }
+            },
+            "replaceFields": false
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "targetField": "Login",
+                "destinationType": "time"
+              },
+              {
+                "targetField": "Logout",
+                "destinationType": "time"
               }
             ]
           }
@@ -1090,13 +1076,13 @@
           "options": {
             "include": {
               "names": [
-                "timestamp",
-                "Player",
-                "Edition",
-                "Connect",
+                "Login",
+                "Logout",
                 "Duration",
-                "Bytes",
-                "Ended"
+                "Player",
+                "IP",
+                "Dot",
+                "Reason"
               ]
             }
           }
@@ -1104,17 +1090,17 @@
         {
           "id": "organize",
           "options": {
-            "renameByName": {
-              "timestamp": "Time"
-            },
             "indexByName": {
-              "timestamp": 0,
-              "Player": 1,
-              "Edition": 2,
-              "Connect": 3,
-              "Duration": 4,
-              "Bytes": 5,
-              "Ended": 6
+              "Login": 0,
+              "Logout": 1,
+              "Duration": 2,
+              "Player": 3,
+              "IP": 4,
+              "Dot": 5,
+              "Reason": 6
+            },
+            "renameByName": {
+              "Dot": "Edition"
             }
           }
         },
@@ -1123,7 +1109,7 @@
           "options": {
             "sort": [
               {
-                "field": "Time",
+                "field": "Login",
                 "desc": true
               }
             ]
@@ -1147,7 +1133,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Time"
+              "options": "Login"
             },
             "properties": [
               {
@@ -1159,85 +1145,24 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Connect"
+              "options": "Logout"
             },
             "properties": [
               {
-                "id": "unit",
-                "value": "ms"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Duration"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "ms"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Bytes"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "decbytes"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Ended"
-            },
-            "properties": [
+                "id": "custom.width",
+                "value": 190
+              },
               {
                 "id": "mappings",
                 "value": [
                   {
-                    "type": "value",
+                    "type": "special",
                     "options": {
-                      "--": {
-                        "text": "Closed normally",
+                      "match": "null",
+                      "result": {
+                        "text": "Active",
                         "color": "green",
                         "index": 0
-                      },
-                      "CD": {
-                        "text": "Client disconnected",
-                        "color": "green",
-                        "index": 1
-                      },
-                      "SD": {
-                        "text": "Home disconnected",
-                        "color": "yellow",
-                        "index": 2
-                      },
-                      "SC": {
-                        "text": "Home unreachable",
-                        "color": "red",
-                        "index": 3
-                      },
-                      "sC": {
-                        "text": "Home connect timeout",
-                        "color": "red",
-                        "index": 4
-                      },
-                      "cD": {
-                        "text": "Client timed out",
-                        "color": "yellow",
-                        "index": 5
-                      },
-                      "sD": {
-                        "text": "Home timed out",
-                        "color": "orange",
-                        "index": 6
                       }
                     }
                   }
@@ -1254,7 +1179,38 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Player"
+              "options": "Duration"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "null",
+                      "result": {
+                        "text": "\u2013",
+                        "index": 0
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "IP"
             },
             "properties": [
               {
@@ -1292,12 +1248,18 @@
                   {
                     "type": "value",
                     "options": {
-                      "java": {
-                        "text": "Java",
-                        "index": 0
-                      },
-                      "bedrock": {
+                      ".": {
                         "text": "Bedrock",
+                        "index": 0
+                      }
+                    }
+                  },
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "null+nan",
+                      "result": {
+                        "text": "Java",
                         "index": 1
                       }
                     }
