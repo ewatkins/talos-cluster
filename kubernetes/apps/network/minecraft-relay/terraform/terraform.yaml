@@ -17,9 +17,8 @@ spec:
   # PR first, where the branch planner posts it as a comment. Every resource
   # has prevent_destroy, so a plan that would replace or destroy one fails.
   approvePlan: auto
-  # Fresh state (tfstate-default-oracle-relay-v2): the first state was
-  # corrupted by a refresh that could not see the network, and is kept as
-  # tfstate-default-oracle-relay. imports.tf adopts the network again.
+  # State lives in tfstate-default-oracle-relay-v2 (the first state was
+  # corrupted by a refresh that could not see the network, and is deleted).
   backendConfig:
     secretSuffix: oracle-relay-v2
     inClusterConfig: true
