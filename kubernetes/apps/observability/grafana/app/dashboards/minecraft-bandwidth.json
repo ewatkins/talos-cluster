@@ -1,0 +1,412 @@
+{
+  "uid": "minecraft-bandwidth",
+  "title": "Bandwidth",
+  "tags": [
+    "minecraft",
+    "oci",
+    "bandwidth"
+  ],
+  "timezone": "browser",
+  "editable": true,
+  "schemaVersion": 39,
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "refresh": "",
+  "panels": [
+    {
+      "id": 41,
+      "type": "stat",
+      "title": "Data Out",
+      "description": "Bytes the relay VM sent in the selected range (Oracle's VNIC metrics). Outbound transfer is what Oracle bills, after the first 10 TB a month.",
+      "datasource": {
+        "type": "oci-metrics-datasource",
+        "uid": "oci-metrics"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "oci-metrics-datasource",
+            "uid": "oci-metrics"
+          },
+          "tenancy": "DEFAULT/",
+          "region": "us-chicago-1",
+          "compartment": "{{ .compartment }}",
+          "namespace": "oci_vcn",
+          "rawQuery": false,
+          "queryTextRaw": "VnicToNetworkBytes[5m].sum()",
+          "interval": "[5m]",
+          "statistic": "sum",
+          "legendFormat": "Out (to players)"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "none",
+        "graphMode": "none",
+        "textMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "decbytes",
+          "decimals": 1,
+          "noValue": "0"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 42,
+      "type": "stat",
+      "title": "Data In",
+      "description": "Bytes the relay VM received in the selected range (Oracle's VNIC metrics).",
+      "datasource": {
+        "type": "oci-metrics-datasource",
+        "uid": "oci-metrics"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "oci-metrics-datasource",
+            "uid": "oci-metrics"
+          },
+          "tenancy": "DEFAULT/",
+          "region": "us-chicago-1",
+          "compartment": "{{ .compartment }}",
+          "namespace": "oci_vcn",
+          "rawQuery": false,
+          "queryTextRaw": "VnicFromNetworkBytes[5m].sum()",
+          "interval": "[5m]",
+          "statistic": "sum",
+          "legendFormat": "In (from players)"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "none",
+        "graphMode": "none",
+        "textMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "decbytes",
+          "decimals": 1,
+          "noValue": "0"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 43,
+      "type": "timeseries",
+      "title": "Relay Bandwidth",
+      "description": "Bytes per 5 minutes through the relay VM's network interface, from Oracle's VNIC metrics. Includes both legs (players and home).",
+      "datasource": {
+        "type": "oci-metrics-datasource",
+        "uid": "oci-metrics"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "oci-metrics-datasource",
+            "uid": "oci-metrics"
+          },
+          "tenancy": "DEFAULT/",
+          "region": "us-chicago-1",
+          "compartment": "{{ .compartment }}",
+          "namespace": "oci_vcn",
+          "rawQuery": false,
+          "queryTextRaw": "VnicToNetworkBytes[5m].sum()",
+          "interval": "[5m]",
+          "statistic": "sum",
+          "legendFormat": "Out (to players)"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "oci-metrics-datasource",
+            "uid": "oci-metrics"
+          },
+          "tenancy": "DEFAULT/",
+          "region": "us-chicago-1",
+          "compartment": "{{ .compartment }}",
+          "namespace": "oci_vcn",
+          "rawQuery": false,
+          "queryTextRaw": "VnicFromNetworkBytes[5m].sum()",
+          "interval": "[5m]",
+          "statistic": "sum",
+          "legendFormat": "In (from players)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "decbytes",
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60,
+            "barAlignment": 0,
+            "lineWidth": 1,
+            "stacking": {
+              "mode": "none"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": [
+            "sum"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 44,
+      "type": "table",
+      "title": "Bandwidth by Player",
+      "datasource": {
+        "type": "oci-logs-datasource",
+        "uid": "oci-logs"
+      },
+      "description": "Bytes sent to each source IP through the relay, from the relay's connection log (logged when a connection ends). Pings included; Home is everyone at home plus Gatus.",
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "oci-logs-datasource",
+            "uid": "oci-logs"
+          },
+          "tenancy": "DEFAULT/",
+          "region": "us-chicago-1",
+          "searchQuery": "search \"{{ .compartment }}/ocid1.loggroup.oc1.us-chicago-1.amaaaaaazjfsi5aa2fqxnvwfcischkgombkdvjsrfvjite53ck3jo4vwqg6a/ocid1.log.oc1.us-chicago-1.amaaaaaazjfsi5aa2oq4c34dzvuazr4hu6iku6ntnj3b4rjtemlyysmskxvq\" | where data.tailed_path = '/var/log/haproxy.log' | sort by datetime desc"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "data",
+            "format": "json"
+          }
+        },
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "message",
+            "format": "regexp",
+            "regExp": "/^\\S+ \\S+ (?:haproxy|bedrock-relay)\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] minecraft_(?<Edition>java|bedrock) \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "targetField": "Connect",
+                "destinationType": "number"
+              },
+              {
+                "targetField": "Duration",
+                "destinationType": "number"
+              },
+              {
+                "targetField": "Bytes",
+                "destinationType": "number"
+              }
+            ]
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Player": {
+                "operation": "groupby",
+                "aggregations": []
+              },
+              "Edition": {
+                "operation": "groupby",
+                "aggregations": []
+              },
+              "Bytes": {
+                "operation": "aggregate",
+                "aggregations": [
+                  "sum",
+                  "count"
+                ]
+              },
+              "Duration": {
+                "operation": "aggregate",
+                "aggregations": [
+                  "sum"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "Bytes (sum)": "Data to Player",
+              "Bytes (count)": "Connections",
+              "Duration (sum)": "Time Connected"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "Data to Player",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Player"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "{{ .ssh_source_cidr | trimSuffix `/32` }}": {
+                        "text": "Home",
+                        "color": "blue",
+                        "index": 0
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Edition"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "java": {
+                        "text": "Java",
+                        "index": 0
+                      },
+                      "bedrock": {
+                        "text": "Bedrock",
+                        "index": 1
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Data to Player"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "decbytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time Connected"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
