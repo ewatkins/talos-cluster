@@ -110,7 +110,8 @@
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "decimals": 0
+          "decimals": 0,
+          "noValue": "0"
         },
         "overrides": []
       }
@@ -211,7 +212,8 @@
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "decimals": 0
+          "decimals": 0,
+          "noValue": "0"
         },
         "overrides": []
       }
@@ -312,7 +314,8 @@
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "decimals": 0
+          "decimals": 0,
+          "noValue": "0"
         },
         "overrides": []
       }
@@ -512,14 +515,76 @@
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^City( .*)?$"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "City"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^Region( .*)?$"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Region"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^Country( .*)?$"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Country"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^Latitude( .*)?$"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Latitude"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^Longitude( .*)?$"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Longitude"
+              }
+            ]
+          }
+        ]
       },
       "options": {
         "view": {
-          "id": "zero",
-          "lat": 20,
+          "id": "coords",
+          "lat": 25,
           "lon": 0,
-          "zoom": 1
+          "zoom": 1.4,
+          "allLayers": true
         },
         "controls": {
           "showZoom": true,
@@ -760,14 +825,76 @@
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^City( .*)?$"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "City"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^Region( .*)?$"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Region"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^Country( .*)?$"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Country"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^Latitude( .*)?$"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Latitude"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^Longitude( .*)?$"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Longitude"
+              }
+            ]
+          }
+        ]
       },
       "options": {
         "view": {
-          "id": "zero",
-          "lat": 20,
+          "id": "coords",
+          "lat": 25,
           "lon": 0,
-          "zoom": 1
+          "zoom": 1.4,
+          "allLayers": true
         },
         "controls": {
           "showZoom": true,
