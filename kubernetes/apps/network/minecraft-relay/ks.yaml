@@ -2,7 +2,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app playit
+  name: &app minecraft-relay
   namespace: flux-system
 spec:
   targetNamespace: network
@@ -11,7 +11,7 @@ spec:
       app.kubernetes.io/name: *app
   dependsOn:
     - name: cloudflare-dns
-  path: ./kubernetes/apps/network/playit/app
+  path: ./kubernetes/apps/network/minecraft-relay/app
   prune: true
   sourceRef:
     kind: GitRepository
@@ -34,7 +34,7 @@ spec:
   dependsOn:
     - name: tofu-controller
     - name: external-secrets-stores
-  path: ./kubernetes/apps/network/playit/terraform
+  path: ./kubernetes/apps/network/minecraft-relay/terraform
   prune: true
   sourceRef:
     kind: GitRepository
