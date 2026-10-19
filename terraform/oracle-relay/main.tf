@@ -56,6 +56,22 @@ resource "oci_core_default_security_list" "relay" {
     }
   }
 
+  # Extra SSH sources (work, ...), managed in Bitwarden without a Git change.
+  dynamic "ingress_security_rules" {
+    for_each = toset(compact([for c in split(",", var.ssh_extra_cidrs) : trimspace(c)]))
+    content {
+      description = "SSH"
+      source      = ingress_security_rules.value
+      source_type = "CIDR_BLOCK"
+      protocol    = "6"
+      stateless   = false
+      tcp_options {
+        min = 22
+        max = 22
+      }
+    }
+  }
+
   ingress_security_rules {
     description = "Minecraft Bedrock relay"
     source      = "0.0.0.0/0"
