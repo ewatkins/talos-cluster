@@ -21,6 +21,7 @@ configMapGenerator:
   - name: grafana-dashboard-minecraft-relay
     files:
       - minecraft-relay.json=./dashboards/minecraft-relay.json
+      - minecraft-security.json=./dashboards/minecraft-security.json
 
 generatorOptions:
   disableNameSuffixHash: true
