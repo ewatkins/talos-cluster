@@ -6,7 +6,7 @@
 # Free Oracle Cloud VMs are often "out of host capacity", so instead of
 # retrying by hand this CronJob asks for the relay VM every 10 minutes
 # until Oracle hands one over. Players join mc.ewatkins.dev, which points at
-# the VM: HAProxy takes TCP 25565 (Java) and socat UDP 19132 (Bedrock), and
+# the VM: HAProxy takes TCP 25565 (Java) and bedrock-relay.py UDP 19132 (Bedrock), and
 # both forward to the home WAN IP, where the modem and UniFi port forwards
 # accept only this VM's reserved IP and send it on to Velocity/Geyser on
 # wing-proxy. HAProxy adds a PROXY v2 header so Velocity (haproxy-protocol =
@@ -145,7 +145,6 @@ data:
     package_reboot_if_required: true
     packages:
       - haproxy
-      - socat
     write_files:
       - path: /etc/haproxy/haproxy.cfg
         content: |
@@ -181,14 +180,102 @@ data:
 
           backend velocity
               server home @HOME_WAN_IP@:25565 send-proxy-v2
+      - path: /usr/local/bin/bedrock-relay.py
+        permissions: "0755"
+        content: |
+          #!/usr/bin/env python3
+          """Relays Minecraft Bedrock (UDP 19132) to Geyser through the home port forward.
+
+          Each client address gets its own upstream socket. The first datagram sent
+          upstream for a client starts with a PROXY v2 header naming that client;
+          Geyser (advanced.bedrock.use-haproxy-protocol) takes the player address from
+          it and expects no header on later packets from the same upstream socket.
+          """
+          import os
+          import selectors
+          import socket
+          import struct
+          import time
+
+          LISTEN = ("0.0.0.0", int(os.environ.get("LISTEN_PORT", "19132")))
+          UPSTREAM = (os.environ["UPSTREAM_HOST"], int(os.environ.get("UPSTREAM_PORT", "19132")))
+          IDLE = 120          # seconds without traffic before a client is dropped
+          MAX_CLIENTS = 256
+
+          SIG = b"\r\n\r\n\x00\r\nQUIT\n"
+
+
+          def proxy_header(client):
+              # Version 2, PROXY command; IPv4 over UDP (0x12).
+              body = (socket.inet_aton(client[0]) + socket.inet_aton("0.0.0.0")
+                      + struct.pack(">HH", client[1], LISTEN[1]))
+              return SIG + b"\x21\x12" + struct.pack(">H", len(body)) + body
+
+
+          def main():
+              sel = selectors.DefaultSelector()
+              listener = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+              listener.bind(LISTEN)
+              listener.setblocking(False)
+              sel.register(listener, selectors.EVENT_READ, None)
+
+              clients = {}  # client address -> [upstream socket, last seen]
+              print(f"relaying udp {LISTEN[1]} to {UPSTREAM[0]}:{UPSTREAM[1]} with PROXY v2", flush=True)
+              last_sweep = time.monotonic()
+              while True:
+                  for key, _ in sel.select(timeout=5):
+                      now = time.monotonic()
+                      if key.data is None:
+                          try:
+                              data, client = listener.recvfrom(65535)
+                          except BlockingIOError:
+                              continue
+                          entry = clients.get(client)
+                          if entry is None:
+                              if len(clients) >= MAX_CLIENTS:
+                                  continue
+                              up = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                              up.setblocking(False)
+                              up.connect(UPSTREAM)
+                              sel.register(up, selectors.EVENT_READ, client)
+                              entry = clients[client] = [up, now]
+                              data = proxy_header(client) + data
+                          entry[1] = now
+                          try:
+                              entry[0].send(data)
+                          except OSError:
+                              pass
+                      else:
+                          client = key.data
+                          entry = clients.get(client)
+                          if entry is None:
+                              continue
+                          try:
+                              data = entry[0].recv(65535)
+                          except OSError:
+                              continue
+                          entry[1] = now
+                          try:
+                              listener.sendto(data, client)
+                          except OSError:
+                              pass
+                  now = time.monotonic()
+                  if now - last_sweep >= 5:
+                      last_sweep = now
+                      for client, (up, seen) in list(clients.items()):
+                          if now - seen > IDLE:
+                              sel.unregister(up)
+                              up.close()
+                              del clients[client]
+
+
+          if __name__ == "__main__":
+              main()
       - path: /etc/systemd/system/bedrock-relay.service
         content: |
-          # Relays Minecraft Bedrock (UDP 19132) to Geyser through the home
-          # port forward. socat forks one child per client address; -T reaps
-          # a child after 120 s of silence. A flood of spoofed sources could
-          # fork without end, so children, tasks and memory are capped and the
-          # service is sandboxed. No PROXY header: Geyser's Bedrock listener
-          # sees every player as this VM.
+          # Relays Minecraft Bedrock (UDP 19132) to Geyser through the home port
+          # forward, adding a PROXY v2 header to each client's first packet so Geyser
+          # sees the real player address.
           [Unit]
           Description=Minecraft Bedrock UDP relay
           After=network-online.target
@@ -196,11 +283,12 @@ data:
 
           [Service]
           DynamicUser=yes
-          ExecStart=/usr/bin/socat -T 120 UDP4-LISTEN:19132,fork,reuseaddr,max-children=256 UDP4:@HOME_WAN_IP@:19132
+          Environment=UPSTREAM_HOST=@HOME_WAN_IP@
+          ExecStart=/usr/bin/python3 -I /usr/local/bin/bedrock-relay.py
           Restart=always
           RestartSec=5
-          TasksMax=300
-          MemoryMax=512M
+          TasksMax=16
+          MemoryMax=256M
           NoNewPrivileges=yes
           CapabilityBoundingSet=
           ProtectSystem=strict

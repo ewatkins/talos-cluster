@@ -11,7 +11,7 @@ Kustomization would prune and recreate the DNS record, so it was left alone.
 
 ```
 player ─▶ mc.ewatkins.dev (A 170.9.242.78, DNS-only)
-       ─▶ minecraft-relay: HAProxy tcp/25565 (PROXY v2), socat udp/19132
+       ─▶ minecraft-relay: HAProxy tcp/25565, bedrock-relay.py udp/19132 (both PROXY v2)
        ─▶ home WAN IP ─▶ ISP modem (192.168.0.1) ─▶ UniFi (WAN 192.168.0.2)
        ─▶ wing-proxy 192.168.50.100: Velocity (Java), Geyser (Bedrock)
 ```
@@ -24,7 +24,7 @@ player ─▶ mc.ewatkins.dev (A 170.9.242.78, DNS-only)
 | Public IP | `170.9.242.78`, a reserved public IP also named `minecraft-relay`, so it outlives the VM |
 | Network | `relay-vcn` / `relay-subnet`, OpenTofu in `terraform/oracle-relay` (security list: TCP 25565 and UDP 19132 from anywhere, SSH from home only, ICMP fragmentation-needed) |
 | Java | `haproxy.service`: TCP 25565 to the home WAN IP, `send-proxy-v2` |
-| Bedrock | `bedrock-relay.service`: `socat` UDP 19132 to the home WAN IP |
+| Bedrock | `bedrock-relay.service`: `bedrock-relay.py`, UDP 19132 to the home WAN IP, PROXY v2 header on each client's first packet |
 | SSH | `ewatkins@170.9.242.78` (key-only, passwordless sudo), from the home IP or the extra sources in `ssh_extra_cidrs` (`oci-api-secret`); from elsewhere jump through a wing, e.g. `-J ewatkins@192.168.50.100` |
 
 us-chicago-1 offers no `VM.Standard.E2.1.Micro`, hence A1.Flex, inside the
@@ -42,9 +42,11 @@ covers the VM's address; there is nothing at the application layer.
 Velocity drops any Java connection that doesn't start with a PROXY header,
 so everything that reaches it on 25565 must send one. The relay sends v2. The
 in-cluster Gatus `velocity` check sends a v1 line
-(`default/calagopus/app/gatus.yaml`). Bedrock has no PROXY header: Geyser's
-Bedrock listener supports one (`bedrock.use-haproxy-protocol`), but that is
-PROXY over UDP, which HAProxy can't send. Bedrock players show as the relay.
+(`default/calagopus/app/gatus.yaml`). Geyser works the same way for Bedrock
+(`advanced.bedrock.use-haproxy-protocol` and `haproxy-protocol-whitelisted-ips`
+in its config on wing-proxy, also not in Git): the relay's `bedrock-relay.py`
+puts a PROXY v2 header on each client's first packet, and the Gatus
+`velocity-bedrock` check sends one too. Packets from anyone else are ignored.
 
 If the home WAN IP changes, update `ssh_source_cidr` in `oci-api-secret`
 (Bitwarden) and the two relay services on the VM.
@@ -68,7 +70,7 @@ covering DNS, the VM, both port forwards, and Velocity/Geyser.
 every 10 minutes until Oracle has capacity, trying each AD in turn. It finds
 its VM by display name (`NAME=minecraft-relay`), so renaming the VM in the
 console makes it launch another. The cloud-init it passes sets up HAProxy and
-socat; `launch.sh` fills the home WAN IP in from the secret. To rebuild:
+the Bedrock relay; `launch.sh` fills the home WAN IP in from the secret. To rebuild:
 
 1. Terminate `minecraft-relay` (keep the reserved IP).
 2. Unsuspend the CronJob. The first run launches the VM with an ephemeral IP
