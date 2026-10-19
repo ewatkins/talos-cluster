@@ -1,7 +1,12 @@
 # All of these come from oracle-relay-secret, so neither the tenancy, the API
 # key nor the home IP is in this public repo.
 variable "tenancy_ocid" {
-  description = "Tenancy OCID; everything lives in the root compartment."
+  description = "Tenancy OCID, for the provider."
+  type        = string
+}
+
+variable "compartment_ocid" {
+  description = "The minecraft-relay compartment."
   type        = string
 }
 

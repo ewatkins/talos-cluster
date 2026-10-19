@@ -81,7 +81,8 @@ socat; `launch.sh` fills the home WAN IP in from the secret. To rebuild:
 ## Secrets
 
 `oci-api-secret` (Bitwarden Secrets Manager via ExternalSecrets) holds the
-Oracle API key (`user`, `tenancy`, `fingerprint`, `region`,
-`private_key_b64`) and `ssh_source_cidr`, the home WAN IP as a /32.
+Oracle API key and the `minecraft-relay` compartment the VM, its network and
+the reserved IP live in (`user`, `tenancy`, `compartment`, `fingerprint`,
+`region`, `private_key_b64`) and `ssh_source_cidr`, the home WAN IP as a /32.
 `bedrock-relay-launcher-secret` combines it with the shared `pushover` item;
 the OpenTofu runner reads it as `oracle-relay-secret`.
