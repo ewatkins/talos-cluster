@@ -1,18 +1,19 @@
-# The network the Minecraft relay VM (minecraft-relay) sits in: one VCN with
+# The network the Minecraft relay VM (minecraft-relay) sits in, in the
+# minecraft-relay compartment: one VCN with
 # one public subnet, an internet gateway, and the VCN's default route table,
 # security list and DHCP options. It was built by hand in the console on
 # 2026-10-17 and adopted here (imports.tf). The VM and its reserved public IP
 # are not managed here; see kubernetes/apps/network/playit/README.md.
 
 resource "oci_core_vcn" "relay" {
-  compartment_id = var.tenancy_ocid
+  compartment_id = var.compartment_ocid
   display_name   = "relay-vcn"
   cidr_blocks    = ["10.0.0.0/16"]
   dns_label      = "relay"
 }
 
 resource "oci_core_internet_gateway" "relay" {
-  compartment_id = var.tenancy_ocid
+  compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.relay.id
   display_name   = "relay-igw"
   enabled        = true
@@ -110,7 +111,7 @@ resource "oci_core_default_security_list" "relay" {
 }
 
 resource "oci_core_subnet" "relay" {
-  compartment_id             = var.tenancy_ocid
+  compartment_id             = var.compartment_ocid
   vcn_id                     = oci_core_vcn.relay.id
   display_name               = "relay-subnet"
   cidr_block                 = "10.0.0.0/24"

@@ -38,7 +38,7 @@ data:
   launch.sh: |
     #!/usr/bin/env bash
     set -euo pipefail
-    C="$OCI_CLI_TENANCY"
+    C="${OCI_COMPARTMENT:?}"
 
     TAGS='{"managed-by":"talos-cluster/bedrock-relay-launcher"}'
 
