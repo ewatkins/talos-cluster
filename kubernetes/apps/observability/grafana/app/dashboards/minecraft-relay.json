@@ -17,8 +17,8 @@
     {
       "id": 10,
       "type": "stat",
-      "title": "Java connections",
-      "description": "Connections through the relay in the selected range (includes Gatus checks).",
+      "title": "Play sessions",
+      "description": "Connections of 2 s or longer in the selected range.",
       "datasource": {
         "type": "oci-logs-datasource",
         "uid": "oci-logs"
@@ -58,6 +58,43 @@
           }
         },
         {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "targetField": "Connect",
+                "destinationType": "number"
+              },
+              {
+                "targetField": "Duration",
+                "destinationType": "number"
+              },
+              {
+                "targetField": "Bytes",
+                "destinationType": "number"
+              }
+            ]
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "type": "include",
+            "match": "all",
+            "filters": [
+              {
+                "fieldName": "Duration",
+                "config": {
+                  "id": "greaterOrEqual",
+                  "options": {
+                    "value": 2000
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
           "id": "reduce",
           "options": {
             "reducers": [
@@ -91,8 +128,8 @@
     {
       "id": 11,
       "type": "stat",
-      "title": "Distinct IPs",
-      "description": "Distinct source IPs that connected through the relay.",
+      "title": "Distinct players",
+      "description": "Distinct source IPs with a play session (everyone at home counts as one).",
       "datasource": {
         "type": "oci-logs-datasource",
         "uid": "oci-logs"
@@ -132,6 +169,43 @@
           }
         },
         {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "targetField": "Connect",
+                "destinationType": "number"
+              },
+              {
+                "targetField": "Duration",
+                "destinationType": "number"
+              },
+              {
+                "targetField": "Bytes",
+                "destinationType": "number"
+              }
+            ]
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "type": "include",
+            "match": "all",
+            "filters": [
+              {
+                "fieldName": "Duration",
+                "config": {
+                  "id": "greaterOrEqual",
+                  "options": {
+                    "value": 2000
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
           "id": "reduce",
           "options": {
             "reducers": [
@@ -163,14 +237,125 @@
       }
     },
     {
-      "id": 1,
-      "type": "table",
-      "title": "Java connections (HAProxy)",
+      "id": 12,
+      "type": "stat",
+      "title": "Pings",
+      "description": "Status pings under 2 s, mostly Gatus.",
       "datasource": {
         "type": "oci-logs-datasource",
         "uid": "oci-logs"
       },
-      "description": "Connect is the time to reach home through the port forward (-1 means it never connected).",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "oci-logs-datasource",
+            "uid": "oci-logs"
+          },
+          "tenancy": "DEFAULT/",
+          "region": "us-chicago-1",
+          "searchQuery": "search \"{{ .compartment }}/ocid1.loggroup.oc1.us-chicago-1.amaaaaaazjfsi5aa2fqxnvwfcischkgombkdvjsrfvjite53ck3jo4vwqg6a/ocid1.log.oc1.us-chicago-1.amaaaaaazjfsi5aa2oq4c34dzvuazr4hu6iku6ntnj3b4rjtemlyysmskxvq\" | where data.tailed_path = '/var/log/haproxy.log' | sort by datetime desc"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "data",
+            "format": "json"
+          }
+        },
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "message",
+            "format": "regexp",
+            "regExp": "/^\\S+ \\S+ haproxy\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] \\S+ \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "targetField": "Connect",
+                "destinationType": "number"
+              },
+              {
+                "targetField": "Duration",
+                "destinationType": "number"
+              },
+              {
+                "targetField": "Bytes",
+                "destinationType": "number"
+              }
+            ]
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "type": "include",
+            "match": "all",
+            "filters": [
+              {
+                "fieldName": "Duration",
+                "config": {
+                  "id": "lower",
+                  "options": {
+                    "value": 2000
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "id": "reduce",
+          "options": {
+            "reducers": [
+              "count"
+            ],
+            "fields": "^Player$",
+            "mode": "reduceFields"
+          }
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^Player$/",
+          "values": false
+        },
+        "colorMode": "none",
+        "graphMode": "none",
+        "textMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 1,
+      "type": "table",
+      "title": "Play sessions",
+      "datasource": {
+        "type": "oci-logs-datasource",
+        "uid": "oci-logs"
+      },
+      "description": "Connections that stayed open 2 s or longer: someone actually joined. Connect is the time to reach home through the port forward.",
       "gridPos": {
         "h": 11,
         "w": 24,
@@ -220,6 +405,24 @@
               {
                 "targetField": "Bytes",
                 "destinationType": "number"
+              }
+            ]
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "type": "include",
+            "match": "all",
+            "filters": [
+              {
+                "fieldName": "Duration",
+                "config": {
+                  "id": "greaterOrEqual",
+                  "options": {
+                    "value": 2000
+                  }
+                }
               }
             ]
           }
@@ -387,6 +590,311 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Player"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "{{ .ssh_source_cidr | trimSuffix `/32` }}": {
+                        "text": "home",
+                        "color": "blue",
+                        "index": 0
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "type": "table",
+      "title": "Pings",
+      "datasource": {
+        "type": "oci-logs-datasource",
+        "uid": "oci-logs"
+      },
+      "description": "Connections under 2 s: server-list status pings, including Gatus's relay-java check every 2 minutes from home.",
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "oci-logs-datasource",
+            "uid": "oci-logs"
+          },
+          "tenancy": "DEFAULT/",
+          "region": "us-chicago-1",
+          "searchQuery": "search \"{{ .compartment }}/ocid1.loggroup.oc1.us-chicago-1.amaaaaaazjfsi5aa2fqxnvwfcischkgombkdvjsrfvjite53ck3jo4vwqg6a/ocid1.log.oc1.us-chicago-1.amaaaaaazjfsi5aa2oq4c34dzvuazr4hu6iku6ntnj3b4rjtemlyysmskxvq\" | where data.tailed_path = '/var/log/haproxy.log' | sort by datetime desc"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "data",
+            "format": "json"
+          }
+        },
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "message",
+            "format": "regexp",
+            "regExp": "/^\\S+ \\S+ haproxy\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] \\S+ \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "targetField": "Connect",
+                "destinationType": "number"
+              },
+              {
+                "targetField": "Duration",
+                "destinationType": "number"
+              },
+              {
+                "targetField": "Bytes",
+                "destinationType": "number"
+              }
+            ]
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "type": "include",
+            "match": "all",
+            "filters": [
+              {
+                "fieldName": "Duration",
+                "config": {
+                  "id": "lower",
+                  "options": {
+                    "value": 2000
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "timestamp",
+                "Player",
+                "Connect",
+                "Duration",
+                "Bytes",
+                "Ended"
+              ]
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "timestamp": "Time"
+            },
+            "indexByName": {
+              "timestamp": 0,
+              "Player": 1,
+              "Connect": 2,
+              "Duration": 3,
+              "Bytes": 4,
+              "Ended": 5
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "Time",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 190
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Connect"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Duration"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Bytes"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "decbytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Ended"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "--": {
+                        "text": "normal",
+                        "color": "green",
+                        "index": 0
+                      },
+                      "CD": {
+                        "text": "player left",
+                        "color": "green",
+                        "index": 1
+                      },
+                      "SD": {
+                        "text": "home closed it",
+                        "color": "yellow",
+                        "index": 2
+                      },
+                      "SC": {
+                        "text": "home unreachable",
+                        "color": "red",
+                        "index": 3
+                      },
+                      "sC": {
+                        "text": "connect timeout",
+                        "color": "red",
+                        "index": 4
+                      },
+                      "cD": {
+                        "text": "player timed out",
+                        "color": "yellow",
+                        "index": 5
+                      },
+                      "sD": {
+                        "text": "home timed out",
+                        "color": "orange",
+                        "index": 6
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Player"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "{{ .ssh_source_cidr | trimSuffix `/32` }}": {
+                        "text": "home",
+                        "color": "blue",
+                        "index": 0
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
           }
         ]
       }
@@ -404,7 +912,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 15
+        "y": 23
       },
       "targets": [
         {
@@ -547,7 +1055,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 25
+        "y": 33
       },
       "targets": [
         {
@@ -690,7 +1198,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 35
+        "y": 43
       },
       "targets": [
         {
