@@ -545,17 +545,17 @@
                     "type": "value",
                     "options": {
                       "--": {
-                        "text": "normal",
+                        "text": "closed normally",
                         "color": "green",
                         "index": 0
                       },
                       "CD": {
-                        "text": "player left",
+                        "text": "client disconnected",
                         "color": "green",
                         "index": 1
                       },
                       "SD": {
-                        "text": "home closed it",
+                        "text": "home disconnected",
                         "color": "yellow",
                         "index": 2
                       },
@@ -565,12 +565,12 @@
                         "index": 3
                       },
                       "sC": {
-                        "text": "connect timeout",
+                        "text": "home connect timeout",
                         "color": "red",
                         "index": 4
                       },
                       "cD": {
-                        "text": "player timed out",
+                        "text": "client timed out",
                         "color": "yellow",
                         "index": 5
                       },
@@ -821,17 +821,17 @@
                     "type": "value",
                     "options": {
                       "--": {
-                        "text": "normal",
+                        "text": "closed normally",
                         "color": "green",
                         "index": 0
                       },
                       "CD": {
-                        "text": "player left",
+                        "text": "client disconnected",
                         "color": "green",
                         "index": 1
                       },
                       "SD": {
-                        "text": "home closed it",
+                        "text": "home disconnected",
                         "color": "yellow",
                         "index": 2
                       },
@@ -841,12 +841,12 @@
                         "index": 3
                       },
                       "sC": {
-                        "text": "connect timeout",
+                        "text": "home connect timeout",
                         "color": "red",
                         "index": 4
                       },
                       "cD": {
-                        "text": "player timed out",
+                        "text": "client timed out",
                         "color": "yellow",
                         "index": 5
                       },
