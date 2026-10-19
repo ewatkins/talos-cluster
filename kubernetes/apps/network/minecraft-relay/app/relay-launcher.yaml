@@ -145,6 +145,9 @@ data:
     package_reboot_if_required: true
     packages:
       - haproxy
+      # Writes the journal out to /var/log, where the Oracle Cloud Agent
+      # picks the files up for OCI Logging (terraform/oracle-relay/logging.tf).
+      - rsyslog
     write_files:
       - path: /etc/haproxy/haproxy.cfg
         content: |
@@ -152,7 +155,7 @@ data:
           # forward (which only accepts this VM), with a PROXY v2 header so
           # Velocity (haproxy-protocol = true) sees the real player address.
           global
-              log /dev/log local0 notice
+              log /dev/log local0 info
               chroot /var/lib/haproxy
               user haproxy
               group haproxy
