@@ -15,8 +15,13 @@
 # guid 0) to Geyser on the proxy. The magic has bytes above \x7f, so it is
 # given as !!binary; Geyser answers with an unconnected pong ("MCPE;...").
 #
+# Velocity has haproxy-protocol = true (the Oracle relay sends a PROXY v2
+# header), so it drops any connection that doesn't start with one; the
+# velocity check sends a PROXY v1 line first. The backends behind Velocity
+# don't use PROXY, so their checks are unchanged.
+#
 # The relay-* checks go the way players do: mc.ewatkins.dev, the Oracle relay
-# VM, the playit tunnels, then back into the cluster to Velocity/Geyser.
+# VM, then back in through the home port forwards to Velocity/Geyser.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -29,7 +34,7 @@ data:
       - name: velocity
         group: Minecraft
         url: tcp://192.168.50.100:25565
-        body: "\x0f\x00\x00\x09localhost\x00\x00\x01\x01\x00"
+        body: "PROXY TCP4 127.0.0.1 192.168.50.100 1 25565\r\n\x0f\x00\x00\x09localhost\x00\x00\x01\x01\x00"
         interval: 1m
         conditions:
           - "[CONNECTED] == true"
