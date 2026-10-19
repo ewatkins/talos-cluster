@@ -1,0 +1,11 @@
+---
+# A namespace of its own, so the runner's Secret access reaches only the
+# Oracle credentials and state, not every app's secrets in `network`.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: oracle-relay
+  annotations:
+    # Holds the OpenTofu state (tfstate-default-oracle-relay). Never let a
+    # prune take it.
+    kustomize.toolkit.fluxcd.io/prune: disabled
