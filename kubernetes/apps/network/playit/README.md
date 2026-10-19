@@ -1,119 +1,87 @@
-# [playit.gg](https://playit.gg)
+# Minecraft relay (Oracle Cloud)
 
-`playitd` opens an outbound tunnel to playit.gg so players can reach the
-Minecraft servers through a playit address instead of the home IP. Players
-connect to playit's edge, the agent carries the traffic into the cluster, and
-the agent connects on to Velocity on `wing-proxy` (`192.168.50.100:25565`).
+Players join `mc.ewatkins.dev` on the default ports (Java 25565, Bedrock
+19132). That name points at a small Oracle Cloud VM, `minecraft-relay`, which
+forwards both editions home through port forwards that accept only the VM.
+Players never see the home IP.
 
-## Configuration
+The directory and Flux Kustomization are still named `playit`, after the
+playit.gg tunnel this replaced (removed 2026-10-19). Renaming the
+Kustomization would prune and recreate the DNS record, so it was left alone.
 
-| Setting | Value | Notes |
-| --- | --- | --- |
-| Image | `ghcr.io/playit-cloud/playit-agent:1.0.10` (digest-pinned) | Latest non-prerelease |
-| Replicas | `1` (Recreate) | One agent per secret key |
-| Run as user/group | `65534:65534` (nobody) | Read-only root; `/run/playit` and `/tmp` are emptyDirs |
-| Memory limit | `128Mi` | |
+```
+player ─▶ mc.ewatkins.dev (A 170.9.242.78, DNS-only)
+       ─▶ minecraft-relay: HAProxy tcp/25565 (PROXY v2), socat udp/19132
+       ─▶ home WAN IP ─▶ ISP modem (192.168.0.1) ─▶ UniFi (WAN 192.168.0.2)
+       ─▶ wing-proxy 192.168.50.100: Velocity (Java), Geyser (Bedrock)
+```
 
-There is no metrics endpoint or health port, so there are no probes or
-ServiceMonitor.
+## Relay VM
 
-## Tunnels
+| | |
+| --- | --- |
+| Instance | `minecraft-relay`, us-chicago-1 AD-1, `VM.Standard.A1.Flex` 1 OCPU / 6 GB (ARM), Ubuntu 24.04 Minimal |
+| Public IP | `170.9.242.78`, a reserved public IP also named `minecraft-relay`, so it outlives the VM |
+| Network | `relay-vcn` / `relay-subnet`, OpenTofu in `terraform/oracle-relay` (security list: TCP 25565 and UDP 19132 from anywhere, SSH from home only, ICMP fragmentation-needed) |
+| Java | `haproxy.service`: TCP 25565 to the home WAN IP, `send-proxy-v2` |
+| Bedrock | `bedrock-relay.service`: `socat` UDP 19132 to the home WAN IP |
+| SSH | `ubuntu@170.9.242.78`, only from the home IP (jump through a wing, e.g. `-J ewatkins@192.168.50.100`) |
 
-Tunnels live in the playit.gg dashboard, not in Git. Each one points at a
-local address the agent can reach from the pod network:
+us-chicago-1 offers no `VM.Standard.E2.1.Micro`, hence A1.Flex, inside the
+Always Free 4 OCPU / 24 GB allowance. Oracle's network-level DDoS protection
+covers the VM's address; there is nothing at the application layer.
 
-| Tunnel | Protocol | Local address |
-| --- | --- | --- |
-| Minecraft Java | TCP | `192.168.50.100:25565` (Velocity) |
-| Minecraft Bedrock | UDP (RakNet) | `192.168.50.100:19132` |
+## Home side
 
-| Edition | Players join | Tunnel address |
-| --- | --- | --- |
-| Java | `mc.ewatkins.dev` (no port) | `practically-unclog.tun.ply.gg:19087` |
-| Bedrock | `mc.ewatkins.dev`, port `63404` | `practically-detected.tun.ply.gg:63404` |
+| Hop | Rule |
+| --- | --- |
+| ISP modem | TCP 25565 and UDP 19132 → UniFi WAN `192.168.0.2` |
+| UniFi | `Minecraft (Java) from Oracle relay` TCP 25565 and `Minecraft (Bedrock) from Oracle relay` UDP 19132 → `192.168.50.100`, source `170.9.242.78` only |
+| Velocity | `haproxy-protocol = true` in `velocity.toml` on wing-proxy (panel-managed file, not in Git) |
+
+Velocity drops any Java connection that doesn't start with a PROXY header,
+so everything that reaches it on 25565 must send one. The relay sends v2. The
+in-cluster Gatus `velocity` check sends a v1 line
+(`default/calagopus/app/gatus.yaml`). Bedrock has no PROXY header: Geyser's
+Bedrock listener supports one (`bedrock.use-haproxy-protocol`), but that is
+PROXY over UDP, which HAProxy can't send. Bedrock players show as the relay.
+
+If the home WAN IP changes, update `ssh_source_cidr` in `oci-api-secret`
+(Bitwarden) and the two relay services on the VM.
 
 ## DNS
 
-`app/dnsendpoint.yaml` publishes `mc.ewatkins.dev` as a DNS-only A record
-pointing at the Oracle relay VM (below), through `cloudflare-dns`. Players
-join on the default ports: Java 25565, Bedrock 19132. UniFi has a matching
-local record for LAN clients.
+`app/dnsendpoint.yaml` publishes `mc.ewatkins.dev` as a DNS-only A record for
+the reserved IP, through `cloudflare-dns`. UniFi has a matching local record
+for LAN clients, so LAN players take the same path and get the same PROXY
+handling.
 
-Before the relay, Java went through an SRV record
-(`_minecraft._tcp.mc.ewatkins.dev`, so the client sent the tunnel's own
-hostname, which playit's free Java tunnel requires) and Bedrock through a
-CNAME on the tunnel's random port 63404. The server-list ping still sent
-`mc.ewatkins.dev`, so playit reset it and the MOTD was blank. playit's raw TCP
-tunnels (no hostname check) are IPv6-only on the free tier, so the relay VM
-fixes this instead.
+## Monitoring
 
-If a tunnel is ever recreated, its address and port change: update both relay
-services in the cloud-init in `app/relay-launcher.yaml` and on the VM.
+The Gatus checks `relay-java` and `relay-bedrock`
+(`default/calagopus/app/gatus.yaml`) ping `mc.ewatkins.dev` from the cluster,
+covering DNS, the VM, both port forwards, and Velocity/Geyser.
 
-## Relay VM (Bedrock 19132, Java 25565)
+## Rebuilding the VM
 
-playit's free tunnel gives Bedrock a random public port (63404). To let
-players use `mc.ewatkins.dev` on the default port 19132, a relay VM on Oracle
-Cloud's Always Free allowance (`bedrock-relay`, a 1 OCPU / 6 GB
-`VM.Standard.A1.Flex` in us-chicago-1, which offers no `E2.1.Micro`) listens on UDP 19132 and forwards to the Bedrock tunnel
-with `socat`. Its network (`relay-vcn`, `relay-subnet`, security list with UDP
-19132 and TCP 25565 open to all, SSH from home only, and ICMP) was created by
-hand in the console.
+`app/relay-launcher.yaml` is a CronJob (suspended) that launches the VM
+every 10 minutes until Oracle has capacity, trying each AD in turn. It finds
+its VM by display name (`NAME=minecraft-relay`), so renaming the VM in the
+console makes it launch another. The cloud-init it passes sets up HAProxy and
+socat; `launch.sh` fills the home WAN IP in from the secret. To rebuild:
 
-The same VM listens on TCP 25565 for Java (`java-relay.service`, a small
-Python proxy in the cloud-init). It rewrites the hostname in each
-connection's handshake to `practically-unclog.tun.ply.gg` and then copies
-bytes through, so both server-list pings and logins naming
-`mc.ewatkins.dev` reach Velocity. Oracle's Always Free tier includes 10 TB of
-outbound traffic a month.
-
-Oracle capacity can be scarce, so `app/relay-launcher.yaml` is a CronJob that
-tries to launch the VM every 10 minutes, in each AD in turn. Capacity errors
-are retried; any other launch error fails the Job. It launches only when no
-non-terminated instance named `bedrock-relay` exists, so it never makes a
-second VM; once the VM exists every run is a no-op that logs its state and
-public IP. The first run that finds it RUNNING with an address sends a
-Pushover notification (once; the instance is tagged `notified=true`):
-
-```sh
-kubectl -n network logs -l job-name --tail=5 --prefix | grep bedrock-relay
-```
-
-The VM was launched on 2026-10-19 and renamed `minecraft-relay` in the
-console. Its address, `170.9.242.78`, is a reserved public IP (also named
-`minecraft-relay`), so it outlives the VM. The CronJob is suspended in Git
-with `NAME=minecraft-relay`, so unsuspending it only rebuilds the VM after it
-is deleted. A rebuilt VM comes up with an ephemeral IP: on its primary private
-IP, set the public IP to none, then attach the `minecraft-relay` reserved IP.
-DNS needs no change.
-
-The Gatus checks `relay-java` and `relay-bedrock` (in
-`default/calagopus/app/gatus.yaml`) ping `mc.ewatkins.dev` from the cluster,
-so they cover the whole path: DNS, the VM, playit, and back to Velocity.
+1. Terminate `minecraft-relay` (keep the reserved IP).
+2. Unsuspend the CronJob. The first run launches the VM with an ephemeral IP
+   and sends a Pushover notification once it is RUNNING.
+3. On the VM's primary private IP, set the public IP to none, then attach
+   the `minecraft-relay` reserved IP. DNS and the UniFi source rule need no
+   change.
+4. Suspend the CronJob again.
 
 ## Secrets
 
-`playit-secret` (Bitwarden Secrets Manager via ExternalSecrets) holds the
-agent's secret key in its `secret_key` field. `oci-api-secret` holds the Oracle API
-key the relay launcher uses (`user`, `tenancy`, `fingerprint`, `region`,
-`private_key_b64`); `bedrock-relay-launcher-secret` combines it with the shared
-`pushover` item for the launch notification. Create the agent on playit.gg
-(Docker setup) and copy the key it shows.
-
-## Cutover
-
-1. Check the tunnel address reaches the server.
-2. Disable the `Minecraft (Java)` and `Minecraft (Bedrock)` UniFi port
-   forwards to `192.168.50.100`. Until then the home IP still serves the
-   game directly and the tunnel hides nothing.
-3. If VLAN 50 is firewalled from the cluster (see the calagopus README),
-   allow the cluster to reach `192.168.50.100` on 25565/tcp and 19132/udp.
-
-Behind the tunnel every player appears to come from the agent's pod IP.
-Enable PROXY protocol on the tunnel and in Velocity (`haproxy-protocol =
-true`) to keep real client IPs for bans and rate limits; both ends must change
-together or logins fail.
-
-## Links
-
-- [GitHub Repository](https://github.com/playit-cloud/playit-agent)
+`oci-api-secret` (Bitwarden Secrets Manager via ExternalSecrets) holds the
+Oracle API key (`user`, `tenancy`, `fingerprint`, `region`,
+`private_key_b64`) and `ssh_source_cidr`, the home WAN IP as a /32.
+`bedrock-relay-launcher-secret` combines it with the shared `pushover` item;
+the OpenTofu runner reads it as `oracle-relay-secret`.
