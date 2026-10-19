@@ -30,6 +30,9 @@ locals {
   # velocity_firewall Sources allowed to open connections to Velocity
   #                   (address:25565), or null. Only the proxy sets it:
   #                   the Oracle relay and the cluster nodes (Gatus).
+  # ship_logs         Install Alloy to ship the game servers' logs to Loki
+  #                   (Velocity's logins and logouts, for the Grafana relay
+  #                   dashboard). Only the proxy sets it.
   wings = {
     atlas = {
       enabled           = true
@@ -45,6 +48,7 @@ locals {
       bluemap           = true
       second_nic        = null
       velocity_firewall = null
+      ship_logs         = false
     }
     iridium = {
       enabled           = true
@@ -60,6 +64,7 @@ locals {
       bluemap           = false
       second_nic        = null
       velocity_firewall = null
+      ship_logs         = false
     }
     homestead = {
       enabled = true
@@ -76,6 +81,7 @@ locals {
       bluemap           = true
       second_nic        = null
       velocity_firewall = null
+      ship_logs         = false
     }
     proxy = {
       enabled = true
@@ -99,6 +105,8 @@ locals {
         address = "192.168.50.100"
         sources = ["170.9.242.78/32", "192.168.40.8/29", "192.168.40.16/32"]
       }
+      # Velocity's logins and logouts to Loki, for the relay dashboard.
+      ship_logs = true
     }
   }
 
@@ -159,6 +167,7 @@ resource "proxmox_virtual_environment_file" "user_data" {
       service_addresses = each.value.service_addresses
       second_nic        = each.value.second_nic
       velocity_firewall = each.value.velocity_firewall
+      ship_logs         = each.value.ship_logs
       gateway           = local.gateway
       bluemap           = each.value.bluemap
       wings_version     = local.wings_version

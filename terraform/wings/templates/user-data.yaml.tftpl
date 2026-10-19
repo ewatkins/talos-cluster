@@ -31,6 +31,11 @@ apt:
     docker.list:
       source: "deb [arch=amd64 signed-by=$KEY_FILE] https://download.docker.com/linux/ubuntu $RELEASE stable"
       keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+%{ if ship_logs ~}
+    grafana.list:
+      source: "deb [signed-by=$KEY_FILE] https://apt.grafana.com stable main"
+      keyid: B53AE77BADB630A683046005963FA27710458545
+%{ endif ~}
 
 package_update: true
 package_upgrade: true
@@ -48,6 +53,9 @@ packages:
   - iputils-arping
 %{ if bluemap ~}
   - nfs-common
+%{ endif ~}
+%{ if ship_logs ~}
+  - alloy
 %{ endif ~}
 
 write_files:
@@ -221,6 +229,42 @@ write_files:
       [Install]
       WantedBy=multi-user.target
 %{ endif ~}
+%{ if ship_logs ~}
+
+  # Alloy ships the game servers' logs to Loki in the cluster, through the
+  # push-only route on the internal gateway. Velocity's logins and logouts
+  # feed the Grafana Minecraft relay dashboard. Deferred until after the
+  # package is installed, so dpkg doesn't see a clashing config file.
+  - path: /etc/alloy/config.alloy
+    defer: true
+    content: |
+      local.file_match "servers" {
+        path_targets = [{
+          __path__ = "/var/lib/calagopus-wings/volumes/*/logs/latest.log",
+          job      = "minecraft",
+          host     = "${hostname}",
+        }]
+      }
+
+      loki.source.file "servers" {
+        targets    = local.file_match.servers.targets
+        forward_to = [loki.write.cluster.receiver]
+        // Lines carry only a time of day, so stamp them as they are read
+        // rather than backfilling old ones with the wrong time.
+        tail_from_end = true
+      }
+
+      loki.write "cluster" {
+        endpoint {
+          url = "https://loki.ewatkins.dev/loki/api/v1/push"
+        }
+      }
+  # The volumes directory is root-only; let Alloy read (not write) it.
+  - path: /etc/systemd/system/alloy.service.d/10-read-server-logs.conf
+    content: |
+      [Service]
+      AmbientCapabilities=CAP_DAC_READ_SEARCH
+%{ endif ~}
 
 runcmd:
   # Pinned and checksummed; a mismatch fails cloud-init visibly.
@@ -249,4 +293,8 @@ runcmd:
   - [systemctl, enable, wings]
 %{ if velocity_firewall != null ~}
   - [systemctl, enable, velocity-fw]
+%{ endif ~}
+%{ if ship_logs ~}
+  - [systemctl, enable, alloy]
+  - [systemctl, restart, alloy]
 %{ endif ~}
