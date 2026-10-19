@@ -54,7 +54,7 @@
           "options": {
             "source": "message",
             "format": "regexp",
-            "regExp": "/^\\S+ \\S+ haproxy\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] \\S+ \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
+            "regExp": "/^\\S+ \\S+ (?:haproxy|bedrock-relay)\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] minecraft_(?<Edition>java|bedrock) \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
           }
         },
         {
@@ -156,7 +156,7 @@
           "options": {
             "source": "message",
             "format": "regexp",
-            "regExp": "/^\\S+ \\S+ haproxy\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] \\S+ \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
+            "regExp": "/^\\S+ \\S+ (?:haproxy|bedrock-relay)\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] minecraft_(?<Edition>java|bedrock) \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
           }
         },
         {
@@ -258,7 +258,7 @@
           "options": {
             "source": "message",
             "format": "regexp",
-            "regExp": "/^\\S+ \\S+ haproxy\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] \\S+ \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
+            "regExp": "/^\\S+ \\S+ (?:haproxy|bedrock-relay)\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] minecraft_(?<Edition>java|bedrock) \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
           }
         },
         {
@@ -324,7 +324,7 @@
       "id": 20,
       "type": "geomap",
       "title": "Play Sessions Map",
-      "description": "Where play sessions came from, sized by connection count. IPs are looked up with ip-api.com.",
+      "description": "Where play sessions came from (Java and Bedrock), sized by connection count. IPs are looked up with ip-api.com.",
       "gridPos": {
         "h": 11,
         "w": 12,
@@ -411,7 +411,7 @@
           "options": {
             "source": "message",
             "format": "regexp",
-            "regExp": "/^\\S+ \\S+ haproxy\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] \\S+ \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
+            "regExp": "/^\\S+ \\S+ (?:haproxy|bedrock-relay)\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] minecraft_(?<Edition>java|bedrock) \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
           },
           "filter": {
             "id": "byRefId",
@@ -634,7 +634,7 @@
       "id": 21,
       "type": "geomap",
       "title": "Pings Map",
-      "description": "Where status pings came from, sized by connection count. IPs are looked up with ip-api.com.",
+      "description": "Where status pings came from (Java and Bedrock), sized by connection count. IPs are looked up with ip-api.com.",
       "gridPos": {
         "h": 11,
         "w": 12,
@@ -721,7 +721,7 @@
           "options": {
             "source": "message",
             "format": "regexp",
-            "regExp": "/^\\S+ \\S+ haproxy\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] \\S+ \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
+            "regExp": "/^\\S+ \\S+ (?:haproxy|bedrock-relay)\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] minecraft_(?<Edition>java|bedrock) \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
           },
           "filter": {
             "id": "byRefId",
@@ -948,7 +948,7 @@
         "type": "oci-logs-datasource",
         "uid": "oci-logs"
       },
-      "description": "Connections that sent 50 KB or more: someone actually joined and loaded the world. Connect is the time to reach home through the port forward.",
+      "description": "Connections that sent 50 KB or more: someone actually joined and loaded the world. Java and Bedrock; Bedrock sessions are logged after 2 minutes idle. Connect (Java only) is the time to reach home through the port forward.",
       "gridPos": {
         "h": 11,
         "w": 24,
@@ -980,7 +980,7 @@
           "options": {
             "source": "message",
             "format": "regexp",
-            "regExp": "/^\\S+ \\S+ haproxy\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] \\S+ \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
+            "regExp": "/^\\S+ \\S+ (?:haproxy|bedrock-relay)\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] minecraft_(?<Edition>java|bedrock) \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
           }
         },
         {
@@ -1027,6 +1027,7 @@
               "names": [
                 "timestamp",
                 "Player",
+                "Edition",
                 "Connect",
                 "Duration",
                 "Bytes",
@@ -1044,10 +1045,11 @@
             "indexByName": {
               "timestamp": 0,
               "Player": 1,
-              "Connect": 2,
-              "Duration": 3,
-              "Bytes": 4,
-              "Ended": 5
+              "Edition": 2,
+              "Connect": 3,
+              "Duration": 4,
+              "Bytes": 5,
+              "Ended": 6
             }
           }
         },
@@ -1210,6 +1212,32 @@
                 "value": {
                   "type": "color-text"
                 }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Edition"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "java": {
+                        "text": "Java",
+                        "index": 0
+                      },
+                      "bedrock": {
+                        "text": "Bedrock",
+                        "index": 1
+                      }
+                    }
+                  }
+                ]
               }
             ]
           }
@@ -1256,7 +1284,7 @@
           "options": {
             "source": "message",
             "format": "regexp",
-            "regExp": "/^\\S+ \\S+ haproxy\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] \\S+ \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
+            "regExp": "/^\\S+ \\S+ (?:haproxy|bedrock-relay)\\[\\d+\\]: (?<Player>[\\d.]+):\\d+ \\[[^\\]]+\\] minecraft_(?<Edition>java|bedrock) \\S+ -?\\d+\\/(?<Connect>-?\\d+)\\/(?<Duration>-?\\d+) (?<Bytes>\\d+) (?<Ended>\\S+).*$/"
           }
         },
         {
@@ -1303,6 +1331,7 @@
               "names": [
                 "timestamp",
                 "Player",
+                "Edition",
                 "Connect",
                 "Duration",
                 "Bytes",
@@ -1320,10 +1349,11 @@
             "indexByName": {
               "timestamp": 0,
               "Player": 1,
-              "Connect": 2,
-              "Duration": 3,
-              "Bytes": 4,
-              "Ended": 5
+              "Edition": 2,
+              "Connect": 3,
+              "Duration": 4,
+              "Bytes": 5,
+              "Ended": 6
             }
           }
         },
@@ -1486,6 +1516,32 @@
                 "value": {
                   "type": "color-text"
                 }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Edition"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "java": {
+                        "text": "Java",
+                        "index": 0
+                      },
+                      "bedrock": {
+                        "text": "Bedrock",
+                        "index": 1
+                      }
+                    }
+                  }
+                ]
               }
             ]
           }
@@ -1934,7 +1990,7 @@
         },
         "query": "search($relay_region, $relay_haproxy_query, $relay_field)",
         "definition": "search($relay_region, $relay_haproxy_query, $relay_field)",
-        "regex": "/haproxy\\[\\d+\\]: (?<value>[\\d.]+):\\d+ /",
+        "regex": "/(?:haproxy|bedrock-relay)\\[\\d+\\]: (?<value>[\\d.]+):\\d+ /",
         "refresh": 2,
         "sort": 0,
         "multi": true,
