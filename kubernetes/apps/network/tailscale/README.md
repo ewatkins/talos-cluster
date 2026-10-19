@@ -21,6 +21,7 @@ Defined in [`connector/connector.yaml`](connector/connector.yaml):
 
 | Route               | Purpose                          |
 | ------------------- | -------------------------------- |
+| `192.168.0.1/32`    | ISP modem admin page             |
 | `192.168.1.0/24`    | primary LAN / UniFi gateway      |
 | `192.168.30.0/24`   | home network                     |
 | `192.168.40.0/24`   | cluster / services network       |
