@@ -7,7 +7,7 @@ spec:
   endpoints:
     # Players join mc.ewatkins.dev on the default ports (Java 25565, Bedrock
     # 19132). It points at the Oracle relay VM (minecraft-relay), which
-    # forwards to the playit tunnels and rewrites the Java handshake hostname.
+    # forwards home through port forwards that accept only the VM.
     # DNS-only: Cloudflare can't proxy Minecraft or UDP.
     - dnsName: "mc.ewatkins.dev"
       recordType: A

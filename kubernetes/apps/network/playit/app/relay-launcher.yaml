@@ -5,11 +5,13 @@
 #
 # Free Oracle Cloud VMs are often "out of host capacity", so instead of
 # retrying by hand this CronJob asks for the relay VM every 10 minutes
-# until Oracle hands one over. The relay listens on UDP 19132 and forwards to
-# the playit Bedrock tunnel, so players can use mc.ewatkins.dev on the default
-# port (playit's free tunnel only offers a random port). It also listens on TCP
-# 25565 for Java and forwards to the Java tunnel, rewriting the handshake
-# hostname, because playit resets server-list pings that name mc.ewatkins.dev.
+# until Oracle hands one over. Players join mc.ewatkins.dev, which points at
+# the VM: HAProxy takes TCP 25565 (Java) and socat UDP 19132 (Bedrock), and
+# both forward to the home WAN IP, where the modem and UniFi port forwards
+# accept only this VM's reserved IP and send it on to Velocity/Geyser on
+# wing-proxy. HAProxy adds a PROXY v2 header so Velocity (haproxy-protocol =
+# true) sees real player addresses. The home IP isn't in this public repo:
+# launch.sh fills @HOME_WAN_IP@ in from the secret.
 #
 # Exactly one VM: every run first lists instances named $NAME that are
 # not TERMINATED/TERMINATING and does nothing if one exists, whatever its state
@@ -19,9 +21,8 @@
 # the VM is up for good. When the VM first reports RUNNING with a public IP, a
 # run sends one Pushover notification and tags the instance notified=true.
 #
-# Network (relay-vcn, relay-subnet, security list opening UDP 19132 and TCP
-# 25565 to all and SSH from home only) was created by hand in us-chicago-1; only the VM is
-# launched here. us-chicago-1 offers no VM.Standard.E2.1.Micro (launching it
+# The network (relay-vcn) is OpenTofu, in terraform/oracle-relay; only the VM
+# is launched here. us-chicago-1 offers no VM.Standard.E2.1.Micro (launching it
 # returns NotAuthorizedOrNotFound), so the VM is a 1 OCPU / 6 GB
 # VM.Standard.A1.Flex (ARM), inside the Always Free 4 OCPU / 24 GB allowance.
 # A1.Flex is offered in every AD, so each run tries them in turn.
@@ -75,6 +76,10 @@ data:
       exit 0
     fi
 
+    # The cloud-init names the home WAN IP; it comes from the secret so it
+    # stays out of Git.
+    sed "s/@HOME_WAN_IP@/${HOME_WAN_IP:?}/g" /config/cloud-init.yaml > /tmp/cloud-init.yaml
+
     for ad in $ADS; do
       echo "no $NAME instance; launching $SHAPE ($SHAPE_CONFIG) in $ad"
       if out=$(oci compute instance launch --compartment-id "$C" \
@@ -84,7 +89,7 @@ data:
           --display-name "$NAME" --hostname-label "$NAME" \
           --freeform-tags "$TAGS" \
           --ssh-authorized-keys-file /config/ssh.pub \
-          --user-data-file /config/cloud-init.yaml 2>&1); then
+          --user-data-file /tmp/cloud-init.yaml 2>&1); then
         echo "launched: $(jq -r '.data | "\(.id) \(."lifecycle-state")"' <<<"$out")"
         exit 0
       fi
@@ -108,145 +113,47 @@ data:
     #cloud-config
     package_update: true
     packages:
+      - haproxy
       - socat
     write_files:
+      - path: /etc/haproxy/haproxy.cfg
+        content: |
+          # Minecraft Java relay: TCP 25565 to Velocity through the home port
+          # forward (which only accepts this VM), with a PROXY v2 header so
+          # Velocity (haproxy-protocol = true) sees the real player address.
+          global
+              log /dev/log local0 notice
+              daemon
+              maxconn 2000
+
+          defaults
+              mode tcp
+              log global
+              option tcplog
+              timeout connect 5s
+              timeout client 1h
+              timeout server 1h
+
+          frontend minecraft_java
+              bind :25565
+              default_backend velocity
+
+          backend velocity
+              server home @HOME_WAN_IP@:25565 send-proxy-v2
       - path: /etc/systemd/system/bedrock-relay.service
         content: |
-          # Relays Minecraft Bedrock (UDP 19132) to the playit tunnel. socat
-          # forks one child per client and resolves the tunnel hostname for
-          # each, so it follows playit if the tunnel's IP changes. -T reaps a
-          # child after 120 s of silence.
+          # Relays Minecraft Bedrock (UDP 19132) to Geyser through the home
+          # port forward. socat forks one child per client; -T reaps a child
+          # after 120 s of silence. No PROXY header: Geyser's Bedrock listener
+          # sees every player as this VM.
           [Unit]
-          Description=Minecraft Bedrock UDP relay to playit
+          Description=Minecraft Bedrock UDP relay
           After=network-online.target
           Wants=network-online.target
 
           [Service]
           DynamicUser=yes
-          ExecStart=/usr/bin/socat -T 120 UDP4-LISTEN:19132,fork,reuseaddr UDP4:practically-detected.tun.ply.gg:63404
-          Restart=always
-          RestartSec=5
-
-          [Install]
-          WantedBy=multi-user.target
-      - path: /usr/local/bin/java-relay.py
-        permissions: "0755"
-        content: |
-          #!/usr/bin/env python3
-          """Relays Minecraft Java (TCP 25565) to the playit tunnel.
-
-          playit's free Minecraft Java tunnel resets any connection whose handshake
-          names a host other than the tunnel's own, and the vanilla server-list ping
-          sends whatever address the player typed (mc.ewatkins.dev). So the first
-          packet (the handshake) is rewritten to name the tunnel; everything after it
-          is copied through untouched.
-          """
-          import asyncio
-          import os
-          import struct
-
-          LISTEN_PORT = int(os.environ.get("LISTEN_PORT", "25565"))
-          TUNNEL_HOST = "practically-unclog.tun.ply.gg"
-          TUNNEL_PORT = 19087
-
-
-          def varint(n):
-              out = b""
-              while True:
-                  b, n = n & 0x7F, n >> 7
-                  out += bytes([b | (0x80 if n else 0)])
-                  if not n:
-                      return out
-
-
-          def read_varint(buf, i):
-              n = 0
-              for shift in range(0, 35, 7):
-                  b = buf[i]
-                  i += 1
-                  n |= (b & 0x7F) << shift
-                  if not b & 0x80:
-                      return n, i
-              raise ValueError("varint too long")
-
-
-          async def read_packet(reader):
-              length = 0
-              for shift in range(0, 35, 7):
-                  b = (await reader.readexactly(1))[0]
-                  length |= (b & 0x7F) << shift
-                  if not b & 0x80:
-                      break
-              else:
-                  raise ValueError("varint too long")
-              # A handshake is a few hundred bytes at most; anything else (a pre-1.7
-              # legacy ping, or not Minecraft at all) is dropped.
-              if not 0 < length <= 4096:
-                  raise ValueError(f"bad handshake length {length}")
-              return await reader.readexactly(length)
-
-
-          def rewrite_handshake(body):
-              packet_id, i = read_varint(body, 0)
-              if packet_id != 0:
-                  raise ValueError(f"not a handshake (packet {packet_id})")
-              protocol, i = read_varint(body, i)
-              host_len, i = read_varint(body, i)
-              host = body[i:i + host_len].decode()
-              rest = body[i + host_len + 2:]  # skip the port; rest is the next state
-              # Forge appends "\0FML3\0" (and similar) to the host; keep it.
-              _, sep, suffix = host.partition("\0")
-              new_host = (TUNNEL_HOST + sep + suffix).encode()
-              out = (varint(0) + varint(protocol) + varint(len(new_host)) + new_host
-                     + struct.pack(">H", TUNNEL_PORT) + rest)
-              return varint(len(out)) + out
-
-
-          async def pipe(reader, writer):
-              try:
-                  while data := await reader.read(65536):
-                      writer.write(data)
-                      await writer.drain()
-              finally:
-                  writer.close()
-
-
-          async def handle(client_r, client_w):
-              peer = client_w.get_extra_info("peername")
-              try:
-                  handshake = rewrite_handshake(await asyncio.wait_for(read_packet(client_r), 10))
-                  # Resolved per connection, so this follows playit if the tunnel's IP changes.
-                  tunnel_r, tunnel_w = await asyncio.wait_for(
-                      asyncio.open_connection(TUNNEL_HOST, TUNNEL_PORT), 10)
-              except Exception as e:
-                  print(f"{peer}: dropped: {e!r}", flush=True)
-                  client_w.close()
-                  return
-              tunnel_w.write(handshake)
-              await asyncio.gather(pipe(client_r, tunnel_w), pipe(tunnel_r, client_w),
-                                   return_exceptions=True)
-
-
-          async def main():
-              server = await asyncio.start_server(handle, port=LISTEN_PORT)
-              print(f"relaying :{LISTEN_PORT} to {TUNNEL_HOST}:{TUNNEL_PORT}", flush=True)
-              async with server:
-                  await server.serve_forever()
-
-
-          asyncio.run(main())
-      - path: /etc/systemd/system/java-relay.service
-        content: |
-          # Relays Minecraft Java (TCP 25565) to the playit tunnel, rewriting
-          # the handshake hostname so playit accepts server-list pings.
-          [Unit]
-          Description=Minecraft Java TCP relay to playit
-          After=network-online.target
-          Wants=network-online.target
-
-          [Service]
-          DynamicUser=yes
-          ExecStart=/usr/bin/python3 -I /usr/local/bin/java-relay.py
+          ExecStart=/usr/bin/socat -T 120 UDP4-LISTEN:19132,fork,reuseaddr UDP4:@HOME_WAN_IP@:19132
           Restart=always
           RestartSec=5
 
@@ -258,7 +165,8 @@ data:
       - iptables -I INPUT -p tcp --dport 25565 -j ACCEPT
       - netfilter-persistent save
       - systemctl daemon-reload
-      - systemctl enable --now bedrock-relay.service java-relay.service
+      - systemctl enable --now bedrock-relay.service
+      - systemctl restart haproxy.service
 ---
 apiVersion: batch/v1
 kind: CronJob

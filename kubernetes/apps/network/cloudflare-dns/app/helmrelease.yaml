@@ -56,12 +56,9 @@ spec:
       - --cloudflare-proxied
       - --crd-source-apiversion=externaldns.k8s.io/v1alpha1
       - --crd-source-kind=DNSEndpoint
-      # SRV on top of the defaults, for the playit Minecraft record. SRV is
-      # never proxied, whatever --cloudflare-proxied says.
       - --managed-record-types=A
       - --managed-record-types=AAAA
       - --managed-record-types=CNAME
-      - --managed-record-types=SRV
       - --zone-id-filter=$(CF_ZONE_ID)
     triggerLoopOnEvent: true
     policy: sync
