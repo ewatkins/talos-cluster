@@ -11,7 +11,7 @@ spec:
     # DNS-only: Cloudflare can't proxy Minecraft or UDP.
     - dnsName: "mc.ewatkins.dev"
       recordType: A
-      targets: ["147.224.198.213"]
+      targets: ["170.9.242.78"]
       providerSpecific:
         - name: cloudflare/proxied
           value: "false"

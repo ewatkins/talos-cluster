@@ -1,7 +1,7 @@
 ---
-# Suspended: the VM (minecraft-relay, 147.224.198.213) is up. Unsuspend this
-# only to rebuild it after deleting the VM; a rebuilt VM gets a new public IP,
-# so update app/dnsendpoint.yaml (and UniFi) afterwards.
+# Suspended: the VM (minecraft-relay) is up. Unsuspend this only to rebuild
+# it after deleting the VM. The VM launches with an ephemeral IP; move the
+# minecraft-relay reserved IP (170.9.242.78, which DNS points at) onto it.
 #
 # Free Oracle Cloud VMs are often "out of host capacity", so instead of
 # retrying by hand this CronJob asks for the relay VM every 10 minutes
