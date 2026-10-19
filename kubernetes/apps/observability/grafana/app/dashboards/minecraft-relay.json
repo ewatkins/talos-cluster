@@ -18,7 +18,7 @@
       "id": 10,
       "type": "stat",
       "title": "Play sessions",
-      "description": "Connections of 2 s or longer in the selected range.",
+      "description": "Connections of 50 KB or more in the selected range.",
       "datasource": {
         "type": "oci-logs-datasource",
         "uid": "oci-logs"
@@ -83,11 +83,11 @@
             "match": "all",
             "filters": [
               {
-                "fieldName": "Duration",
+                "fieldName": "Bytes",
                 "config": {
                   "id": "greaterOrEqual",
                   "options": {
-                    "value": 2000
+                    "value": 50000
                   }
                 }
               }
@@ -194,11 +194,11 @@
             "match": "all",
             "filters": [
               {
-                "fieldName": "Duration",
+                "fieldName": "Bytes",
                 "config": {
                   "id": "greaterOrEqual",
                   "options": {
-                    "value": 2000
+                    "value": 50000
                   }
                 }
               }
@@ -240,7 +240,7 @@
       "id": 12,
       "type": "stat",
       "title": "Pings",
-      "description": "Status pings under 2 s, mostly Gatus.",
+      "description": "Status pings under 50 KB: Gatus and server scanners.",
       "datasource": {
         "type": "oci-logs-datasource",
         "uid": "oci-logs"
@@ -305,11 +305,11 @@
             "match": "all",
             "filters": [
               {
-                "fieldName": "Duration",
+                "fieldName": "Bytes",
                 "config": {
                   "id": "lower",
                   "options": {
-                    "value": 2000
+                    "value": 50000
                   }
                 }
               }
@@ -355,7 +355,7 @@
         "type": "oci-logs-datasource",
         "uid": "oci-logs"
       },
-      "description": "Connections that stayed open 2 s or longer: someone actually joined. Connect is the time to reach home through the port forward.",
+      "description": "Connections that sent 50 KB or more: someone actually joined and loaded the world. Connect is the time to reach home through the port forward.",
       "gridPos": {
         "h": 11,
         "w": 24,
@@ -416,11 +416,11 @@
             "match": "all",
             "filters": [
               {
-                "fieldName": "Duration",
+                "fieldName": "Bytes",
                 "config": {
                   "id": "greaterOrEqual",
                   "options": {
-                    "value": 2000
+                    "value": 50000
                   }
                 }
               }
@@ -631,7 +631,7 @@
         "type": "oci-logs-datasource",
         "uid": "oci-logs"
       },
-      "description": "Connections under 2 s: server-list status pings, including Gatus's relay-java check every 2 minutes from home.",
+      "description": "Connections under 50 KB: server-list status pings (about 4 KB each), including Gatus's relay-java check every 2 minutes from home and server scanners.",
       "gridPos": {
         "h": 8,
         "w": 24,
@@ -692,11 +692,11 @@
             "match": "all",
             "filters": [
               {
-                "fieldName": "Duration",
+                "fieldName": "Bytes",
                 "config": {
                   "id": "lower",
                   "options": {
-                    "value": 2000
+                    "value": 50000
                   }
                 }
               }
