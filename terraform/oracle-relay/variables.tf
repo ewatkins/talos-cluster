@@ -31,3 +31,10 @@ variable "ssh_source_cidr" {
   type        = string
   sensitive   = true
 }
+
+variable "ssh_extra_cidrs" {
+  description = "More sources allowed to SSH to the relay VM (e.g. work), comma-separated CIDRs; may be empty."
+  type        = string
+  sensitive   = true
+  default     = ""
+}
