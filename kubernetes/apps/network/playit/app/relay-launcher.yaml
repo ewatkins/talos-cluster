@@ -111,6 +111,18 @@ data:
     ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJLUii06o9M7IuYRamEe5tB5GlOlB3zJu7ydmz99gHUc ewatkins@ewatkins-pc
   cloud-init.yaml: |
     #cloud-config
+    # Key-only SSH as ewatkins, like the wings; no default `ubuntu` user, no
+    # root login, no passwords.
+    users:
+      - name: ewatkins
+        shell: /bin/bash
+        groups: [sudo]
+        sudo: "ALL=(ALL) NOPASSWD:ALL"
+        lock_passwd: true
+        ssh_authorized_keys:
+          - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJLUii06o9M7IuYRamEe5tB5GlOlB3zJu7ydmz99gHUc ewatkins@ewatkins-pc
+    disable_root: true
+    ssh_pwauth: false
     package_update: true
     packages:
       - haproxy
