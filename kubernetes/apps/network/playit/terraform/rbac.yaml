@@ -1,0 +1,35 @@
+---
+# The runner pod's identity: Secrets, ConfigMaps and Leases in this namespace
+# only, which is all the runner needs (state, its lock, and the plan).
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: oracle-relay-runner
+  namespace: oracle-relay
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: oracle-relay-runner
+  namespace: oracle-relay
+rules:
+  - apiGroups: [""]
+    resources: ["secrets", "configmaps"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: oracle-relay-runner
+  namespace: oracle-relay
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: oracle-relay-runner
+subjects:
+  - kind: ServiceAccount
+    name: oracle-relay-runner
+    namespace: oracle-relay
