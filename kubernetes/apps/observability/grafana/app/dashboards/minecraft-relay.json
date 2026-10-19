@@ -321,6 +321,176 @@
       }
     },
     {
+      "id": 30,
+      "type": "table",
+      "title": "Logins and Logouts",
+      "description": "Velocity's own log on wing-proxy, shipped to Loki by Alloy: one line when a player logs in and one when they leave, with the real player IP (PROXY protocol). Java and Bedrock (Floodgate names start with a dot).",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "queryType": "range",
+          "editorMode": "code",
+          "expr": "{job=\"minecraft\", host=\"wing-proxy\"} |= \"[connected player]\" |~ \"has (connected|disconnected)\""
+        }
+      ],
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "Line",
+            "format": "regexp",
+            "regExp": "/\\[connected player\\] (?<Player>\\S+) \\(\\/(?<IP>[\\d.]+):\\d+\\) has (?<Event>connected|disconnected)(?::\\s*(?<Reason>.*))?$/"
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "Time",
+                "Event",
+                "Player",
+                "IP",
+                "Reason"
+              ]
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "Time": 0,
+              "Event": 1,
+              "Player": 2,
+              "IP": 3,
+              "Reason": 4
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "Time",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 190
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Event"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "connected": {
+                        "text": "Login",
+                        "color": "green",
+                        "index": 0
+                      },
+                      "disconnected": {
+                        "text": "Logout",
+                        "color": "text",
+                        "index": 1
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "IP"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "{{ .ssh_source_cidr | trimSuffix `/32` }}": {
+                        "text": "Home",
+                        "color": "blue",
+                        "index": 0
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "id": 20,
       "type": "geomap",
       "title": "Play Sessions Map",
@@ -329,7 +499,7 @@
         "h": 11,
         "w": 12,
         "x": 0,
-        "y": 4
+        "y": 14
       },
       "targets": [
         {
@@ -639,7 +809,7 @@
         "h": 11,
         "w": 12,
         "x": 12,
-        "y": 4
+        "y": 14
       },
       "targets": [
         {
@@ -953,7 +1123,7 @@
         "h": 11,
         "w": 24,
         "x": 0,
-        "y": 15
+        "y": 25
       },
       "targets": [
         {
@@ -1257,7 +1427,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 26
+        "y": 36
       },
       "targets": [
         {
@@ -1561,7 +1731,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 34
+        "y": 44
       },
       "targets": [
         {
@@ -1704,7 +1874,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 44
+        "y": 54
       },
       "targets": [
         {
@@ -1847,7 +2017,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 54
+        "y": 64
       },
       "targets": [
         {
