@@ -17,8 +17,10 @@
 #
 # Network (relay-vcn, relay-subnet, security list opening UDP 19132 and TCP
 # 25565 to all and SSH from home only) was created by hand in us-chicago-1; only the VM is
-# launched here. VM.Standard.E2.1.Micro is Always Free and only offered in
-# AD-2 in this region.
+# launched here. us-chicago-1 offers no VM.Standard.E2.1.Micro (launching it
+# returns NotAuthorizedOrNotFound), so the VM is a 1 OCPU / 6 GB
+# VM.Standard.A1.Flex (ARM), inside the Always Free 4 OCPU / 24 GB allowance.
+# A1.Flex is offered in every AD, so each run tries them in turn.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -69,28 +71,33 @@ data:
       exit 0
     fi
 
-    echo "no $NAME instance; launching $SHAPE in $AD"
-    if out=$(oci compute instance launch --compartment-id "$C" \
-        --availability-domain "$AD" --shape "$SHAPE" --image-id "$IMAGE_ID" \
-        --subnet-id "$SUBNET_ID" --assign-public-ip true \
-        --display-name "$NAME" --hostname-label "$NAME" \
-        --freeform-tags "$TAGS" \
-        --ssh-authorized-keys-file /config/ssh.pub \
-        --user-data-file /config/cloud-init.yaml 2>&1); then
-      echo "launched: $(jq -r '.data | "\(.id) \(."lifecycle-state")"' <<<"$out")"
-      exit 0
-    fi
+    for ad in $ADS; do
+      echo "no $NAME instance; launching $SHAPE ($SHAPE_CONFIG) in $ad"
+      if out=$(oci compute instance launch --compartment-id "$C" \
+          --availability-domain "$ad" --shape "$SHAPE" --shape-config "$SHAPE_CONFIG" \
+          --image-id "$IMAGE_ID" \
+          --subnet-id "$SUBNET_ID" --assign-public-ip true \
+          --display-name "$NAME" --hostname-label "$NAME" \
+          --freeform-tags "$TAGS" \
+          --ssh-authorized-keys-file /config/ssh.pub \
+          --user-data-file /config/cloud-init.yaml 2>&1); then
+        echo "launched: $(jq -r '.data | "\(.id) \(."lifecycle-state")"' <<<"$out")"
+        exit 0
+      fi
 
-    msg=$(grep -oE '"message": "[^"]*"' <<<"$out" | head -1 || true)
-    # Expected while Oracle has no capacity or the account is still changing
-    # tier; try again next run without failing the Job.
-    if grep -qE 'Out of host capacity|out of capacity|NotAuthorizedOrNotFound|TooManyRequests|InternalError' <<<"$out"; then
-      echo "not yet: ${msg:-$(head -c 300 <<<"$out")}"
-      exit 0
-    fi
-    echo "unexpected error:" >&2
-    echo "$out" >&2
-    exit 1
+      msg=$(grep -oE '"message": "[^"]*"' <<<"$out" | head -1 || true)
+      # Expected while Oracle has no capacity here; try the next AD, then
+      # again next run, without failing the Job. Anything else (including
+      # NotAuthorizedOrNotFound, which is what a wrong shape, image or
+      # subnet returns) is a setup problem and fails the Job.
+      if grep -qE 'Out of host capacity|out of capacity|TooManyRequests|InternalError' <<<"$out"; then
+        echo "not yet: ${msg:-$(head -c 300 <<<"$out")}"
+        continue
+      fi
+      echo "unexpected error:" >&2
+      echo "$out" >&2
+      exit 1
+    done
   ssh.pub: |
     ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJLUii06o9M7IuYRamEe5tB5GlOlB3zJu7ydmz99gHUc ewatkins@ewatkins-pc
   cloud-init.yaml: |
@@ -281,10 +288,11 @@ spec:
                 - { name: HOME, value: /tmp }
                 - { name: OCI_CLI_SUPPRESS_FILE_PERMISSIONS_WARNING, value: "True" }
                 - { name: NAME, value: bedrock-relay }
-                - { name: SHAPE, value: VM.Standard.E2.1.Micro }
-                - { name: AD, value: "lXFQ:US-CHICAGO-1-AD-2" }
-                # Canonical-Ubuntu-24.04-Minimal-2026.09.18-0
-                - { name: IMAGE_ID, value: ocid1.image.oc1.us-chicago-1.aaaaaaaaqexbn3tdvmjovmjkunbylan2rriovcbl2tsvyjiidaykgad4kemq }
+                - { name: SHAPE, value: VM.Standard.A1.Flex }
+                - { name: SHAPE_CONFIG, value: '{"ocpus":1,"memoryInGBs":6}' }
+                - { name: ADS, value: "lXFQ:US-CHICAGO-1-AD-1 lXFQ:US-CHICAGO-1-AD-2 lXFQ:US-CHICAGO-1-AD-3" }
+                # Canonical-Ubuntu-24.04-Minimal-aarch64-2026.09.18-0 (A1.Flex is ARM)
+                - { name: IMAGE_ID, value: ocid1.image.oc1.us-chicago-1.aaaaaaaajtdmoytnv6a7ct73vcr2sdu35gic6skc4zxde7jvskaahgqtipna }
                 # relay-subnet in relay-vcn
                 - { name: SUBNET_ID, value: ocid1.subnet.oc1.us-chicago-1.aaaaaaaawrch3tasud77qoiweiyukyieqmngefmqc6dss6fumq6sn4xpuaia }
               # OCI_CLI_USER/TENANCY/FINGERPRINT/REGION/KEY_CONTENT (the CLI
