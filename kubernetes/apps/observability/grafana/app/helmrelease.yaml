@@ -170,6 +170,13 @@ spec:
               tenancy0: $${OCI_LOGS_TENANCY}
               fingerprint0: $${OCI_LOGS_FINGERPRINT}
               privkey0: $${OCI_LOGS_PRIVATE_KEY}
+          # IP geolocation for the minecraft-relay maps (ip-api.com batch API).
+          - name: IP Geolocation
+            type: yesoreyeram-infinity-datasource
+            uid: ip-geo
+            jsonData:
+              allowedHosts:
+                - http://ip-api.com
     dashboards:
       default:
         cloudflare-tunnel:
@@ -307,6 +314,7 @@ spec:
       - pr0ps-trackmap-panel
       - vonage-status-panel
       - oci-logs-datasource
+      - yesoreyeram-infinity-datasource
     serviceMonitor:
       enabled: true
     ingress:
