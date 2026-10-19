@@ -10,6 +10,8 @@ spec:
   hostname: talos-subnet-router
   subnetRouter:
     advertiseRoutes:
+      # The ISP modem's admin page, reachable from the LAN through the gateway.
+      - 192.168.0.1/32
       - 192.168.1.0/24
       - 192.168.30.0/24
       - 192.168.40.0/24
