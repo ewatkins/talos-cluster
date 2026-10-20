@@ -21,8 +21,8 @@
 # velocity check sends a PROXY v1 line first. The backends behind Velocity
 # don't use PROXY, so their checks are unchanged.
 #
-# The relay-* checks go the way players do: mc.ewatkins.dev, the Oracle relay
-# VM, then back in through the home port forwards to Velocity/Geyser.
+# The path players take (mc.ewatkins.dev through the Oracle relay) is checked
+# from outside by the external Gatus on the GCP uptime VM.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -92,28 +92,6 @@ data:
         url: udp://192.168.50.100:19132
         body: !!binary DQoNCgANClFVSVQKIRIADH8AAAHAqDJkAAFKvAEAAAAAAAAAAAD//wD+/v7+/f39/RI0VngAAAAAAAAAAA==
         interval: 1m
-        conditions:
-          - "[CONNECTED] == true"
-          - "[BODY] == pat(*MCPE;*)"
-        ui: { dont-resolve-failed-conditions: true }
-        alerts:
-          - type: pushover
-      - name: relay-java
-        group: Minecraft
-        url: tcp://mc.ewatkins.dev:25565
-        body: "\x0f\x00\x00\x09localhost\x00\x00\x01\x01\x00"
-        interval: 2m
-        conditions:
-          - "[CONNECTED] == true"
-          - '[BODY] == pat(*"description"*)'
-        ui: { dont-resolve-failed-conditions: true }
-        alerts:
-          - type: pushover
-      - name: relay-bedrock
-        group: Minecraft
-        url: udp://mc.ewatkins.dev:19132
-        body: !!binary AQAAAAAAAAAAAP//AP7+/v79/f39EjRWeAAAAAAAAAAA
-        interval: 2m
         conditions:
           - "[CONNECTED] == true"
           - "[BODY] == pat(*MCPE;*)"
