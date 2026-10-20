@@ -31,9 +31,12 @@ spec:
           # daemon, which Talos does not have. See ../README.md and
           # ../WINGS.md.
           app:
+            # The heavy image carries the Rust and Node toolchains, so the
+            # panel can recompile itself when an extension is installed.
+            # Without extensions its supervisor runs the stock binary.
             image:
               repository: ghcr.io/calagopus/panel
-              tag: 1.2.6@sha256:a2e73fc84a69e3e9750568e2eed1d01ed4d0e940f8c6b0e7f098c151e944039b
+              tag: 1.2.6-heavy@sha256:34c1ea771a84c237ad5f351426eaebeb834ddaff4cfa1e88a467a7720dd4dcf9
             env:
               TZ: UTC
               PORT: "8000"
@@ -86,8 +89,10 @@ spec:
               requests:
                 cpu: 50m
                 memory: 128Mi
+              # Extension builds run cargo in this container and spike RAM.
+              # Build jobs are sized at one per 2 GiB of this limit.
               limits:
-                memory: 1Gi
+                memory: 6Gi
     service:
       app:
         controller: *app
@@ -99,11 +104,32 @@ spec:
       # so it survives a node loss and is covered by the NAS backups.
       data:
         type: persistentVolumeClaim
+        # Created as the only PVC, so named after the release. Pinned so the
+        # build volume below does not rename it to calagopus-data, which
+        # would replace it with an empty one.
+        forceRename: calagopus
         storageClass: nfs-fast
         accessMode: ReadWriteOnce
         size: 1Gi
         globalMounts:
           - path: /var/lib/calagopus
+      # The heavy image's build state: compiled binaries, merged
+      # translations, uploaded extension archives and their migrations.
+      # Kept so a restart reuses the last build instead of recompiling.
+      build:
+        type: persistentVolumeClaim
+        storageClass: nfs-fast
+        accessMode: ReadWriteOnce
+        size: 5Gi
+        globalMounts:
+          - path: /app/binaries
+            subPath: binaries
+          - path: /app/translations
+            subPath: translations
+          - path: /app/extensions
+            subPath: extensions
+          - path: /app/repo/database/extension-migrations
+            subPath: extension-migrations
       logs:
         type: emptyDir
         globalMounts:
