@@ -21,7 +21,7 @@ player ─▶ mc.ewatkins.dev (A 170.9.242.78, DNS-only)
 | Instance | `minecraft-relay`, us-chicago-1 AD-1, `VM.Standard.A1.Flex` 1 OCPU / 6 GB (ARM), Ubuntu 24.04 Minimal |
 | Public IP | `170.9.242.78`, a reserved public IP also named `minecraft-relay`, so it outlives the VM |
 | Network | `relay-vcn` / `relay-subnet`, OpenTofu in `terraform/oracle-relay` (security list: TCP 25565, TCP 19132, UDP 19132 and UDP 19133 from anywhere, SSH from home only, ICMP fragmentation-needed) |
-| Java | `haproxy.service`: TCP 25565 to the home WAN IP, `send-proxy-v2` |
+| Java | `haproxy.service`: TCP 25565 to the home WAN IP, `send-proxy-v2`. Only handshakes naming `mc.ewatkins.dev` get through; scanners that connect by IP (or as `matscan`) are rejected before Velocity, logged as `<NOSRV>` with termination `PR` |
 | Bedrock (RakNet) | `bedrock-relay.service`: `bedrock-relay.py`, UDP 19132 to the home WAN IP, PROXY v2 header on each client's first packet |
 | Bedrock (NetherNet) | `haproxy.service` frontend `minecraft_signaling`: TCP 19132 to the home WAN IP, `send-proxy-v2`. `bedrock-webrtc-relay.service`: the same `bedrock-relay.py` with `PROXY_HEADER=0`, UDP 19133 to the home WAN IP |
 | SSH | `ewatkins@170.9.242.78` (key-only, passwordless sudo), from the home IP or the extra sources in `ssh_extra_cidrs` (`oci-api-secret`); from elsewhere jump through a wing, e.g. `-J ewatkins@192.168.50.100` |
