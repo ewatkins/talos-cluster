@@ -116,9 +116,12 @@ handling.
 
 ## Monitoring
 
-The Gatus checks `relay-java` and `relay-bedrock`
-(`default/calagopus/app/gatus.yaml`) ping `mc.ewatkins.dev` from the cluster,
-covering DNS, the VM, both port forwards, and Velocity/Geyser.
+The external Gatus on the GCP `uptime` VM (`/opt/gatus`, not in Git) checks
+`mc.ewatkins.dev` from outside: Java (TCP 25565), Bedrock (a RakNet ping on
+UDP 19132) and Bedrock NetherNet (`GET /v1/join` on TCP 19132), covering DNS,
+the VM, the port forwards, and Velocity/Geyser. NetherNet gameplay on UDP
+19133 has no check. The in-cluster Gatus checks the servers directly on
+VLAN 50.
 
 ## Rebuilding the VM
 

@@ -1305,7 +1305,7 @@
         "type": "oci-logs-datasource",
         "uid": "oci-logs"
       },
-      "description": "Connections under 50 KB: server-list status pings (about 4 KB each), including Gatus's relay-java check every 2 minutes from home and server scanners.",
+      "description": "Connections under 50 KB: server-list status pings (about 4 KB each), including the external Gatus Java check every minute from the GCP uptime VM and server scanners.",
       "gridPos": {
         "h": 8,
         "w": 24,
