@@ -1,0 +1,17 @@
+---
+# Public name for the logo route (httproute.yaml, patchmon-logos): Cloudflare
+# sends patchmon.ewatkins.dev through the tunnel to the external gateway, which
+# serves only the logos. LAN clients keep the UniFi record for the internal
+# gateway.
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: patchmon
+  namespace: default
+spec:
+  endpoints:
+    - dnsName: patchmon.ewatkins.dev
+      recordTTL: 1
+      recordType: CNAME
+      targets:
+        - "${SECRET_CLOUDFLARE_TUNNEL_ID}.cfargotunnel.com"
