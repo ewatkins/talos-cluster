@@ -27,3 +27,43 @@ spec:
       backendRefs:
         - name: patchmon
           port: 3000
+---
+# The logos only, through the Cloudflare tunnel. PatchMon's report emails load
+# their header image from <server URL>/api/v1/settings/logos/light, and Gmail
+# fetches images through Google's proxy, which can't reach the internal
+# gateway. PatchMon serves these without auth on purpose; everything else
+# stays internal. The target annotation keeps the UniFi record pointing at the
+# internal gateway, matching the route above, so LAN clients see no change.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: patchmon-logos
+  namespace: default
+  annotations:
+    external-dns.kubernetes.io/target: "internal.ewatkins.dev"
+spec:
+  parentRefs:
+    - name: external
+      namespace: network
+      sectionName: https
+  hostnames:
+    - "patchmon.ewatkins.dev"
+  rules:
+    - matches:
+        - path:
+            type: Exact
+            value: /api/v1/settings/logos/light
+          method: GET
+        - path:
+            type: Exact
+            value: /api/v1/settings/logos/dark
+          method: GET
+      filters:
+        - type: ResponseHeaderModifier
+          responseHeaderModifier:
+            add:
+              - name: Strict-Transport-Security
+                value: "max-age=31449600; includeSubDomains"
+      backendRefs:
+        - name: patchmon
+          port: 3000
