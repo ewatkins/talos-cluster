@@ -288,7 +288,14 @@ can't write; set them again after rebuilding Velocity's server:
 - `plugins/Geyser-Velocity/config.yml`, under `advanced.bedrock`:
   `use-haproxy-protocol: true` and
   `haproxy-protocol-whitelisted-ips: ["170.9.242.78", "192.168.40.8/29", "192.168.40.16"]`
-  (the relay and the cluster nodes, for Gatus).
+  (the relay and the cluster nodes, for Gatus). Under `advanced.java`:
+  `use-haproxy-protocol: true` and `use-direct-connection: false`. Geyser's
+  direct connection skips the PROXY header that Velocity now requires, and
+  Velocity drops it with "End of stream"; over TCP with the header, Velocity
+  also sees the Bedrock player's real address. Under `bedrock`, the
+  NetherNet settings: `webrtc-port: 19133`, `transport: both` and
+  `signaling.builtin.advertise-addresses: ["170.9.242.78:19133"]` (see
+  [the relay README](../../network/minecraft-relay/README.md#nethernet-bedrock-2660-2026-10-27)).
 
 The Gatus `velocity` and `velocity-bedrock` checks send PROXY headers, so
 they fail if either setting is missing.
