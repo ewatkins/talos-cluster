@@ -7,10 +7,11 @@ copies a Pterodactyl database across.
 
 | Setting | Value |
 | --- | --- |
-| Image | `ghcr.io/calagopus/panel:1.2.5` (digest-pinned) |
+| Image | `ghcr.io/calagopus/panel:1.2.6-heavy` (digest-pinned); the heavy variant can build extensions |
 | Database | `calagopus` on `crunchy-postgres-17`, through pgBouncer |
 | Cache | Shared Dragonfly, keys prefixed `calagopus::` |
 | File storage | 1 Gi `nfs-fast` PVC at `/var/lib/calagopus` |
+| Extension builds | 5 Gi `nfs-fast` PVC `calagopus-build`, mounted at `/app/binaries`, `/app/translations`, `/app/extensions` and `/app/repo/database/extension-migrations` |
 | Encryption key | `calagopus-secret` Bitwarden item, `encryption_key` field |
 | Wings | One VM per world on VLAN 50, named after it, defined in [`terraform/wings`](../../../../terraform/wings/README.md) and built by tofu-controller from [`wings/`](./wings/terraform.yaml) (Flux Kustomization `calagopus-wings`); see [WINGS.md](./WINGS.md) |
 
@@ -19,6 +20,76 @@ Talos has none; running it here would mean a privileged Docker-in-Docker pod,
 which upstream does not support. The game servers move from the four
 Pterodactyl Wings VMs to new Calagopus Wings VMs (one per world),
 which take over the old addresses.
+
+## Extensions
+
+The panel runs the **heavy** image, which ships the Rust and Node toolchains so
+it can recompile itself with extensions
+([Calagopus docs](https://calagopus.com/docs/panel/extensions/switching-to-the-heavy-image)).
+Install an extension by uploading its `.c7s.zip` in the admin area's
+extension page; the build runs in the background and the panel restarts on the
+new binary when it finishes. Builds are cached in `calagopus-build`, so a pod
+restart reuses the last one.
+
+A build needs far more memory than the panel itself, so the container's limit
+is 6 Gi (three parallel build jobs). If builds are killed for running out of
+memory, raise it.
+
+To go back to the regular image, change the tag back (`1.2.6-heavy` →
+`1.2.6`). The regular image ignores the build volume, and the extension
+archives stay in it for a later switch back.
+
+## Single sign-on (Keycloak)
+
+Calagopus keeps OAuth providers in its database, not in its environment, so
+this is set up in the admin area rather than in Git. The provider's client
+secret is stored encrypted with `APP_ENCRYPTION_KEY`.
+
+| Setting | Value |
+| --- | --- |
+| Client ID | `calagopus` (confidential) |
+| Auth URL | `https://keycloak.ewatkins.dev/realms/master/protocol/openid-connect/auth` |
+| Token URL | `https://keycloak.ewatkins.dev/realms/master/protocol/openid-connect/token` |
+| Info URL | `https://keycloak.ewatkins.dev/realms/master/protocol/openid-connect/userinfo` |
+| Scopes | `openid`, `email`, `profile` |
+| Identifier path | `$.sub` |
+| Email path | `$.email` |
+| Username path | `$.preferred_username` |
+| First / last name paths | `$.given_name` / `$.family_name` |
+| PKCE | On |
+| Login only | On: a Keycloak login must already be linked to a panel account |
+| Redirect URI | `https://mcpanel.ewatkins.dev/api/auth/oauth/<provider UUID>` |
+
+**Import from OpenID Discovery** in the create form does not work here: in
+the cluster `keycloak.ewatkins.dev` resolves to the external gateway
+(`192.168.40.30`), and the panel refuses to fetch user-supplied URLs on
+private addresses (`APP_BLOCKED_CIDRS`). Enter the endpoints by hand instead.
+Only the discovery import goes through that check; sign-in requests to the
+token and info URLs do not.
+
+The redirect URI ends in the provider's UUID, which Calagopus assigns when the
+provider is created, so the provider comes first:
+
+1. **Check the panel URL.** In **Admin → Settings**, the app URL must be
+   `https://mcpanel.ewatkins.dev`; Calagopus builds the redirect URI from it.
+2. **Create the provider, disabled.** In **Admin → OAuth Providers →
+   Create**, name it `Keycloak`, fill in the settings above, and leave it
+   disabled. Save it; the provider's page then shows its redirect URL.
+3. **Create the Keycloak client.** In the `master` realm: **Clients → Create
+   client → OpenID Connect**, client ID `calagopus`, **Client
+   authentication** on. Set **Valid redirect URIs** to the redirect URL the
+   provider's page shows; it must match exactly. Copy the secret from the
+   **Credentials** tab.
+4. **Finish the provider.** Paste the secret into the provider, enable it and
+   save.
+5. **Link accounts.** Each user signs in with their password once, then
+   links Keycloak under **Account → OAuth Links**. An admin can also link a
+   user from **Admin → Users**.
+
+**Login only** stays on because Keycloak signs people in with GitHub and
+Google: with it off, any Keycloak login with no linked account would create a
+new panel account. Leave **Bypass two-factor** off unless Keycloak enforces
+its own second factor.
 
 ## Migration plan
 

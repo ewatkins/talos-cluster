@@ -48,6 +48,7 @@ The theme inherits from the default `keycloak` parent, hides the username/passwo
 | [Paperless-ngx](../../media/paperless/README.md) | OIDC | `allauth.socialaccount.providers.openid_connect` |
 | [Forgejo](../../development/forgejo/README.md) | OIDC | External authentication only |
 | [Homelable](../../default/homelable/README.md) | OIDC | Client ID `homelable`, redirect `https://homelab.ewatkins.dev/api/v1/auth/oidc/callback`; exclusive — replaces local login |
+| [Calagopus](../../default/calagopus/README.md#single-sign-on-keycloak) | OIDC | Client ID `calagopus`, redirect `https://mcpanel.ewatkins.dev/api/auth/oauth/<provider UUID>`; provider set up in the panel's admin area, login only |
 | [Garage Web UI](../../storage/garage/README.md) | OIDC (Envoy SecurityPolicy) | Client ID `garage-webui`, issuer `https://keycloak.ewatkins.dev/realms/master` |
 
 ## Flux Dependencies
