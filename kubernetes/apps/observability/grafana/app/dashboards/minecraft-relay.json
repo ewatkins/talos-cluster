@@ -901,7 +901,7 @@
       "id": 1,
       "type": "table",
       "title": "Play Sessions",
-      "description": "Sessions from Velocity on wing-proxy (Java and Bedrock): one row per login, paired with its logout. Active means the player is still on. IPs are the real player addresses (PROXY protocol); Home is everyone at home.",
+      "description": "Sessions from Velocity on wing-proxy (Java and Bedrock): one row per login, paired with its logout. Active means the player is still on. IPs are the real player addresses (PROXY protocol); Home is everyone at home; Work is the work network.",
       "datasource": {
         "type": "loki",
         "uid": "loki"
@@ -1249,6 +1249,11 @@
                         "text": "Home",
                         "color": "blue",
                         "index": 0
+                      },
+                      "{{ .work_ip }}": {
+                        "text": "Work",
+                        "color": "purple",
+                        "index": 1
                       }
                     }
                   }
@@ -1557,6 +1562,11 @@
                         "text": "Home",
                         "color": "blue",
                         "index": 0
+                      },
+                      "{{ .work_ip }}": {
+                        "text": "Work",
+                        "color": "purple",
+                        "index": 1
                       }
                     }
                   }

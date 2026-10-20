@@ -208,7 +208,7 @@
         "type": "oci-logs-datasource",
         "uid": "oci-logs"
       },
-      "description": "Bytes sent to each source IP through the relay, from the relay's connection log (logged when a connection ends). Pings included; Home is everyone at home plus Gatus.",
+      "description": "Bytes sent to each source IP through the relay, from the relay's connection log (logged when a connection ends). Pings included; Home is everyone at home plus Gatus; Work is the work network.",
       "gridPos": {
         "h": 9,
         "w": 24,
@@ -342,6 +342,11 @@
                         "text": "Home",
                         "color": "blue",
                         "index": 0
+                      },
+                      "{{ .work_ip }}": {
+                        "text": "Work",
+                        "color": "purple",
+                        "index": 1
                       }
                     }
                   }
