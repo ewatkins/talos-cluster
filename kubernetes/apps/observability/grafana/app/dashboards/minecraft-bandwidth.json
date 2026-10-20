@@ -263,6 +263,24 @@
           }
         },
         {
+          "id": "filterByValue",
+          "options": {
+            "type": "include",
+            "match": "all",
+            "filters": [
+              {
+                "fieldName": "Player",
+                "config": {
+                  "id": "regex",
+                  "options": {
+                    "value": "^[0-9.]+$"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
           "id": "groupBy",
           "options": {
             "fields": {

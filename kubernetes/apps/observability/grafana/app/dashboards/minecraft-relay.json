@@ -251,6 +251,15 @@
                     "value": 50000
                   }
                 }
+              },
+              {
+                "fieldName": "Player",
+                "config": {
+                  "id": "regex",
+                  "options": {
+                    "value": "^[0-9.]+$"
+                  }
+                }
               }
             ]
           }
@@ -410,6 +419,15 @@
                   "id": "greaterOrEqual",
                   "options": {
                     "value": 50000
+                  }
+                }
+              },
+              {
+                "fieldName": "Player",
+                "config": {
+                  "id": "regex",
+                  "options": {
+                    "value": "^[0-9.]+$"
                   }
                 }
               }
@@ -720,6 +738,15 @@
                   "id": "lower",
                   "options": {
                     "value": 50000
+                  }
+                }
+              },
+              {
+                "fieldName": "Player",
+                "config": {
+                  "id": "regex",
+                  "options": {
+                    "value": "^[0-9.]+$"
                   }
                 }
               }
@@ -1376,6 +1403,15 @@
                   "id": "lower",
                   "options": {
                     "value": 50000
+                  }
+                }
+              },
+              {
+                "fieldName": "Player",
+                "config": {
+                  "id": "regex",
+                  "options": {
+                    "value": "^[0-9.]+$"
                   }
                 }
               }
