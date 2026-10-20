@@ -179,7 +179,7 @@
       "id": 12,
       "type": "stat",
       "title": "Pings",
-      "description": "Status pings under 50 KB: Gatus and server scanners.",
+      "description": "Status pings under 50 KB: Gatus and server scanners. Connections the relay rejected (handshake not naming mc.ewatkins.dev, ended PR) are left out.",
       "datasource": {
         "type": "oci-logs-datasource",
         "uid": "oci-logs"
@@ -258,6 +258,24 @@
                   "id": "regex",
                   "options": {
                     "value": "^[0-9.]+$"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "type": "exclude",
+            "match": "any",
+            "filters": [
+              {
+                "fieldName": "Ended",
+                "config": {
+                  "id": "equal",
+                  "options": {
+                    "value": "PR"
                   }
                 }
               }
@@ -609,7 +627,7 @@
       "id": 21,
       "type": "geomap",
       "title": "Pings Map",
-      "description": "Where status pings came from (Java and Bedrock), sized by connection count. IPs are looked up with ip-api.com.",
+      "description": "Where status pings came from (Java and Bedrock), sized by connection count. IPs are looked up with ip-api.com. Connections the relay rejected (handshake not naming mc.ewatkins.dev, ended PR) are left out.",
       "gridPos": {
         "h": 11,
         "w": 12,
@@ -755,6 +773,24 @@
           "filter": {
             "id": "byRefId",
             "options": "A"
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "type": "exclude",
+            "match": "any",
+            "filters": [
+              {
+                "fieldName": "Ended",
+                "config": {
+                  "id": "equal",
+                  "options": {
+                    "value": "PR"
+                  }
+                }
+              }
+            ]
           }
         },
         {
@@ -1342,7 +1378,7 @@
         "type": "oci-logs-datasource",
         "uid": "oci-logs"
       },
-      "description": "Connections under 50 KB: server-list status pings (about 4 KB each), including the External Gatus Java check every minute and server scanners.",
+      "description": "Connections under 50 KB: server-list status pings (about 4 KB each), including the External Gatus Java check every minute and server scanners. Connections the relay rejected (handshake not naming mc.ewatkins.dev, ended PR) are left out.",
       "gridPos": {
         "h": 8,
         "w": 24,
@@ -1417,6 +1453,24 @@
                   "id": "regex",
                   "options": {
                     "value": "^[0-9.]+$"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "type": "exclude",
+            "match": "any",
+            "filters": [
+              {
+                "fieldName": "Ended",
+                "config": {
+                  "id": "equal",
+                  "options": {
+                    "value": "PR"
                   }
                 }
               }
