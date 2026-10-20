@@ -119,6 +119,49 @@ spec:
                 cpu: 50m
               limits:
                 memory: 512Mi
+          # Downloads build-essential + clang as .debs onto the PVC, for the app
+          # container's postStart hook to install (apt installs land on the
+          # ephemeral rootfs and vanish on restart). Same image as the app
+          # container, so the download resolves against the same base packages.
+          #
+          # Keyed on the base libc/libgcc/libstdc++ versions: libc6-dev pins
+          # libc6 exactly, so the cache is refetched when an image bump moves
+          # them and reused otherwise, which keeps restarts offline-safe.
+          # Runs after `tools` (key order) so $HOME is already uid-1000-owned.
+          # Best-effort: every failure path exits 0 and keeps the old cache.
+          y-devpkgs:
+            image:
+              repository: ghcr.io/coder/code-server
+              tag: 4.141.0
+            command:
+              - /bin/sh
+              - -c
+              - |
+                CACHE=/home/ewatkins/.cache/devpkgs
+                KEY=$$(dpkg-query -W -f='$${Package}=$${Version} ' libc6 libgcc-s1 libstdc++6 | sha256sum | cut -c1-16)
+                if [ "$$(cat "$${CACHE}/.key" 2>/dev/null)" = "$${KEY}" ]; then
+                  echo "devpkgs cache up to date, skipping download"
+                  exit 0
+                fi
+                apt-get update -qq && apt-get install -y -qq --download-only --no-install-recommends build-essential clang || {
+                  echo "download failed, keeping the previous cache"
+                  exit 0
+                }
+                install -d -o 1000 -g 1000 /home/ewatkins/.cache
+                rm -rf "$${CACHE}.new" && mkdir "$${CACHE}.new"
+                cp /var/cache/apt/archives/*.deb "$${CACHE}.new/"
+                echo "$${KEY}" > "$${CACHE}.new/.key"
+                rm -rf "$${CACHE}" && mv "$${CACHE}.new" "$${CACHE}"
+                chown -R 1000:1000 "$${CACHE}"
+                exit 0
+            securityContext:
+              runAsUser: 0
+              runAsGroup: 0
+            resources:
+              requests:
+                cpu: 10m
+              limits:
+                memory: 256Mi
           # Bring the repo up to date with origin/main on every pod start, so a
           # fresh IDE session doesn't open onto a checkout that Renovate has
           # since moved past. Runs after `tools` (app-template orders init
@@ -182,6 +225,18 @@ spec:
               SOPS_AGE_KEY_FILE: /var/run/secrets/sops/age.key
               # Written by `talhelper genconfig`; not stored as a secret
               TALOSCONFIG: /home/ewatkins/projects/talos-cluster/talos/clusterconfig/talosconfig
+            # Installs the build-essential + clang .debs cached by y-devpkgs.
+            # Offline and quick; a failure is logged and never blocks the IDE.
+            lifecycle:
+              postStart:
+                exec:
+                  command:
+                    - /bin/sh
+                    - -c
+                    - >-
+                      sudo dpkg -i --skip-same-version /home/ewatkins/.cache/devpkgs/*.deb
+                      > /tmp/devpkgs.log 2>&1 || echo "devpkgs install failed" >> /tmp/devpkgs.log;
+                      exit 0
             probes:
               # exec, not httpGet: the kubelet probes the pod IP, but
               # code-server binds loopback only.

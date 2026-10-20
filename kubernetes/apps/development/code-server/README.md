@@ -6,7 +6,7 @@ VS Code in the browser, used as the central development environment for this clu
 
 | Setting | Value | Notes |
 | --- | --- | --- |
-| Image | `ghcr.io/coder/code-server:4.128.0` | Official upstream image |
+| Image | `ghcr.io/coder/code-server` | Official upstream image; tag managed by Renovate |
 | Chart | `app-template` (OCI) from `flux-system` | |
 | URL | `https://code.ewatkins.dev` | A record to `${CODE_SERVER}` (192.168.40.145); no gateway involved |
 | Auth | Keycloak OIDC via in-pod oauth2-proxy sidecar | TLS from cert-manager (`code-server-tls`); code-server itself runs `--auth none` on loopback |
@@ -16,7 +16,7 @@ VS Code in the browser, used as the central development environment for this clu
 | SSH | `ssh ewatkins@code.ewatkins.dev` (port 22) | Sidecar `linuxserver/openssh-server`; same IP as https via Cilium `lb-ipam-sharing-key` |
 | Config PVC | `code-server-config`, 50Gi, `ReadWriteOnce` | StorageClass `nfs-fast` |
 | Cluster access | ServiceAccount `code-server` bound to `cluster-admin` | `kubectl`/`flux` use the in-cluster config |
-| Resources | requests: 100m CPU, 1Gi memory; limits: 8Gi memory | |
+| Resources | requests: 100m CPU, 256Mi memory; limits: 4Gi memory | |
 
 ## Authentication
 
@@ -40,6 +40,15 @@ An init container installs the same CLI tools as `task workstation:generic-linux
 Versions are **pinned in the init container script** and downloaded from each project's release URL. Deliberately *not* via an installer-redirector like `i.jpillora.com` (which `task workstation:generic-linux` uses): that would make every pod start depend on a third-party service being healthy, and the pod cannot schedule while it is down — which is exactly what happened when that service started returning HTTP 500.
 
 The install is guarded by a version marker (`~/.local/bin/.toolchain`). A restart whose pinned versions match the marker skips the install entirely, so the pod starts even with no network. Bumping a version in the script invalidates the marker and reinstalls.
+
+### C toolchain (build-essential)
+
+The upstream image ships no compiler or libc headers, so nothing native (Rust crates, node-gyp, cgo) can link. `apt-get install` would land on the ephemeral rootfs and vanish on restart, so it is split in two:
+
+- The `y-devpkgs` init container (same image as the IDE) downloads `build-essential` and `clang` as `.deb` files into `~/.cache/devpkgs`. The cache is keyed on the image's `libc6`/`libgcc-s1`/`libstdc++6` versions, because `libc6-dev` must match `libc6` exactly; an image bump that moves them triggers a refetch, otherwise the download is skipped.
+- A `postStart` hook on the IDE container runs `sudo dpkg -i` over that cache on every start. It needs no network and takes seconds; output goes to `/tmp/devpkgs.log`.
+
+Both halves are best-effort: a failed download keeps the previous cache, and a failed install is logged without blocking the IDE. To add a package, append it to the `apt-get install --download-only` line and delete `~/.cache/devpkgs/.key` to force a refetch on the next restart.
 
 Anything else in `/home/ewatkins` (VS Code extensions, dotfiles, language runtimes, cloned repos) persists on the PVC too. Note that **no secret is mounted under `/home/ewatkins`**: a mount there makes the kubelet create its parent directories as root inside the PVC, and code-server then cannot write its own `~/.config`.
 
