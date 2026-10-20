@@ -208,7 +208,7 @@
         "type": "oci-logs-datasource",
         "uid": "oci-logs"
       },
-      "description": "Bytes sent to each source IP through the relay, from the relay's connection log (logged when a connection ends). Pings included; Home is everyone at home plus Gatus; Work is the work network.",
+      "description": "Bytes sent to each source IP through the relay, from the relay's connection log (logged when a connection ends). Pings included; Home is everyone at home; Work is the work network; External Gatus is the uptime checker on GCP.",
       "gridPos": {
         "h": 9,
         "w": 24,
@@ -365,6 +365,11 @@
                         "text": "Work",
                         "color": "purple",
                         "index": 1
+                      },
+                      "{{ .external_gatus_ip }}": {
+                        "text": "External Gatus",
+                        "color": "orange",
+                        "index": 2
                       }
                     }
                   }
