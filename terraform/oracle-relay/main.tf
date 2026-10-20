@@ -107,6 +107,30 @@ resource "oci_core_default_security_list" "relay" {
   }
 
   ingress_security_rules {
+    description = "Minecraft Bedrock NetherNet signaling"
+    source      = "0.0.0.0/0"
+    source_type = "CIDR_BLOCK"
+    protocol    = "6"
+    stateless   = false
+    tcp_options {
+      min = 19132
+      max = 19132
+    }
+  }
+
+  ingress_security_rules {
+    description = "Minecraft Bedrock NetherNet WebRTC"
+    source      = "0.0.0.0/0"
+    source_type = "CIDR_BLOCK"
+    protocol    = "17"
+    stateless   = false
+    udp_options {
+      min = 19133
+      max = 19133
+    }
+  }
+
+  ingress_security_rules {
     description = "Minecraft Java Relay"
     source      = "0.0.0.0/0"
     source_type = "CIDR_BLOCK"

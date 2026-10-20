@@ -6,8 +6,9 @@
 # Free Oracle Cloud VMs are often "out of host capacity", so instead of
 # retrying by hand this CronJob asks for the relay VM every 10 minutes
 # until Oracle hands one over. Players join mc.ewatkins.dev, which points at
-# the VM: HAProxy takes TCP 25565 (Java) and bedrock-relay.py UDP 19132 (Bedrock), and
-# both forward to the home WAN IP, where the modem and UniFi port forwards
+# the VM: HAProxy takes TCP 25565 (Java) and TCP 19132 (Bedrock NetherNet
+# signaling), bedrock-relay.py UDP 19132 (Bedrock RakNet) and UDP 19133
+# (Bedrock NetherNet WebRTC), and all of them forward to the home WAN IP, where the modem and UniFi port forwards
 # accept only this VM's reserved IP and send it on to Velocity/Geyser on
 # wing-proxy. HAProxy adds a PROXY v2 header so Velocity (haproxy-protocol =
 # true) sees real player addresses. The home IP isn't in this public repo:
@@ -64,7 +65,7 @@ data:
         # notified tag on the instance records that it was sent; if Pushover
         # fails the tag stays unset and the next run tries again.
         if [ "$state" = RUNNING ] && [ -n "$ip" ] && [ "$notified" != true ]; then
-          if notify "$NAME is RUNNING at $ip (Oracle us-chicago-1). Point mc.ewatkins.dev at it and test UDP 19132 and TCP 25565."; then
+          if notify "$NAME is RUNNING at $ip (Oracle us-chicago-1). Point mc.ewatkins.dev at it and test UDP 19132/19133 and TCP 19132/25565."; then
             oci compute instance update --instance-id "$id" --force \
               --freeform-tags "$(jq -c '. + {notified: "true"}' <<<"$TAGS")" >/dev/null
             echo "sent Pushover notification"
@@ -183,16 +184,34 @@ data:
 
           backend velocity
               server home @HOME_WAN_IP@:25565 send-proxy-v2
+
+          # Bedrock NetherNet signaling: the HTTP request that starts a join
+          # (Geyser signaling mode builtin, on the Bedrock port over TCP). Geyser
+          # reads the PROXY v2 header here too. Not named minecraft_bedrock, so
+          # the relay dashboard doesn't count these as Bedrock sessions.
+          frontend minecraft_signaling
+              bind :19132
+              stick-table type ip size 100k expire 10m store conn_cur,conn_rate(10s)
+              tcp-request connection track-sc0 src
+              tcp-request connection reject if { sc_conn_cur(0) gt 20 }
+              tcp-request connection reject if { sc_conn_rate(0) gt 30 }
+              default_backend geyser_signaling
+
+          backend geyser_signaling
+              server home @HOME_WAN_IP@:19132 send-proxy-v2
       - path: /usr/local/bin/bedrock-relay.py
         permissions: "0755"
         content: |
           #!/usr/bin/env python3
-          """Relays Minecraft Bedrock (UDP 19132) to Geyser through the home port forward.
+          """Relays Minecraft Bedrock (UDP) to Geyser through the home port forward.
 
-          Each client address gets its own upstream socket. The first datagram sent
-          upstream for a client starts with a PROXY v2 header naming that client;
-          Geyser (advanced.bedrock.use-haproxy-protocol) takes the player address from
-          it and expects no header on later packets from the same upstream socket.
+          Each client address gets its own upstream socket. With PROXY_HEADER=1 (RakNet,
+          UDP 19132) the first datagram sent upstream for a client starts with a PROXY
+          v2 header naming that client; Geyser (advanced.bedrock.use-haproxy-protocol)
+          takes the player address from it and expects no header on later packets from
+          the same upstream socket. Geyser doesn't read PROXY headers on NetherNet
+          WebRTC yet, so that instance (UDP 19133) runs with PROXY_HEADER=0 and Geyser
+          sees the relay's address.
 
           When a client goes idle, one line is logged in HAProxy's tcplog layout
           (frontend minecraft_bedrock) and rsyslog files it with the Java connections
@@ -206,6 +225,9 @@ data:
 
           LISTEN = ("0.0.0.0", int(os.environ.get("LISTEN_PORT", "19132")))
           UPSTREAM = (os.environ["UPSTREAM_HOST"], int(os.environ.get("UPSTREAM_PORT", "19132")))
+          PROXY_HEADER = os.environ.get("PROXY_HEADER", "1") == "1"
+          # The backend field of the log line, which tells RakNet from WebRTC sessions.
+          BACKEND = os.environ.get("BACKEND", "geyser/home")
           IDLE = 120          # seconds without traffic before a client is dropped
           MAX_CLIENTS = 256
 
@@ -223,7 +245,7 @@ data:
               up, seen, start, start_wall, to_client = entry
               accepted = time.strftime("%d/%b/%Y:%H:%M:%S", time.gmtime(start_wall))
               duration = int((seen - start) * 1000)
-              print(f"{client[0]}:{client[1]} [{accepted}] minecraft_bedrock geyser/home "
+              print(f"{client[0]}:{client[1]} [{accepted}] minecraft_bedrock {BACKEND} "
                     f"0/0/{duration} {to_client} -- 0/0/0/0/0 0/0", flush=True)
 
 
@@ -236,7 +258,8 @@ data:
 
               # client address -> [upstream socket, last seen, start, start wall time, bytes to client]
               clients = {}
-              print(f"relaying udp {LISTEN[1]} to {UPSTREAM[0]}:{UPSTREAM[1]} with PROXY v2", flush=True)
+              header = "with" if PROXY_HEADER else "without"
+              print(f"relaying udp {LISTEN[1]} to {UPSTREAM[0]}:{UPSTREAM[1]} {header} PROXY v2", flush=True)
               last_sweep = time.monotonic()
               while True:
                   for key, _ in sel.select(timeout=5):
@@ -255,7 +278,8 @@ data:
                               up.connect(UPSTREAM)
                               sel.register(up, selectors.EVENT_READ, client)
                               entry = clients[client] = [up, now, now, time.time(), 0]
-                              data = proxy_header(client) + data
+                              if PROXY_HEADER:
+                                  data = proxy_header(client) + data
                           entry[1] = now
                           try:
                               entry[0].send(data)
@@ -303,6 +327,42 @@ data:
           DynamicUser=yes
           SyslogIdentifier=bedrock-relay
           Environment=UPSTREAM_HOST=@HOME_WAN_IP@
+          ExecStart=/usr/bin/python3 -I /usr/local/bin/bedrock-relay.py
+          Restart=always
+          RestartSec=5
+          TasksMax=16
+          MemoryMax=256M
+          NoNewPrivileges=yes
+          CapabilityBoundingSet=
+          ProtectSystem=strict
+          ProtectHome=yes
+          PrivateTmp=yes
+          PrivateDevices=yes
+          ProtectKernelTunables=yes
+          ProtectKernelModules=yes
+          ProtectControlGroups=yes
+          RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+          RestrictNamespaces=yes
+          LockPersonality=yes
+          SystemCallArchitectures=native
+
+          [Install]
+          WantedBy=multi-user.target
+      - path: /etc/systemd/system/bedrock-webrtc-relay.service
+        content: |
+          # Relays Bedrock NetherNet WebRTC (UDP 19133) to Geyser's webrtc-port through
+          # the home port forward, without a PROXY header: Geyser doesn't read one on
+          # WebRTC yet. Logs as bedrock-relay so sessions land with the others.
+          [Unit]
+          Description=Minecraft Bedrock NetherNet (WebRTC) UDP relay
+          After=network-online.target
+          Wants=network-online.target
+
+          [Service]
+          DynamicUser=yes
+          SyslogIdentifier=bedrock-relay
+          Environment=UPSTREAM_HOST=@HOME_WAN_IP@
+          Environment=LISTEN_PORT=19133 UPSTREAM_PORT=19133 PROXY_HEADER=0 BACKEND=geyser-webrtc/home
           ExecStart=/usr/bin/python3 -I /usr/local/bin/bedrock-relay.py
           Restart=always
           RestartSec=5
@@ -375,6 +435,8 @@ data:
       - sysctl --system
       # Oracle's Ubuntu images ship iptables rules that reject everything but SSH.
       - iptables -I INPUT -p udp --dport 19132 -j ACCEPT
+      - iptables -I INPUT -p udp --dport 19133 -j ACCEPT
+      - iptables -I INPUT -p tcp --dport 19132 -j ACCEPT
       - iptables -I INPUT -p tcp --dport 25565 -j ACCEPT
       # The VCN has no IPv6: allow loopback, replies and ICMPv6, drop the rest.
       - ip6tables -A INPUT -i lo -j ACCEPT
@@ -384,7 +446,7 @@ data:
       - netfilter-persistent save
       - systemctl reload ssh
       - systemctl daemon-reload
-      - systemctl enable --now bedrock-relay.service
+      - systemctl enable --now bedrock-relay.service bedrock-webrtc-relay.service
       - systemctl restart haproxy.service
       - systemctl restart rsyslog.service
 ---
