@@ -180,6 +180,15 @@ data:
               tcp-request connection track-sc0 src
               tcp-request connection reject if { sc_conn_cur(0) gt 20 }
               tcp-request connection reject if { sc_conn_rate(0) gt 30 }
+              # Only handshakes that name mc.ewatkins.dev reach Velocity.
+              # Players and the external Gatus connect by name; scanners
+              # sweeping IP ranges send the bare IP or their own name (matscan
+              # sends "matscan"), so they never get the status reply. The
+              # handshake arrives in the client's first packet; the match is
+              # on its hex form, since the packet is binary.
+              tcp-request inspect-delay 5s
+              tcp-request content accept if { req.payload(0,0),hex -m sub 6D632E657761746B696E732E646576 }
+              tcp-request content reject
               default_backend velocity
 
           backend velocity
