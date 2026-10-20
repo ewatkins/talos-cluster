@@ -1281,6 +1281,11 @@
                         "text": "Work",
                         "color": "purple",
                         "index": 1
+                      },
+                      "{{ .external_gatus_ip }}": {
+                        "text": "External Gatus",
+                        "color": "orange",
+                        "index": 2
                       }
                     }
                   }
@@ -1337,7 +1342,7 @@
         "type": "oci-logs-datasource",
         "uid": "oci-logs"
       },
-      "description": "Connections under 50 KB: server-list status pings (about 4 KB each), including the external Gatus Java check every minute from the GCP uptime VM and server scanners.",
+      "description": "Connections under 50 KB: server-list status pings (about 4 KB each), including the External Gatus Java check every minute and server scanners.",
       "gridPos": {
         "h": 8,
         "w": 24,
@@ -1603,6 +1608,11 @@
                         "text": "Work",
                         "color": "purple",
                         "index": 1
+                      },
+                      "{{ .external_gatus_ip }}": {
+                        "text": "External Gatus",
+                        "color": "orange",
+                        "index": 2
                       }
                     }
                   }
