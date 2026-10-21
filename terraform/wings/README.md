@@ -14,6 +14,7 @@ cluster, by committing to Git. The migration onto them is a runbook:
 | `wing-iridium` | 5030 | pve02 | Iridium | 192.168.50.30 (final) | none |
 | `wing-homestead` | 5020 | pve01 | Homestead | 192.168.50.20 (final) | none |
 | `wing-proxy` | 5000 | pve01 | Velocity, Lobby | 192.168.50.100, Lobby NIC 192.168.50.99 (final) | none |
+| `wing-test` | 5040 | pve03 | The test panel's node (extension development) | 192.168.50.40 | none |
 
 All of it is in [`main.tf`](./main.tf): the `wings` map is the inventory, and
 [`templates/user-data.yaml.tftpl`](./templates/user-data.yaml.tftpl) is
