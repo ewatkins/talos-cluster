@@ -9,6 +9,11 @@
 #    telemetry, creates the `Test` location, and notes what is missing.
 # 2. `panel` (panel image): creates the admin and the `wing-test` node with
 #    the panel's CLI if missing, then marks setup finished.
+# 3. `node-url` (postgres image): points the node's public URL at the
+#    panel's Wings proxy. Browsers only use the proxy for a node whose public
+#    URL is `<panel>/wings-proxy/<node uuid>`; otherwise they open the console
+#    straight to http://192.168.50.40:8080, which an https page blocks. The
+#    UUID only exists once step 2 has created the node.
 #
 # The values set in step 1 are owned here: changes made to them in the admin
 # UI are reset on the next run. The wing still has to be paired once, with
@@ -68,7 +73,6 @@ spec:
           volumeMounts:
             - name: seed
               mountPath: /seed
-      containers:
         - name: panel
           # Keep in step with ./helmrelease.yaml.
           image: ghcr.io/calagopus/panel:1.2.6-heavy@sha256:34c1ea771a84c237ad5f351426eaebeb834ddaff4cfa1e88a467a7720dd4dcf9
@@ -113,6 +117,22 @@ spec:
           volumeMounts:
             - name: seed
               mountPath: /seed
+      containers:
+        - name: node-url
+          image: docker.io/library/postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24
+          envFrom:
+            - secretRef:
+                name: calagopus-test-db-secret
+          env:
+            - name: PANEL_URL
+              value: https://mcpanel-test.ewatkins.dev
+          command: [sh, -euc]
+          args:
+            - |
+              psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -v url="$PANEL_URL" <<'SQL'
+              UPDATE nodes SET public_url = :'url' || '/wings-proxy/' || uuid
+              WHERE name = 'wing-test';
+              SQL
       volumes:
         - name: seed
           emptyDir: {}

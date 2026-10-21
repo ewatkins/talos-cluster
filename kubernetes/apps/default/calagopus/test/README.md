@@ -27,21 +27,35 @@ the Job changes.
    `admin_email` and `admin_password`.
 2. Merge. Flux creates the database user, the panel and the seed Job; the
    test wing is built by tofu-controller from the same merge.
-3. Pair the wing: in the panel, **Admin > Nodes > wing-test**, copy the
-   enrollment code, then run it on the wing and start Wings. The panel shows
-   the command as `calagopus-wings`; cloud-init installs the binary as
-   `wings`:
+3. Pair the wing. The node's token comes from the panel's CLI and goes
+   straight into Wings' join data, so it is never shown:
 
    ```sh
-   ssh ewatkins@192.168.50.40
-   sudo wings configure --panel-url https://mcpanel-test.ewatkins.dev --enroll <code>
-   # Plain HTTP: only the panel talks to this wing (APP_ENABLE_WINGS_PROXY),
-   # and the node's URL is http://192.168.50.40:8080.
-   sudoedit /etc/calagopus-wings/config.yml   # api.ssl.enabled: false
-   sudo systemctl start wings
+   kubectl -n calagopus-test exec deploy/calagopus-test -- \
+     panel-rs nodes reset-token --node wing-test --json 2>&1 >/dev/null \
+   | python3 -c 'import json,sys,base64; t=sys.stdin.read(); d=json.loads(t[t.index("{"):t.rindex("}")+1]); print(base64.b64encode(json.dumps({**d, "api": {"port": 8080}, "system": {"sftp": {"bind_port": 2022}}, "remote": "https://mcpanel-test.ewatkins.dev"}).encode()).decode())' \
+   | ssh ewatkins@192.168.50.40 'read -r jd; sudo wings configure --join-data "$jd" && sudo systemctl start wings'
    ```
 
-   **Verify Connection** on the node page must pass.
+   Wings serves plain HTTP here (`api.ssl.enabled: false`, the default for
+   join data); only the panel talks to it.
+
+### Network
+
+Browsers never reach the wing: the node's public URL is the panel's Wings
+proxy (`https://mcpanel-test.ewatkins.dev/wings-proxy/<node uuid>`, set by
+the seed Job), so the console and file transfers go through the panel. The
+UniFi policies for VLAN 50 allow by address, so 192.168.50.40 is listed in:
+
+| Policy | For |
+| --- | --- |
+| MC: cluster to Wings API and BlueMap | the panel to Wings (8080) |
+| MC: Wings to panel | Wings to `mcpanel-test` through Envoy (443) |
+| MC: tailnet SSH and SFTP | SSH and SFTP over Tailscale (22, 2022) |
+
+It is not in **MC: cluster and tailnet to game ports**: test servers are
+reachable from the management VLAN only. These policies live in UniFi, not
+in Git.
 
 ## Installing an extension
 
