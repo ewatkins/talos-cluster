@@ -1,0 +1,118 @@
+---
+# Does the panel's first-run setup, so a fresh database comes up ready to use
+# instead of on the setup wizard. Every step is idempotent: it runs again
+# whenever this Job changes (the force annotation lets Flux replace it), and
+# skips what already exists.
+#
+# 1. `settings` (postgres image): waits for the panel to finish its
+#    migrations, sets the panel URL and name, turns off sign-ups and
+#    telemetry, creates the `Test` location, and notes what is missing.
+# 2. `panel` (panel image): creates the admin and the `wing-test` node with
+#    the panel's CLI if missing, then marks setup finished.
+#
+# The values set in step 1 are owned here: changes made to them in the admin
+# UI are reset on the next run. The wing still has to be paired once, with
+# the enrollment command from Admin > Nodes > wing-test (see ../README.md).
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: calagopus-test-seed
+  annotations:
+    kustomize.toolkit.fluxcd.io/force: enabled
+spec:
+  backoffLimit: 10
+  template:
+    spec:
+      restartPolicy: OnFailure
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: DoesNotExist
+      initContainers:
+        - name: settings
+          image: docker.io/library/postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24
+          envFrom:
+            - secretRef:
+                name: calagopus-test-db-secret
+          env:
+            - name: PANEL_URL
+              value: https://mcpanel-test.ewatkins.dev
+          command: [sh, -euc]
+          args:
+            - |
+              # The panel runs its migrations before it starts listening.
+              until wget -q -O /dev/null http://calagopus-test:8000/; do
+                echo "waiting for the panel"; sleep 10
+              done
+
+              psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -v url="$PANEL_URL" <<'SQL'
+              INSERT INTO settings (key, value) VALUES
+                ('app::url', :'url'),
+                ('app::name', 'Calagopus (test)'),
+                ('app::registration_enabled', 'false'),
+                ('app::telemetry_enabled', 'false')
+              ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+
+              INSERT INTO locations (name, description)
+              VALUES ('Test', 'The test wing (terraform/wings, wing-test)')
+              ON CONFLICT (name) DO NOTHING;
+              SQL
+
+              q() { psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -tAc "$1"; }
+              q "SELECT uuid FROM locations WHERE name = 'Test'" > /seed/location
+              q "SELECT count(*) FROM users WHERE admin" > /seed/admins
+              q "SELECT count(*) FROM nodes WHERE name = 'wing-test'" > /seed/nodes
+          volumeMounts:
+            - name: seed
+              mountPath: /seed
+      containers:
+        - name: panel
+          # Keep in step with ./helmrelease.yaml.
+          image: ghcr.io/calagopus/panel:1.2.6-heavy@sha256:34c1ea771a84c237ad5f351426eaebeb834ddaff4cfa1e88a467a7720dd4dcf9
+          envFrom:
+            - secretRef:
+                name: calagopus-test-secret
+            - secretRef:
+                name: calagopus-test-db-secret
+            - secretRef:
+                name: calagopus-test-admin
+          env:
+            - name: REDIS_URL
+              value: redis://dragonfly.database.svc.cluster.local:6379
+            - name: REDIS_KEY_PREFIX
+              value: calagopus-test
+          command: [sh, -euc]
+          args:
+            - |
+              if [ "$(cat /seed/admins)" = 0 ]; then
+                panel-rs users create --username admin --email "$ADMIN_EMAIL" \
+                  --password "$ADMIN_PASSWORD" --admin true
+              fi
+
+              # Sized to the wing (terraform/wings, `test`): 4 GiB RAM and a
+              # 16 GiB disk, less what the OS and Docker need. Wings serves
+              # plain HTTP here; only the panel talks to it (Wings proxy).
+              if [ "$(cat /seed/nodes)" = 0 ]; then
+                panel-rs nodes create --location-uuid "$(cat /seed/location)" \
+                  --name wing-test --description "Test wing for extension development" \
+                  --url http://192.168.50.40:8080 --sftp-host 192.168.50.40 --sftp-port 2022 \
+                  --memory 3221225472 --disk 10737418240 \
+                  --deployment-enabled true --maintenance-enabled false
+              fi
+
+              panel-rs oobe finish
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              memory: 512Mi
+          volumeMounts:
+            - name: seed
+              mountPath: /seed
+      volumes:
+        - name: seed
+          emptyDir: {}

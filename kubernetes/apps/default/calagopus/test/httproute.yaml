@@ -1,0 +1,24 @@
+---
+# Internal only. The test wing calls the panel here (its `remote`), and
+# k8s-gateway makes the name resolve on the LAN for browsers.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: calagopus-test
+  annotations:
+    external-dns.kubernetes.io/target: "internal.ewatkins.dev"
+spec:
+  parentRefs:
+    - name: internal
+      namespace: network
+      sectionName: https
+  hostnames:
+    - "mcpanel-test.ewatkins.dev"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: calagopus-test
+          port: 8000

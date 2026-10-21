@@ -1,0 +1,131 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app calagopus-test
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    defaultPodOptions:
+      # The heavy image is several GB. Keep it off the control-plane nodes,
+      # whose system disks also hold Garage and have run into disk pressure.
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: DoesNotExist
+    controllers:
+      calagopus-test:
+        # DATABASE_MIGRATE runs the schema migrations on every boot; two pods
+        # overlapping during a rollout would race them.
+        strategy: Recreate
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            # Same image as the production panel (../app/helmrelease.yaml),
+            # so extensions are tested against what they will run on.
+            image:
+              repository: ghcr.io/calagopus/panel
+              tag: 1.2.6-heavy@sha256:34c1ea771a84c237ad5f351426eaebeb834ddaff4cfa1e88a467a7720dd4dcf9
+            env:
+              TZ: UTC
+              PORT: "8000"
+              APP_DEBUG: "false"
+              APP_PRIMARY: "true"
+              DATABASE_MIGRATE: "true"
+              APP_LOG_DIRECTORY: /var/log/calagopus
+              # Browsers reach the test wing through the panel, so only the
+              # panel needs a route to VLAN 50.
+              APP_ENABLE_WINGS_PROXY: "true"
+              APP_USE_DECRYPTION_CACHE: "true"
+              APP_USE_INTERNAL_CACHE: "true"
+              APP_TRUSTED_PROXIES: 10.69.0.0/16
+              # Shared Dragonfly, under its own prefix.
+              REDIS_URL: redis://dragonfly.database.svc.cluster.local:6379
+              REDIS_KEY_PREFIX: calagopus-test
+            envFrom:
+              - secretRef:
+                  name: calagopus-test-secret
+              - secretRef:
+                  name: calagopus-test-db-secret
+            probes:
+              liveness: &probe
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: &port 8000
+                  periodSeconds: 30
+                  failureThreshold: 3
+              readiness: *probe
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: *port
+                  failureThreshold: 60
+                  periodSeconds: 10
+            resources:
+              requests:
+                cpu: 50m
+                memory: 128Mi
+              # Extension builds run cargo in this container.
+              limits:
+                memory: 6Gi
+    service:
+      app:
+        controller: *app
+        ports:
+          http:
+            port: *port
+    persistence:
+      data:
+        type: persistentVolumeClaim
+        storageClass: nfs-fast
+        accessMode: ReadWriteOnce
+        size: 1Gi
+        globalMounts:
+          - path: /var/lib/calagopus
+      # Compiled binaries and installed extension archives, so a restart
+      # reuses the last build. Install an extension by uploading it in the
+      # admin UI.
+      build:
+        type: persistentVolumeClaim
+        storageClass: nfs-fast
+        accessMode: ReadWriteOnce
+        size: 5Gi
+        globalMounts:
+          - path: /app/binaries
+            subPath: binaries
+          - path: /app/translations
+            subPath: translations
+          - path: /app/extensions
+            subPath: extensions
+          - path: /app/repo/database/extension-migrations
+            subPath: extension-migrations
+      logs:
+        type: emptyDir
+        globalMounts:
+          - path: /var/log/calagopus
+    ingress:
+      app:
+        enabled: false

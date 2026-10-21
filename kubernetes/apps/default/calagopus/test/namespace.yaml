@@ -1,0 +1,8 @@
+---
+# A namespace of its own, so the test panel and its seed Job can be wiped
+# without touching the production panel in `default`. Its database lives in
+# crunchy-postgres-17, so wiping the namespace keeps the panel's data.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: calagopus-test
