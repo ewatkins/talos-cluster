@@ -83,6 +83,25 @@ locals {
       velocity_firewall = null
       ship_logs         = false
     }
+    # Minimal wing for the test panel (kubernetes/apps/default/calagopus/test),
+    # to try extensions against a real node. Paired with that panel, not the
+    # production one.
+    test = {
+      enabled           = true
+      servers           = "the test panel (extension development)"
+      vm_id             = 5040
+      node              = "pve03"
+      cores             = 2
+      memory            = 4096
+      disk              = 16
+      address           = "192.168.50.40"
+      mac               = "02:00:00:00:50:40"
+      service_addresses = []
+      bluemap           = false
+      second_nic        = null
+      velocity_firewall = null
+      ship_logs         = false
+    }
     proxy = {
       enabled = true
       servers = "Velocity, Lobby"
