@@ -1,0 +1,16 @@
+---
+# Toolchains, the cargo target dir and the pnpm store, kept between jobs so
+# only the first build is cold (~18 minutes). Local disk on a worker: cargo on
+# NFS breaks openssl-src. The workflow clears the target dir past 30 GiB, since
+# openebs-hostpath does not enforce this size.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: anvil-runner-cache
+  namespace: actions-runner-system
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: openebs-hostpath
+  resources:
+    requests:
+      storage: 40Gi
