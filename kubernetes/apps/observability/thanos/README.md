@@ -16,9 +16,9 @@ Thanos extends the kube-prometheus-stack Prometheus instance with long-term metr
 | Setting | Value | Notes |
 | --- | --- | --- |
 | Object store | Garage bucket `thanos` at `garage-api.storage.svc.cluster.local:3900` | Long-term metric storage; `garage-api` serves S3 (the `garage` svc is RPC-only) |
-| Retention raw | 14 days | Full-resolution data |
-| Retention 5m | 30 days | 5-minute downsampled data |
-| Retention 1h | 60 days | 1-hour downsampled data |
+| Retention raw | 7 days | Full-resolution data; Prometheus itself keeps 2 days |
+| Downsampling | Disabled | At a 1m scrape interval, 5m/1h blocks are nearly as large as raw ones |
+| Retention 5m / 1h | 7 days | Only purges downsampled blocks from before downsampling was disabled |
 | Compact concurrency | 4 | Parallel compaction workers |
 | Compact delete delay | 30 minutes | Grace period before deleting compacted source blocks |
 | Persistence | `nfs-slow`, 10Gi | Shared by `compact` and `storeGateway` |
