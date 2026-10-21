@@ -1,15 +1,16 @@
 # [Actions Runner Controller](https://github.com/actions/actions-runner-controller)
 
-Actions Runner Controller (ARC) manages self-hosted GitHub Actions runners on Kubernetes as autoscaling runner scale sets. This cluster deploys one scale set — `talos-runner` — scoped to the `talos-cluster` repository.
+Actions Runner Controller (ARC) manages self-hosted GitHub Actions runners on Kubernetes as autoscaling runner scale sets. This cluster deploys two scale sets: `talos-runner` for the `talos-cluster` repository, and `anvil-runner` for the `calagopus-anvil` extension's CI.
 
 ## Components
 
-There are two separate Helm releases:
+There are three separate Helm releases:
 
 | Release | Chart | Purpose |
 | --- | --- | --- |
 | `actions-runner-controller` | `gha-runner-scale-set-controller` | The ARC controller itself; watches for queued jobs and manages runner pod lifecycle |
 | `talos-runner` | `gha-runner-scale-set` | The runner scale set registered to the `talos-cluster` repo |
+| `anvil-runner` | `gha-runner-scale-set` | The runner scale set registered to the `calagopus-anvil` repo (see below) |
 
 Both charts are pulled from the OCI registry at `ghcr.io/actions/actions-runner-controller-charts`.
 
@@ -24,6 +25,22 @@ Both charts are pulled from the OCI registry at `ghcr.io/actions/actions-runner-
 | Runner image | `ghcr.io/home-operations/actions-runner` | Custom image with Talos and cluster tooling pre-installed |
 | Job container required | `false` | `ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER=false` allows steps to run directly on the runner pod rather than requiring a container image |
 | Node IP | Exposed as `$NODE` | The runner's host IP is injected so workflows can target specific nodes if needed |
+
+## `anvil-runner`
+
+CI for the [Anvil](https://github.com/ewatkins/calagopus-anvil) Calagopus extension (`runs-on: anvil-runner`):
+it checks out the panel, builds the extension inside it and runs its tests, clippy, rustfmt, Biome
+and `tsc`. Self-hosted, so its jobs do not use the private repo's Actions minutes.
+
+| Setting | Value | Notes |
+| --- | --- | --- |
+| Target repository | `https://github.com/ewatkins/calagopus-anvil` | Same GitHub App as `talos-runner`; its installation must include this repo |
+| Min / max runners | 0 – 1 | No pod while idle; one job at a time because the cache volume is `ReadWriteOnce` |
+| Container mode | none | Steps run in the runner container (`ghcr.io/actions/actions-runner`); the workflow installs build packages with `sudo apt-get` |
+| Cluster access | none | No service account token is mounted; no Talos credentials |
+| Cache | `anvil-runner-cache`, `openebs-hostpath`, 40Gi | Rust toolchain, cargo target dir, Node tool cache and pnpm store, so only the first build is cold (~18 minutes). Local disk because cargo on NFS breaks `openssl-src`; the workflow clears the target dir past 30 GiB, as hostpath does not enforce the size |
+| Placement | Worker nodes only | Keeps cold builds off the control-plane disks, which also hold Garage |
+| Memory | 1Gi request, 8Gi limit | `CARGO_BUILD_JOBS=4` |
 
 ## Authentication
 
