@@ -57,9 +57,14 @@ spec:
       extraArgs:
         - --compact.concurrency=4
         - --delete-delay=30m
-        - --retention.resolution-raw=14d
-        - --retention.resolution-5m=30d
-        - --retention.resolution-1h=60d
+        # At a 1m scrape interval, downsampled blocks are nearly as large as raw ones (each
+        # sample keeps five aggregates), so they cost disk without saving much. Keep a week
+        # of raw data only; the 5m/1h flags purge downsampled blocks left from before
+        # (0 would mean keep forever).
+        - --downsampling.disable
+        - --retention.resolution-raw=7d
+        - --retention.resolution-5m=7d
+        - --retention.resolution-1h=7d
       persistence: &persistence
         enabled: true
         storageClass: nfs-slow
