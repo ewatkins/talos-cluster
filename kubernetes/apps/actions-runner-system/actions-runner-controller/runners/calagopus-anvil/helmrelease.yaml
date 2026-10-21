@@ -1,0 +1,81 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &name anvil-runner
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: gha-runner-scale-set
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    # CI for the Anvil extension: builds it inside a panel checkout and runs
+    # its tests. Unlike talos-runner it has no cluster or Talos access.
+    githubConfigUrl: https://github.com/ewatkins/calagopus-anvil
+    githubConfigSecret: anvil-runner-secret
+    # Scale to zero between jobs; one at a time, since the cache volume is RWO.
+    minRunners: 0
+    maxRunners: 1
+    controllerServiceAccount:
+      name: actions-runner-controller
+      namespace: actions-runner-system
+    template:
+      spec:
+        automountServiceAccountToken: false
+        securityContext:
+          runAsUser: 1001
+          runAsGroup: 1001
+          fsGroup: 1001
+          fsGroupChangePolicy: OnRootMismatch
+        # A cold build pulls toolchains and compiles the panel's dependencies;
+        # keep it off the control-plane nodes, whose disks also hold Garage.
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: node-role.kubernetes.io/control-plane
+                      operator: DoesNotExist
+        initContainers:
+          # openebs-hostpath ignores fsGroup; hand the cache to the runner user.
+          - name: cache-owner
+            image: ghcr.io/actions/actions-runner:2.338.0@sha256:4ffadc0002b2581327e06101fc8c06cd189232baf79fe561fac9caeb76f5e807
+            command: ["sh", "-c", "chown 1001:1001 /cache"]
+            securityContext:
+              runAsUser: 0
+            volumeMounts:
+              - name: cache
+                mountPath: /cache
+        containers:
+          - name: runner
+            image: ghcr.io/actions/actions-runner:2.338.0@sha256:4ffadc0002b2581327e06101fc8c06cd189232baf79fe561fac9caeb76f5e807
+            command: ["/home/runner/run.sh"]
+            env:
+              - { name: CARGO_HOME, value: /cache/cargo }
+              - { name: RUSTUP_HOME, value: /cache/rustup }
+              - { name: CARGO_TARGET_DIR, value: /cache/target }
+              - { name: RUNNER_TOOL_CACHE, value: /cache/toolcache }
+              - { name: AGENT_TOOLSDIRECTORY, value: /cache/toolcache }
+              - { name: npm_config_store_dir, value: /cache/pnpm-store }
+              - { name: CARGO_BUILD_JOBS, value: "4" }
+            resources:
+              requests:
+                cpu: 500m
+                memory: 1Gi
+              limits:
+                memory: 8Gi
+            volumeMounts:
+              - name: cache
+                mountPath: /cache
+        volumes:
+          - name: cache
+            persistentVolumeClaim:
+              claimName: anvil-runner-cache
