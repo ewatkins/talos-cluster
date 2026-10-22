@@ -1,6 +1,6 @@
 # etcd-defrag
 
-Monthly CronJob that defragments each etcd member in turn (superior, michigan, huron) with `talosctl etcd defrag`, then prints `talosctl etcd status`.
+Weekly CronJob that defragments each etcd member in turn (superior, michigan, huron) with `talosctl etcd defrag`, then prints `talosctl etcd status`.
 
 etcd keeps its database file at its high-water mark: compaction frees space inside the file but never returns it to disk. Once less than half of the file is in use, `etcdDatabaseHighFragmentationRatio` fires. Defragmenting rewrites the file down to what is actually in use.
 

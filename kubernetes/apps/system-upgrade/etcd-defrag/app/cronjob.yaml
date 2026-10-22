@@ -12,7 +12,7 @@ kind: CronJob
 metadata:
   name: etcd-defrag
 spec:
-  schedule: "30 4 1 * *" # monthly, the 1st at 04:30
+  schedule: "30 4 * * 0" # weekly, Sundays at 04:30
   timeZone: America/Chicago
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 1
