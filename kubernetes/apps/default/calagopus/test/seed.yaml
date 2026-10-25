@@ -75,7 +75,7 @@ spec:
               mountPath: /seed
         - name: panel
           # Keep in step with ./helmrelease.yaml.
-          image: ghcr.io/calagopus/panel:1.2.6-heavy@sha256:34c1ea771a84c237ad5f351426eaebeb834ddaff4cfa1e88a467a7720dd4dcf9
+          image: ghcr.io/calagopus/panel:1.2.7-heavy@sha256:434bcd39c8a94770945d4937c101cf99df122d6ac732f647ed1e4e7c43e0f4f1
           envFrom:
             - secretRef:
                 name: calagopus-test-secret
