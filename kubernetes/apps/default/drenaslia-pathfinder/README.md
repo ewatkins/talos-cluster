@@ -1,4 +1,4 @@
-# [Drenaslia Leveling Atlas](https://github.com/ewatkins/drenaslia-leveling)
+# [Drenaslia Pathfinder](https://github.com/ewatkins/drenaslia-pathfinder)
 
 Leveling guide for every skill in Drenaslia: a single static page served by nginx, with the Keycloak login handled by Envoy Gateway.
 
@@ -6,10 +6,10 @@ Leveling guide for every skill in Drenaslia: a single static page served by ngin
 
 | Setting | Value | Notes |
 | --- | --- | --- |
-| Image | `ghcr.io/ewatkins/drenaslia-leveling` | Private GHCR package, built by `.github/workflows/image.yaml` in the app repo on every push to `main` (`1.0.<run number>`, `sha-<short>` and `latest` tags) |
+| Image | `ghcr.io/ewatkins/drenaslia-pathfinder` | Private GHCR package, built by `.github/workflows/image.yaml` in the app repo on every push to `main` (`1.0.<run number>`, `sha-<short>` and `latest` tags) |
 | URL | `https://drenaslia.ewatkins.dev` | Internal gateway only |
-| Auth | Envoy `SecurityPolicy` OIDC | Client `drenaslia-leveling` on the `master` realm; sign out at `/oauth2/sign_out`. `/drenaslia-levels.user.js` is served by a second route without the login, so Tampermonkey can install and update the userscript. Replaces the oauth2-proxy container used by the repo's docker-compose |
-| Secret | Bitwarden entry `drenaslia-leveling-secret` | Synced into `drenaslia-leveling-secret` (OIDC) and `drenaslia-leveling-ghcr` (image pull secret) |
+| Auth | Envoy `SecurityPolicy` OIDC | Client `drenaslia-leveling` on the `master` realm (named before the Pathfinder rename); sign out at `/oauth2/sign_out`. `/drenaslia-pathfinder.user.js` (and the pre-rename `/drenaslia-levels.user.js`) is served by a second route without the login, so Tampermonkey can install and update the userscript. Replaces the oauth2-proxy container used by the repo's docker-compose |
+| Secret | Bitwarden entry `drenaslia-leveling-secret` (named before the Pathfinder rename) | Synced into `drenaslia-pathfinder-secret` (OIDC) and `drenaslia-pathfinder-ghcr` (image pull secret) |
 
 ## Bitwarden secret
 

@@ -2,7 +2,7 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: drenaslia-leveling
+  name: drenaslia-pathfinder
   namespace: default
   annotations:
     external-dns.kubernetes.io/target: "internal.ewatkins.dev"
@@ -25,7 +25,7 @@ spec:
               - name: Strict-Transport-Security
                 value: "max-age=31449600; includeSubDomains"
       backendRefs:
-        - name: drenaslia-leveling
+        - name: drenaslia-pathfinder
           port: 8080
 ---
 # The userscript, without the Keycloak login: Tampermonkey downloads it (and checks it for
@@ -34,7 +34,7 @@ spec:
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: drenaslia-leveling-userscript
+  name: drenaslia-pathfinder-userscript
   namespace: default
   annotations:
     external-dns.kubernetes.io/target: "internal.ewatkins.dev"
@@ -49,6 +49,10 @@ spec:
     - matches:
         - path:
             type: Exact
+            value: /drenaslia-pathfinder.user.js
+        # installs from before the Pathfinder rename still check this path for updates
+        - path:
+            type: Exact
             value: /drenaslia-levels.user.js
       filters:
         - type: ResponseHeaderModifier
@@ -57,5 +61,5 @@ spec:
               - name: Strict-Transport-Security
                 value: "max-age=31449600; includeSubDomains"
       backendRefs:
-        - name: drenaslia-leveling
+        - name: drenaslia-pathfinder
           port: 8080

@@ -8,7 +8,7 @@ resources:
   # Flux-Kustomizations
   - ./alexandrie/ks.yaml
   - ./calagopus/ks.yaml
-  - ./drenaslia-leveling/ks.yaml
+  - ./drenaslia-pathfinder/ks.yaml
   - ./homelable/ks.yaml
   - ./homepage/ks.yaml
   - ./netbox/ks.yaml

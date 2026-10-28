@@ -36,7 +36,7 @@ The manifest applies `b64dec`, matching the convention used by
 `renovate-secret` also reads `GHCR_TOKEN` from the `drenaslia-leveling-secret`
 item (a classic token with `read:packages`) and passes it as
 `RENOVATE_HOST_RULES`, so Renovate can look up the private
-`ghcr.io/ewatkins/drenaslia-leveling` image. GHCR doesn't accept the App token.
+`ghcr.io/ewatkins/drenaslia-pathfinder` image. GHCR doesn't accept the App token.
 
 ### 2. Flux substitution variables
 
