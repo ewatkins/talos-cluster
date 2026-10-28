@@ -1,0 +1,22 @@
+---
+# Keycloak login at the gateway; replaces the oauth2-proxy container from docker-compose.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: drenaslia-leveling-oidc
+  namespace: default
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: drenaslia-leveling
+  oidc:
+    provider:
+      issuer: https://keycloak.ewatkins.dev/realms/master
+    clientID: drenaslia-leveling
+    clientSecret:
+      name: drenaslia-leveling-secret
+      namespace: default
+    redirectURL: "https://drenaslia.ewatkins.dev/oauth2/callback"
+    logoutPath: /oauth2/sign_out
+    scopes: ["openid", "profile", "email"]
