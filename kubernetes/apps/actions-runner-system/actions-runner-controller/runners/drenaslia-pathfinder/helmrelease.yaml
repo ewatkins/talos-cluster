@@ -17,10 +17,10 @@ spec:
     remediation:
       retries: 3
   values:
-    # Builds the Drenaslia Leveling Atlas image and pushes it to GHCR. No Docker
+    # Builds the Drenaslia Pathfinder image and pushes it to GHCR. No Docker
     # daemon (the namespace is PSS baseline): the workflow layers the page onto
     # the nginx base image with crane. No cluster or Talos access.
-    githubConfigUrl: https://github.com/ewatkins/drenaslia-leveling
+    githubConfigUrl: https://github.com/ewatkins/drenaslia-pathfinder
     githubConfigSecret: drenaslia-runner-secret
     minRunners: 0
     maxRunners: 1
