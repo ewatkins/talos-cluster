@@ -8,4 +8,4 @@ General-purpose applications that do not belong to a more specific category name
 | --- | --- |
 | [alexandrie](alexandrie/README.md) | Wiki and knowledge base at `https://notes.ewatkins.dev`, backed by MariaDB Galera, in-pod RustFS object storage, and Keycloak OIDC |
 | [calagopus](calagopus/README.md) | Calagopus game server panel at `https://mcpanel.ewatkins.dev`, replacing Pterodactyl; backed by `crunchy-postgres-17` and Dragonfly, with Wings on the VLAN 50 VMs ([WINGS.md](calagopus/WINGS.md)) |
-| [drenaslia-leveling](drenaslia-leveling/README.md) | Drenaslia Leveling Atlas guide at `https://drenaslia.ewatkins.dev`, a static nginx site behind a Keycloak OIDC login at the gateway |
+| [drenaslia-pathfinder](drenaslia-pathfinder/README.md) | Drenaslia Pathfinder guide at `https://drenaslia.ewatkins.dev`, a static nginx site behind a Keycloak OIDC login at the gateway |

@@ -3,19 +3,20 @@
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: SecurityPolicy
 metadata:
-  name: drenaslia-leveling-oidc
+  name: drenaslia-pathfinder-oidc
   namespace: default
 spec:
   targetRefs:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
-      name: drenaslia-leveling
+      name: drenaslia-pathfinder
   oidc:
     provider:
       issuer: https://keycloak.ewatkins.dev/realms/master
+    # Keycloak client from before the Pathfinder rename
     clientID: drenaslia-leveling
     clientSecret:
-      name: drenaslia-leveling-secret
+      name: drenaslia-pathfinder-secret
       namespace: default
     redirectURL: "https://drenaslia.ewatkins.dev/oauth2/callback"
     logoutPath: /oauth2/sign_out

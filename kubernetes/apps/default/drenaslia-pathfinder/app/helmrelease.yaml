@@ -3,7 +3,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app drenaslia-leveling
+  name: &app drenaslia-pathfinder
   namespace: default
 spec:
   interval: 1h
@@ -22,7 +22,7 @@ spec:
       retries: 3
   values:
     controllers:
-      drenaslia-leveling:
+      drenaslia-pathfinder:
         # two pods on different nodes, so a node going down doesn't take the site with it
         replicas: 2
         # start the new pod and wait for it to be ready before stopping the old one, so
@@ -33,11 +33,11 @@ spec:
           surge: 1
         containers:
           app:
-            # Built by .github/workflows/image.yaml in ewatkins/drenaslia-leveling on every
+            # Built by .github/workflows/image.yaml in ewatkins/drenaslia-pathfinder on every
             # push to main as 1.0.<run number>; Renovate opens and automerges the bump.
             image:
-              repository: ghcr.io/ewatkins/drenaslia-leveling
-              tag: 1.0.27@sha256:a50d712e0dbf32686051a80c1934859e02155659832d42b05407a9dc9cccfe1a
+              repository: ghcr.io/ewatkins/drenaslia-pathfinder
+              tag: 1.0.32
             probes:
               liveness:
                 enabled: true
@@ -76,7 +76,7 @@ spec:
             matchLabels:
               app.kubernetes.io/name: *app
       imagePullSecrets:
-        - name: drenaslia-leveling-ghcr
+        - name: drenaslia-pathfinder-ghcr
       securityContext:
         runAsNonRoot: true
         runAsUser: 101
