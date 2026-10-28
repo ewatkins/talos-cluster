@@ -56,7 +56,7 @@ jobs:
         id: extract
         run: |
           # Private images need a pull secret, which talosctl image pull doesn't have
-          jq --compact-output 'map(select(startswith("ghcr.io/ewatkins/drenaslia-leveling") | not))' images.json > images.tmp && mv images.tmp images.json
+          jq --compact-output 'map(select(startswith("ghcr.io/ewatkins/drenaslia-") | not))' images.json > images.tmp && mv images.tmp images.json
           echo "${{ matrix.branch }}=$(jq --compact-output '.' images.json)" >> $GITHUB_OUTPUT
 
           echo '## Branch ${{ matrix.branch }} images' >> $GITHUB_STEP_SUMMARY
