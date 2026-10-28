@@ -1,6 +1,6 @@
 # [Actions Runner Controller](https://github.com/actions/actions-runner-controller)
 
-Actions Runner Controller (ARC) manages self-hosted GitHub Actions runners on Kubernetes as autoscaling runner scale sets. This cluster deploys two scale sets: `talos-runner` for the `talos-cluster` repository, and `anvil-runner` for the `calagopus-anvil` extension's CI.
+Actions Runner Controller (ARC) manages self-hosted GitHub Actions runners on Kubernetes as autoscaling runner scale sets. This cluster deploys three scale sets: `talos-runner` for the `talos-cluster` repository, `anvil-runner` for the `calagopus-anvil` extension's CI, and `drenaslia-runner` for the `drenaslia-leveling` image build.
 
 ## Components
 
@@ -11,6 +11,7 @@ There are three separate Helm releases:
 | `actions-runner-controller` | `gha-runner-scale-set-controller` | The ARC controller itself; watches for queued jobs and manages runner pod lifecycle |
 | `talos-runner` | `gha-runner-scale-set` | The runner scale set registered to the `talos-cluster` repo |
 | `anvil-runner` | `gha-runner-scale-set` | The runner scale set registered to the `calagopus-anvil` repo (see below) |
+| `drenaslia-runner` | `gha-runner-scale-set` | The runner scale set registered to the `drenaslia-leveling` repo (see below) |
 
 Both charts are pulled from the OCI registry at `ghcr.io/actions/actions-runner-controller-charts`.
 
@@ -41,6 +42,22 @@ and `tsc`. Self-hosted, so its jobs do not use the private repo's Actions minute
 | Cache | `anvil-runner-cache`, `openebs-hostpath`, 40Gi | Rust toolchain, cargo target dir, Node tool cache and pnpm store, so only the first build is cold (~18 minutes). Local disk because cargo on NFS breaks `openssl-src`; the workflow clears the target dir past 30 GiB, as hostpath does not enforce the size |
 | Placement | Worker nodes only | Keeps cold builds off the control-plane disks, which also hold Garage |
 | Memory | 1Gi request, 8Gi limit | `CARGO_BUILD_JOBS=4` |
+
+## `drenaslia-runner`
+
+Builds the [Drenaslia Leveling Atlas](https://github.com/ewatkins/drenaslia-leveling) image (`runs-on: drenaslia-runner`)
+and pushes it to the private `ghcr.io/ewatkins/drenaslia-leveling` package, so the private source never builds on
+GitHub-hosted runners. There is no Docker daemon: dind needs privileged pods, which this namespace's PSS `baseline`
+rejects. Instead the workflow builds the page with `build.py` and layers it onto the Dockerfile's nginx base image
+with `crane append`.
+
+| Setting | Value | Notes |
+| --- | --- | --- |
+| Target repository | `https://github.com/ewatkins/drenaslia-leveling` | Same GitHub App as `talos-runner`; its installation must include this repo |
+| Min / max runners | 0 – 1 | No pod while idle |
+| Container mode | none | Steps run in the runner container (`ghcr.io/actions/actions-runner`) |
+| Cluster access | none | No service account token is mounted; no Talos credentials |
+| Memory | 256Mi request, 1Gi limit | |
 
 ## Authentication
 
