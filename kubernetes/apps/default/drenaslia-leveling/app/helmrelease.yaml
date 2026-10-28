@@ -29,7 +29,7 @@ spec:
             # push to main; bump this to the new sha-<short> tag and digest to roll out.
             image:
               repository: ghcr.io/ewatkins/drenaslia-leveling
-              tag: sha-15b94cf@sha256:66d9510e410c60bfd14d5dd33cd098915cfd53cf67cbf66035b9449ea12b1e69
+              tag: sha-c678a01@sha256:9df8cd0b14efcbe909b1f77b2bbc4d935bc39f8e26878089d7d795752d9cbeb2
             probes:
               liveness: &probes
                 enabled: true
