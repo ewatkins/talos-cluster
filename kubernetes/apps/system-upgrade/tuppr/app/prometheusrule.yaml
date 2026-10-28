@@ -1,0 +1,40 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/monitoring.coreos.com/prometheusrule_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: tuppr-rules
+spec:
+  groups:
+    - name: tuppr.rules
+      rules:
+        # tuppr validates every node before it touches any of them and parks the
+        # upgrade in Pending when one fails (e.g. machine.install.image not
+        # matching the running schematic). Nothing else surfaces that: the
+        # Talos bumps for v1.14.2 and v1.14.4 merged and sat in Pending for four
+        # weeks. A real rollout leaves Pending within minutes of pre-pulling.
+        - alert: TupprUpgradeStuckPending
+          expr: |
+            max by (name) (tuppr_talos_upgrade_phase{phase="Pending"}) == 1
+            or
+            max by (name) (tuppr_kubernetes_upgrade_phase{phase="Pending"}) == 1
+          for: 2h
+          annotations:
+            summary: >-
+              tuppr upgrade {{ $labels.name }} has been Pending for over 2h;
+              check kubectl get talosupgrades,kubernetesupgrades for the reason
+          labels:
+            severity: warning
+
+        # Failed is terminal: tuppr doesn't retry, so it stays Failed (and
+        # blocks later version bumps) until someone looks.
+        - alert: TupprUpgradeFailed
+          expr: |
+            max by (name) (tuppr_talos_upgrade_phase{phase="Failed"}) == 1
+            or
+            max by (name) (tuppr_kubernetes_upgrade_phase{phase="Failed"}) == 1
+          for: 15m
+          annotations:
+            summary: tuppr upgrade {{ $labels.name }} has failed
+          labels:
+            severity: warning
