@@ -29,7 +29,7 @@ spec:
             # push to main as 1.0.<run number>; Renovate opens and automerges the bump.
             image:
               repository: ghcr.io/ewatkins/drenaslia-leveling
-              tag: 1.0.11@sha256:f3ac5ca49cba636333b2e5a15fd5eaaf330f558cf04c94699ec3a5c34374a685
+              tag: 1.0.12@sha256:857473b3961202d722dda2e5c6a377fec15cdbf56eb5a01ccb614b2827d9b52d
             probes:
               liveness: &probes
                 enabled: true
