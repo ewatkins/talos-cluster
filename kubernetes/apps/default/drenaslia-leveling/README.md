@@ -6,7 +6,7 @@ Leveling guide for every skill in Drenaslia: a single static page served by ngin
 
 | Setting | Value | Notes |
 | --- | --- | --- |
-| Image | `ghcr.io/ewatkins/drenaslia-leveling` | Private GHCR package, built by `.github/workflows/image.yaml` in the app repo on every push to `main` (`sha-<short>` and `latest` tags) |
+| Image | `ghcr.io/ewatkins/drenaslia-leveling` | Private GHCR package, built by `.github/workflows/image.yaml` in the app repo on every push to `main` (`1.0.<run number>`, `sha-<short>` and `latest` tags) |
 | URL | `https://drenaslia.ewatkins.dev` | Internal gateway only |
 | Auth | Envoy `SecurityPolicy` OIDC | Client `drenaslia-leveling` on the `master` realm; sign out at `/oauth2/sign_out`. Replaces the oauth2-proxy container used by the repo's docker-compose |
 | Secret | Bitwarden entry `drenaslia-leveling-secret` | Synced into `drenaslia-leveling-secret` (OIDC) and `drenaslia-leveling-ghcr` (image pull secret) |
@@ -28,4 +28,4 @@ In the `master` realm, create an OpenID Connect client `drenaslia-leveling` with
 
 ## Updating
 
-Pushing to `main` in the app repo builds a new image. Roll it out by changing `tag` in `app/helmrelease.yaml` to the new `sha-<short>@sha256:<digest>`.
+Pushing to `main` in the app repo builds a new `1.0.<run number>` image. Renovate (hourly) logs in to ghcr.io with `GHCR_TOKEN` from this app's Bitwarden entry, opens a PR bumping `app/helmrelease.yaml`, and automerges it once Flux Local passes (rule in `.renovate/autoMerge.json5`). The Image Pull check skips this image, since `talosctl image pull` has no pull secret.
