@@ -8,7 +8,7 @@ A planning companion for Drenaslia (skill guides, quest route, items and storage
 | --- | --- | --- |
 | Image | `ghcr.io/ewatkins/drenaslia-pathfinder` | Private GHCR package, built by `.github/workflows/image.yaml` in the app repo on every push to `main` (`1.0.<run number>`, `sha-<short>` and `latest` tags) |
 | URL | `https://pathfinder.ewatkins.dev` | Internal gateway only. The old `https://drenaslia.ewatkins.dev` redirects there (301, path kept), apart from the userscript paths, which it still serves so installs from before the move can update |
-| Auth | Envoy `SecurityPolicy` OIDC | Client `drenaslia-leveling` on the `master` realm (named before the Pathfinder rename); sign out at `/oauth2/sign_out`. `/drenaslia-pathfinder.user.js` (and the pre-rename `/drenaslia-levels.user.js`) is served by a second route without the login, so Tampermonkey can install and update the userscript. Replaces the oauth2-proxy container used by the repo's docker-compose |
+| Auth | Envoy `SecurityPolicy` OIDC | Client `drenaslia-pathfinder` on the `master` realm; sign out at `/oauth2/sign_out`. `/drenaslia-pathfinder.user.js` (and the pre-rename `/drenaslia-levels.user.js`) is served by a second route without the login, so Tampermonkey can install and update the userscript. Replaces the oauth2-proxy container used by the repo's docker-compose |
 | Secret | Bitwarden entry `drenaslia-leveling-secret` (named before the Pathfinder rename) | Synced into `drenaslia-pathfinder-secret` (OIDC) and `drenaslia-pathfinder-ghcr` (image pull secret) |
 
 ## Bitwarden secret
@@ -24,7 +24,7 @@ Create a Secrets Manager entry named `drenaslia-leveling-secret` whose value is 
 
 ## Keycloak client
 
-In the `master` realm, create an OpenID Connect client `drenaslia-leveling` with client authentication and the standard flow on, valid redirect URI `https://pathfinder.ewatkins.dev/oauth2/callback` and web origin `https://pathfinder.ewatkins.dev`.
+In the `master` realm, create an OpenID Connect client `drenaslia-pathfinder` with client authentication and the standard flow on, valid redirect URI `https://pathfinder.ewatkins.dev/oauth2/callback` and web origin `https://pathfinder.ewatkins.dev`.
 
 ## Updating
 
