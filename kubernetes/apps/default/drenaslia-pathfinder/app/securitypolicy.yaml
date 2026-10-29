@@ -19,4 +19,8 @@ spec:
       namespace: default
     redirectURL: "https://pathfinder.ewatkins.dev/oauth2/callback"
     logoutPath: /oauth2/sign_out
+    # pass the access token on, so the API knows who's saving (it checks the signature itself),
+    # and refresh it when it expires, so saves keep working through a long session
+    forwardAccessToken: true
+    refreshToken: true
     scopes: ["openid", "profile", "email"]
