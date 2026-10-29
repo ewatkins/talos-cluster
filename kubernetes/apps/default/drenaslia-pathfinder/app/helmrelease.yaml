@@ -37,7 +37,7 @@ spec:
             # push to main as 1.0.<run number>; Renovate opens and automerges the bump.
             image:
               repository: ghcr.io/ewatkins/drenaslia-pathfinder
-              tag: 1.0.36
+              tag: 1.0.37
             probes:
               liveness:
                 enabled: true
