@@ -13,8 +13,7 @@ spec:
   oidc:
     provider:
       issuer: https://keycloak.ewatkins.dev/realms/master
-    # Keycloak client from before the Pathfinder rename
-    clientID: drenaslia-leveling
+    clientID: drenaslia-pathfinder
     clientSecret:
       name: drenaslia-pathfinder-secret
       namespace: default
