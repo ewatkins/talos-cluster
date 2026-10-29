@@ -18,6 +18,6 @@ spec:
     clientSecret:
       name: drenaslia-pathfinder-secret
       namespace: default
-    redirectURL: "https://drenaslia.ewatkins.dev/oauth2/callback"
+    redirectURL: "https://pathfinder.ewatkins.dev/oauth2/callback"
     logoutPath: /oauth2/sign_out
     scopes: ["openid", "profile", "email"]
