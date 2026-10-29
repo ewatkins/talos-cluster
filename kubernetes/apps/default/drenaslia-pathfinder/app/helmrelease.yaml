@@ -37,7 +37,7 @@ spec:
             # push to main as 1.0.<run number>; Renovate opens and automerges the bump.
             image:
               repository: ghcr.io/ewatkins/drenaslia-pathfinder
-              tag: 1.0.43
+              tag: 1.0.45
             probes:
               liveness:
                 enabled: true
@@ -56,6 +56,49 @@ spec:
                     path: /healthz
                     port: *port
                   periodSeconds: 5
+                  timeoutSeconds: 3
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: [ALL] }
+            resources:
+              requests:
+                cpu: 5m
+              limits:
+                memory: 64Mi
+          # The API (api/ in the app repo): each Keycloak user's saved site data, in Postgres.
+          # Same image as the page; nginx passes /api/ to it. Its health check doesn't depend on
+          # the database, so a database outage pauses sync without taking the site down.
+          api:
+            image:
+              repository: ghcr.io/ewatkins/drenaslia-pathfinder
+              tag: 1.0.45
+            command: ["/usr/local/bin/pathfinder-api"]
+            env:
+              LISTEN: ":8081"
+              OIDC_ISSUER: https://keycloak.ewatkins.dev/realms/master
+              OIDC_CLIENT_ID: drenaslia-pathfinder
+            envFrom:
+              - secretRef:
+                  name: drenaslia-pathfinder-db
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /healthz
+                    port: 8081
+                  periodSeconds: 30
+                  timeoutSeconds: 3
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /healthz
+                    port: 8081
+                  periodSeconds: 10
                   timeoutSeconds: 3
             securityContext:
               allowPrivilegeEscalation: false

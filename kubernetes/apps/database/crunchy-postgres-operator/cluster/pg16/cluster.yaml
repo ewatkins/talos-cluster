@@ -108,6 +108,9 @@ spec:
     - name: "netbox-admin"
       databases: ["netbox"]
       password: *password
+    - name: "pathfinder-admin"
+      databases: ["pathfinder"]
+      password: *password
   backups:
     pgbackrest:
       configuration: &backupConfig
