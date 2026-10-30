@@ -7,8 +7,10 @@ metadata:
 spec:
   # Renovate still reads .renovaterc.json5 and the .renovate/ presets from the
   # repo itself, so behaviour matches what the GitHub Action produced.
+  # Each repo must also be granted to the GitHub App installation.
   discoveryFilters:
     - ewatkins/talos-cluster
+    - ewatkins/drenaslia-pathfinder
   provider:
     name: github
   # renovate: datasource=docker depName=ghcr.io/renovatebot/renovate

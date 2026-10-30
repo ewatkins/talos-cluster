@@ -13,7 +13,7 @@ execution environment moved.
 | Path | Contents |
 | --- | --- |
 | `app/` | Operator HelmRelease, ExternalSecrets, HTTPRoute |
-| `jobs/` | The `RenovateJob` describing what to scan and when |
+| `jobs/` | The `RenovateJob` describing what to scan and when (`ewatkins/talos-cluster`, `ewatkins/drenaslia-pathfinder`) |
 
 `jobs/` is a separate Flux Kustomization that `dependsOn` the operator, so the
 `RenovateJob` CRD is guaranteed to exist before a `RenovateJob` is created.
