@@ -29,4 +29,4 @@ In the `master` realm, create an OpenID Connect client `drenaslia-pathfinder` wi
 
 ## Updating
 
-Running the Image workflow in the app repo (`gh workflow run image.yaml -R ewatkins/drenaslia-pathfinder`, or Run workflow on its Actions tab) builds a new `<year>.<month>.<day>.<run number>` image from `main`; pushes alone don't. Renovate (hourly) logs in to ghcr.io with `GHCR_TOKEN` from this app's Bitwarden entry, opens a PR bumping `app/helmrelease.yaml`, and automerges it once Flux Local passes (rule in `.renovate/autoMerge.json5`). The Image Pull check skips this image, since `talosctl image pull` has no pull secret.
+Running the Build New Image workflow in the app repo (`gh workflow run image.yaml -R ewatkins/drenaslia-pathfinder`, or Run workflow on its Actions tab) builds a new `<year>.<month>.<day>.<run number>` image from `main`; pushes alone don't. Renovate (hourly) logs in to ghcr.io with `GHCR_TOKEN` from this app's Bitwarden entry, opens a PR bumping `app/helmrelease.yaml`, and automerges it once Flux Local passes (rule in `.renovate/autoMerge.json5`). The Image Pull check skips this image, since `talosctl image pull` has no pull secret.
