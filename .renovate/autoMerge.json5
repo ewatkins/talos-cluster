@@ -11,12 +11,12 @@
       ignoreTests: false,
     },
     {
-      description: "Auto-merge Drenaslia Pathfinder, built from my own repo on every push to main",
+      description: "Auto-merge Drenaslia Pathfinder, built from my own repo",
       matchDatasources: ["docker"],
       automerge: true,
       automergeType: "pr",
       matchUpdateTypes: ["major", "minor", "patch", "digest"],
-      matchPackageNames: ["ghcr.io/ewatkins/drenaslia-pathfinder", "ghcr.io/ewatkins/drenaslia-leveling"],
+      matchPackageNames: ["ghcr.io/ewatkins/drenaslia-pathfinder"],
       ignoreTests: false,
     },
     {

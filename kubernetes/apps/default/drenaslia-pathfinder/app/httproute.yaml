@@ -28,11 +28,9 @@ spec:
         - name: drenaslia-pathfinder
           port: 8080
 ---
-# The userscript, without the Keycloak login: Tampermonkey downloads it (and checks it for
-# updates) from its own background page, which doesn't carry the login cookie. The
-# SecurityPolicy targets the route above, so these exact paths are the only ones left open. It's
-# on the old address too: installs from before the move check there for updates, and the copy they
-# get points them at the new one.
+# The userscript (Pathfinder Sync), without the Keycloak login: Tampermonkey downloads it (and
+# checks it for updates) from its own background page, which doesn't carry the login cookie. The
+# SecurityPolicy targets the route above, so this exact path is the only one left open.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -47,16 +45,11 @@ spec:
       sectionName: https
   hostnames:
     - "pathfinder.ewatkins.dev"
-    - "drenaslia.ewatkins.dev"
   rules:
     - matches:
         - path:
             type: Exact
             value: /drenaslia-pathfinder.user.js
-        # installs from before the Pathfinder rename still check this path for updates
-        - path:
-            type: Exact
-            value: /drenaslia-levels.user.js
       filters:
         - type: ResponseHeaderModifier
           responseHeaderModifier:
@@ -66,30 +59,3 @@ spec:
       backendRefs:
         - name: drenaslia-pathfinder
           port: 8080
----
-# The site's old address: everything but the userscript (above) redirects to the new one, keeping
-# the path, so old links and bookmarks still work.
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: drenaslia-pathfinder-old-host
-  namespace: default
-  annotations:
-    external-dns.kubernetes.io/target: "internal.ewatkins.dev"
-spec:
-  parentRefs:
-    - name: internal
-      namespace: network
-      sectionName: https
-  hostnames:
-    - "drenaslia.ewatkins.dev"
-  rules:
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /
-      filters:
-        - type: RequestRedirect
-          requestRedirect:
-            hostname: pathfinder.ewatkins.dev
-            statusCode: 301
