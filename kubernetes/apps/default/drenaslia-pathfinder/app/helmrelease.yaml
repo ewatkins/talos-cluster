@@ -33,8 +33,8 @@ spec:
           surge: 1
         containers:
           app:
-            # Built by .github/workflows/image.yaml in ewatkins/drenaslia-pathfinder on every
-            # push to main as <year>.<month>.<day>.<run number>; Renovate opens and automerges the bump.
+            # Built by .github/workflows/image.yaml in ewatkins/drenaslia-pathfinder when it's run by
+            # hand, as <year>.<month>.<day>.<run number>; Renovate opens and automerges the bump.
             image:
               repository: ghcr.io/ewatkins/drenaslia-pathfinder
               tag: 2026.10.30.64
