@@ -6,7 +6,7 @@ A planning companion for Drenaslia (skill guides, quest route, items and storage
 
 | Setting | Value | Notes |
 | --- | --- | --- |
-| Image | `ghcr.io/ewatkins/drenaslia-pathfinder` | Private GHCR package, built by `.github/workflows/image.yaml` in the app repo when it's run by hand, from `main` (`<year>.<month>.<day>.<run number>` with the America/Chicago date, `sha-<short>` and `latest` tags) |
+| Image | `ghcr.io/ewatkins/drenaslia-pathfinder` | Private GHCR package, built by `.github/workflows/image.yaml` in the app repo when it's run by hand, from `main` (`<year>.<month>.<day>.<run number>` with the America/Chicago date, and `latest` on the newest; each build prunes the package to the 20 newest dated versions) |
 | URL | `https://pathfinder.ewatkins.dev` | Internal gateway only. The old `https://drenaslia.ewatkins.dev` redirects there (301, path kept), apart from the userscript paths, which it still serves so installs from before the move can update |
 | Auth | Envoy `SecurityPolicy` OIDC | Client `drenaslia-pathfinder` on the `master` realm; sign out at `/oauth2/sign_out`. `/drenaslia-pathfinder.user.js` (and the pre-rename `/drenaslia-levels.user.js`) is served by a second route without the login, so Tampermonkey can install and update the userscript. Replaces the oauth2-proxy container used by the repo's docker-compose |
 | Secret | Bitwarden entry `drenaslia-leveling-secret` (named before the Pathfinder rename) | Synced into `drenaslia-pathfinder-secret` (OIDC) and `drenaslia-pathfinder-ghcr` (image pull secret) |
