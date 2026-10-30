@@ -37,7 +37,7 @@ spec:
             # hand, as <year>.<month>.<day>.<run number>; Renovate opens and automerges the bump.
             image:
               repository: ghcr.io/ewatkins/drenaslia-pathfinder
-              tag: 2026.10.30.67
+              tag: 2026.10.30.68
             probes:
               liveness:
                 enabled: true
@@ -72,7 +72,7 @@ spec:
           api:
             image:
               repository: ghcr.io/ewatkins/drenaslia-pathfinder
-              tag: 2026.10.30.67
+              tag: 2026.10.30.68
             command: ["/usr/local/bin/pathfinder-api"]
             env:
               LISTEN: ":8081"
