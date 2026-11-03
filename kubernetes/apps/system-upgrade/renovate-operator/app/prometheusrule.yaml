@@ -24,12 +24,18 @@ spec:
           labels:
             severity: warning
 
-        # Belt and braces for the same failure mode: a real run over this repo
-        # takes minutes, a crash-on-boot takes seconds. Catches a broken image
-        # that dies before it logs anything the operator recognises as an error.
+        # Belt and braces for the same failure mode: a crash-on-boot takes
+        # seconds. Catches a broken image that dies before it logs anything the
+        # operator recognises as an error. Thresholds are per project because
+        # run time scales with repo size: talos-cluster takes ~8 minutes, while
+        # drenaslia-pathfinder (16 deps) does a full healthy scan in ~22s.
+        # A bare Renovate boot (the discovery job) takes ~10s, so 15s still
+        # separates a crash from a real scan of a small repo.
         - alert: RenovateRunTooShort
           expr: |
-            renovate_operator_last_execution_duration_seconds < 60
+            renovate_operator_last_execution_duration_seconds{project="ewatkins/talos-cluster"} < 60
+              or
+            renovate_operator_last_execution_duration_seconds{project!="ewatkins/talos-cluster"} < 15
           for: 10m
           annotations:
             summary: >-
