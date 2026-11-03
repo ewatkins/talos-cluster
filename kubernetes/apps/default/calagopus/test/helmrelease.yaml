@@ -42,7 +42,7 @@ spec:
             # so extensions are tested against what they will run on.
             image:
               repository: ghcr.io/calagopus/panel
-              tag: 1.2.7-heavy@sha256:434bcd39c8a94770945d4937c101cf99df122d6ac732f647ed1e4e7c43e0f4f1
+              tag: 1.2.8-heavy@sha256:887e8679c5a32e4e426949d92bd5b8ce384784f9d4e6812c82758514cb69725b
             env:
               TZ: UTC
               PORT: "8000"
