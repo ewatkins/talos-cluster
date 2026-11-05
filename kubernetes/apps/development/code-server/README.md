@@ -142,6 +142,25 @@ With `fsGroup` gone the PVC is owned entirely by the init container's `chown 100
 
 `ssh-home.sh` still re-tightens host keys to `0600`; it's now a no-op safety net rather than load-bearing.
 
+## Headless browser
+
+A `chromedp/headless-shell` sidecar runs headless Chrome with its DevTools port on `127.0.0.1:9222`, so pages served inside the pod (a local preview on `127.0.0.1:8765`, say) can be opened, driven and screenshotted from the IDE terminal or by Claude Code. It shares the pod's network and the home PVC, so it reaches loopback dev servers and `file://` paths under `/home/ewatkins`. Connect with any CDP client, for example Playwright without its own browser download:
+
+```js
+// npm i playwright-core
+const { chromium } = require('playwright-core');
+const browser = await chromium.connectOverCDP('http://127.0.0.1:9222');
+const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
+await page.goto('http://127.0.0.1:8765/');
+await page.screenshot({ path: 'preview.png', fullPage: true });
+await browser.close(); // disconnects; the sidecar's Chrome keeps running
+```
+
+- **Loopback only.** The container's command replaces the image's `run.sh`, which exposes the unauthenticated DevTools port on `0.0.0.0` through socat. A browser in this pod can open code-server on `127.0.0.1:8080` (`--auth none`, so a cluster-admin shell), so the port must never be reachable from outside the pod.
+- **`stable` pinned by digest.** The image also publishes dev and canary builds whose versions sort above stable, so Renovate follows the `stable` tag's digest rather than a version. Each update restarts the pod, like any other image bump here.
+- `--no-sandbox`, because Chrome's sandbox needs user namespaces and RuntimeDefault seccomp blocks them; the rootfs is read-only, capabilities are dropped, and the profile lives in an `emptyDir` at `/tmp`, so every pod start begins with a clean profile.
+- Fonts are the image's DejaVu set; pages that ship their own web fonts render with those.
+
 ## Health Monitoring
 
 Gatus monitors `https://code.ewatkins.dev` every 1 minute, expecting HTTP 302 (the unauthenticated redirect to Keycloak).

@@ -340,6 +340,46 @@ spec:
                 cpu: 10m
               limits:
                 memory: 256Mi
+          # Headless Chrome for previewing and screenshotting pages served
+          # inside the pod (Playwright's connectOverCDP, or any CDP client, at
+          # http://127.0.0.1:9222). Containers share the pod's network, so it
+          # reaches the IDE's dev servers on loopback.
+          #
+          # The command replaces the image's run.sh on purpose: that script
+          # exposes the DevTools port on 0.0.0.0 through socat, with no auth,
+          # and a browser in this pod can open the unauthenticated code-server
+          # on 127.0.0.1:8080 (a cluster-admin shell). Loopback only, here.
+          #
+          # `stable` pinned by digest: the image also publishes dev and canary
+          # builds whose version numbers sort above stable, so Renovate follows
+          # the tag's digest instead of the version.
+          browser:
+            image:
+              repository: docker.io/chromedp/headless-shell
+              tag: stable@sha256:7bee201478b2f6266aae01243740ee85c16281e32f42d3aed9fdf04f4eace7a1
+            command:
+              - /headless-shell/headless-shell
+              # Chrome's sandbox needs user namespaces, which RuntimeDefault
+              # seccomp blocks; the container itself is the boundary.
+              - --no-sandbox
+              - --use-gl=angle
+              - --use-angle=swiftshader
+              - --remote-debugging-address=127.0.0.1
+              - --remote-debugging-port=9222
+              - --user-data-dir=/tmp/chrome
+              # /dev/shm is 64Mi in a pod; use /tmp instead
+              - --disable-dev-shm-usage
+            env:
+              HOME: /tmp
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: [ALL] }
+            resources:
+              requests:
+                cpu: 10m
+              limits:
+                memory: 1Gi
 
     defaultPodOptions:
       # app-template disables SA token automount by default; without it there
@@ -458,6 +498,13 @@ spec:
               - path: /etc/shadow
                 subPath: shadow
                 readOnly: true
+      # The browser's profile, cache and shared memory; its rootfs is read-only.
+      browser-tmp:
+        type: emptyDir
+        advancedMounts:
+          code-server:
+            browser:
+              - path: /tmp
       secret:
         type: secret
         name: code-server-secret
