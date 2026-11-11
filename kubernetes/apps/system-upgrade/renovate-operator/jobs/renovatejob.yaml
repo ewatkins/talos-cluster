@@ -16,9 +16,11 @@ spec:
   # renovate: datasource=docker depName=ghcr.io/renovatebot/renovate
   image: ghcr.io/renovatebot/renovate:44.226.1
   parallelism: 1
-  # Hourly, on the hour; a run over this repo takes ~5 minutes. Per-package
-  # schedules in .renovate/ are evaluated by Renovate itself (America/Chicago).
-  schedule: "0 * * * *"
+  # Hourly at :45 (off the top of the hour, when ghcr tag lookups for large
+  # repos like immich-machine-learning intermittently return no-result); a run
+  # over this repo takes ~5 minutes. Per-package schedules in .renovate/ are
+  # evaluated by Renovate itself (America/Chicago).
+  schedule: "45 * * * *"
   secretRef: renovate-secret
   extraEnv:
     - name: LOG_LEVEL
