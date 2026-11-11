@@ -72,7 +72,10 @@ groups:
               datasource:
                 type: prometheus
                 uid: prometheus
-              expr: renovate_operator_last_execution_duration_seconds < 60
+              expr: |-
+                renovate_operator_last_execution_duration_seconds{project="ewatkins/talos-cluster"} < 60
+                or
+                renovate_operator_last_execution_duration_seconds{project!="ewatkins/talos-cluster"} < 15
               instant: true
               range: false
               intervalMs: 1000
