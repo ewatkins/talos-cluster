@@ -52,6 +52,11 @@ spec:
               METRICS_ENABLED: "true"
               SUPERUSER_NAME: admin
               SUPERUSER_EMAIL: admin@ewatkins.dev
+              # SSO via Keycloak; the rest lives in the netbox-sso ConfigMap
+              REMOTE_AUTH_BACKEND: social_core.backends.open_id_connect.OpenIdConnectAuth
+              # Must be the KC_HOSTNAME issuer, not the auth.ewatkins.dev alias
+              SOCIAL_AUTH_OIDC_OIDC_ENDPOINT: https://keycloak.ewatkins.dev/realms/master
+              SOCIAL_AUTH_OIDC_KEY: netbox
             envFrom: &envFrom
               - secretRef:
                   name: netbox-db-secret
@@ -151,6 +156,20 @@ spec:
           http:
             port: *port
     persistence:
+      sso:
+        type: configMap
+        name: netbox-sso
+        advancedMounts:
+          netbox:
+            app: &ssoMount
+              - path: /etc/netbox/config/sso.py
+                subPath: sso.py
+                readOnly: true
+              - path: /opt/netbox/netbox/keycloak_auth.py
+                subPath: keycloak_auth.py
+                readOnly: true
+          worker:
+            app: *ssoMount
       media:
         existingClaim: netbox-media
         advancedMounts:
