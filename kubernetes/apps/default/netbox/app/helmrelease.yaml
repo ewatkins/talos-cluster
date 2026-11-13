@@ -165,6 +165,9 @@ spec:
               - path: /etc/netbox/config/sso.py
                 subPath: sso.py
                 readOnly: true
+              - path: /etc/netbox/config/keycloak.svg
+                subPath: keycloak.svg
+                readOnly: true
               - path: /opt/netbox/netbox/keycloak_auth.py
                 subPath: keycloak_auth.py
                 readOnly: true

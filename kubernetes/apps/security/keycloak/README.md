@@ -49,7 +49,7 @@ The theme inherits from the default `keycloak` parent, hides the username/passwo
 | [Forgejo](../../development/forgejo/README.md) | OIDC | External authentication only |
 | [Homelable](../../default/homelable/README.md) | OIDC | Client ID `homelable`, redirect `https://homelab.ewatkins.dev/api/v1/auth/oidc/callback`; exclusive — replaces local login |
 | [Calagopus](../../default/calagopus/README.md#single-sign-on-keycloak) | OIDC | Client ID `calagopus`, redirect `https://mcpanel.ewatkins.dev/api/auth/oauth/<provider UUID>`; provider set up in the panel's admin area, login only |
-| NetBox | OIDC | Client ID `netbox`, redirect `https://ipam.ewatkins.dev/oauth/complete/oidc/`; client role `admin` maps to NetBox superuser, local login kept as fallback |
+| NetBox | OIDC | Client ID `netbox`, redirect `https://ipam.ewatkins.dev/oauth/complete/oidc/`; client role `admin` maps to NetBox superuser; local login form hidden (`LOGIN_FORM_HIDDEN` in the `netbox-sso` ConfigMap) |
 | [Garage Web UI](../../storage/garage/README.md) | OIDC (Envoy SecurityPolicy) | Client ID `garage-webui`, issuer `https://keycloak.ewatkins.dev/realms/master` |
 
 ## Flux Dependencies
