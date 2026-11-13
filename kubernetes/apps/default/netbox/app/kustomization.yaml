@@ -5,6 +5,7 @@ kind: Kustomization
 resources:
   - cluster.yaml
   - pvc.yaml
+  - configmap.yaml
   - externalsecret.yaml
   - helmrelease.yaml
   - httproute.yaml

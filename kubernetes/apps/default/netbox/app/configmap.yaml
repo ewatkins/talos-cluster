@@ -1,0 +1,71 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: netbox-sso
+  namespace: default
+data:
+  # Loaded by netbox-docker alongside configuration.py (every *.py in
+  # /etc/netbox/config is merged into the NetBox configuration).
+  sso.py: |
+    # Endpoint, client ID and secret are plain SOCIAL_AUTH_OIDC_* env vars on
+    # the HelmRelease; this file holds what env vars can't express.
+
+    # TLS terminates at Envoy, so Django sees plain HTTP and would otherwise
+    # hand Keycloak an http:// redirect URI.
+    SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
+
+    # Button label and MDI icon on the login page
+    SOCIAL_AUTH_BACKEND_ATTRS = {
+        'oidc': ('Keycloak', 'login'),
+    }
+
+    # NetBox's default pipeline plus the superuser sync below
+    SOCIAL_AUTH_PIPELINE = (
+        'social_core.pipeline.social_auth.social_details',
+        'social_core.pipeline.social_auth.social_uid',
+        'social_core.pipeline.social_auth.social_user',
+        'social_core.pipeline.user.get_username',
+        'social_core.pipeline.user.create_user',
+        'social_core.pipeline.social_auth.associate_user',
+        'netbox.authentication.user_default_groups_handler',
+        'social_core.pipeline.social_auth.load_extra_data',
+        'social_core.pipeline.user.user_details',
+        'keycloak_auth.sync_superuser',
+    )
+
+  # Mounted into /opt/netbox/netbox so the pipeline can import it by name.
+  keycloak_auth.py: |
+    import logging
+
+    import jwt
+
+    logger = logging.getLogger('netbox.auth.keycloak')
+
+    CLIENT_ID = 'netbox'
+    ADMIN_ROLE = 'admin'
+
+
+    def sync_superuser(backend, user=None, response=None, *args, **kwargs):
+        """
+        Mirror the Keycloak client role `admin` (on the `netbox` client) onto
+        the NetBox superuser flag at every SSO login. Users without the role
+        are still created, but hold no permissions until granted some.
+        """
+        if backend.name != 'oidc' or user is None or not response:
+            return
+
+        # The access token came straight from the token endpoint over TLS, so
+        # its claims are read without re-verifying the signature.
+        try:
+            claims = jwt.decode(response['access_token'], options={'verify_signature': False})
+        except (KeyError, jwt.PyJWTError) as e:
+            logger.warning(f"Could not read roles for {user}: {e!r}; leaving superuser flag unchanged")
+            return
+
+        roles = claims.get('resource_access', {}).get(CLIENT_ID, {}).get('roles', [])
+        is_admin = ADMIN_ROLE in roles
+        if user.is_superuser != is_admin:
+            logger.info(f"Setting is_superuser={is_admin} for {user}")
+            user.is_superuser = is_admin
+            user.save(update_fields=['is_superuser'])
