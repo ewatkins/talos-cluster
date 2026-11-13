@@ -24,6 +24,35 @@ data:
         'oidc': ('Login with Keycloak', 'fingerprint'),
     }
 
+    # NetBox has no custom-CSS setting, but the login banner is rendered as raw
+    # HTML above the login card, so a <style> block there restyles the SSO
+    # button. The selector follows the button's link target; if a NetBox upgrade
+    # changes the login markup the button just falls back to the stock look.
+    BANNER_LOGIN = """
+    <style id="sso-style">
+    /* The banner holds nothing visible; drop the gap its wrapper would leave */
+    div.mb-5.text-center:has(> #sso-style) { display: none; }
+
+    a.btn[href^="/oauth/login/oidc/"] {
+      display: flex; align-items: center; justify-content: center; gap: .6rem;
+      padding: .85rem 1.25rem;
+      font-size: 1.05rem; font-weight: 600; letter-spacing: .01em;
+      color: #fff;
+      background: linear-gradient(135deg, #00a79d 0%, #00857d 55%, #006d67 100%);
+      border: 0; border-radius: 10px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, .12), 0 6px 16px rgba(0, 133, 125, .28);
+      transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+    }
+    a.btn[href^="/oauth/login/oidc/"] .mdi { font-size: 1.5rem; line-height: 1; margin: 0; }
+    a.btn[href^="/oauth/login/oidc/"]:hover {
+      color: #fff; filter: brightness(1.07); transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, .14), 0 10px 22px rgba(0, 133, 125, .36);
+    }
+    a.btn[href^="/oauth/login/oidc/"]:active { transform: translateY(0); filter: brightness(.96); }
+    a.btn[href^="/oauth/login/oidc/"]:focus-visible { outline: 3px solid rgba(0, 167, 157, .45); outline-offset: 2px; }
+    </style>
+    """
+
     # NetBox's default pipeline plus the superuser sync below
     SOCIAL_AUTH_PIPELINE = (
         'social_core.pipeline.social_auth.social_details',
