@@ -14,7 +14,7 @@ spec:
   provider:
     name: github
   # renovate: datasource=docker depName=ghcr.io/renovatebot/renovate
-  image: ghcr.io/renovatebot/renovate:44.226.1
+  image: ghcr.io/renovatebot/renovate:44.246.4
   parallelism: 1
   # Hourly at :45 (off the top of the hour, when ghcr tag lookups for large
   # repos like immich-machine-learning intermittently return no-result); a run
