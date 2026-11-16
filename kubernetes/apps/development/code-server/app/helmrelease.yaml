@@ -356,7 +356,7 @@ spec:
           browser:
             image:
               repository: docker.io/chromedp/headless-shell
-              tag: stable@sha256:830fa77e0602cb42e5cb2cbd9237ba27b649ad69d5fb82b54713aac8b7ab4f29
+              tag: stable@sha256:8c574e39f0db5c1d9efe7c472c6e0fcfc1d91ac0be70eb1dead0f2d52cf104cc
             command:
               - /headless-shell/headless-shell
               # Chrome's sandbox needs user namespaces, which RuntimeDefault
