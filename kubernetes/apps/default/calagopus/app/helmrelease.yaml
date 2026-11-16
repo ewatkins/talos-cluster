@@ -36,7 +36,7 @@ spec:
             # Without extensions its supervisor runs the stock binary.
             image:
               repository: ghcr.io/calagopus/panel
-              tag: 1.2.9-heavy@sha256:758bd2a833a0bc1d55ae494dd5a4119928d9a00b335c7897ed2b54543b993acd
+              tag: 1.2.10-heavy@sha256:eb9c6ae0b736543b2bf7dee5cec83d5692c82adb4979a4b72fe7cfe2c9503e95
             env:
               TZ: UTC
               PORT: "8000"
