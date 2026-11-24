@@ -29,7 +29,7 @@ spec:
           app:
             image:
               repository: ghcr.io/pouzor/homelable-backend
-              tag: 3.7.1@sha256:f0f5f26461991bb8c14bd835f06244755fed9e63f818fa184b237f2d55f7f188
+              tag: 3.8.0@sha256:f4f8b8061af27084c793803614e0009f3440fbbf7cc12033438868a86452d60a
             env:
               TZ: ${TIMEZONE}
               SQLITE_PATH: /app/data/homelab.db
@@ -103,7 +103,7 @@ spec:
           frontend:
             image:
               repository: ghcr.io/pouzor/homelable-frontend
-              tag: 3.7.1@sha256:2e52e1ba1cd0142c03988b247ca38f1fcbcf668efe39fb5849d432298a56a518
+              tag: 3.8.0@sha256:629a18054f13b54e9c6dfbab059aca27bbf4bcc083a8366d43706d59aa5c6520
             securityContext:
               allowPrivilegeEscalation: false
             resources:
@@ -114,7 +114,7 @@ spec:
           mcp:
             image:
               repository: ghcr.io/pouzor/homelable-mcp
-              tag: 3.7.1@sha256:8c62fcf9354e125c0609ca3409dea22430fc44559e625b4847972df155ec6c47
+              tag: 3.8.0@sha256:995aa4bdf0c1f28a651cf4f025cb26bb325df70c06d5066f998dafdc522a5a1c
             env:
               TZ: ${TIMEZONE}
               BACKEND_URL: http://127.0.0.1:8000
