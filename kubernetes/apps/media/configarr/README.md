@@ -6,8 +6,7 @@ Configarr syncs [TRaSH-Guides](https://trash-guides.info/) custom formats, quali
 
 | App | Profile | TRaSH trash_id | Quality definition |
 | --- | --- | --- | --- |
-| Sonarr | `WEB-1080p` | `72dae194fc92bf828f32cde7744e51a1` | `series` |
-| Sonarr | `WEB-2160p` | `d1498e7d189fbe6c7110ceaabb7473e6` | `series` |
+| Sonarr | `WEB-1080p` (1080p and below, SD fallback) | `72dae194fc92bf828f32cde7744e51a1` | `series` |
 | Radarr | `[SQP] SQP-1 (2160p)` | `5128baeb2b081b72126bc8482b2a86a0` | `sqp-streaming` |
 
 Profiles are included with `source: TRASH`, which pulls the profile and its default CF groups directly from the guide. `reset_unmatched_scores` is enabled, so any score not set by TRaSH (or by an override in `config.yml`) is reset to `0`. Unmanaged custom formats are left in place.
