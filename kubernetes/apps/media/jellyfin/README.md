@@ -13,8 +13,8 @@ Jellyfin is the media server for this cluster, streaming movies, TV shows, and m
 | GPU transcoding | Intel GPU via DRA `ResourceClaimTemplate` | `deviceClassName: gpu.intel.com`; requires the Intel GPU resource driver |
 | Supplemental groups | `44`, `105`, `10000` | Required for Intel GPU device access |
 | Transcode directory | `emptyDir` at `/transcode` | Ephemeral; cleared on pod restart |
-| Config PVC | `jellyfin-config`, 5Gi (`nfs-slow`) | Mounted at `/etc/jellyfin` |
-| Data PVC | `jellyfin-data`, 5Gi (`nfs-slow`) | Mounted at `/var/lib/jellyfin` |
+| Config PVC | `jellyfin-config-fast`, 1Gi (`nfs-fast`) | Mounted at `/etc/jellyfin` |
+| Data PVC | `jellyfin-data-fast`, 20Gi (`nfs-fast`) | Mounted at `/var/lib/jellyfin` |
 | Cache PVC | `jellyfin-cache`, 5Gi (`nfs-fast`) | Mounted at `/var/cache/jellyfin` |
 | Media library | NFS `storage.ewatkins.dev:/mnt/user/arrdata` | Mounted at `/mnt/arrdata`; shared with all *arr apps |
 | Run as user/group | `99:100` | |

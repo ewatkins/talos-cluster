@@ -120,12 +120,12 @@ spec:
     persistence:
       config:
         enabled: true
-        existingClaim: jellyfin-config
+        existingClaim: jellyfin-config-fast
         globalMounts:
           - path: /etc/jellyfin
       data:
         enabled: true
-        existingClaim: jellyfin-data
+        existingClaim: jellyfin-data-fast
         globalMounts:
           - path: /var/lib/jellyfin
       media:

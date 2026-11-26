@@ -31,3 +31,29 @@ spec:
     requests:
       storage: 5Gi
   storageClassName: nfs-fast
+---
+# nfs-fast replacements for jellyfin-config/jellyfin-data. On nfs-slow a
+# per-file lookup took ~10ms vs ~0.1ms here, and the 30k-file metadata tree
+# made library pages crawl. The nfs-slow claims above are kept until the move
+# is confirmed good, then removed (prune deletes them and their data).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-config-fast
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: nfs-fast
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-data-fast
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: nfs-fast
