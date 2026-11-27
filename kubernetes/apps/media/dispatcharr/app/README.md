@@ -62,6 +62,13 @@ placeholders or unrelated show art. Two kinds of programme keep their own image:
 matchup art (`game-thumbs`) and live sports events from the guide providers (Sports
 category plus a "Live" title or `<live/>` flag).
 
+A live game on a network channel takes Teamarr's matchup art and "Away at Home" sub-title
+when Teamarr has matched it: Teamarr attaches that channel's stream to its own team/event
+channel around the game, so a shared stream plus overlapping times identifies the game.
+Stream membership comes from Dispatcharr's API (`dispatcharr-api-secret`). It only covers
+channels Teamarr reads the guide for (its Dispatcharr channel-source groups) and only
+inside Teamarr's attach window; otherwise the provider's art stays.
+
 Jellyfin's XMLTV guide provider is set to:
 
 ```

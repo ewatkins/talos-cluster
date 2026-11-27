@@ -277,6 +277,11 @@ spec:
             env:
               PYTHONUNBUFFERED: "1"
               PYTHONDONTWRITEBYTECODE: "1"
+            # DISPATCHARR_API_KEY: reads which streams each channel carries, to
+            # give network-channel games Teamarr's matchup art.
+            envFrom:
+              - secretRef:
+                  name: dispatcharr-api-secret
             probes:
               liveness: &logoProbes
                 enabled: true
