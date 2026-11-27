@@ -7,4 +7,5 @@ resources:
   - ./pvc.yaml
   - ./resourceclaimtemplate.yaml
   - ./httproute.yaml
+  - ./backendtrafficpolicy.yaml
   - ./guide-cache-cronjob.yaml

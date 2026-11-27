@@ -1,0 +1,22 @@
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: jellyfin-timeout
+  namespace: media
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: jellyfin
+  timeout:
+    http:
+      # Envoy's 15s default request timeout covers the whole response, which
+      # breaks Jellyfin two ways: Home Screen Sections' /HomeScreen/Sections
+      # can take longer than 15s to build a user's rows (it 504'd and the web
+      # client fell back to the stock home screen), and a direct-play stream
+      # or download is one response held open for the length of the file.
+      # Disabled rather than raised, same as Dispatcharr and nodecast-tv.
+      requestTimeout: "0s"
+      # Repeats the gateway default (upstream-idle-timeout), which this replaces.
+      connectionIdleTimeout: 4s
