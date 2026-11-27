@@ -322,6 +322,15 @@ spec:
           http:
             port: 3000
             targetPort: *thumbsPort
+      # epg-tz-fixer's second listener: the output guide with channel logos
+      # filled in for icon-less programmes. Jellyfin's XMLTV source points here
+      # (see epg-tz-fixer.yaml). In-cluster only; no HTTPRoute.
+      epg-logos:
+        controller: dispatcharr
+        forceRename: dispatcharr-epg-logos
+        ports:
+          http:
+            port: 9291
     persistence:
       data:
         existingClaim: dispatcharr-data

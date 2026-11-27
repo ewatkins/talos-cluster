@@ -51,6 +51,21 @@ http://127.0.0.1:9290/?url=<url-encoded provider xmltv.php URL>
 It listens on loopback only, so it has no Service and only this pod's containers (Celery
 does the fetching) can reach it. If the pod is ever split up, that URL stops resolving.
 
+The same sidecar has a second listener on **:9291** (Service `dispatcharr-epg-logos`) for
+Jellyfin. It serves Dispatcharr's own `/output/epg` with each channel's logo added as the
+`<icon>` of every programme that has none. Jellyfin only uses programme images on its
+"On Now" / Home Screen Sections Live TV cards, and most live sports and news listings
+carry no art, so without it those cards are blank placeholders. Jellyfin's XMLTV guide
+provider is set to:
+
+```
+http://dispatcharr-epg-logos.media.svc.cluster.local:9291/epg
+```
+
+It takes no URL parameter and only ever fetches Dispatcharr's output guide, so it is not
+an open proxy. If it is down, Jellyfin's guide refresh fails; pointing Jellyfin back at
+`https://dispatcharr.ewatkins.dev/output/epg` bypasses it.
+
 To check it, compare a listing against a frame of what is airing — ESPN's weekday morning
 block is unambiguous (*Get Up* 8–10 am ET, *First Take* 10–12, *The Pat McAfee Show* 12–3).
 If listings ever run **early** instead, the provider has started emitting real UTC: point
