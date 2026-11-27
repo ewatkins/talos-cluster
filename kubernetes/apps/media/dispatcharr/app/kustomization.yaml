@@ -9,4 +9,5 @@ resources:
   - ./httproute.yaml
   - ./backendtrafficpolicy.yaml
   - ./epg-tz-fixer.yaml
+  - ./epg-logos.yaml
   - ./iptv-host-failover.yaml

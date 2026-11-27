@@ -14,18 +14,6 @@
 # time and rewritten as true UTC. The credentials stay in that URL, in
 # Dispatcharr's database, rather than moving into a Secret. It binds loopback
 # only, so it is reachable from Dispatcharr's own containers and nothing else.
-#
-# A second, separate listener on :9291 (Service "dispatcharr-epg-logos") serves
-# Dispatcharr's own output guide with each channel's logo copied onto every
-# programme that has no <icon> of its own. Jellyfin uses only programme images
-# for "On Now" / Home Screen Sections Live TV cards, and most live sports and
-# news listings carry none, so without this those cards are blank placeholders.
-# Jellyfin's XMLTV provider points at
-#
-#   http://dispatcharr-epg-logos.media.svc.cluster.local:9291/epg
-#
-# This listener takes no URL parameter and only ever fetches OUTPUT_EPG, so it
-# is not an open proxy.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -58,35 +46,9 @@ data:
     from datetime import datetime, timedelta
     from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-    import threading
-
     LISTEN = ("127.0.0.1", 9290)
-    LOGO_LISTEN = ("0.0.0.0", 9291)
-    # The public URL, not 127.0.0.1:9191: Dispatcharr builds the logo URLs in
-    # the feed from the request host, and Jellyfin must be able to fetch them.
-    OUTPUT_EPG = "https://dispatcharr.ewatkins.dev/output/epg"
     TIMEOUT = 300
     STAMP = re.compile(rb'(start|stop)="(\d{14}) \+0000"')
-    CHANNEL = re.compile(rb'<channel id="([^"]+)">(.*?)</channel>', re.S)
-    ICON = re.compile(rb'<icon src="[^"]*"\s*/>')
-    PROGRAMME = re.compile(rb'(<programme\b[^>]*\bchannel="([^"]+)"[^>]*>)(.*?)(</programme>)', re.S)
-
-    def add_channel_logos(body):
-        """Give every icon-less programme its channel's <icon>."""
-        logos = {}
-        for m in CHANNEL.finditer(body):
-            icon = ICON.search(m.group(2))
-            if icon:
-                logos[m.group(1)] = icon.group(0)
-        added = 0
-        def fill(m):
-            nonlocal added
-            logo = logos.get(m.group(2))
-            if logo is None or b"<icon" in m.group(3):
-                return m.group(0)
-            added += 1
-            return m.group(1) + m.group(3) + b"  " + logo + b"\n  " + m.group(4)
-        return PROGRAMME.sub(fill, body), added
 
     def last_sunday(year, month):
         day = calendar.monthrange(year, month)[1]
@@ -148,27 +110,5 @@ data:
         def log_request(self, code="-", size="-"):
             pass
 
-    class LogoHandler(Handler):
-        def do_GET(self):
-            path = urllib.parse.urlsplit(self.path).path
-            if path == "/healthz":
-                return self.reply(200, b"ok", "text/plain")
-            if path != "/epg":
-                return self.reply(404, b"not found", "text/plain")
-            try:
-                req = urllib.request.Request(OUTPUT_EPG, headers={"User-Agent": "epg-logos"})
-                with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
-                    body = resp.read()
-                if body[:2] == b"\x1f\x8b":
-                    body = gzip.decompress(body)
-            except Exception as exc:
-                self.log_message("output EPG fetch failed: %s", exc)
-                return self.reply(502, f"output EPG fetch failed: {exc}".encode(), "text/plain")
-            filled, added = add_channel_logos(body)
-            self.log_message("added channel logos to %d programmes (%d bytes)", added, len(filled))
-            self.reply(200, filled, "application/xml")
-
     if __name__ == "__main__":
-        logos = ThreadingHTTPServer(LOGO_LISTEN, LogoHandler)
-        threading.Thread(target=logos.serve_forever, daemon=True).start()
         ThreadingHTTPServer(LISTEN, Handler).serve_forever()
