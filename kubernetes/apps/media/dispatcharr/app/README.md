@@ -69,6 +69,16 @@ Stream membership comes from Dispatcharr's API (`dispatcharr-api-secret`). It on
 channels Teamarr reads the guide for (its Dispatcharr channel-source groups) and only
 inside Teamarr's attach window; otherwise the provider's art stays.
 
+Game listings still without a sub-title after that — providers often send just "Live:
+College Football" with "From War Memorial Stadium in Laramie, Wyo." — get the matchup
+from ESPN's public scoreboard (`site.api.espn.com`, no key) when exactly one game fits:
+the same venue, or the same TV network as the channel, kicking off within an hour of the
+listing. When several fit (regional NFL windows), the team names in the description pick
+one; otherwise the listing is left alone. Covers college football and basketball (men's
+and women's), NFL, NBA, WNBA, NHL, MLB and the main English and European soccer
+competitions. Scoreboards are cached for 20 minutes and any failure leaves the provider's
+titles unchanged. The log line for each `/epg` request counts the ESPN matchups added.
+
 Jellyfin's XMLTV guide provider is set to:
 
 ```
