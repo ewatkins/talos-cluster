@@ -71,13 +71,22 @@ inside Teamarr's attach window; otherwise the provider's art stays.
 
 Game listings still without a sub-title after that — providers often send just "Live:
 College Football" with "From War Memorial Stadium in Laramie, Wyo." — get the matchup
-from ESPN's public scoreboard (`site.api.espn.com`, no key) when exactly one game fits:
+from ESPN's public scoreboard (`site.api.espn.com`, no key; [`epg-espn.yaml`](epg-espn.yaml),
+a module shared with `epg-tz-fixer`) when exactly one game fits:
 the same venue, or the same TV network as the channel, kicking off within an hour of the
 listing. When several fit (regional NFL windows), the team names in the description pick
 one; otherwise the listing is left alone. Covers college football and basketball (men's
 and women's), NFL, NBA, WNBA, NHL, MLB and the main English and European soccer
 competitions. Scoreboards are cached for 20 minutes and any failure leaves the provider's
 titles unchanged. The log line for each `/epg` request counts the ESPN matchups added.
+
+`epg-tz-fixer` applies the same matchups to provider feeds **as Dispatcharr ingests
+them**, so Dispatcharr's own guide carries the teams. That matters for Teamarr: it finds
+games on network channels (FS1, ESPN, CBS Sports Network…) by reading those channels'
+guide listings, and without team names it cannot tell which game "College Football" is,
+so it never created a game channel for them. Feeds that need only the matchups, not the
+time fix, go through it as `http://127.0.0.1:9290/?tz=none&url=<url-encoded feed URL>`
+— the Dream4K EPG source (ESPN2, ESPNU) is set up that way in Dispatcharr's database.
 
 Jellyfin's XMLTV guide provider is set to:
 

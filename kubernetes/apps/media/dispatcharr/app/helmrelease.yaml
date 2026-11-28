@@ -237,6 +237,7 @@ spec:
             command: ["python3", "/scripts/epg-tz-fixer.py"]
             env:
               PYTHONUNBUFFERED: "1"
+              PYTHONDONTWRITEBYTECODE: "1"
             probes:
               liveness: &fixerProbes
                 enabled: true
@@ -423,4 +424,16 @@ spec:
           dispatcharr:
             epg-logos:
               - path: /scripts
+                readOnly: true
+      # ESPN matchups module shared by both guide containers — ./epg-espn.yaml.
+      epg-espn:
+        type: configMap
+        name: dispatcharr-epg-espn
+        advancedMounts:
+          dispatcharr:
+            epg-tz-fixer:
+              - path: /shared
+                readOnly: true
+            epg-logos:
+              - path: /shared
                 readOnly: true

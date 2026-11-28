@@ -14,6 +14,11 @@
 # time and rewritten as true UTC. The credentials stay in that URL, in
 # Dispatcharr's database, rather than moving into a Secret. It binds loopback
 # only, so it is reachable from Dispatcharr's own containers and nothing else.
+#
+# It also adds ESPN scoreboard matchups as sub-titles to game listings that
+# don't name the teams (./epg-espn.yaml), so Dispatcharr's guide — and Teamarr,
+# which reads it to find games on network channels — has them. Feeds that need
+# only that, not the time fix, use ?tz=none&url=<...> (Dream4K's EPG source).
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -24,8 +29,10 @@ data:
     #!/usr/bin/env python3
     """Serve an XMLTV feed with CET/CEST wall-clock times relabelled as UTC.
 
-    GET /?url=<upstream>  fetch upstream, fix "+0000" timestamps, return XML
-    GET /healthz          liveness
+    GET /?url=<upstream>          fetch upstream, fix "+0000" timestamps, add
+                                  ESPN matchups, return XML
+    GET /?tz=none&url=<upstream>  the same without the time fix
+    GET /healthz                  liveness
 
     Only timestamps carrying "+0000" are touched; anything with a real offset
     passes through. If the provider ever starts emitting genuine UTC, this
@@ -45,6 +52,9 @@ data:
     import urllib.request
     from datetime import datetime, timedelta
     from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    sys.path.insert(0, "/shared")
+    import espn_matchups  # ./epg-espn.yaml
 
     LISTEN = ("127.0.0.1", 9290)
     TIMEOUT = 300
@@ -80,7 +90,9 @@ data:
             parsed = urllib.parse.urlsplit(self.path)
             if parsed.path == "/healthz":
                 return self.reply(200, b"ok", "text/plain")
-            upstream = urllib.parse.parse_qs(parsed.query).get("url", [""])[0]
+            query = urllib.parse.parse_qs(parsed.query)
+            upstream = query.get("url", [""])[0]
+            relabel = query.get("tz", ["cet"])[0] != "none"
             if not upstream.startswith(("http://", "https://")):
                 return self.reply(400, b"missing or invalid ?url=", "text/plain")
             try:
@@ -92,8 +104,10 @@ data:
             except Exception as exc:  # surface as 502 so Dispatcharr records a failed refresh
                 self.log_message("upstream fetch failed: %s", exc)
                 return self.reply(502, f"upstream fetch failed: {exc}".encode(), "text/plain")
-            fixed, count = STAMP.subn(fix, body)
-            self.log_message("rewrote %d timestamps (%d bytes)", count, len(fixed))
+            fixed, count = STAMP.subn(fix, body) if relabel else (body, 0)
+            del body
+            fixed, espn = espn_matchups.add_matchups(fixed)  # never raises
+            self.log_message("rewrote %d timestamps, added %d ESPN matchups (%d bytes)", count, espn, len(fixed))
             self.reply(200, fixed, "application/xml")
 
         def reply(self, code, body, ctype):

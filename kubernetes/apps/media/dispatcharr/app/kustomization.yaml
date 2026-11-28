@@ -10,4 +10,5 @@ resources:
   - ./backendtrafficpolicy.yaml
   - ./epg-tz-fixer.yaml
   - ./epg-logos.yaml
+  - ./epg-espn.yaml
   - ./iptv-host-failover.yaml

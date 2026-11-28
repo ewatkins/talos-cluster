@@ -26,9 +26,8 @@
 #
 # Game listings that still have no sub-title (e.g. "Live: College Football",
 # "From War Memorial Stadium in Laramie, Wyo.") get the matchup from ESPN's
-# public scoreboard when exactly one game fits: same venue, or same TV network
-# as the channel, kicking off within an hour of the listing. ESPN is only read,
-# cached for 20 minutes, and a failure leaves the provider's titles as they were.
+# public scoreboard (./epg-espn.yaml, shared with epg-tz-fixer, which already
+# applies it to the feeds it relabels).
 #
 # Jellyfin's XMLTV guide provider points at
 #
@@ -59,6 +58,9 @@ data:
     from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
     from PIL import Image
+
+    sys.path.insert(0, "/shared")
+    import espn_matchups  # ./epg-espn.yaml
 
     LISTEN = ("0.0.0.0", 9291)
     # The public URL, not 127.0.0.1:9191: Dispatcharr builds the logo URLs in
@@ -149,159 +151,6 @@ data:
         if not (title.startswith(b"live") or b"<live" in inner):
             return False
         return any(c != b"sports" and c in title for c in cats)
-
-    # --- ESPN scoreboard: matchups for live games Teamarr hasn't matched ---------
-    # Providers often list a game as just "Live: College Football — From War
-    # Memorial Stadium in Laramie, Wyo.". ESPN's public scoreboard has every game
-    # with its venue, TV networks and kickoff, so such a listing gets the
-    # matchup as its sub-title when exactly one game fits: same venue (from the
-    # "From <venue>" description) or same network as the channel, kicking off
-    # within an hour of the listing's start. Lookups are cached; any failure just
-    # leaves the listing as the provider sent it.
-    ESPN = "https://site.api.espn.com/apis/site/v2/sports/{}/scoreboard?dates={}&limit=500{}"
-    ESPN_LEAGUES = [
-        ("football/college-football", "&groups=80", False), ("football/college-football", "&groups=81", False),
-        ("football/nfl", "", False), ("basketball/nba", "", False), ("basketball/wnba", "", False),
-        ("basketball/mens-college-basketball", "&groups=50", False),
-        ("basketball/womens-college-basketball", "&groups=50", False),
-        ("hockey/nhl", "", False), ("baseball/mlb", "", False),
-        ("soccer/eng.1", "", True), ("soccer/eng.2", "", True), ("soccer/eng.fa", "", True),
-        ("soccer/eng.league_cup", "", True), ("soccer/uefa.champions", "", True),
-        ("soccer/uefa.europa", "", True), ("soccer/usa.1", "", True), ("soccer/esp.1", "", True),
-        ("soccer/ger.1", "", True), ("soccer/ita.1", "", True), ("soccer/fra.1", "", True),
-    ]
-    ESPN_TTL = 20 * 60
-    KICKOFF_WINDOW = 60 * 60
-    DESC = re.compile(rb'<desc[^>]*>([^<]*)</desc>')
-    DISPLAY_NAME = re.compile(rb'<display-name[^>]*>([^<]*)</display-name>')
-    FROM_VENUE = re.compile(r'^From (?:the )?(.+?)(?: in |[.,;]|$)')
-    # ESPN broadcast names -> the channel names they appear as here (normalised).
-    NETWORK_ALIASES = {
-        "cbssn": "cbssportsnetwork", "foxsports1": "fs1", "foxsports2": "fs2", "btn": "bigtennetwork",
-        "accn": "accnetwork", "secn": "secnetwork", "nflnet": "nflnetwork", "nflnetwork": "nflnetwork",
-        "mlbnet": "mlbnetwork", "nbatv": "nbatv", "usanet": "usa", "usanetwork": "usa", "golf": "golfchannel",
-    }
-    _espn = {}
-    _espn_lock = threading.Lock()
-
-    def norm(text):
-        return re.sub(r"[^a-z0-9]", "", text.lower())
-
-    def network_key(name):
-        """"CBS 2 (KGAN)" -> "cbs", "CBS Sports Network" -> "cbssportsnetwork", "ESPN2" -> "espn2"."""
-        name = re.sub(r"\([^)]*\)", "", name).strip()
-        key = norm(re.sub(r"\s+\d+(?:\.\d+)?$", "", name))  # a local station's channel number, not "ESPN2"/"FS1"
-        return NETWORK_ALIASES.get(key, key)
-
-    def espn_board(path, extra, day):
-        url = ESPN.format(path, day, extra)
-        now = time.time()
-        with _espn_lock:
-            hit = _espn.get(url)
-            if hit and now - hit[0] < ESPN_TTL:
-                return hit[1]
-        try:
-            events = json.loads(fetch(url)).get("events", [])
-        except Exception:
-            events = None
-        with _espn_lock:
-            _espn[url] = (now, events or [])
-        return events or []
-
-    # A listing that is a game rather than a studio show: its title (minus "Live:")
-    # ends in the sport or competition, e.g. "College Football", "EFL Championship".
-    GAME_TITLE = re.compile(r'(?:football|soccer|basketball|hockey|baseball|softball|volleyball|rugby|championship|league)$', re.I)
-    NOT_GAME_TITLE = re.compile(r'(?:today|tonight|now|final|scoreboard|countdown|tailgate|kickoff|pregame|postgame|preview|show|report|zone|huddle|nation|live)\b.*(?:football|soccer|basketball|hockey|baseball)$', re.I)
-
-    def is_game_listing(inner):
-        t = TITLE.search(inner)
-        if not t:
-            return False
-        title = re.sub(r'^live:\s*', '', t.group(1).decode("utf-8", "replace").replace("&#x27;", "'"), flags=re.I).strip()
-        return bool(GAME_TITLE.search(title)) and not NOT_GAME_TITLE.search(title)
-
-    def espn_games(days):
-        """[{kick, venue, nets, words, sub}] for the given YYYYMMDD days."""
-        from concurrent.futures import ThreadPoolExecutor
-        jobs = [(p, x, d, soccer) for p, x, soccer in ESPN_LEAGUES for d in days]
-        with ThreadPoolExecutor(8) as pool:
-            boards = list(pool.map(lambda j: (j[3], espn_board(j[0], j[1], j[2])), jobs))
-        games, seen = [], set()
-        for soccer, events in boards:
-            for e in events:
-                if e.get("id") in seen:
-                    continue
-                seen.add(e.get("id"))
-                try:
-                    comp = e["competitions"][0]
-                    teams = {c["homeAway"]: c["team"]["displayName"] for c in comp["competitors"]}
-                    words = {w.lower() for c in comp["competitors"] for k in ("name", "location", "shortDisplayName")
-                             for w in [c["team"].get(k) or ""] if len(w) > 2}
-                    kick = datetime.strptime(e["date"], "%Y-%m-%dT%H:%MZ").replace(tzinfo=timezone.utc).timestamp()
-                except (KeyError, IndexError, ValueError):
-                    continue
-                if "home" not in teams or "away" not in teams:
-                    continue
-                venue = comp.get("venue") or {}
-                nets = {network_key(n) for b in comp.get("broadcasts", []) for n in b.get("names", [])}
-                sub = (teams["home"] + " vs. " + teams["away"]) if soccer else (teams["away"] + " at " + teams["home"])
-                games.append({"kick": kick, "venue": norm(re.sub(r"\([^)]*\)", "", venue.get("fullName", ""))),
-                              "nets": nets, "words": words, "sub": sub})
-        return games
-
-    def espn_match(games, attrs, inner, network):
-        when = span(attrs)
-        if not when:
-            return None
-        near = [g for g in games if abs(g["kick"] - when[0]) <= KICKOFF_WINDOW and g["kick"] < when[1]]
-        if not near:
-            return None
-        desc = DESC.search(inner)
-        desc = desc.group(1).decode("utf-8", "replace") if desc else ""
-        low = desc.lower()
-
-        def pick(hits):
-            if len(hits) > 1:  # several fit: keep the ones whose teams the description names
-                named = [g for g in hits if sum(1 for w in g["words"] if re.search(r"\b" + re.escape(w) + r"\b", low)) >= 2]
-                hits = named or hits
-            return hits[0]["sub"] if len(hits) == 1 else None
-
-        v = FROM_VENUE.match(desc)
-        if v:
-            venue = norm(v.group(1))
-            hit = pick([g for g in near if g["venue"] and (g["venue"] == venue or venue in g["venue"] or g["venue"] in venue)])
-            if hit:
-                return hit
-        return pick([g for g in near if network and network in g["nets"]])
-
-    def espn_subtitles(body, games):
-        """Second pass: game listings still without a sub-title get ESPN's matchup."""
-        if not games:
-            return body, 0
-        names = {}
-        for m in CHANNEL.finditer(body):
-            dn = DISPLAY_NAME.search(m.group(2))
-            if dn:
-                names[m.group(1)] = network_key(dn.group(1).decode("utf-8", "replace"))
-        added = [0]
-        def fill(m):
-            inner = m.group(3)
-            if TEAMARR_ART in inner or SUB_TITLE.search(inner) or not is_game_listing(inner):
-                return m.group(0)
-            sub = espn_match(games, m.group(1), inner, names.get(m.group(2)))
-            title = TITLE.search(inner)
-            if not sub or not title:
-                return m.group(0)
-            added[0] += 1
-            esc = sub.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").encode()
-            inner = inner[:title.end()] + b'\n    <sub-title lang="en">' + esc + b"</sub-title>" + inner[title.end():]
-            return m.group(1) + inner + m.group(4)
-        return PROGRAMME.sub(fill, body), added[0]
-
-    def espn_days():
-        """ESPN's scoreboard dates (US days) covering now and the next day."""
-        base = datetime.now(timezone.utc).timestamp() - 6 * 3600
-        return sorted({datetime.fromtimestamp(base + k * 86400, timezone.utc).strftime("%Y%m%d") for k in (0, 1)})
 
     def rewrite(body, streams):
         logos = {}
@@ -401,11 +250,7 @@ data:
                     self.log_message("channel stream lookup failed: %s", exc)
                     streams = {}
                 out, counts = rewrite(body, streams)
-                try:
-                    out, espn = espn_subtitles(out, espn_games(espn_days()))
-                except Exception as exc:  # degrade to the provider's titles
-                    self.log_message("ESPN matchups failed: %s", exc)
-                    espn = 0
+                out, espn = espn_matchups.add_matchups(out)  # never raises
                 self.log_message("epg: %d programmes -> channel logo, %d kept own art, %d -> Teamarr matchup, %d -> ESPN matchup",
                                  counts["logo"], counts["kept"], counts["teamarr"], espn)
                 return self.reply(200, out, "application/xml")
